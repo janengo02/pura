@@ -1,7 +1,7 @@
 import React from "react"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
-import Register from "./features/register/Register.js"
-import Login from "./features/login/Login.js"
+import Register from "./features/register/Register"
+import Login from "./features/login/Login"
 
 import "./App.css"
 import { ChakraProvider } from "@chakra-ui/react"
