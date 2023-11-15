@@ -1,5 +1,10 @@
 {
-   "translation": {
-      "key": "hello world"
-   }
+  "translation": {
+    "yup": {
+      "confirm_password": "Passwords must match",
+      "required": "Required",
+      "email": "Please enter a valid email address",
+      "string_min": "Must be at least ${min} characters"
+    }
+  }
 }

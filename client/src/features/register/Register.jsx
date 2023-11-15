@@ -88,13 +88,13 @@ const Register = () => {
                         </GridItem>
                         <GridItem colSpan={1}>
                            <MultiInput
-                              name="cpassword"
+                              name="confirm_password"
                               required
                               label="Confirm Password"
                               type="password"
                               helpertext="6-20 characters"
                               size="lg"
-                              validation={s.cpassword}
+                              validation={s.confirm_password}
                            />
                         </GridItem>
                         <GridItem colSpan={1}>

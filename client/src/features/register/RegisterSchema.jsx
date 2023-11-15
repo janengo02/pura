@@ -1,10 +1,9 @@
-import * as yup from "yup"
+import { yup } from '../../utils'
+import t from '../../lang/i18n'
 
 export const registerSchema = yup.object({
-   name: yup.string().max(255).required(),
-   email: yup.string().max(255).email().required(),
-   password: yup.string().min(6).max(30).required(),
-   cpassword: yup
-      .string()
-      .oneof([yup.ref("password"), null], "Passwords must match")
+  name: yup.string().max(255).required(),
+  email: yup.string().max(255).email().required(),
+  password: yup.string().min(6).max(30).required(),
+  confirm_password: yup.string().oneOf([yup.ref('password'), null], t('yup.confirm_password'))
 })
