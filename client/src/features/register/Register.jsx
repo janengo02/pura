@@ -1,4 +1,5 @@
 // import { useState } from "react"
+import { connect } from "react-redux"
 
 import {
    Container,
@@ -15,16 +16,18 @@ import { FormProvider, useForm } from "react-hook-form"
 import { registerSchema as s } from "./RegisterSchema"
 import { yupResolver } from "@hookform/resolvers/yup"
 import t from "../../lang/i18n"
+import { register } from "../../actions/auth"
+import PropTypes from "prop-types"
 
-const Register = () => {
+const Register = ({ register }) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })
 
-   const onSubmit = methods.handleSubmit((data,e) => {
+   const onSubmit = methods.handleSubmit((data) => {
       const {name, email, password} = data
-      console.log(name, email, password)
-      methods.reset()
+      // methods.reset()
+      register({name, email, password})
    })
 
    return (
@@ -128,4 +131,9 @@ const Register = () => {
    )
 }
 
-export default Register
+Register.propTypes = {
+   register: PropTypes.func.isRequired,
+}
+
+
+export default connect(null, { register })(Register)
