@@ -2,6 +2,7 @@ import React from "react"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import Register from "./features/register/Register"
 import Login from "./features/login/Login"
+import Landing from "./features/landing/Landing"
 
 import "./App.css"
 import { ChakraProvider } from "@chakra-ui/react"
@@ -10,7 +11,7 @@ const App = () => (
    <ChakraProvider>
       <Router>
          <Routes>
-            {/* <Route path="/" element={<Landing />} /> */}
+            <Route path="/" element={<Landing />} />
             <Route path="register" element={<Register />} />
             <Route path="login" element={<Login />} />
             {/* <Route

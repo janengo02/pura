@@ -14,17 +14,17 @@ import { MultiInput } from "../../components/MultiInput"
 import { FormProvider, useForm } from "react-hook-form"
 import { registerSchema as s } from "./RegisterSchema"
 import { yupResolver } from "@hookform/resolvers/yup"
+import t from "../../lang/i18n"
 
 const Register = () => {
    const methods = useForm({
       resolver: yupResolver(s)
    })
-   // const [success, setSuccess] = useState(false)
 
-   const onSubmit = methods.handleSubmit((data) => {
-      console.log(data)
+   const onSubmit = methods.handleSubmit((data,e) => {
+      const {name, email, password} = data
+      console.log(name, email, password)
       methods.reset()
-      //  setSuccess(true)
    })
 
    return (
@@ -36,17 +36,21 @@ const Register = () => {
                p={10}
                spacing={10}
                alignItems="flex-start"
+               justifyContent="center"
             >
                <VStack spacing={5} alignItems="flex-start">
-                  <Heading size="2xl">Register</Heading>
+                  <Heading size="2xl">{t('title-register')}</Heading>
                   <Text>
-                     Manage all your tasks using Kanban board and Time-boxed
-                     method
+                     {t('desc-register')}
                   </Text>
                </VStack>
                <FormProvider {...methods}>
                   <form
-                     onSubmit={(e) => e.preventDefault()}
+                     onSubmit={
+                        async(e) => {
+                           e.preventDefault()
+                           onSubmit()
+                        }}
                      noValidate
                      autoComplete="off"
                      className="container"
@@ -56,50 +60,54 @@ const Register = () => {
                         <GridItem colSpan={1}>
                            <MultiInput
                               name="name"
-                              required
-                              label="Name"
                               type="text"
-                              placeholder="John Doe"
-                              size="lg"
+                              label={t('label-name')}
+                              placeholder={t('placeholder-name')}
                               validation={s.name}
+                              size="lg"
+                              required
                            />
                         </GridItem>
                         <GridItem colSpan={1}>
                            <MultiInput
                               name="email"
-                              required
-                              label="Email"
                               type="text"
-                              placeholder="john.doe@abc.com"
-                              size="lg"
+                              label={t('label-email')}
+                              placeholder={t('placeholder-email')}
                               validation={s.email}
+                              size="lg"
+                              required
                            />
                         </GridItem>
                         <GridItem colSpan={1}>
                            <MultiInput
                               name="password"
-                              required
-                              label="Password"
                               type="password"
-                              helpertext="6-20 characters"
-                              size="lg"
+                              label={t('label-password')}
+                              helpertext={t('helpertext-password')}
                               validation={s.password}
+                              size="lg"
+                              required
                            />
                         </GridItem>
                         <GridItem colSpan={1}>
                            <MultiInput
                               name="confirm_password"
-                              required
-                              label="Confirm Password"
                               type="password"
-                              helpertext="6-20 characters"
-                              size="lg"
+                              label={t('label-confirm_password')}
                               validation={s.confirm_password}
+                              size="lg"
+                              required
                            />
                         </GridItem>
                         <GridItem colSpan={1}>
-                           <Button size="lg" w="full" onClick={onSubmit}>
-                              Register
+                           <Button
+                              size="lg"
+                              w="full"
+                              colorScheme="purple"
+                              type="submit"
+                           >
+                              {t('btn-register')}
                            </Button>
                         </GridItem>
                      </SimpleGrid>
@@ -113,6 +121,7 @@ const Register = () => {
                spacing={10}
                alignItems="flex-start"
                bg="gray.50"
+               justifyContent="center"
             ></VStack>
          </Flex>
       </Container>
