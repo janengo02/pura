@@ -1,9 +1,11 @@
-import { yup } from '../../utils'
+import { yup, notBlank } from '../../utils'
 import t from '../../lang/i18n'
 
 export const registerSchema = yup.object({
-  name: yup.string().max(255).required(), //TODO: No special characters, empty space,..
-  email: yup.string().max(255).email().required(),
-  password: yup.string().min(6).max(30).required(),
-  confirm_password: yup.string().oneOf([yup.ref('password'), null], t('yup-custom-confirm_password'))
+   name: yup.string().max(255).required().test(notBlank()),
+   email: yup.string().max(255).email().required(),
+   password: yup.string().min(6).max(30),
+   confirm_password: yup
+      .string()
+      .oneOf([yup.ref('password'), null], t('yup-custom-confirm_password'))
 })

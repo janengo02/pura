@@ -26,9 +26,8 @@ const Register = ({ isLoading, register }) => {
    })
 
    const onSubmit = methods.handleSubmit((data) => {
-      const {name, email, password} = data
-      // methods.reset()
-      register({name, email, password})
+      const { name, email, password } = data
+      register({ name, email, password })
    })
 
    return (
@@ -38,23 +37,20 @@ const Register = ({ isLoading, register }) => {
                w="full"
                h="full"
                p={10}
-               spacing={10}
+               spacing={8}
                alignItems="flex-start"
                justifyContent="center"
             >
                <VStack spacing={5} alignItems="flex-start">
-                  <Heading size="2xl">{t('title-register')}</Heading>
-                  <Text>
-                     {t('desc-register')}
-                  </Text>
+                  <Heading size="2xl">{t("title-register")}</Heading>
+                  <Text>{t("desc-register")}</Text>
                </VStack>
                <FormProvider {...methods}>
                   <form
-                     onSubmit={
-                        async(e) => {
-                           e.preventDefault()
-                           onSubmit()
-                        }}
+                     onSubmit={async (e) => {
+                        e.preventDefault()
+                        onSubmit()
+                     }}
                      noValidate
                      autoComplete="off"
                      className="container"
@@ -68,8 +64,8 @@ const Register = ({ isLoading, register }) => {
                            <MultiInput
                               name="name"
                               type="text"
-                              label={t('label-name')}
-                              placeholder={t('placeholder-name')}
+                              label={t("label-name")}
+                              placeholder={t("placeholder-name")}
                               validation={s.name}
                               size="lg"
                               required
@@ -79,8 +75,8 @@ const Register = ({ isLoading, register }) => {
                            <MultiInput
                               name="email"
                               type="text"
-                              label={t('label-email')}
-                              placeholder={t('placeholder-email')}
+                              label={t("label-email")}
+                              placeholder={t("placeholder-email")}
                               validation={s.email}
                               size="lg"
                               required
@@ -90,8 +86,8 @@ const Register = ({ isLoading, register }) => {
                            <MultiInput
                               name="password"
                               type="password"
-                              label={t('label-password')}
-                              helpertext={t('helpertext-password')}
+                              label={t("label-password")}
+                              helpertext={t("helpertext-password")}
                               validation={s.password}
                               size="lg"
                               required
@@ -101,7 +97,7 @@ const Register = ({ isLoading, register }) => {
                            <MultiInput
                               name="confirm_password"
                               type="password"
-                              label={t('label-confirm_password')}
+                              label={t("label-confirm_password")}
                               validation={s.confirm_password}
                               size="lg"
                               required
@@ -113,10 +109,10 @@ const Register = ({ isLoading, register }) => {
                               w="full"
                               colorScheme="purple"
                               isLoading={isLoading}
-                              loadingText={t('btn-submitting')}
+                              loadingText={t("btn-submitting")}
                               type="submit"
                            >
-                              {t('btn-register')}
+                              {t("btn-register")}
                            </Button>
                         </GridItem>
                      </SimpleGrid>
@@ -139,7 +135,7 @@ const Register = ({ isLoading, register }) => {
 
 Register.propTypes = {
    isLoading: PropTypes.bool.isRequired,
-   register: PropTypes.func.isRequired,
+   register: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
