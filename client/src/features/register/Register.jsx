@@ -18,8 +18,9 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import t from "../../lang/i18n"
 import { register } from "../../actions/auth"
 import PropTypes from "prop-types"
+import FormAlert from "../../components/FormAlert"
 
-const Register = ({ register }) => {
+const Register = ({ isLoading, register }) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })
@@ -32,7 +33,7 @@ const Register = ({ register }) => {
 
    return (
       <Container maxW="container.xl" p={0}>
-         <Flex h="100vh" py={20}>
+         <Flex minH="100vh" alignItems="center">
             <VStack
                w="full"
                h="full"
@@ -60,6 +61,9 @@ const Register = ({ register }) => {
                      style={{ width: "100%" }}
                   >
                      <SimpleGrid columns={1} rowGap={6} w="full">
+                        <GridItem colSpan={1}>
+                           <FormAlert />
+                        </GridItem>
                         <GridItem colSpan={1}>
                            <MultiInput
                               name="name"
@@ -108,6 +112,8 @@ const Register = ({ register }) => {
                               size="lg"
                               w="full"
                               colorScheme="purple"
+                              isLoading={isLoading}
+                              loadingText={t('btn-submitting')}
                               type="submit"
                            >
                               {t('btn-register')}
@@ -132,8 +138,12 @@ const Register = ({ register }) => {
 }
 
 Register.propTypes = {
+   isLoading: PropTypes.bool.isRequired,
    register: PropTypes.func.isRequired,
 }
 
+const mapStateToProps = (state) => ({
+   isLoading: state.loading
+})
 
-export default connect(null, { register })(Register)
+export default connect(mapStateToProps, { register })(Register)

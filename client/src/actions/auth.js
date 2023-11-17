@@ -4,9 +4,11 @@ import {
    REGISTER_FAIL,
 } from "./types"
 import { setAlert } from "./alert"
+import { setLoading } from "./loading"
 
 // Register User
 export const register = (formData) => async (dispatch) => {
+   dispatch(setLoading.start)
    try {
       const res = await api.post("/users", formData)
 
@@ -14,11 +16,15 @@ export const register = (formData) => async (dispatch) => {
          type: REGISTER_SUCCESS,
          payload: res.data
       })
-   } catch (err) {
-      const error = err.response.data.error
+      dispatch(setLoading.end)
 
-      if (error) {
-        dispatch(setAlert(error.title, error.msg, "error"))
+   } catch (err) {
+      dispatch(setLoading.end)
+
+      const errors = err.response.data.errors
+
+      if (errors) {
+         errors.forEach((error) => dispatch(setAlert(error.title, error.msg, "error")))
       }
 
       dispatch({

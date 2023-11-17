@@ -1,9 +1,14 @@
 {
   "translation": {
+    "alert-": "---------------------------------------------",
+    "alert-invalid-credential": "Invalid Credentials!",
+    "alert-oops": "Oops!",
+    "alert-user-exists": "User already exists.",
     "btn-": "------------------------------------------------",
     "btn-hide": "Hide",
     "btn-register": "Register",
     "btn-show": "Show",
+    "btn-submitting": "Submitting",
     "desc-": "------------------------------------------------",
     "desc-register": "Manage all your tasks using Kanban board and Time-boxed method",
     "helpertext-": "----------------------------------------",

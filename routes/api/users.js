@@ -33,7 +33,7 @@ router.post(
          if (user) {
             return res
                .status(400)
-               .json({ error: { title: "Failed to register user!", msg: "User already exists." } })
+               .json({ errors: [{ title: "alert-oops", msg: "alert-user-exists" }] })
          }
 
          // Get user gravatar
