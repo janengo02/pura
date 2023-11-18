@@ -131,4 +131,4 @@ dist
 
 # config
 
-config/default.json
+.config/default.json
