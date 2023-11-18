@@ -41,4 +41,14 @@ export const notBlank = () => {
          value.replaceAll(' ', '').replaceAll('　', '').length !== 0
    }
 }
+export const noSpecialChar = () => {
+   return {
+      name: 'no-special-char',
+      message: t('yup-string-noSpecialChar'),
+      test: (value) => {
+         const specialChar = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+         return !specialChar.test(value)
+      }
+   }
+}
 export default yup
