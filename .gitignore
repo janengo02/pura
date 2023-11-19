@@ -131,4 +131,6 @@ dist
 
 # config
 
-.config/default.json
+config/default.json
+
+#TODO: Make sure no secretkey is visible on Github (all versions)

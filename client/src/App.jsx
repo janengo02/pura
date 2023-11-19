@@ -6,6 +6,7 @@ import PasswordRecover from './features/login/PasswordRecover'
 import Landing from './features/landing/Landing'
 import Dashboard from './features/dashboard/dashboard'
 import PrivateRoute from './components/PrivateRoute'
+import NotFound from './components/NotFound'
 // Redux
 import { Provider } from 'react-redux'
 import store from './store'
@@ -44,7 +45,7 @@ const App = () => {
                      path='dashboard'
                      element={<PrivateRoute component={Dashboard} />}
                   />
-                  {/* <Route path="/*" element={<NotFound />} /> */}
+                  <Route path='/*' element={<NotFound />} />
                </Routes>
             </Router>
          </ChakraProvider>
