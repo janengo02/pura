@@ -5,9 +5,10 @@ import {
    MenuButton,
    MenuItem,
    MenuList,
-   useDisclosure
+   useDisclosure,
+   MenuDivider
 } from '@chakra-ui/react'
-import { PiSignOut } from 'react-icons/pi'
+import { PiSignOut, PiGearSix } from 'react-icons/pi'
 import t from '../../lang/i18n'
 
 const ProfileMenu = () => {
@@ -32,6 +33,10 @@ const ProfileMenu = () => {
             onMouseEnter={profileMenu.onOpen}
             onMouseLeave={profileMenu.onClose}
          >
+            <MenuItem icon={<PiGearSix size={20} />}>
+               {t('btn-account_settings')}
+            </MenuItem>
+            <MenuDivider />
             <MenuItem icon={<PiSignOut size={20} />}>
                {t('btn-logout')}
             </MenuItem>

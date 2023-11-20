@@ -9,18 +9,12 @@ import {
    MenuItem,
    MenuList,
    Spacer,
-   Drawer,
-   DrawerOverlay,
-   DrawerContent,
-   DrawerCloseButton,
-   DrawerHeader,
-   DrawerBody,
-   DrawerFooter,
-   Button,
-   useDisclosure
+   useDisclosure,
+   Drawer
 } from '@chakra-ui/react'
 import { PiCalendar, PiDotsNine, PiFilePlus } from 'react-icons/pi'
 import ProfileMenu from './ProfileMenu'
+import Sidebar from './Sidebar'
 import t from '../../lang/i18n'
 
 const Dashboard = () => {
@@ -33,20 +27,7 @@ const Dashboard = () => {
             placement='left'
             onClose={sidebar.onClose}
          >
-            <DrawerOverlay />
-            <DrawerContent>
-               <DrawerCloseButton />
-               <DrawerHeader>Create your account</DrawerHeader>
-
-               <DrawerBody></DrawerBody>
-
-               <DrawerFooter>
-                  <Button variant='outline' mr={3} onClick={sidebar.onClose}>
-                     Cancel
-                  </Button>
-                  <Button colorScheme='blue'>Save</Button>
-               </DrawerFooter>
-            </DrawerContent>
+            <Sidebar />
          </Drawer>
          <Container
             position='sticky'
