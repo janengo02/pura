@@ -79,4 +79,6 @@ export const login = (formData) => async (dispatch) => {
 }
 
 // Logout
-export const logout = () => ({ type: LOGOUT })
+export const logout = () => async (dispatch) => {
+   dispatch({ type: LOGOUT })
+}
