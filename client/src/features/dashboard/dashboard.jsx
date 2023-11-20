@@ -1,5 +1,5 @@
+import React from 'react'
 import {
-   Avatar,
    Container,
    Flex,
    Heading,
@@ -8,15 +8,50 @@ import {
    MenuButton,
    MenuItem,
    MenuList,
-   Spacer
+   Spacer,
+   Drawer,
+   DrawerOverlay,
+   DrawerContent,
+   DrawerCloseButton,
+   DrawerHeader,
+   DrawerBody,
+   DrawerFooter,
+   Button,
+   useDisclosure
 } from '@chakra-ui/react'
-import { AddIcon, HamburgerIcon, CalendarIcon } from '@chakra-ui/icons'
-import React from 'react'
+import { PiCalendar, PiDotsNine, PiFilePlus } from 'react-icons/pi'
+import ProfileMenu from './ProfileMenu'
+import t from '../../lang/i18n'
 
 const Dashboard = () => {
+   const sidebar = useDisclosure()
+   const dropdownMenu = useDisclosure()
    return (
       <>
+         <Drawer
+            isOpen={sidebar.isOpen}
+            placement='left'
+            onClose={sidebar.onClose}
+         >
+            <DrawerOverlay />
+            <DrawerContent>
+               <DrawerCloseButton />
+               <DrawerHeader>Create your account</DrawerHeader>
+
+               <DrawerBody></DrawerBody>
+
+               <DrawerFooter>
+                  <Button variant='outline' mr={3} onClick={sidebar.onClose}>
+                     Cancel
+                  </Button>
+                  <Button colorScheme='blue'>Save</Button>
+               </DrawerFooter>
+            </DrawerContent>
+         </Drawer>
          <Container
+            position='sticky'
+            top={0}
+            left={0}
             h={20}
             bg='gray.50'
             w='100%'
@@ -27,41 +62,49 @@ const Dashboard = () => {
          >
             <Flex h='full' w='full' alignItems='center'>
                <Flex gap={5}>
-                  <Menu>
+                  <Menu
+                     isOpen={dropdownMenu.isOpen}
+                     onClose={dropdownMenu.onClose}
+                  >
                      <MenuButton
                         as={IconButton}
+                        onClick={() => {
+                           dropdownMenu.onClose()
+                           sidebar.onOpen()
+                        }}
+                        onMouseEnter={dropdownMenu.onOpen}
                         aria-label='Options'
-                        icon={<HamburgerIcon />}
+                        icon={<PiDotsNine size={28} />}
                         variant='ghost'
+                        colorScheme='gray'
                      ></MenuButton>
-                     <MenuList>
-                        <MenuItem icon={<AddIcon />}>New Page</MenuItem>
+                     <MenuList
+                        onMouseEnter={dropdownMenu.onOpen}
+                        onMouseLeave={dropdownMenu.onClose}
+                     >
+                        <MenuItem icon={<PiFilePlus size={20} />}>
+                           {t('btn-new_page')}
+                        </MenuItem>
                      </MenuList>
                   </Menu>
-                  <Heading as='h3' size='lg'>
-                     PURA TASK
+                  <Heading as='h3' size='lg' color='gray.600'>
+                     data.page.title
                   </Heading>
                </Flex>
                <Spacer />
                <Flex gap={8}>
                   <IconButton
                      isRound={true}
-                     variant='outline'
-                     colorScheme='gray'
-                     bg='white'
-                     icon={<CalendarIcon />}
-                  ></IconButton>
-                  <Avatar
-                     name='Kent Dodds'
-                     w={10}
-                     h={10}
-                     src='https://bit.ly/kent-c-dodds'
+                     variant='solid'
+                     colorScheme='purple'
+                     icon={<PiCalendar size={22} />}
                   />
+                  <ProfileMenu />
                </Flex>
             </Flex>
          </Container>
 
-         <Container bg='blue.50' w='full' maxW='100vw' h='100vh'>
+         <Container bg='white' w='full' maxW='100vw' h='100vh'>
             hello
          </Container>
       </>

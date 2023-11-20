@@ -4,7 +4,7 @@ import Register from './features/register/Register'
 import Login from './features/login/Login'
 import PasswordRecover from './features/login/PasswordRecover'
 import Landing from './features/landing/Landing'
-import Dashboard from './features/dashboard/dashboard'
+import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import NotFound from './components/NotFound'
 // Redux

@@ -94,6 +94,7 @@ const Login = ({ isLoading, login, isAuthenticated }) => {
                               required
                            />
                         </GridItem>
+                        {/* TODO: "Remember me" */}
                         <GridItem colSpan={1}>
                            <Button
                               size='lg'
