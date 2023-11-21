@@ -14,8 +14,6 @@ export default function SplitPane({ children, ...props }) {
    const [leftWidth, setLeftWidth] = useState(null)
    const separatorXPosition = useRef(null)
 
-   const splitPaneRef = createRef()
-
    const onMouseDown = (e) => {
       separatorXPosition.current = e.clientX
    }
@@ -46,14 +44,14 @@ export default function SplitPane({ children, ...props }) {
    })
 
    return (
-      <Flex w='full' h='full' {...props} ref={splitPaneRef}>
+      <Flex w='full' h='full' {...props}>
          <splitPaneContext.Provider value={{ leftWidth, setLeftWidth }}>
             {children[0]}
 
             <Divider
                orientation='vertical'
                w={3}
-               bg='gray.100'
+               bg='gray.200'
                cursor='col-resize'
                border='none'
                onMouseDown={onMouseDown}
@@ -76,7 +74,7 @@ SplitPane.Left = function SplitPaneLeft(props) {
       }
 
       leftRef.current.style.width = `${leftWidth}px`
-   }, [leftWidth])
+   }, [leftRef, leftWidth, setLeftWidth])
 
    return (
       <Box w='full' h='full' {...props} ref={leftRef}>

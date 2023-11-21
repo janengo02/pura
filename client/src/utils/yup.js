@@ -46,6 +46,7 @@ export const noSpecialChar = () => {
       name: 'no-special-char',
       message: t('yup-string-noSpecialChar'),
       test: (value) => {
+         // eslint-disable-next-line
          const specialChar = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
          return !specialChar.test(value)
       }
