@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {
    Flex,
    Heading,
@@ -15,15 +15,12 @@ import { PiCalendar, PiDotsNine, PiFilePlus } from 'react-icons/pi'
 import ProfileMenu from './ProfileMenu'
 import Sidebar from './Sidebar'
 import t from '../../lang/i18n'
+import SplitPaneContext from '../../context/SplitPaneContext'
 
 const NavbarWrapper = ({ children }) => (
    <Flex
-      position='sticky'
-      top={0}
-      left={0}
       h={20}
-      w='100%'
-      maxW='100vw'
+      w='full'
       p={10}
       alignItems='center'
       bg='gray.50'
@@ -61,17 +58,29 @@ const NavbarLeft = ({ dropdownMenu, sidebar }) => (
       </Heading>
    </Flex>
 )
-const NavbarRight = () => (
-   <Flex gap={8}>
-      <IconButton
-         isRound={true}
-         variant='solid'
-         colorScheme='purple'
-         icon={<PiCalendar size={22} />}
-      />
-      <ProfileMenu />
-   </Flex>
-)
+const NavbarRight = () => {
+   const { viewCalendar, setViewCalendar, setLeftWidth } =
+      useContext(SplitPaneContext)
+   return (
+      <Flex gap={8}>
+         <IconButton
+            isRound={true}
+            variant={viewCalendar ? 'solid' : 'outline'}
+            colorScheme='purple'
+            icon={<PiCalendar size={22} />}
+            onClick={() => {
+               if (viewCalendar) {
+                  setLeftWidth(100)
+               } else {
+                  setLeftWidth(50)
+               }
+               setViewCalendar((prev) => !prev)
+            }}
+         />
+         <ProfileMenu />
+      </Flex>
+   )
+}
 const Navbar = () => {
    const sidebar = useDisclosure()
    const dropdownMenu = useDisclosure()
