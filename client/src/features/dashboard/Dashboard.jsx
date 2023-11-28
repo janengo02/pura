@@ -13,6 +13,8 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import Navbar from './Navbar'
 import PageDivider from './PageDivider'
+import Kanban from './Kanban'
+import Calendar from './Calendar'
 
 const leftRef = createRef()
 const rightRef = createRef()
@@ -37,14 +39,14 @@ const SplitPaneLeft = () => {
    }, [leftWidth])
 
    return (
-      <Box w='full' h='full' ref={leftRef}>
-         Kanban board
+      <Box ref={leftRef} w='full' h='full' overflow='auto'>
+         <Kanban />
       </Box>
    )
 }
 const SplitPaneRight = () => (
-   <Box w='full' h='full' ref={rightRef}>
-      Calendar
+   <Box ref={rightRef} w='full' h='full' overflow='auto'>
+      <Calendar />
    </Box>
 )
 
@@ -121,7 +123,7 @@ const Dashboard = () => {
             }}
          >
             <Navbar />
-            <Flex bg='white' w='full' h='full'>
+            <Flex bg='white' w='full' h='calc(100vh - 81px);'>
                <SplitPaneLeft />
                {viewCalendar && (
                   <>

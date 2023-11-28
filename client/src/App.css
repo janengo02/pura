@@ -1,0 +1,26 @@
+/* Styling the scrollbar in Chrome & Safari */
+::-webkit-scrollbar {
+   width: 12px;
+   height: 12px;
+   background: #fff;
+}
+::-webkit-scrollbar-thumb {
+   background-color: #edf2f7;
+   border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+   background-color: #cbd5e0;
+}
+/* Styling the scrollbar in Firefox */
+::-moz-scrollbar {
+   width: 10px;
+   height: 10px;
+   background: #fff;
+}
+::-moz-scrollbar-thumb {
+   background-color: #edf2f7;
+   border-radius: 10px;
+}
+::-moz-scrollbar-thumb:hover {
+   background-color: #cbd5e0;
+}
