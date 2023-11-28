@@ -1,4 +1,5 @@
 import React from 'react'
+
 import {
    Avatar,
    Menu,
@@ -10,8 +11,9 @@ import {
 } from '@chakra-ui/react'
 import { PiSignOut, PiGearSix } from 'react-icons/pi'
 import t from '../../lang/i18n'
-import { connect } from 'react-redux'
+
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { logout } from '../../actions/auth'
 
 const ProfileMenu = ({ logout }) => {

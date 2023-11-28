@@ -1,4 +1,7 @@
 import React, { useContext } from 'react'
+
+import SplitPaneContext from '../../context/SplitPaneContext'
+
 import {
    Flex,
    Heading,
@@ -12,11 +15,10 @@ import {
    Drawer
 } from '@chakra-ui/react'
 import { PiCalendar, PiDotsNine, PiFilePlus } from 'react-icons/pi'
+import t from '../../lang/i18n'
+
 import ProfileMenu from './ProfileMenu'
 import Sidebar from './Sidebar'
-import t from '../../lang/i18n'
-import SplitPaneContext from '../../context/SplitPaneContext'
-
 const NavbarWrapper = ({ children }) => (
    <Flex
       h={20}
@@ -59,8 +61,7 @@ const NavbarLeft = ({ dropdownMenu, sidebar }) => (
    </Flex>
 )
 const NavbarRight = () => {
-   const { viewCalendar, setViewCalendar, setLeftWidth } =
-      useContext(SplitPaneContext)
+   const { viewCalendar, setViewCalendar } = useContext(SplitPaneContext)
    return (
       <Flex gap={8}>
          <IconButton
@@ -69,11 +70,6 @@ const NavbarRight = () => {
             colorScheme='purple'
             icon={<PiCalendar size={22} />}
             onClick={() => {
-               if (viewCalendar) {
-                  setLeftWidth(100)
-               } else {
-                  setLeftWidth(50)
-               }
                setViewCalendar((prev) => !prev)
             }}
          />
