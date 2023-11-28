@@ -14,7 +14,7 @@ import {
    useDisclosure,
    Drawer
 } from '@chakra-ui/react'
-import { PiCalendar, PiDotsNine, PiFilePlus } from 'react-icons/pi'
+import { PiCalendarFill, PiDotsNine, PiFilePlus } from 'react-icons/pi'
 import t from '../../lang/i18n'
 
 import ProfileMenu from './ProfileMenu'
@@ -34,7 +34,7 @@ const NavbarWrapper = ({ children }) => (
 )
 const NavbarLeft = ({ dropdownMenu, sidebar }) => (
    <Flex gap={5}>
-      <Menu isOpen={dropdownMenu.isOpen} onClose={dropdownMenu.onClose}>
+      <Menu isOpen={dropdownMenu.isOpen} onClose={dropdownMenu.onClose} isLazy>
          <MenuButton
             as={IconButton}
             onClick={() => {
@@ -68,7 +68,7 @@ const NavbarRight = () => {
             isRound={true}
             variant={viewCalendar ? 'solid' : 'outline'}
             colorScheme='purple'
-            icon={<PiCalendar size={22} />}
+            icon={<PiCalendarFill size={22} />}
             onClick={() => {
                setViewCalendar((prev) => !prev)
             }}
