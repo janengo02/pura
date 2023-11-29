@@ -10,7 +10,7 @@ import {
    InputLeftElement
 } from '@chakra-ui/react'
 import { PiMagnifyingGlass } from 'react-icons/pi'
-import t from '../../lang/i18n'
+import t from '../../../lang/i18n'
 
 const Sidebar = () => {
    return (

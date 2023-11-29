@@ -17,8 +17,8 @@ import {
 import { PiCalendarFill, PiDotsNine, PiFilePlus } from 'react-icons/pi'
 import t from '../../lang/i18n'
 
-import ProfileMenu from './ProfileMenu'
-import Sidebar from './Sidebar'
+import ProfileMenu from './navbar/ProfileMenu'
+import Sidebar from './navbar/Sidebar'
 const NavbarWrapper = ({ children }) => (
    <Flex
       h={20}
