@@ -8,7 +8,7 @@ import Settings from './Settings'
 import Filter from './Filter'
 const Toolbar = () => {
    return (
-      <Flex w='full' p={5} alignItems='center'>
+      <Flex w='full' maxW='50vw' p={5} alignItems='center'>
          <Flex gap={2} alignItems='center'>
             <Sort />
             <Divider orientation='vertical' h={8} />

@@ -14,6 +14,7 @@ const Kanban = () => {
          h='fit-content'
          minH='full'
          minW='full'
+         alignItems='center'
       >
          <Toolbar />
       </Flex>
