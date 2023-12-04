@@ -113,12 +113,16 @@ export default dummyData
 //          }
 //       ],
 //       taskMap: {
-//          'group1-progress1': ['task-1', 'task-2'],
-//          'group1-progress2': [],
-//          'group1-progress3': [],
-//          'group2-progress1': ['task-3'],
-//          'group2-progress2': ['task-4'],
-//          'group2-progress3': []
+//          'group1': {
+//             'progress1': ['task-1', 'task-2'],
+//             'progress2': [],
+//             'progress3': []
+//          },
+//          'group2': {
+//             'progress1': ['task-3'],
+//             'progress2': ['task-4'],
+//             'progress3': []
+//          }
 //       }
 //    }
 // ]

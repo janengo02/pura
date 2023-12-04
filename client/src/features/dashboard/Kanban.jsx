@@ -41,7 +41,7 @@ const Kanban = () => {
             ...state,
             columns: {
                ...state.columns,
-               [newColumn.id]: newColumn
+               [destination.droppableId]: newColumn
             }
          }
 
