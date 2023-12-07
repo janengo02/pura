@@ -3,22 +3,20 @@ import { Card, Flex } from '@chakra-ui/react'
 import TaskCard from './TaskCard'
 import { Droppable } from 'react-beautiful-dnd'
 
-const Column = ({ color, column, tasks }) => {
+const Column = ({ group, progress, tasks }) => {
    return (
-      <Droppable droppableId={column.id}>
+      <Droppable droppableId={group.id + '/' + progress.id}>
          {(provided, snapshot) => (
             <Card
                variant='filled'
-               bg={color}
+               bg={progress.color}
                p={3}
                paddingBottom={1}
-               minW={250}
+               w={250}
                minH={50}
                gap={2}
                boxShadow={snapshot.isDraggingOver ? 'outline' : undefined}
             >
-               {column.title}
-
                <Flex
                   ref={provided.innerRef}
                   {...provided.droppableProps}

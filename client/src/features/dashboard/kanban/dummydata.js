@@ -40,30 +40,30 @@ export default dummyData
 const tasksDummy = [
    {
       id: 'task-1',
-      title: '',
+      title: 'Task 1',
       schedule: { datetime_from: '', datetime_to: '' },
-      content: '',
+      content: 'This is task 1',
       archive: false
    },
    {
       id: 'task-2',
-      title: '',
+      title: 'Task 2',
       schedule: { datetime_from: '', datetime_to: '' },
-      content: '',
+      content: 'This is task 2',
       archive: false
    },
    {
       id: 'task-3',
-      title: '',
+      title: 'Task 3',
       schedule: { datetime_from: '', datetime_to: '' },
-      content: '',
+      content: 'This is task 3',
       archive: false
    },
    {
       id: 'task-4',
-      title: '',
+      title: 'Task 4',
       schedule: { datetime_from: '', datetime_to: '' },
-      content: '',
+      content: 'This is task 4',
       archive: false
    }
 ]
@@ -104,13 +104,13 @@ const pagesDummy = {
       {
          id: 'group1',
          title: 'SCHOOL',
-         color: 'purple.100',
+         color: 'purple.300',
          visibility: true
       },
       {
          id: 'group2',
          title: 'WORK',
-         color: 'blue.100',
+         color: 'blue.300',
          visibility: true
       }
    ],

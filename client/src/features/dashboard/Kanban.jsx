@@ -1,19 +1,20 @@
 import React, { useState } from 'react'
 
 import { DragDropContext } from 'react-beautiful-dnd'
-import { Flex } from '@chakra-ui/react'
+import { Flex, Text, VStack } from '@chakra-ui/react'
 
 // import t from '../../lang/i18n'
 
-import dummyData from './kanban/dummydata'
-import { pagesDummy } from './kanban/dummydata'
+import { pagesDummy, tasksDummy } from './kanban/dummydata'
 
 import Toolbar from './toolbar/Toolbar'
 import Column from './kanban/Column'
 import ProgressHeader from './kanban/ProgressHeader'
+import GroupTitle from '../../components/typography/GroupTitle'
 
 const Kanban = () => {
    const [state, setState] = useState(pagesDummy)
+   const [tasks, setTasks] = useState(tasksDummy)
    const onDragEnd = (result) => {
       const { destination, source, draggableId } = result
       if (!destination) {
@@ -25,82 +26,129 @@ const Kanban = () => {
       ) {
          return
       }
-      const startColumn = state.columns[source.droppableId]
-      const finishColumn = state.columns[destination.droppableId]
+      const [destinationGroup, destinationProgress] =
+         destination.droppableId.split('/')
+      const [sourceGroup, sourceProgress] = source.droppableId.split('/')
+      const startColumn = state.taskMap[sourceGroup][sourceProgress]
+      // const finishColumn = state.taskMap[destinationGroup][destinationProgress]
 
-      if (startColumn === finishColumn) {
+      if (destination.droppableId === source.droppableId) {
          // Moving within the same column
-         const newTaskIds = Array.from(startColumn.taskIds)
+         const newTaskIds = Array.from(startColumn)
          newTaskIds.splice(source.index, 1)
          newTaskIds.splice(destination.index, 0, draggableId)
 
-         const newColumn = {
-            ...startColumn,
-            taskIds: newTaskIds
-         }
-
          const newState = {
             ...state,
-            columns: {
-               ...state.columns,
-               [destination.droppableId]: newColumn
+            taskMap: {
+               ...state.taskMap,
+               [destinationGroup]: {
+                  ...state[destinationGroup],
+                  [destinationProgress]: newTaskIds
+               }
             }
          }
-
          setState(newState)
+         console.log(state)
          return
       }
       // Moving between different columns
-      const startTaskIds = Array.from(startColumn.taskIds)
-      startTaskIds.splice(source.index, 1)
-      const newStartColumn = {
-         ...startColumn,
-         taskIds: startTaskIds
-      }
-      const finishTaskIds = Array.from(finishColumn.taskIds)
+      // const startTaskIds = Array.from(startColumn.taskIds)
+      // startTaskIds.splice(source.index, 1)
+      // const newStartColumn = {
+      //    ...startColumn,
+      //    taskIds: startTaskIds
+      // }
+      // const finishTaskIds = Array.from(finishColumn.taskIds)
 
-      finishTaskIds.splice(destination.index, 0, draggableId)
+      // finishTaskIds.splice(destination.index, 0, draggableId)
 
-      const newFinishColumn = {
-         ...finishColumn,
-         taskIds: finishTaskIds
-      }
+      // const newFinishColumn = {
+      //    ...finishColumn,
+      //    taskIds: finishTaskIds
+      // }
 
-      const newState = {
-         ...state,
-         columns: {
-            ...state.columns,
-            [source.droppableId]: newStartColumn,
-            [destination.droppableId]: newFinishColumn
-         }
-      }
-      setState(newState)
+      // const newState = {
+      //    ...state,
+      //    columns: {
+      //       ...state.columns,
+      //       [source.droppableId]: newStartColumn,
+      //       [destination.droppableId]: newFinishColumn
+      //    }
+      // }
+      // setState(newState)
    }
 
    return (
-      <Flex
-         flexDirection='column'
+      <VStack
          w='fit-content'
          h='fit-content'
          minH='full'
          minW='full'
          alignItems='center'
+         gap={0}
       >
          <Toolbar />
          <DragDropContext
-         // onDragStart={}
-         // onDragUpdate={}
-         // onDragEnd={onDragEnd}
+            // onDragStart={}
+            // onDragUpdate={}
+            onDragEnd={onDragEnd}
          >
-            <Flex gap={5}>
-               {state.progressOrder.map((progress) => {
+            <VStack
+               flexDirection='column'
+               w='fit-content'
+               h='fit-content'
+               minH='full'
+               minW='full'
+               alignItems='center'
+               gap={3}
+            >
+               <Flex gap={3} paddingX={3}>
+                  {state.progressOrder.map((progress) => {
+                     return (
+                        <ProgressHeader key={progress.id} progress={progress} />
+                     )
+                  })}
+               </Flex>
+               {state.groupOrder.map((group) => {
+                  const groupId = group.id
+
                   return (
-                     <ProgressHeader key={progress.id} progress={progress} />
+                     <VStack
+                        key={group.id}
+                        p={3}
+                        borderWidth={2}
+                        borderColor={group.color}
+                        borderRadius={8}
+                        alignItems='flex-start'
+                     >
+                        <GroupTitle color={group.color}>
+                           {group.title}
+                        </GroupTitle>
+                        <Flex gap={3}>
+                           {state.progressOrder.map((progress) => {
+                              const progressId = progress.id
+                              const taskArray = state.taskMap[groupId][
+                                 progressId
+                              ].map((taskId) =>
+                                 tasks.find((task) => task.id === taskId)
+                              )
+                              return (
+                                 <Column
+                                    key={progress.id}
+                                    group={group}
+                                    progress={progress}
+                                    tasks={taskArray}
+                                 />
+                              )
+                           })}
+                        </Flex>
+                     </VStack>
                   )
                })}
-            </Flex>
+            </VStack>
          </DragDropContext>
-      </Flex>
+      </VStack>
    )
 }
 
