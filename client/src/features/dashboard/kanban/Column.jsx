@@ -23,7 +23,7 @@ const Column = ({ group, progress, tasks }) => {
                   flexDirection='column'
                   flexGrow={1}
                >
-                  {tasks.map((task, index) => (
+                  {tasks?.map((task, index) => (
                      <TaskCard
                         key={task.id}
                         scheduled={true}

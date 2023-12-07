@@ -30,7 +30,7 @@ const Kanban = () => {
          destination.droppableId.split('/')
       const [sourceGroup, sourceProgress] = source.droppableId.split('/')
       const startColumn = state.taskMap[sourceGroup][sourceProgress]
-      // const finishColumn = state.taskMap[destinationGroup][destinationProgress]
+      const finishColumn = state.taskMap[destinationGroup][destinationProgress]
 
       if (destination.droppableId === source.droppableId) {
          // Moving within the same column
@@ -43,40 +43,51 @@ const Kanban = () => {
             taskMap: {
                ...state.taskMap,
                [destinationGroup]: {
-                  ...state[destinationGroup],
+                  ...state.taskMap[destinationGroup],
                   [destinationProgress]: newTaskIds
                }
             }
          }
          setState(newState)
-         console.log(state)
          return
       }
-      // Moving between different columns
-      // const startTaskIds = Array.from(startColumn.taskIds)
-      // startTaskIds.splice(source.index, 1)
-      // const newStartColumn = {
-      //    ...startColumn,
-      //    taskIds: startTaskIds
-      // }
-      // const finishTaskIds = Array.from(finishColumn.taskIds)
+      // Moving between different columns, same group
+      const startTaskIds = Array.from(startColumn)
+      startTaskIds.splice(source.index, 1)
+      const finishTaskIds = Array.from(finishColumn)
+      finishTaskIds.splice(destination.index, 0, draggableId)
+      if (sourceGroup === destinationGroup) {
+         const newState = {
+            ...state,
+            taskMap: {
+               ...state.taskMap,
+               [sourceGroup]: {
+                  ...state.taskMap[sourceGroup],
+                  [sourceProgress]: startTaskIds,
+                  [destinationProgress]: finishTaskIds
+               }
+            }
+         }
+         setState(newState)
+         return
+      }
+      // Moving between different columns, different groups
+      const newState = {
+         ...state,
+         taskMap: {
+            ...state.taskMap,
+            [sourceGroup]: {
+               ...state.taskMap[sourceGroup],
+               [sourceProgress]: startTaskIds
+            },
+            [destinationGroup]: {
+               ...state.taskMap[destinationGroup],
+               [destinationProgress]: finishTaskIds
+            }
+         }
+      }
 
-      // finishTaskIds.splice(destination.index, 0, draggableId)
-
-      // const newFinishColumn = {
-      //    ...finishColumn,
-      //    taskIds: finishTaskIds
-      // }
-
-      // const newState = {
-      //    ...state,
-      //    columns: {
-      //       ...state.columns,
-      //       [source.droppableId]: newStartColumn,
-      //       [destination.droppableId]: newFinishColumn
-      //    }
-      // }
-      // setState(newState)
+      setState(newState)
    }
 
    return (
@@ -111,8 +122,6 @@ const Kanban = () => {
                   })}
                </Flex>
                {state.groupOrder.map((group) => {
-                  const groupId = group.id
-
                   return (
                      <VStack
                         key={group.id}
@@ -126,11 +135,12 @@ const Kanban = () => {
                            {group.title}
                         </GroupTitle>
                         <Flex gap={3}>
-                           {state.progressOrder.map((progress) => {
+                           {state.progressOrder?.map((progress) => {
+                              const groupId = group.id
                               const progressId = progress.id
                               const taskArray = state.taskMap[groupId][
                                  progressId
-                              ].map((taskId) =>
+                              ]?.map((taskId) =>
                                  tasks.find((task) => task.id === taskId)
                               )
                               return (
