@@ -37,92 +37,96 @@ const dummyData = {
 
 export default dummyData
 
-// const tasks = [
-//    {
-//       id: 'task-1',
-//       title: '',
-//       schedule: { datetime_from: '', datetime_to: '' },
-//       content: '',
-//       archive: false
-//    },
-//    {
-//       id: 'task-2',
-//       title: '',
-//       schedule: { datetime_from: '', datetime_to: '' },
-//       content: '',
-//       archive: false
-//    },
-//    {
-//       id: 'task-3',
-//       title: '',
-//       schedule: { datetime_from: '', datetime_to: '' },
-//       content: '',
-//       archive: false
-//    },
-//    {
-//       id: 'task-4',
-//       title: '',
-//       schedule: { datetime_from: '', datetime_to: '' },
-//       content: '',
-//       archive: false
-//    }
-// ]
-// const pages = [
-//    {
-//       id: 'page-1',
-//       user: '',
-//       title: '',
-//       sync_accounts: [
-//          {
-//             tool: '',
-//             email: ''
-//          }
-//       ],
-//       progressOrder: [
-//          {
-//             id: 'progress1',
-//             title: 'To do',
-//             color: 'red.100',
-//             visibility: true
-//          },
-//          {
-//             id: 'progress2',
-//             title: 'In progress',
-//             color: 'orange.100',
-//             visibility: true
-//          },
-//          {
-//             id: 'progress3',
-//             title: 'Done',
-//             color: 'green.100',
-//             visibility: true
-//          }
-//       ],
-//       groupOrder: [
-//          {
-//             id: 'group1',
-//             title: 'SCHOOL',
-//             color: 'purple.100',
-//             visibility: true
-//          },
-//          {
-//             id: 'group2',
-//             title: 'WORK',
-//             color: 'blue.100',
-//             visibility: true
-//          }
-//       ],
-//       taskMap: {
-//          'group1': {
-//             'progress1': ['task-1', 'task-2'],
-//             'progress2': [],
-//             'progress3': []
-//          },
-//          'group2': {
-//             'progress1': ['task-3'],
-//             'progress2': ['task-4'],
-//             'progress3': []
-//          }
-//       }
-//    }
-// ]
+const tasksDummy = [
+   {
+      id: 'task-1',
+      title: '',
+      schedule: { datetime_from: '', datetime_to: '' },
+      content: '',
+      archive: false
+   },
+   {
+      id: 'task-2',
+      title: '',
+      schedule: { datetime_from: '', datetime_to: '' },
+      content: '',
+      archive: false
+   },
+   {
+      id: 'task-3',
+      title: '',
+      schedule: { datetime_from: '', datetime_to: '' },
+      content: '',
+      archive: false
+   },
+   {
+      id: 'task-4',
+      title: '',
+      schedule: { datetime_from: '', datetime_to: '' },
+      content: '',
+      archive: false
+   }
+]
+const pagesDummy = {
+   id: 'page-1',
+   user: '',
+   title: '',
+   sync_accounts: [
+      {
+         tool: '',
+         email: ''
+      }
+   ],
+   progressOrder: [
+      {
+         id: 'progress1',
+         title: 'To do',
+         title_color: 'red.700',
+         color: 'red.100',
+         visibility: true
+      },
+      {
+         id: 'progress2',
+         title: 'In progress',
+         title_color: 'orange.700',
+         color: 'orange.100',
+         visibility: true
+      },
+      {
+         id: 'progress3',
+         title: 'Done',
+         title_color: 'green.700',
+         color: 'green.100',
+         visibility: true
+      }
+   ],
+   groupOrder: [
+      {
+         id: 'group1',
+         title: 'SCHOOL',
+         color: 'purple.100',
+         visibility: true
+      },
+      {
+         id: 'group2',
+         title: 'WORK',
+         color: 'blue.100',
+         visibility: true
+      }
+   ],
+   taskMap: {
+      group1: {
+         progress1: ['task-1', 'task-2'],
+         progress2: [],
+         progress3: []
+      },
+      group2: {
+         progress1: ['task-3'],
+         progress2: ['task-4'],
+         progress3: []
+      }
+   }
+}
+
+export { tasksDummy }
+export { pagesDummy }

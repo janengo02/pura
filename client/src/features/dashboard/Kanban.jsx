@@ -6,12 +6,14 @@ import { Flex } from '@chakra-ui/react'
 // import t from '../../lang/i18n'
 
 import dummyData from './kanban/dummydata'
+import { pagesDummy } from './kanban/dummydata'
 
 import Toolbar from './toolbar/Toolbar'
 import Column from './kanban/Column'
+import ProgressHeader from './kanban/ProgressHeader'
 
 const Kanban = () => {
-   const [state, setState] = useState(dummyData)
+   const [state, setState] = useState(pagesDummy)
    const onDragEnd = (result) => {
       const { destination, source, draggableId } = result
       if (!destination) {
@@ -86,23 +88,14 @@ const Kanban = () => {
       >
          <Toolbar />
          <DragDropContext
-            // onDragStart={}
-            // onDragUpdate={}
-            onDragEnd={onDragEnd}
+         // onDragStart={}
+         // onDragUpdate={}
+         // onDragEnd={onDragEnd}
          >
-            <Flex gap={3}>
-               {state.columnOrder.map((column, index) => {
-                  const thisColumn = state.columns[column.id]
-                  const tasks = thisColumn.taskIds.map(
-                     (taskId) => state.tasks[taskId]
-                  )
+            <Flex gap={5}>
+               {state.progressOrder.map((progress) => {
                   return (
-                     <Column
-                        key={column.id}
-                        column={column}
-                        tasks={tasks}
-                        color={column.color}
-                     />
+                     <ProgressHeader key={progress.id} progress={progress} />
                   )
                })}
             </Flex>
