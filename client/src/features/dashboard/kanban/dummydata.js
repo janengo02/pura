@@ -1,42 +1,3 @@
-const dummyData = {
-   tasks: {
-      'task-1': { id: 'task-1', content: 'This is task 1' },
-      'task-2': { id: 'task-2', content: 'This is task 2' },
-      'task-3': { id: 'task-3', content: 'This is task 3' },
-      'task-4': { id: 'task-4', content: 'This is task 4' }
-   },
-   columns: {
-      'column-1': {
-         taskIds: ['task-1', 'task-2', 'task-3', 'task-4']
-      },
-      'column-2': {
-         taskIds: []
-      },
-      'column-3': {
-         taskIds: []
-      }
-   },
-   columnOrder: [
-      {
-         id: 'column-1',
-         title: 'To do',
-         color: 'red.100'
-      },
-      {
-         id: 'column-2',
-         title: 'In progress',
-         color: 'orange.100'
-      },
-      {
-         id: 'column-3',
-         title: 'Done',
-         color: 'green.100'
-      }
-   ]
-}
-
-export default dummyData
-
 const tasksDummy = [
    {
       id: 'task-1',
@@ -77,7 +38,7 @@ const pagesDummy = {
          email: ''
       }
    ],
-   progressOrder: [
+   progress_order: [
       {
          id: 'progress1',
          title: 'To do',

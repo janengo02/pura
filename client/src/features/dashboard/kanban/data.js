@@ -75,62 +75,6 @@ const pagesDummy = {
          visibility: true
       }
    ],
-   taskMap: [
-      {
-         group: {
-            id: 'group1'
-         },
-         progress: {
-            id: 'progress1'
-         },
-         tasks: [{ id: 'task-1' }, { id: 'task-2' }]
-      },
-      {
-         group: {
-            id: 'group1'
-         },
-         progress: {
-            id: 'progress2'
-         },
-         tasks: []
-      },
-      {
-         group: {
-            id: 'group1'
-         },
-         progress: {
-            id: 'progress3'
-         },
-         tasks: []
-      },
-      {
-         group: {
-            id: 'group2'
-         },
-         progress: {
-            id: 'progress1'
-         },
-         tasks: [{ id: 'task-3' }]
-      },
-      {
-         group: {
-            id: 'group2'
-         },
-         progress: {
-            id: 'progress3'
-         },
-         tasks: [{ id: 'task-4' }]
-      },
-      {
-         group: {
-            id: 'group2'
-         },
-         progress: {
-            id: 'progress3'
-         },
-         tasks: []
-      }
-   ]
 }
 
 export { tasksDummy }

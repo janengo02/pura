@@ -115,7 +115,7 @@ const Kanban = () => {
                gap={3}
             >
                <Flex gap={3} paddingX={3}>
-                  {state.progressOrder.map((progress) => {
+                  {state.progress_order.map((progress) => {
                      return (
                         <ProgressHeader key={progress.id} progress={progress} />
                      )
@@ -135,7 +135,7 @@ const Kanban = () => {
                            {group.title}
                         </GroupTitle>
                         <Flex gap={3}>
-                           {state.progressOrder?.map((progress) => {
+                           {state.progress_order?.map((progress) => {
                               const groupId = group.id
                               const progressId = progress.id
                               const taskArray = state.taskMap[groupId][
