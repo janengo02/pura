@@ -1,3 +1,5 @@
 {
-  "cSpell.words": ["Chakra", "helpertext", "Kanban"]
+   "cSpell.words": ["Chakra", "helpertext", "Kanban"],
+   "editor.defaultFormatter": "esbenp.prettier-vscode",
+   "editor.formatOnSave": true
 }

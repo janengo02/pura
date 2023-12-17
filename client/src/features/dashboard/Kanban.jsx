@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 
 import { DragDropContext } from 'react-beautiful-dnd'
-import { Flex, Text, VStack } from '@chakra-ui/react'
+import { Flex, VStack } from '@chakra-ui/react'
 
 // import t from '../../lang/i18n'
 
-import { pagesDummy, tasksDummy } from './kanban/dummydata'
+import { page } from './kanban/data'
 
 import Toolbar from './toolbar/Toolbar'
 import Column from './kanban/Column'
@@ -13,8 +13,7 @@ import ProgressHeader from './kanban/ProgressHeader'
 import GroupTitle from '../../components/typography/GroupTitle'
 
 const Kanban = () => {
-   const [state, setState] = useState(pagesDummy)
-   const [tasks, setTasks] = useState(tasksDummy)
+   const [state, setState] = useState(page)
    const onDragEnd = (result) => {
       const { destination, source, draggableId } = result
       if (!destination) {
@@ -29,64 +28,36 @@ const Kanban = () => {
       const [destinationGroup, destinationProgress] =
          destination.droppableId.split('/')
       const [sourceGroup, sourceProgress] = source.droppableId.split('/')
-      const startColumn = state.taskMap[sourceGroup][sourceProgress]
-      const finishColumn = state.taskMap[destinationGroup][destinationProgress]
+      const startColumnIndex = state.task_map.findIndex(column=>column.group._id===sourceGroup && column.progress._id===sourceProgress)
+      const finishColumnIndex = state.task_map.findIndex(column=>column.group._id===destinationGroup && column.progress._id===destinationProgress)
+      const startColumn=state.task_map[startColumnIndex].tasks
+      const finishColumn=state.task_map[finishColumnIndex].tasks
+      const draggedTask = startColumn.find(task=>task._id===draggableId)
 
       if (destination.droppableId === source.droppableId) {
          // Moving within the same column
-         const newTaskIds = Array.from(startColumn)
-         newTaskIds.splice(source.index, 1)
-         newTaskIds.splice(destination.index, 0, draggableId)
+         const newTaskArray = Array.from(startColumn)
+         newTaskArray.splice(source.index, 1)
+         newTaskArray.splice(destination.index, 0, draggedTask)
 
          const newState = {
             ...state,
-            taskMap: {
-               ...state.taskMap,
-               [destinationGroup]: {
-                  ...state.taskMap[destinationGroup],
-                  [destinationProgress]: newTaskIds
-               }
-            }
          }
+         newState.task_map[finishColumnIndex].tasks=newTaskArray
          setState(newState)
          return
       }
-      // Moving between different columns, same group
-      const startTaskIds = Array.from(startColumn)
-      startTaskIds.splice(source.index, 1)
-      const finishTaskIds = Array.from(finishColumn)
-      finishTaskIds.splice(destination.index, 0, draggableId)
-      if (sourceGroup === destinationGroup) {
-         const newState = {
-            ...state,
-            taskMap: {
-               ...state.taskMap,
-               [sourceGroup]: {
-                  ...state.taskMap[sourceGroup],
-                  [sourceProgress]: startTaskIds,
-                  [destinationProgress]: finishTaskIds
-               }
-            }
-         }
-         setState(newState)
-         return
-      }
-      // Moving between different columns, different groups
+      // Moving between different columns
+      const startTaskArray = Array.from(startColumn)
+      startTaskArray.splice(source.index, 1)
+      const finishTaskArray = Array.from(finishColumn)
+      finishTaskArray.splice(destination.index, 0, draggedTask)
+
       const newState = {
          ...state,
-         taskMap: {
-            ...state.taskMap,
-            [sourceGroup]: {
-               ...state.taskMap[sourceGroup],
-               [sourceProgress]: startTaskIds
-            },
-            [destinationGroup]: {
-               ...state.taskMap[destinationGroup],
-               [destinationProgress]: finishTaskIds
-            }
-         }
       }
-
+      newState.task_map[startColumnIndex].tasks=startTaskArray
+      newState.task_map[finishColumnIndex].tasks=finishTaskArray
       setState(newState)
    }
 
@@ -117,14 +88,14 @@ const Kanban = () => {
                <Flex gap={3} paddingX={3}>
                   {state.progress_order.map((progress) => {
                      return (
-                        <ProgressHeader key={progress.id} progress={progress} />
+                        <ProgressHeader key={progress._id} progress={progress} />
                      )
                   })}
                </Flex>
-               {state.groupOrder.map((group) => {
+               {state.group_order.map((group) => {
                   return (
                      <VStack
-                        key={group.id}
+                        key={group._id}
                         p={3}
                         borderWidth={2}
                         borderColor={group.color}
@@ -136,16 +107,11 @@ const Kanban = () => {
                         </GroupTitle>
                         <Flex gap={3}>
                            {state.progress_order?.map((progress) => {
-                              const groupId = group.id
-                              const progressId = progress.id
-                              const taskArray = state.taskMap[groupId][
-                                 progressId
-                              ]?.map((taskId) =>
-                                 tasks.find((task) => task.id === taskId)
-                              )
+                              const targetColumn= state.task_map.filter(column =>column.group._id===group._id && column.progress._id===progress._id)
+                              const taskArray = targetColumn[0].tasks
                               return (
                                  <Column
-                                    key={progress.id}
+                                    key={progress._id}
                                     group={group}
                                     progress={progress}
                                     tasks={taskArray}

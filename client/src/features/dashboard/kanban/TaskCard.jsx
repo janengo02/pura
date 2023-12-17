@@ -2,9 +2,9 @@ import { Card, Text } from '@chakra-ui/react'
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 
-const TaskCard = ({ scheduled, task, index }) => {
+const TaskCard = ({ task, index }) => {
    return (
-      <Draggable draggableId={task.id} index={index}>
+      <Draggable draggableId={task._id} index={index}>
          {(provided, snapshot) => (
             <Card
                {...provided.draggableProps}
@@ -16,13 +16,17 @@ const TaskCard = ({ scheduled, task, index }) => {
                w='full'
                marginBottom={2}
             >
-               {scheduled && (
+               {task.schedule.length>0 ? (
                   <Text fontSize='xs' color='gray.500'>
                      Scheduled
                   </Text>
+               ) : (
+                  <Text fontSize='xs' color='red.500'>
+                     Not scheduled
+                  </Text>
                )}
                <Text color='gray.600' fontWeight={600}>
-                  {task.content}
+                  {task.title}
                </Text>
             </Card>
          )}

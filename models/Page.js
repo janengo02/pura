@@ -22,36 +22,34 @@ const PageSchema = new mongoose.Schema({
    ],
    progress_order: [
       {
-         progress: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'progress', //refer to the 'progress' model
-            required: true
-         }
+         type: mongoose.Schema.Types.ObjectId,
+         ref: 'progress' //refer to the 'progress' model
       }
    ],
-   group_order: [
-      {
-         group: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'progress', //refer to the 'group' model
-            required: true
-         }
-      }
-   ],
-   taskMap: [
-      {
-         group: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'progress', //refer to the 'group' model
-            required: true
-         },
-         progress: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'progress', //refer to the 'progress' model
-            required: true
-         },
-      }
-   ],
+   // group_order: [
+   //    {
+   //       type: mongoose.Schema.Types.ObjectId,
+   //       ref: 'progress' //refer to the 'group' model
+   //    }
+   // ],
+   // task_map: [
+   //    {
+   //       group: {
+   //          type: mongoose.Schema.Types.ObjectId,
+   //          ref: 'progress' //refer to the 'progress' model
+   //       },
+   //       progress: {
+   //          type: mongoose.Schema.Types.ObjectId,
+   //          ref: 'progress' //refer to the 'group' model
+   //       },
+   //       tasks: [
+   //          {
+   //             type: mongoose.Schema.Types.ObjectId,
+   //             ref: 'task' //refer to the 'task' model
+   //          }
+   //       ]
+   //    }
+   // ],
    create_date: {
       type: Date,
       default: Date.now

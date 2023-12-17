@@ -5,7 +5,7 @@ import { Droppable } from 'react-beautiful-dnd'
 
 const Column = ({ group, progress, tasks }) => {
    return (
-      <Droppable droppableId={group.id + '/' + progress.id}>
+      <Droppable droppableId={group._id + '/' + progress._id}>
          {(provided, snapshot) => (
             <Card
                variant='filled'
@@ -25,8 +25,7 @@ const Column = ({ group, progress, tasks }) => {
                >
                   {tasks?.map((task, index) => (
                      <TaskCard
-                        key={task.id}
-                        scheduled={true}
+                        key={task._id}
                         task={task}
                         index={index}
                      />
