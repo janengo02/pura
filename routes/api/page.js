@@ -7,6 +7,7 @@ const Page = require('../../models/Page')
 const User = require('../../models/User')
 const Group = require('../../models/Group')
 const Progress = require('../../models/Progress')
+const Task = require('../../models/Task')
 
 // @route   GET api/page/:id
 // @desc    Get page by page id
@@ -29,7 +30,6 @@ router.get('/:id', auth, async (req, res) => {
       if (page.user.toString() !== req.user.id) {
          return res.status(401).json({ msg: 'User not authorized' })
       }
-      //    TDOD
       res.json(page)
    } catch (err) {
       console.error(err.message)
@@ -41,74 +41,41 @@ router.get('/:id', auth, async (req, res) => {
 })
 
 // @route   POST api/page
-// @desc    Create or update a page
-// @access  Private (need Token)
+// @desc    Create a page
+// @access  Private
 router.post(
    '/',
    [
       auth,
-      check('title', 'Title is required').not().isEmpty(),
-      check('skills', 'Skills are required').not().isEmpty()
+      check('title', 'Title cannot be longer than 255 characters').isLength({
+         max: 255
+      })
    ],
    async (req, res) => {
       const result = validationResult(req)
       if (!result.isEmpty()) {
          return res.status(400).json({ errors: result.array() })
       }
-      const {
-         company,
-         website,
-         location,
-         bio,
-         status,
-         githubusername,
-         skills,
-         youtube,
-         twitter,
-         facebook,
-         linkedin,
-         instagram
-      } = req.body
-
-      //Build profile object
-      const profileFields = {}
-      profileFields.user = req.user.id
-      if (company) profileFields.company = company
-      if (website) profileFields.website = website
-      if (location) profileFields.location = location
-      if (bio) profileFields.bio = bio
-      if (status) profileFields.status = status
-      if (githubusername) profileFields.githubusername = githubusername
-      if (skills) {
-         profileFields.skills = skills.split(',').map((skill) => skill.trim())
-      }
-      //   Build social object
-      profileFields.social = {}
-      if (youtube) profileFields.social.youtube = youtube
-      if (twitter) profileFields.social.twitter = twitter
-      if (facebook) profileFields.social.facebook = facebook
-      if (linkedin) profileFields.social.linkedin = linkedin
-      if (instagram) profileFields.social.instagram = instagram
-
       try {
-         let profile = await Profile.findOne({ user: req.user.id })
-         if (profile) {
-            // Update
-            profile = await Profile.findOneAndUpdate(
-               { user: req.user.id },
-               { $set: profileFields },
-               { new: true }
-            )
-            return res.json(profile)
+         const newPage = {
+            user: req.user.id,
+            sync_accounts: [],
+            progress_order: [],
+            group_order: [],
+            task_map: [],
+            tasks: []
          }
-
-         //  Create
-         profile = new Profile(profileFields)
-         await profile.save()
-         return res.json(profile)
-      } catch (err) {
-         console.error(err.message)
-         res.status(500).send('Server error')
+         if (req.body.title) {
+            newPage.title = req.body.title
+         }
+         page = new Page(newPage)
+         await page.save()
+         res.json(page)
+      } catch (error) {
+         console.error('---ERROR---: ' + error.message)
+         res.status(500).send('Server Error')
       }
    }
 )
+
+module.exports = router
