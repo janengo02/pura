@@ -3,17 +3,15 @@ const mongoose = require('mongoose')
 const GroupSchema = new mongoose.Schema({
    title: {
       type: String,
-      default: 'Untitled',
-      required: true
+      default: 'Untitled'
    },
    color: {
       type: String,
-      required: true
+      default: '#63b3ed'
    },
    visibility: {
       type: Boolean,
-      default: true,
-      required: true
+      default: true
    },
    create_date: {
       type: Date,

@@ -8,7 +8,7 @@ const PageSchema = new mongoose.Schema({
    },
    title: {
       type: String,
-      required: true
+      default: 'Untitled'
    },
    sync_accounts: [
       {
@@ -29,7 +29,7 @@ const PageSchema = new mongoose.Schema({
    group_order: [
       {
          type: mongoose.Schema.Types.ObjectId,
-         ref: 'progress' //refer to the 'group' model
+         ref: 'group' //refer to the 'group' model
       }
    ],
    task_map: {

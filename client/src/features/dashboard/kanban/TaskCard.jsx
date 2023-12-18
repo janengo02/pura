@@ -3,7 +3,6 @@ import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 
 const TaskCard = ({ task, draggableId, index }) => {
-   console.log(draggableId)
    return (
       <Draggable draggableId={draggableId} index={index}>
          {(provided, snapshot) => (

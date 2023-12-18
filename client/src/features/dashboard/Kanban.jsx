@@ -69,8 +69,6 @@ const Kanban = () => {
       }
       setState(newState)
    }
-   console.log(state)
-
    return (
       <VStack
          w='fit-content'

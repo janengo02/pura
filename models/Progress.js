@@ -3,21 +3,19 @@ const mongoose = require('mongoose')
 const ProgressSchema = new mongoose.Schema({
    title: {
       type: String,
-      default: 'Untitled',
-      required: true
+      default: 'Untitled'
    },
    title_color: {
       type: String,
-      required: true
+      default: '#4A5568'
    },
    color: {
       type: String,
-      required: true
+      default: '#F7FAFC'
    },
    visibility: {
       type: Boolean,
-      default: true,
-      required: true
+      default: true
    },
    create_date: {
       type: Date,
