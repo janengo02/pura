@@ -25,41 +25,51 @@ const Kanban = () => {
       ) {
          return
       }
-      const [destinationGroup, destinationProgress] =
-         destination.droppableId.split('/')
-      const [sourceGroup, sourceProgress] = source.droppableId.split('/')
-      const startColumnIndex = state.task_map.findIndex(column=>column.group._id===sourceGroup && column.progress._id===sourceProgress)
-      const finishColumnIndex = state.task_map.findIndex(column=>column.group._id===destinationGroup && column.progress._id===destinationProgress)
-      const startColumn=state.task_map[startColumnIndex].tasks
-      const finishColumn=state.task_map[finishColumnIndex].tasks
-      const draggedTask = startColumn.find(task=>task._id===draggableId)
+      const startSpace = +source.droppableId
+      const endSpace = +destination.droppableId
 
-      if (destination.droppableId === source.droppableId) {
-         // Moving within the same column
-         const newTaskArray = Array.from(startColumn)
-         newTaskArray.splice(source.index, 1)
-         newTaskArray.splice(destination.index, 0, draggedTask)
+      const oldTaskId = +draggableId
+      const targetTask = state.tasks[oldTaskId]
+      var newTaskId = destination.index
+      if (endSpace !== 0) {
+         newTaskId += state.task_map[endSpace - 1]
+      }
+      if (endSpace > startSpace) {
+         newTaskId--
+      }
 
+      const newTaskArray = Array.from(state.tasks)
+      const newTaskMap = Array.from(state.task_map)
+
+      newTaskArray.splice(oldTaskId, 1)
+      newTaskArray.splice(newTaskId, 0, targetTask)
+      // Moving within the same column
+      if (startSpace === endSpace) {
          const newState = {
             ...state,
+            tasks: newTaskArray
          }
-         newState.task_map[finishColumnIndex].tasks=newTaskArray
          setState(newState)
          return
       }
       // Moving between different columns
-      const startTaskArray = Array.from(startColumn)
-      startTaskArray.splice(source.index, 1)
-      const finishTaskArray = Array.from(finishColumn)
-      finishTaskArray.splice(destination.index, 0, draggedTask)
-
+      if (endSpace < startSpace) {
+         for (let i = endSpace; i < startSpace; i++) {
+            newTaskMap[i]++
+         }
+      } else {
+         for (let i = startSpace; i < endSpace; i++) {
+            newTaskMap[i]--
+         }
+      }
       const newState = {
          ...state,
+         task_map: newTaskMap,
+         tasks: newTaskArray
       }
-      newState.task_map[startColumnIndex].tasks=startTaskArray
-      newState.task_map[finishColumnIndex].tasks=finishTaskArray
       setState(newState)
    }
+   console.log(state)
 
    return (
       <VStack
@@ -88,11 +98,14 @@ const Kanban = () => {
                <Flex gap={3} paddingX={3}>
                   {state.progress_order.map((progress) => {
                      return (
-                        <ProgressHeader key={progress._id} progress={progress} />
+                        <ProgressHeader
+                           key={progress._id}
+                           progress={progress}
+                        />
                      )
                   })}
                </Flex>
-               {state.group_order.map((group) => {
+               {state.group_order.map((group, i_group) => {
                   return (
                      <VStack
                         key={group._id}
@@ -106,18 +119,37 @@ const Kanban = () => {
                            {group.title}
                         </GroupTitle>
                         <Flex gap={3}>
-                           {state.progress_order?.map((progress) => {
-                              const targetColumn= state.task_map.filter(column =>column.group._id===group._id && column.progress._id===progress._id)
-                              const taskArray = targetColumn[0].tasks
-                              return (
-                                 <Column
-                                    key={progress._id}
-                                    group={group}
-                                    progress={progress}
-                                    tasks={taskArray}
-                                 />
-                              )
-                           })}
+                           {state.progress_order?.map(
+                              (progress, i_progress) => {
+                                 const i_task_map =
+                                    i_group * state.progress_order.length +
+                                    i_progress
+                                 var taskArray = []
+                                 if (i_task_map === 0) {
+                                    taskArray = state.tasks.slice(
+                                       0,
+                                       state.task_map[0]
+                                    )
+                                 } else {
+                                    taskArray = state.tasks.slice(
+                                       state.task_map[i_task_map - 1],
+                                       state.task_map[i_task_map]
+                                    )
+                                 }
+                                 return (
+                                    <Column
+                                       key={i_task_map} //has to match droppableId
+                                       droppableId={i_task_map.toString()}
+                                       taskPointer={
+                                          state.task_map[i_task_map] -
+                                          taskArray.length
+                                       }
+                                       progress={progress}
+                                       tasks={taskArray}
+                                    />
+                                 )
+                              }
+                           )}
                         </Flex>
                      </VStack>
                   )

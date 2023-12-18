@@ -45,60 +45,28 @@ const page = {
          visibility: true
       }
    ],
-   task_map: [
+   task_map: [2, 2, 2, 3, 4, 4],
+   tasks: [
       {
-         group:{_id:'group1'},
-         progress:{_id:'progress1'},
-         tasks:[
-            {
-               _id: 'task-1',
-               title: 'Task 1',
-               schedule: [],
-            },
-            {
-               _id: 'task-2',
-               title: 'Task 2',
-               schedule: [],
-            },
-         ],
+         _id: 'task-1',
+         title: 'Task 1',
+         schedule: []
       },
       {
-         group:{_id:'group1'},
-         progress:{_id:'progress2'},
-         tasks:[]
+         _id: 'task-2',
+         title: 'Task 2',
+         schedule: []
       },
       {
-         group:{_id:'group1'},
-         progress:{_id:'progress3'},
-         tasks:[]
+         _id: 'task-3',
+         title: 'Task 3',
+         schedule: []
       },
       {
-         group:{_id:'group2'},
-         progress:{_id:'progress1'},
-         tasks:[
-            {
-               _id: 'task-3',
-               title: 'Task 3',
-               schedule: [],
-            },
-         ],
-      },
-      {
-         group:{_id:'group2'},
-         progress:{_id:'progress2'},
-         tasks:[
-            {
-               _id: 'task-4',
-               title: 'Task 4',
-               schedule: [],
-            }
-         ],
-      },
-      {
-         group:{_id:'group2'},
-         progress:{_id:'progress3'},
-         tasks:[],
-      },
+         _id: 'task-4',
+         title: 'Task 4',
+         schedule: []
+      }
    ]
 }
 

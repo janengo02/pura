@@ -3,9 +3,9 @@ import { Card, Flex } from '@chakra-ui/react'
 import TaskCard from './TaskCard'
 import { Droppable } from 'react-beautiful-dnd'
 
-const Column = ({ group, progress, tasks }) => {
+const Column = ({ droppableId, taskPointer, progress, tasks }) => {
    return (
-      <Droppable droppableId={group._id + '/' + progress._id}>
+      <Droppable droppableId={droppableId}>
          {(provided, snapshot) => (
             <Card
                variant='filled'
@@ -23,11 +23,12 @@ const Column = ({ group, progress, tasks }) => {
                   flexDirection='column'
                   flexGrow={1}
                >
-                  {tasks?.map((task, index) => (
+                  {tasks?.map((task, i_task) => (
                      <TaskCard
-                        key={task._id}
+                        key={taskPointer + i_task} //has to match draggableId
                         task={task}
-                        index={index}
+                        draggableId={(taskPointer + i_task).toString()}
+                        index={i_task}
                      />
                   ))}
                   {provided.placeholder}
