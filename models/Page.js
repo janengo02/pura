@@ -32,9 +32,11 @@ const PageSchema = new mongoose.Schema({
          ref: 'group' //refer to the 'group' model
       }
    ],
-   task_map: {
-      type: [Number]
-   },
+   task_map: [
+      {
+         type: Number
+      }
+   ],
    tasks: [
       {
          type: mongoose.Schema.Types.ObjectId,

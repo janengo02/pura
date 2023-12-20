@@ -18,35 +18,44 @@ router.post(
       })
    ],
    async (req, res) => {
-      // Check if page exists and the user is the owner of the page
+      //   Validation: Check if page exists
       const page = await Page.findById(req.params.page_id)
       if (!page) {
          return res.status(404).json({ msg: 'Page not found' })
       }
+
+      //   Validation: Check if user is the owner
       if (page.user.toString() !== req.user.id) {
          return res.status(401).json({ msg: 'User not authorized' })
       }
-      // Validation
+
+      //   Validation: Form input
       const result = validationResult(req)
       if (!result.isEmpty()) {
          return res.status(400).json({ errors: result.array() })
       }
-      //   Create new group
+
+      //   Prepare: Set up new group
       const { title, color } = req.body
       const newGroup = {}
       if (title) newGroup.title = title
       if (color) newGroup.color = color
-      //   Update taskmap
-      const newGroupMap = Array(page.group_order.length).fill(0)
+
+      //   Prepare: Set up new task_map
+      var newTaskMap = page.task_map
+      for (let i = 1; i <= page.progress_order.length; i++) {
+         newTaskMap.push(0)
+      }
 
       try {
+         // Data: Add new group
          const group = new Group(newGroup)
          await group.save()
 
+         // Data: Add new group to page
          const newPage = await Page.findOneAndUpdate(
             { _id: req.params.page_id },
             {
-               $push: { task_map: newGroupMap },
                $push: { group_order: group },
                $set: { update_date: new Date() }
             },
@@ -60,6 +69,11 @@ router.post(
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
             .populate('tasks', ['title', 'schedule'])
+
+         // Data: Update page's task_map
+         newPage.task_map = newTaskMap
+         newPage.save()
+
          res.json(newPage)
       } catch (error) {
          console.error('---ERROR---: ' + error.message)

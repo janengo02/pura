@@ -52,24 +52,29 @@ router.post(
       })
    ],
    async (req, res) => {
+      //   Validation: Form input
       const result = validationResult(req)
       if (!result.isEmpty()) {
          return res.status(400).json({ errors: result.array() })
       }
+
+      //   Prepare: Set up new page
+      const newPage = {
+         user: req.user.id,
+         sync_accounts: [],
+         progress_order: [],
+         group_order: [],
+         task_map: [],
+         tasks: []
+      }
+      if (req.body.title) {
+         newPage.title = req.body.title
+      }
       try {
-         const newPage = {
-            user: req.user.id,
-            sync_accounts: [],
-            progress_order: [],
-            group_order: [],
-            task_map: [],
-            tasks: []
-         }
-         if (req.body.title) {
-            newPage.title = req.body.title
-         }
+         // Data: Add new page
          page = new Page(newPage)
          await page.save()
+
          res.json(page)
       } catch (error) {
          console.error('---ERROR---: ' + error.message)
