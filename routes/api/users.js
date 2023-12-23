@@ -31,11 +31,9 @@ router.post(
          // Check if user exists
          let user = await User.findOne({ email })
          if (user) {
-            return res
-               .status(400)
-               .json({
-                  errors: [{ title: 'alert-oops', msg: 'alert-user-exists' }]
-               })
+            return res.status(400).json({
+               errors: [{ title: 'alert-oops', msg: 'alert-user-exists' }]
+            })
          }
 
          // Get user gravatar
@@ -58,7 +56,7 @@ router.post(
 
          await user.save()
 
-         // Returm json web token
+         // Return json web token
          const payload = {
             user: {
                id: user.id

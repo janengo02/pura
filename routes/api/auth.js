@@ -54,7 +54,7 @@ router.post(
             })
          }
 
-         // Returm json web token
+         // Return json web token
          const payload = {
             user: {
                id: user.id
