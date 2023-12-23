@@ -9,6 +9,33 @@ const Group = require('../../models/Group')
 const Progress = require('../../models/Progress')
 const Task = require('../../models/Task')
 
+// @route   GET api/page/user/:user_id
+// @desc    Get the first page of the user (temporary)
+// @access  Private
+router.get('/user/:user_id', auth, async (req, res) => {
+   try {
+      const page = await Page.findOne({ user: req.params.user_id })
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'schedule'])
+      if (!page) {
+         return res.status(404).json({ msg: 'User has no page' })
+      }
+      res.json(page)
+   } catch (err) {
+      console.error(err.message)
+      if (err.kind === 'ObjectId') {
+         return res.status(404).json({ msg: 'Page not found' })
+      }
+      res.status(500).send('Server Error')
+   }
+})
+
 // @route   GET api/page/:id
 // @desc    Get page by page id
 // @access  Private
