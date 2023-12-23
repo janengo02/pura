@@ -1,7 +1,9 @@
 import React from 'react'
-import { Card, Flex } from '@chakra-ui/react'
+import { Button, Card, Flex } from '@chakra-ui/react'
 import TaskCard from './TaskCard'
 import { Droppable } from 'react-beautiful-dnd'
+import { PiPlus } from 'react-icons/pi'
+import t from '../../../lang/i18n'
 
 const Column = ({ droppableId, taskPointer, progress, tasks }) => {
    return (
@@ -10,10 +12,8 @@ const Column = ({ droppableId, taskPointer, progress, tasks }) => {
             <Card
                variant='filled'
                bg={progress.color}
-               p={3}
-               paddingBottom={1}
+               p={2}
                w={250}
-               minH={50}
                gap={2}
                boxShadow={snapshot.isDraggingOver ? 'outline' : undefined}
             >
@@ -32,6 +32,15 @@ const Column = ({ droppableId, taskPointer, progress, tasks }) => {
                      />
                   ))}
                   {provided.placeholder}
+                  <Button
+                     size='sm'
+                     opacity={0.3}
+                     variant='ghost'
+                     justifyContent='flex-start'
+                     leftIcon={<PiPlus />}
+                  >
+                     {t('btn-new')}
+                  </Button>
                </Flex>
             </Card>
          )}

@@ -14,7 +14,7 @@ const TaskCard = ({ task, draggableId, index }) => {
                boxShadow={snapshot.isDragging ? 'md' : undefined}
                p={2}
                w='full'
-               marginBottom={2}
+               marginBottom={1}
             >
                {task.schedule.length > 0 ? (
                   <Text fontSize='xs' color='gray.500'>

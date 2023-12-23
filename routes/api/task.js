@@ -1,0 +1,100 @@
+const express = require('express')
+const router = express.Router()
+const auth = require('../../middleware/auth')
+const { check, validationResult } = require('express-validator')
+
+const Page = require('../../models/Page')
+const Progress = require('../../models/Progress')
+const Group = require('../../models/Group')
+
+// @route   POST api/task/:page-id
+// @desc    Create a new task
+// @access  Private
+router.post(
+   '/:page_id',
+   [
+      auth,
+      check('group_id', 'Group is required').not().isEmpty(),
+      check('progress_id', 'Progress is required').not().isEmpty(),
+      check('title', 'Title cannot be longer than 255 characters').isLength({
+         max: 255
+      })
+   ],
+   async (req, res) => {
+      //   Validation: Check if page exists
+      const page = await Page.findById(req.params.page_id)
+      if (!page) {
+         return res.status(404).json({ msg: 'Page not found' })
+      }
+      //   Validation: Check if user is the owner
+      if (page.user.toString() !== req.user.id) {
+         return res.status(401).json({ msg: 'User not authorized' })
+      }
+      //   Validation: Form input
+      const result = validationResult(req)
+      if (!result.isEmpty()) {
+         return res.status(400).json({ errors: result.array() })
+      }
+      //   Prepare: Set up new task
+      const { group_id, progress_id, title, schedule, content } = req.body
+      const newTask = {}
+      if (title) newTask.title = title
+      if (schedule) newTask.schedule = schedule
+      if (content) newTask.content = content
+
+      //   Prepare: Set up new task_map
+      const groupId = page.group_order.indexOf(group_id)
+      const progressId = page.progress_order.indexOf(progress_id)
+      //   Validation: Check if user is the owner
+      if (groupId === -1 || progressId === -1) {
+         return res
+            .status(404)
+            .json({ msg: 'Cannot identify group or progress' })
+      }
+      const taskMapIndex = groupId * page.progress_order.length + progressId
+      var newTaskMap = page.task_map
+      for (let i = taskMapIndex; i < newTaskMap.length; i++) {
+         newTaskMap[i]++
+      }
+
+      try {
+         // Data: Add new task
+         const task = new Task(newTask)
+         await task.save()
+
+         // Data: Add new progress to page
+         const newPage = await Page.findOneAndUpdate(
+            { _id: req.params.page_id },
+            {
+               $push: {
+                  tasks: {
+                     $each: [task],
+                     $position: newTaskMap[taskMapIndex] - 1
+                  }
+               },
+               $set: { update_date: new Date() }
+            },
+            { new: true }
+         )
+            .populate('progress_order', [
+               'title',
+               'title_color',
+               'color',
+               'visibility'
+            ])
+            .populate('group_order', ['title', 'color', 'visibility'])
+            .populate('tasks', ['title', 'schedule'])
+
+         // Data: Update page's task_map
+         newPage.task_map = newTaskMap
+         newPage.save()
+
+         res.json(newPage)
+      } catch (error) {
+         console.error('---ERROR---: ' + error.message)
+         res.status(500).send('Server Error')
+      }
+   }
+)
+
+module.exports = router

@@ -16,7 +16,7 @@ app.use('/api/auth', require('./routes/api/auth'))
 app.use('/api/page', require('./routes/api/page'))
 app.use('/api/group', require('./routes/api/group'))
 app.use('/api/progress', require('./routes/api/progress'))
-// app.use("/api/task", require("./routes/api/task"))
+app.use('/api/task', require('./routes/api/task'))
 
 app.get('/', (req, res) => res.send('API Runinng'))
 
