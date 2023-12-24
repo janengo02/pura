@@ -5,20 +5,23 @@ import { connect } from 'react-redux'
 import { Spinner } from '@chakra-ui/react'
 
 const PrivateRoute = ({
+   isLoading,
    component: Component,
-   auth: { isAuthenticated, loading }
+   auth: { isAuthenticated }
 }) => {
-   if (loading) return <Spinner />
-   if (isAuthenticated) return <Component />
+   if (isLoading) return <Spinner />
+   if (!isLoading && isAuthenticated) return <Component />
 
    return <Navigate to='/login' />
 }
 
 PrivateRoute.propTypes = {
+   isLoading: PropTypes.bool.isRequired,
    auth: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
+   isLoading: state.loading,
    auth: state.auth
 })
 

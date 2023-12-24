@@ -1,161 +1,200 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
+
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import { getFirstPage } from '../../actions/page'
 
 import { DragDropContext } from 'react-beautiful-dnd'
-import { Flex, VStack } from '@chakra-ui/react'
+import { Button, Flex, Skeleton, Text, VStack } from '@chakra-ui/react'
 
-// import t from '../../lang/i18n'
-
-import { page } from './kanban/data'
+import t from '../../lang/i18n'
 
 import Toolbar from './toolbar/Toolbar'
 import Column from './kanban/Column'
 import ProgressHeader from './kanban/ProgressHeader'
 import GroupTitle from '../../components/typography/GroupTitle'
+import { PiPlus } from 'react-icons/pi'
 
-const Kanban = () => {
-   const [state, setState] = useState(page)
-   const onDragEnd = (result) => {
-      const { destination, source, draggableId } = result
-      if (!destination) {
-         return
-      }
-      if (
-         destination.droppableId === source.droppableId &&
-         destination.index === source.index
-      ) {
-         return
-      }
-      const startSpace = +source.droppableId
-      const endSpace = +destination.droppableId
+// import { page } from './kanban/data'
 
-      const oldTaskId = +draggableId
-      const targetTask = state.tasks[oldTaskId]
-      var newTaskId = destination.index
-      if (endSpace !== 0) {
-         newTaskId += state.task_map[endSpace - 1]
-      }
-      if (endSpace > startSpace) {
-         newTaskId--
-      }
+const Kanban = ({ getFirstPage, auth: { user }, page: { page, loading } }) => {
+   useEffect(() => {
+      getFirstPage()
+   }, [getFirstPage])
+   // const onDragEnd = (result) => {
+   //    const { destination, source, draggableId } = result
+   //    if (!destination) {
+   //       return
+   //    }
+   //    if (
+   //       destination.droppableId === source.droppableId &&
+   //       destination.index === source.index
+   //    ) {
+   //       return
+   //    }
+   //    const startSpace = +source.droppableId
+   //    const endSpace = +destination.droppableId
 
-      const newTaskArray = Array.from(state.tasks)
-      const newTaskMap = Array.from(state.task_map)
+   //    const oldTaskId = +draggableId
+   //    const targetTask = state.tasks[oldTaskId]
+   //    var newTaskId = destination.index
+   //    if (endSpace !== 0) {
+   //       newTaskId += state.task_map[endSpace - 1]
+   //    }
+   //    if (endSpace > startSpace) {
+   //       newTaskId--
+   //    }
 
-      newTaskArray.splice(oldTaskId, 1)
-      newTaskArray.splice(newTaskId, 0, targetTask)
-      // Moving within the same column
-      if (startSpace === endSpace) {
-         const newState = {
-            ...state,
-            tasks: newTaskArray
-         }
-         setState(newState)
-         return
-      }
-      // Moving between different columns
-      if (endSpace < startSpace) {
-         for (let i = endSpace; i < startSpace; i++) {
-            newTaskMap[i]++
-         }
-      } else {
-         for (let i = startSpace; i < endSpace; i++) {
-            newTaskMap[i]--
-         }
-      }
-      const newState = {
-         ...state,
-         task_map: newTaskMap,
-         tasks: newTaskArray
-      }
-      setState(newState)
-   }
+   //    const newTaskArray = Array.from(state.tasks)
+   //    const newTaskMap = Array.from(state.task_map)
+
+   //    newTaskArray.splice(oldTaskId, 1)
+   //    newTaskArray.splice(newTaskId, 0, targetTask)
+   //    // Moving within the same column
+   //    if (startSpace === endSpace) {
+   //       const newState = {
+   //          ...state,
+   //          tasks: newTaskArray
+   //       }
+   //       setState(newState)
+   //       return
+   //    }
+   //    // Moving between different columns
+   //    if (endSpace < startSpace) {
+   //       for (let i = endSpace; i < startSpace; i++) {
+   //          newTaskMap[i]++
+   //       }
+   //    } else {
+   //       for (let i = startSpace; i < endSpace; i++) {
+   //          newTaskMap[i]--
+   //       }
+   //    }
+   //    const newState = {
+   //       ...state,
+   //       task_map: newTaskMap,
+   //       tasks: newTaskArray
+   //    }
+   //    setState(newState)
+   // }
    return (
-      <VStack
-         w='fit-content'
-         h='fit-content'
-         minH='full'
-         minW='full'
-         alignItems='center'
-         gap={0}
-      >
-         <Toolbar />
-         <DragDropContext
-            // onDragStart={}
-            // onDragUpdate={}
-            onDragEnd={onDragEnd}
+      <Skeleton isLoaded={!loading}>
+         <VStack
+            w='fit-content'
+            h='fit-content'
+            minH='full'
+            minW='full'
+            alignItems='center'
+            gap={0}
          >
-            <VStack
-               flexDirection='column'
-               w='fit-content'
-               h='fit-content'
-               minH='full'
-               minW='full'
-               alignItems='center'
-               gap={3}
-            >
-               <Flex gap={3} paddingX={3}>
-                  {state.progress_order.map((progress) => {
-                     return (
-                        <ProgressHeader
-                           key={progress._id}
-                           progress={progress}
-                        />
-                     )
-                  })}
-               </Flex>
-               {state.group_order.map((group, i_group) => {
-                  return (
+            {page && (
+               <>
+                  <Toolbar />
+                  <DragDropContext
+                  // onDragStart={}
+                  // onDragUpdate={}
+                  // onDragEnd={onDragEnd}
+                  >
                      <VStack
-                        key={group._id}
-                        p={3}
-                        borderWidth={2}
-                        borderColor={group.color}
-                        borderRadius={8}
-                        alignItems='flex-start'
+                        flexDirection='column'
+                        w='fit-content'
+                        h='fit-content'
+                        minH='full'
+                        minW='full'
+                        alignItems='center'
+                        gap={3}
                      >
-                        <GroupTitle color={group.color}>
-                           {group.title}
-                        </GroupTitle>
-                        <Flex gap={3}>
-                           {state.progress_order?.map(
-                              (progress, i_progress) => {
-                                 const i_task_map =
-                                    i_group * state.progress_order.length +
-                                    i_progress
-                                 var taskArray = []
-                                 if (i_task_map === 0) {
-                                    taskArray = state.tasks.slice(
-                                       0,
-                                       state.task_map[0]
-                                    )
-                                 } else {
-                                    taskArray = state.tasks.slice(
-                                       state.task_map[i_task_map - 1],
-                                       state.task_map[i_task_map]
-                                    )
-                                 }
-                                 return (
-                                    <Column
-                                       key={i_task_map} //has to match droppableId
-                                       droppableId={i_task_map.toString()}
-                                       taskPointer={
-                                          state.task_map[i_task_map] -
-                                          taskArray.length
-                                       }
-                                       progress={progress}
-                                       tasks={taskArray}
-                                    />
-                                 )
-                              }
-                           )}
+                        <Flex gap={3} paddingX={3}>
+                           {page.progress_order.map((progress) => {
+                              return (
+                                 <ProgressHeader
+                                    key={progress._id}
+                                    progress={progress}
+                                 />
+                              )
+                           })}
                         </Flex>
+                        {page.group_order.map((group, i_group) => {
+                           return (
+                              <VStack
+                                 key={group._id}
+                                 p={3}
+                                 borderWidth={2}
+                                 borderColor={group.color}
+                                 borderRadius={8}
+                                 alignItems='flex-start'
+                              >
+                                 <GroupTitle color={group.color}>
+                                    {group.title}
+                                 </GroupTitle>
+                                 <Flex gap={3}>
+                                    {page.progress_order?.map(
+                                       (progress, i_progress) => {
+                                          const i_task_map =
+                                             i_group *
+                                                page.progress_order.length +
+                                             i_progress
+                                          var taskArray = []
+                                          if (i_task_map === 0) {
+                                             taskArray = page.tasks.slice(
+                                                0,
+                                                page.task_map[0]
+                                             )
+                                          } else {
+                                             taskArray = page.tasks.slice(
+                                                page.task_map[i_task_map - 1],
+                                                page.task_map[i_task_map]
+                                             )
+                                          }
+                                          return (
+                                             <Column
+                                                key={i_task_map} //has to match droppableId
+                                                droppableId={i_task_map.toString()}
+                                                taskPointer={
+                                                   page.task_map[i_task_map] -
+                                                   taskArray.length
+                                                }
+                                                progress={progress}
+                                                tasks={taskArray}
+                                             />
+                                          )
+                                       }
+                                    )}
+                                 </Flex>
+                              </VStack>
+                           )
+                        })}
                      </VStack>
-                  )
-               })}
-            </VStack>
-         </DragDropContext>
-      </VStack>
+                  </DragDropContext>
+               </>
+            )}
+            {!page && (
+               <Text color='gray.500'>
+                  {t('guide-no_page')}
+                  <Button
+                     size='sm'
+                     colorScheme='gray'
+                     opacity={0.3}
+                     variant='ghost'
+                     leftIcon={<PiPlus />}
+                  >
+                     {t('btn-new_page')}
+                  </Button>
+               </Text>
+            )}
+         </VStack>
+      </Skeleton>
    )
 }
 
-export default Kanban
+Kanban.propTypes = {
+   getFirstPage: PropTypes.func.isRequired,
+   auth: PropTypes.object.isRequired,
+   page: PropTypes.object.isRequired
+}
+
+const mapStateToProps = (state) => ({
+   auth: state.auth,
+   page: state.page
+})
+
+export default connect(mapStateToProps, { getFirstPage })(Kanban)

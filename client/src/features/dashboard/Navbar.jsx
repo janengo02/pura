@@ -1,5 +1,8 @@
 import React, { useContext } from 'react'
 
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+
 import SplitPaneContext from '../../context/SplitPaneContext'
 
 import {
@@ -32,7 +35,7 @@ const NavbarWrapper = ({ children }) => (
       {children}
    </Flex>
 )
-const NavbarLeft = ({ dropdownMenu, sidebar }) => (
+const NavbarLeft = ({ dropdownMenu, sidebar, title }) => (
    <Flex gap={5}>
       <Menu isOpen={dropdownMenu.isOpen} onClose={dropdownMenu.onClose} isLazy>
          <MenuButton
@@ -56,7 +59,7 @@ const NavbarLeft = ({ dropdownMenu, sidebar }) => (
          </MenuList>
       </Menu>
       <Heading as='h3' size='lg' color='gray.600'>
-         data.page.title
+         {title}
       </Heading>
    </Flex>
 )
@@ -77,7 +80,7 @@ const NavbarRight = () => {
       </Flex>
    )
 }
-const Navbar = () => {
+const Navbar = ({ page: { page } }) => {
    const sidebar = useDisclosure()
    const dropdownMenu = useDisclosure()
    return (
@@ -90,12 +93,23 @@ const Navbar = () => {
             <Sidebar />
          </Drawer>
          <NavbarWrapper>
-            <NavbarLeft dropdownMenu={dropdownMenu} sidebar={sidebar} />
+            <NavbarLeft
+               dropdownMenu={dropdownMenu}
+               sidebar={sidebar}
+               title={page ? page.title : ''}
+            />
             <Spacer />
             <NavbarRight />
          </NavbarWrapper>
       </>
    )
 }
+Navbar.propTypes = {
+   page: PropTypes.object.isRequired
+}
 
-export default Navbar
+const mapStateToProps = (state) => ({
+   page: state.page
+})
+
+export default connect(mapStateToProps)(Navbar)

@@ -1,5 +1,9 @@
 import React from 'react'
 
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import { logout } from '../../../actions/auth'
+
 import {
    Avatar,
    Menu,
@@ -12,11 +16,7 @@ import {
 import { PiSignOut, PiGearSix } from 'react-icons/pi'
 import t from '../../../lang/i18n'
 
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { logout } from '../../../actions/auth'
-
-const ProfileMenu = ({ logout }) => {
+const ProfileMenu = ({ logout, user }) => {
    const profileMenu = useDisclosure()
    return (
       <Menu isOpen={profileMenu.isOpen} onClose={profileMenu.onClose}>
@@ -27,10 +27,11 @@ const ProfileMenu = ({ logout }) => {
             onMouseEnter={profileMenu.onOpen}
          >
             <Avatar
-               name='Kent Dodds'
+               name={user ? user.name : ''}
                w={10}
                h={10}
-               src='https://bit.ly/kent-c-dodds'
+               bg='gray.300'
+               src={user ? user.avatar : 'assets/img/no-avatar.svg'}
             />
          </MenuButton>
          <MenuList
@@ -50,7 +51,12 @@ const ProfileMenu = ({ logout }) => {
 }
 
 ProfileMenu.propTypes = {
-   logout: PropTypes.func.isRequired
+   logout: PropTypes.func.isRequired,
+   user: PropTypes.object.isRequired
 }
 
-export default connect(null, { logout })(ProfileMenu)
+const mapStateToProps = (state) => ({
+   user: state.auth.user
+})
+
+export default connect(mapStateToProps, { logout })(ProfileMenu)
