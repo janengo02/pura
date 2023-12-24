@@ -6,8 +6,7 @@ import {
    AUTH_ERROR,
    LOGIN_SUCCESS,
    LOGIN_FAIL,
-   LOGOUT,
-   GET_PAGE
+   LOGOUT
 } from './types'
 import { setAlert, removeAllAlert } from './alert'
 import { setLoading } from './loading'
