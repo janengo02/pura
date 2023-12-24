@@ -29,6 +29,7 @@ export const loadUser = () => async (dispatch) => {
 // Register User
 export const register = (formData) => async (dispatch) => {
    dispatch(setLoading.start)
+   // TODO: Move create page to BE
    try {
       const newPage = { title: 'My Page' }
       const newGroup = { title: 'MY GROUP' }
