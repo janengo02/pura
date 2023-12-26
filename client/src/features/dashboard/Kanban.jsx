@@ -17,7 +17,7 @@ import { PiPlus } from 'react-icons/pi'
 
 // import { page } from './kanban/data'
 
-const Kanban = ({ getFirstPage, auth: { user }, page: { page, loading } }) => {
+const Kanban = ({ getFirstPage, page: { page, loading } }) => {
    useEffect(() => {
       getFirstPage()
    }, [getFirstPage])
@@ -188,12 +188,10 @@ const Kanban = ({ getFirstPage, auth: { user }, page: { page, loading } }) => {
 
 Kanban.propTypes = {
    getFirstPage: PropTypes.func.isRequired,
-   auth: PropTypes.object.isRequired,
    page: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   auth: state.auth,
    page: state.page
 })
 

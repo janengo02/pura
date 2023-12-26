@@ -6,7 +6,12 @@ const jwt = require('jsonwebtoken')
 const config = require('config')
 const { check, validationResult } = require('express-validator')
 
+const Page = require('../../models/Page')
 const User = require('../../models/User')
+const Group = require('../../models/Group')
+const Progress = require('../../models/Progress')
+const Task = require('../../models/Task')
+
 // @route   POST api/users
 // @desc    Register user route
 // @access  Public
@@ -21,42 +26,85 @@ router.post(
       ).isLength({ min: 6 })
    ],
    async (req, res) => {
+      //   Validation: Form input
       const result = validationResult(req)
       if (!result.isEmpty()) {
          return res.status(400).json({ errors: result.array() })
       }
+
+      //   Validation: Check if user exists
       const { name, email, password } = req.body
-
-      try {
-         // Check if user exists
-         let user = await User.findOne({ email })
-         if (user) {
-            return res.status(400).json({
-               errors: [{ title: 'alert-oops', msg: 'alert-user-exists' }]
-            })
-         }
-
-         // Get user gravatar
-         const avatar = gravatar.url(email, {
-            s: '200',
-            r: 'pg',
-            d: 'mm'
+      let user = await User.findOne({ email })
+      if (user) {
+         return res.status(400).json({
+            errors: [{ title: 'alert-oops', msg: 'alert-user-exists' }]
          })
+      }
+      // Prepare: Set up avatar
+      const avatar = gravatar.url(email, {
+         s: '200',
+         r: 'pg',
+         d: 'mm'
+      })
+      try {
+         // Data: Add new user
          user = new User({
             name,
             email,
             avatar,
             password
          })
-
          // Encrypt password
          const salt = await bcrypt.genSalt(10)
-
          user.password = await bcrypt.hash(password, salt)
-
          await user.save()
 
-         // Return json web token
+         // Data: Add default group
+         group = new Group({
+            title: 'MY GROUP'
+         })
+         await group.save()
+
+         // Data: Add default progresses
+         progress1 = new Progress({
+            title: 'To do',
+            title_color: '#B75151',
+            color: '#FFE5E5'
+         })
+         await progress1.save()
+
+         progress2 = new Progress({
+            title: 'In Progress',
+            title_color: '#E95F11',
+            color: '#FFF0E4'
+         })
+         await progress2.save()
+
+         progress3 = new Progress({
+            title: 'Done',
+            title_color: '#3E9C75',
+            color: '#CDF4E4'
+         })
+         await progress3.save()
+
+         // Data: Add default task
+         task = new Task({
+            title: 'My task'
+         })
+         await task.save()
+
+         // Data: Add default page
+         page = new Page({
+            user: user,
+            title: 'My Page',
+            progress_order: [progress1, progress2, progress3],
+            group_order: [group],
+            task_map: [1, 0, 0],
+            tasks: [task]
+         })
+         await page.save()
+
+         // Return: json web token
          const payload = {
             user: {
                id: user.id

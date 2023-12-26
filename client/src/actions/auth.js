@@ -13,70 +13,30 @@ import { setLoading } from './loading'
 
 // Load User
 export const loadUser = () => async (dispatch) => {
+   dispatch(setLoading.start)
    try {
       const res = await api.get('/auth')
-
       dispatch({
          type: USER_LOADED,
          payload: res.data
       })
+      dispatch(setLoading.end)
    } catch (err) {
       dispatch({
          type: AUTH_ERROR
       })
+      dispatch(setLoading.end)
    }
 }
 // Register User
 export const register = (formData) => async (dispatch) => {
    dispatch(setLoading.start)
-   // TODO: Move create page to BE
    try {
-      const newPage = { title: 'My Page' }
-      const newGroup = { title: 'MY GROUP' }
-      const newProgress1 = {
-         title: 'To do',
-         title_color: '#B75151',
-         color: '#FFE5E5'
-      }
-      const newProgress2 = {
-         title: 'In Progress',
-         title_color: '#E95F11',
-         color: '#FFF0E4'
-      }
-      const newProgress3 = {
-         title: 'Done',
-         title_color: '#3E9C75',
-         color: '#CDF4E4'
-      }
-      await api
-         .post('/users', formData)
-         .then((res) => {
-            dispatch({
-               type: REGISTER_SUCCESS,
-               payload: res.data
-            })
-            return api.post('/page', newPage)
-         })
-         .then((resPage) => {
-            return api.post(`/group/${resPage.data._id}`, newGroup)
-         })
-         .then((resPage) => {
-            return api.post(`/progress/${resPage.data._id}`, newProgress1)
-         })
-         .then((resPage) => {
-            return api.post(`/progress/${resPage.data._id}`, newProgress2)
-         })
-         .then((resPage) => {
-            return api.post(`/progress/${resPage.data._id}`, newProgress3)
-         })
-         .then((resPage) => {
-            const newTask = {
-               group_id: resPage.data.group_order[0]._id,
-               progress_id: resPage.data.progress_order[0]._id,
-               title: 'My task'
-            }
-            return api.post(`/task/${resPage.data._id}`, newTask)
-         })
+      const res = await api.post('/users', formData)
+      dispatch({
+         type: REGISTER_SUCCESS,
+         payload: res.data
+      })
       dispatch(loadUser())
       dispatch(removeAllAlert())
       dispatch(setLoading.end)

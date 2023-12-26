@@ -4,10 +4,6 @@ const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator')
 
 const Page = require('../../models/Page')
-const User = require('../../models/User')
-const Group = require('../../models/Group')
-const Progress = require('../../models/Progress')
-const Task = require('../../models/Task')
 
 // @route   GET api/page
 // @desc    Get the first page of the user (temporary)
