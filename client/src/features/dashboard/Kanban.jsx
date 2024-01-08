@@ -145,6 +145,11 @@ const Kanban = ({ getFirstPage, page: { page, loading } }) => {
                                                 page.task_map[i_task_map]
                                              )
                                           }
+                                          const newTaskInfo = {
+                                             page_id: page._id,
+                                             group_id: group._id,
+                                             progress_id: progress._id
+                                          }
                                           return (
                                              <Column
                                                 key={i_task_map} //has to match droppableId
@@ -155,6 +160,7 @@ const Kanban = ({ getFirstPage, page: { page, loading } }) => {
                                                 }
                                                 progress={progress}
                                                 tasks={taskArray}
+                                                newTaskInfo={newTaskInfo}
                                              />
                                           )
                                        }

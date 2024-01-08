@@ -1,11 +1,25 @@
 import React from 'react'
-import { Button, Card, Flex } from '@chakra-ui/react'
-import TaskCard from './TaskCard'
+import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
+
+import { createTask } from '../../../actions/task'
+
 import { Droppable } from 'react-beautiful-dnd'
+import { Button, Card, Flex } from '@chakra-ui/react'
 import { PiPlus } from 'react-icons/pi'
+import TaskCard from './TaskCard'
+import NewTaskCard from './NewTaskCard'
+
 import t from '../../../lang/i18n'
 
-const Column = ({ droppableId, taskPointer, progress, tasks }) => {
+const Column = ({
+   droppableId,
+   taskPointer,
+   progress,
+   tasks,
+   newTaskInfo,
+   createTask
+}) => {
    return (
       <Droppable droppableId={droppableId}>
          {(provided, snapshot) => (
@@ -23,14 +37,24 @@ const Column = ({ droppableId, taskPointer, progress, tasks }) => {
                   flexDirection='column'
                   flexGrow={1}
                >
-                  {tasks?.map((task, i_task) => (
-                     <TaskCard
-                        key={taskPointer + i_task} //has to match draggableId
-                        task={task}
-                        draggableId={(taskPointer + i_task).toString()}
-                        index={i_task}
-                     />
-                  ))}
+                  {tasks?.map((task, i_task) =>
+                     task.title !== '' ? (
+                        <TaskCard
+                           key={taskPointer + i_task} //has to match draggableId
+                           task={task}
+                           draggableId={(taskPointer + i_task).toString()}
+                           index={i_task}
+                        />
+                     ) : (
+                        <NewTaskCard
+                           key={taskPointer + i_task} //has to match draggableId
+                           page_id={newTaskInfo.page_id}
+                           task_id={task._id}
+                           draggableId={(taskPointer + i_task).toString()}
+                           index={i_task}
+                        />
+                     )
+                  )}
                   {provided.placeholder}
                   <Button
                      size='sm'
@@ -38,6 +62,10 @@ const Column = ({ droppableId, taskPointer, progress, tasks }) => {
                      variant='ghost'
                      justifyContent='flex-start'
                      leftIcon={<PiPlus />}
+                     onClick={async (e) => {
+                        e.preventDefault()
+                        createTask(newTaskInfo)
+                     }}
                   >
                      {t('btn-new')}
                   </Button>
@@ -47,5 +75,7 @@ const Column = ({ droppableId, taskPointer, progress, tasks }) => {
       </Droppable>
    )
 }
-
-export default Column
+Column.propTypes = {
+   createTask: PropTypes.func.isRequired
+}
+export default connect(null, { createTask })(Column)

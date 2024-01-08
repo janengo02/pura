@@ -7,7 +7,8 @@ export const PasswordInput = ({
    name,
    variant,
    size,
-   validation
+   validation,
+   ...props
 }) => {
    const [show, setShow] = useState(false)
    const handleClick = () => setShow(!show)
@@ -20,6 +21,7 @@ export const PasswordInput = ({
             type={show ? 'text' : 'password'}
             placeholder={t('placeholder-password')}
             {...register(name, validation)}
+            {...props}
          />
          <InputRightElement width='4.5rem'>
             <Button h='1.75rem' size='sm' onClick={handleClick}>
