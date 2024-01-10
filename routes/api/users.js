@@ -99,7 +99,7 @@ router.post(
             title: 'My Page',
             progress_order: [progress1, progress2, progress3],
             group_order: [group],
-            task_map: [1, 0, 0],
+            task_map: [1, 1, 1],
             tasks: [task]
          })
          await page.save()

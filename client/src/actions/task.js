@@ -1,6 +1,6 @@
 import { api } from '../utils'
 import { GET_PAGE, PAGE_ERROR } from './types'
-import { setAlert } from './alert'
+import { setAlert, removeAllAlert } from './alert'
 
 // Create new task
 export const createTask = (formData) => async (dispatch) => {
@@ -10,9 +10,8 @@ export const createTask = (formData) => async (dispatch) => {
          type: GET_PAGE,
          payload: res.data
       })
+      dispatch(removeAllAlert())
    } catch (err) {
-      console.log(err)
-      // TODO: Handle errors
       const errors = err.response.data.errors
       if (errors) {
          errors.forEach((error) =>
@@ -20,8 +19,7 @@ export const createTask = (formData) => async (dispatch) => {
          )
       }
       dispatch({
-         type: PAGE_ERROR,
-         payload: { msg: err.response }
+         type: PAGE_ERROR
       })
    }
 }
@@ -37,9 +35,8 @@ export const updateTask = (formData) => async (dispatch) => {
          type: GET_PAGE,
          payload: res.data
       })
+      dispatch(removeAllAlert())
    } catch (err) {
-      console.log(err)
-      // TODO: Handle errors
       const errors = err.response.data.errors
       if (errors) {
          errors.forEach((error) =>
@@ -47,8 +44,7 @@ export const updateTask = (formData) => async (dispatch) => {
          )
       }
       dispatch({
-         type: PAGE_ERROR,
-         payload: { msg: err.response }
+         type: PAGE_ERROR
       })
    }
 }

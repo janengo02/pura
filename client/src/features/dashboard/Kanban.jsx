@@ -13,6 +13,8 @@ import Toolbar from './toolbar/Toolbar'
 import Column from './kanban/Column'
 import ProgressHeader from './kanban/ProgressHeader'
 import GroupTitle from '../../components/typography/GroupTitle'
+import FormAlert from '../../components/FormAlert'
+
 import { PiPlus } from 'react-icons/pi'
 
 // import { page } from './kanban/data'
@@ -78,6 +80,7 @@ const Kanban = ({ getFirstPage, page: { page, loading } }) => {
    // }
    return (
       <Skeleton isLoaded={!loading}>
+         <FormAlert />
          <VStack
             w='fit-content'
             h='fit-content'

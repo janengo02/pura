@@ -1,12 +1,12 @@
-import axios from "axios"
-// import store from "../store"
-// import { LOGOUT } from "../actions/types"
+import axios from 'axios'
+import store from '../store'
+import { LOGOUT } from '../actions/types'
 
 // Create an instance of axios
 const api = axios.create({
-   baseURL: "/api",
+   baseURL: '/api',
    headers: {
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json'
    }
 })
 /*
@@ -21,8 +21,7 @@ api.interceptors.response.use(
    (res) => res,
    (err) => {
       if (err.response.status === 401) {
-        console.error(err.msg)
-        //  store.dispatch({ type: LOGOUT })
+         store.dispatch({ type: LOGOUT })
       }
       return Promise.reject(err)
    }

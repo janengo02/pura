@@ -6,12 +6,11 @@ import { setAlert, removeAllAlert } from './alert'
 export const getFirstPage = () => async (dispatch) => {
    try {
       const res = await api.get('/page')
-      dispatch(removeAllAlert())
-
       dispatch({
          type: GET_PAGE,
          payload: res.data
       })
+      dispatch(removeAllAlert())
    } catch (err) {
       const errors = err.response.data.errors
       if (errors) {
@@ -20,8 +19,7 @@ export const getFirstPage = () => async (dispatch) => {
          )
       }
       dispatch({
-         type: PAGE_ERROR,
-         payload: { msg: err.response }
+         type: PAGE_ERROR
       })
    }
 }
