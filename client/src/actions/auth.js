@@ -51,6 +51,7 @@ export const register = (formData) => async (dispatch) => {
          type: REGISTER_FAIL
       })
       dispatch(setLoading.end)
+      // console.clear()
    }
 }
 
@@ -78,6 +79,7 @@ export const login = (formData) => async (dispatch) => {
          type: LOGIN_FAIL
       })
       dispatch(setLoading.end)
+      // console.clear()
    }
 }
 

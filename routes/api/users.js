@@ -37,7 +37,9 @@ router.post(
       let user = await User.findOne({ email })
       if (user) {
          return res.status(400).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-user-exists' }]
+            errors: [
+               { code: '400', title: 'alert-oops', msg: 'alert-user-exists' }
+            ]
          })
       }
       // Prepare: Set up avatar
@@ -122,7 +124,11 @@ router.post(
          )
       } catch (err) {
          console.error(err.message)
-         res.status(500).send('Server error')
+         res.status(500).json({
+            errors: [
+               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+            ]
+         })
       }
    }
 )

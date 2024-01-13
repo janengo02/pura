@@ -14,13 +14,17 @@ router.post('/:page_id', [auth], async (req, res) => {
    const page = await Page.findById(req.params.page_id)
    if (!page) {
       return res.status(404).json({
-         errors: [{ title: 'alert-oops', msg: 'alert-page-notfound' }]
+         errors: [
+            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
+         ]
       })
    }
    //   Validation: Check if user is the owner
    if (page.user.toString() !== req.user.id) {
       return res.status(401).json({
-         errors: [{ title: 'alert-oops', msg: 'alert-user-unauthorize' }]
+         errors: [
+            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
+         ]
       })
    }
    //   Validation: Form input
@@ -75,7 +79,11 @@ router.post('/:page_id', [auth], async (req, res) => {
       res.json(newPage)
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
-      res.status(500).send('Server Error')
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
    }
 })
 

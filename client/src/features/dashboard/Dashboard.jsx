@@ -25,7 +25,7 @@ const SplitPaneLeft = () => {
    const { width } = useWindowDimensions()
 
    useEffect(() => {
-      if (!leftWidth) {
+      if (!leftWidth && leftRef.current) {
          setLeftWidth((leftRef.current.clientWidth * 100) / width)
          leftRef.current.style.flex = 'none'
          return
@@ -34,7 +34,9 @@ const SplitPaneLeft = () => {
          setLeftWidth(100)
          setViewCalendar(false)
       }
-      leftRef.current.style.width = `${leftWidth}%`
+      if (leftRef.current) {
+         leftRef.current.style.width = `${leftWidth}%`
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [leftWidth])
 
@@ -61,8 +63,10 @@ const Dashboard = () => {
       separatorXPosition.current = e.clientX
       setFocusDivider(true)
       // Prevent text selection while resizing
-      leftRef.current.style.userSelect = 'none'
-      if (viewCalendar) {
+      if (leftRef.current) {
+         leftRef.current.style.userSelect = 'none'
+      }
+      if (viewCalendar && rightRef.current) {
          rightRef.current.style.userSelect = 'none'
       }
    }
@@ -84,8 +88,10 @@ const Dashboard = () => {
    const onMouseUp = () => {
       separatorXPosition.current = null
       // Enable text selection after resizing
-      leftRef.current.style.userSelect = 'auto'
-      if (viewCalendar) {
+      if (leftRef.current) {
+         leftRef.current.style.userSelect = 'auto'
+      }
+      if (viewCalendar && rightRef.current) {
          rightRef.current.style.userSelect = 'auto'
       }
 

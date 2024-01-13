@@ -6,7 +6,8 @@ import PasswordRecover from './features/login/PasswordRecover'
 import Landing from './features/landing/Landing'
 import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
-import NotFound from './components/NotFound'
+import NotFound from './components/errorHandler/NotFound'
+import ServerError from './components/errorHandler/ServerError'
 // Redux
 import { Provider } from 'react-redux'
 import store from './store'
@@ -43,6 +44,7 @@ const App = () => {
                   <Route path='register' element={<Register />} />
                   <Route path='login' element={<Login />} />
                   <Route path='recover' element={<PasswordRecover />} />
+                  <Route path='error' element={<ServerError />} />
                   <Route
                      path='dashboard'
                      element={<PrivateRoute component={Dashboard} />}

@@ -3,7 +3,8 @@ import { GET_PAGE, PAGE_ERROR } from '../actions/types'
 const initialState = {
    page: null,
    pages: [],
-   loading: true
+   loading: true,
+   error: false
 }
 
 function pageReducer(state = initialState, action) {
@@ -14,14 +15,15 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             page: payload,
-            loading: false
+            loading: false,
+            error: false
          }
-      // TODO: Handle error when page error
       case PAGE_ERROR:
          return {
             ...state,
+            page: payload,
             loading: false,
-            page: null
+            error: true
          }
       default:
          return state

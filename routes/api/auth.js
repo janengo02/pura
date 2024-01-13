@@ -16,8 +16,12 @@ router.get('/', auth, async (req, res) => {
       const user = await User.findById(req.user.id).select('-password')
       res.json(user)
    } catch (err) {
-      console.error(err.message)
-      res.status(500).send('Server Error')
+      console.error('---ERROR---: ' + err.message)
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
    }
 })
 
@@ -42,7 +46,13 @@ router.post(
          let user = await User.findOne({ email })
          if (!user) {
             return res.status(400).json({
-               errors: [{ title: 'alert-oops', msg: 'alert-invalid-email' }]
+               errors: [
+                  {
+                     code: '400',
+                     title: 'alert-oops',
+                     msg: 'alert-invalid-email'
+                  }
+               ]
             })
          }
 
@@ -50,7 +60,13 @@ router.post(
 
          if (!isMatch) {
             return res.status(400).json({
-               errors: [{ title: 'alert-oops', msg: 'alert-invalid-password' }]
+               errors: [
+                  {
+                     code: '400',
+                     title: 'alert-oops',
+                     msg: 'alert-invalid-password'
+                  }
+               ]
             })
          }
 
@@ -71,8 +87,12 @@ router.post(
             }
          )
       } catch (err) {
-         console.error(err.message)
-         res.status(500).send('Server error')
+         console.error('---ERROR---: ' + err.message)
+         res.status(500).json({
+            errors: [
+               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+            ]
+         })
       }
    }
 )

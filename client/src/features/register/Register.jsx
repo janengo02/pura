@@ -19,7 +19,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import t from '../../lang/i18n'
 import { register } from '../../actions/auth'
 import PropTypes from 'prop-types'
-import FormAlert from '../../components/FormAlert'
+import FormAlert from '../../components/errorHandler/FormAlert'
 
 const Register = ({ isLoading, register, isAuthenticated }) => {
    const methods = useForm({

@@ -21,13 +21,21 @@ router.post(
       const page = await Page.findById(req.params.page_id)
       if (!page) {
          return res.status(404).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-page-notfound' }]
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
+            ]
          })
       }
       //   Validation: Check if user is the owner
       if (page.user.toString() !== req.user.id) {
          return res.status(401).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-user-unauthorize' }]
+            errors: [
+               {
+                  code: '401',
+                  title: 'alert-oops',
+                  msg: 'alert-user-unauthorize'
+               }
+            ]
          })
       }
       //   Validation: Form input
@@ -47,9 +55,11 @@ router.post(
       const progressId = page.progress_order.indexOf(progress_id)
       //   Validation: Check if group and progress exist
       if (groupId === -1 || progressId === -1) {
-         return res
-            .status(404)
-            .json({ msg: 'Cannot identify group or progress' })
+         return res.status(404).json({
+            errors: [
+               { title: 'alert-oops', msg: 'alert-group_progress-notfound' }
+            ]
+         })
       }
       const taskMapIndex = groupId * page.progress_order.length + progressId
       var newTaskMap = page.task_map
@@ -92,7 +102,11 @@ router.post(
          res.json(newPage)
       } catch (error) {
          console.error('---ERROR---: ' + error.message)
-         res.status(500).send('Server Error')
+         res.status(500).json({
+            errors: [
+               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+            ]
+         })
       }
    }
 )
@@ -100,64 +114,77 @@ router.post(
 // @route   POST api/task/update/:page-id/:task-id
 // @desc    Update a task
 // @access  Private
-router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
-   if (!page) {
-      return res.status(404).json({ msg: 'Page not found' })
-   }
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' })
-   }
-   //   Validation: Form input
-   const result = validationResult(req)
-   if (!result.isEmpty()) {
-      return res.status(400).json({ errors: result.array() })
-   }
-   //   Prepare: Set up new task
-   const { group_id, progress_id, title, schedule, content } = req.body
-   const newTask = {
-      title: 'Untitled',
-      update_date: new Date()
-   }
-   if (title && title !== '') newTask.title = title
-   if (schedule) newTask.schedule = schedule
-   if (content) newTask.content = content
+router.post(
+   '/update/:page_id/:task_id',
+   [
+      auth,
+      check('title', 'Title cannot be longer than 255 characters').isLength({
+         max: 255
+      })
+   ],
+   async (req, res) => {
+      //   Validation: Check if page exists
+      const page = await Page.findById(req.params.page_id)
+      if (!page) {
+         return res.status(404).json({ msg: 'Page not found' })
+      }
+      //   Validation: Check if user is the owner
+      if (page.user.toString() !== req.user.id) {
+         return res.status(401).json({ msg: 'User not authorized' })
+      }
+      //   Validation: Form input
+      const result = validationResult(req)
+      if (!result.isEmpty()) {
+         return res.status(400).json({ errors: result.array() })
+      }
+      //   Prepare: Set up new task
+      const { group_id, progress_id, title, schedule, content } = req.body
+      const newTask = {
+         title: 'Untitled',
+         update_date: new Date()
+      }
+      if (title && title !== '') newTask.title = title
+      if (schedule) newTask.schedule = schedule
+      if (content) newTask.content = content
 
-   if (group_id || progress_id) {
-      //   TODO: Prepare: Set up new task_map
-   }
-   try {
-      const task = await Task.findOneAndUpdate(
-         { _id: req.params.task_id },
-         { $set: newTask },
-         { new: true }
-      )
-      // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule'])
+      if (group_id || progress_id) {
+         //   TODO: Prepare: Set up new task_map
+      }
+      try {
+         const task = await Task.findOneAndUpdate(
+            { _id: req.params.task_id },
+            { $set: newTask },
+            { new: true }
+         )
+         // Data: get new page
+         const newPage = await Page.findOneAndUpdate(
+            { _id: req.params.page_id },
+            { $set: { update_date: new Date() } },
+            { new: true }
+         )
+            .populate('progress_order', [
+               'title',
+               'title_color',
+               'color',
+               'visibility'
+            ])
+            .populate('group_order', ['title', 'color', 'visibility'])
+            .populate('tasks', ['title', 'schedule'])
 
-      // TODO: Data: Update page's task_map
-      // newPage.task_map = newTaskMap
-      // newPage.save()
+         // TODO: Data: Update page's task_map
+         // newPage.task_map = newTaskMap
+         // newPage.save()
 
-      res.json(newPage)
-   } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).send('Server Error')
+         res.json(newPage)
+      } catch (error) {
+         console.error('---ERROR---: ' + error.message)
+         res.status(500).json({
+            errors: [
+               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+            ]
+         })
+      }
    }
-})
+)
 
 module.exports = router

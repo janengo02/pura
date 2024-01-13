@@ -21,13 +21,20 @@ router.get('/', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule'])
       res.json(page)
    } catch (err) {
-      console.error(err.message)
+      console.error('---ERROR---: ' + err.message)
+
       if (err.kind === 'ObjectId') {
          return res.status(404).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-page-notfound' }]
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
+            ]
          })
       }
-      res.status(500).send('Server Error')
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
    }
 })
 
@@ -47,24 +54,39 @@ router.get('/:id', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule'])
       if (!page) {
          return res.status(404).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-page-notfound' }]
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
+            ]
          })
       }
       // Check if the user is the owner of the page
       if (page.user.toString() !== req.user.id) {
          return res.status(401).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-user-unauthorize' }]
+            errors: [
+               {
+                  code: '401',
+                  title: 'alert-oops',
+                  msg: 'alert-user-unauthorize'
+               }
+            ]
          })
       }
       res.json(page)
    } catch (err) {
-      console.error(err.message)
+      console.error('---ERROR---: ' + err.message)
+
       if (err.kind === 'ObjectId') {
          return res.status(404).json({
-            errors: [{ title: 'alert-oops', msg: 'alert-page-notfound' }]
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
+            ]
          })
       }
-      res.status(500).send('Server Error')
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
    }
 })
 
@@ -98,7 +120,11 @@ router.post('/', [auth], async (req, res) => {
       res.json(page)
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
-      res.status(500).send('Server Error')
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
    }
 })
 

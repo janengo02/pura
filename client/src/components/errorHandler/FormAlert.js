@@ -10,9 +10,9 @@ import {
 } from '@chakra-ui/react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { removeAlert } from '../actions/alert'
-import Link from './typography/Link'
-import t from '../lang/i18n'
+import { removeAlert } from '../../actions/alert'
+import Link from '../typography/Link'
+import t from '../../lang/i18n'
 
 const FormAlert = ({ alerts, removeAlert, ...props }) => {
    return (
