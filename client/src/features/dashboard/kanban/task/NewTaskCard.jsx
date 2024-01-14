@@ -2,16 +2,16 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateTask } from '../../../actions/task'
+import { updateTask } from '../../../../actions/task'
 
 import { Draggable } from 'react-beautiful-dnd'
 import { Card, Text } from '@chakra-ui/react'
 import { FormProvider, useForm } from 'react-hook-form'
 
-import { MultiInput } from '../../../components/MultiInput'
-import { dashboardSchema as s } from '../DashboardSchema'
+import { MultiInput } from '../../../../components/MultiInput'
+import { dashboardSchema as s } from '../../DashboardSchema'
 import { yupResolver } from '@hookform/resolvers/yup'
-import t from '../../../lang/i18n'
+import t from '../../../../lang/i18n'
 
 const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
    const methods = useForm({

@@ -128,4 +128,103 @@ router.post('/', [auth], async (req, res) => {
    }
 })
 
+// @route   POST api/page/move-task/:id
+// @desc    Update page when move the position of a task
+// @access  Private
+router.post('/move-task/:id', [auth], async (req, res) => {
+   //   Validation: Check if page exists
+   const page = await Page.findById(req.params.id)
+   if (!page) {
+      return res.status(404).json({
+         errors: [
+            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
+         ]
+      })
+   }
+
+   //   Validation: Check if user is the owner
+   if (page.user.toString() !== req.user.id) {
+      return res.status(401).json({
+         errors: [
+            {
+               code: '401',
+               title: 'alert-oops',
+               msg: 'alert-user-unauthorize'
+            }
+         ]
+      })
+   }
+   const { destination, source, draggableId } = req.body
+   const startSpace = +source.droppableId
+   const endSpace = +destination.droppableId
+
+   const oldTaskId = +draggableId
+   const targetTask = page.tasks[oldTaskId]
+   var newTaskId = destination.index
+   if (endSpace !== 0) {
+      newTaskId += page.task_map[endSpace - 1]
+   }
+   if (endSpace > startSpace) {
+      newTaskId--
+   }
+
+   const newTaskArray = Array.from(page.tasks)
+   const newTaskMap = Array.from(page.task_map)
+
+   newTaskArray.splice(oldTaskId, 1)
+   newTaskArray.splice(newTaskId, 0, targetTask)
+   // Moving between different columns
+   if (endSpace < startSpace) {
+      for (let i = endSpace; i < startSpace; i++) {
+         newTaskMap[i]++
+      }
+   } else {
+      for (let i = startSpace; i < endSpace; i++) {
+         newTaskMap[i]--
+      }
+   }
+
+   try {
+      // Data: Add new group to page
+      const newPage = await Page.findOneAndUpdate(
+         { _id: req.params.id },
+         {
+            $set: { tasks: newTaskArray }
+         },
+         { new: true }
+      )
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'schedule'])
+
+      // Data: Update page's task_map
+      newPage.task_map = newTaskMap
+      newPage.save()
+      res.json(newPage)
+   } catch (err) {
+      console.error('---ERROR---: ' + err.message)
+
+      if (err.kind === 'ObjectId') {
+         return res.status(404).json({
+            errors: [
+               {
+                  code: '404',
+                  title: 'alert-oops',
+                  msg: 'alert-page-notfound'
+               }
+            ]
+         })
+      }
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
+   }
+})
 module.exports = router

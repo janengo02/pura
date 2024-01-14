@@ -7,14 +7,13 @@ import {
    PiArrowUp,
    PiTrash
 } from 'react-icons/pi'
-
 import {
    ControlMenuButton,
    DropdownMenuButton,
    DropdownMenu,
    DropdownMenuList
-} from '../../../components/CustomMenu'
-import t from '../../../lang/i18n'
+} from '../../../../components/CustomMenu'
+import t from '../../../../lang/i18n'
 
 const Filter = () => {
    return (

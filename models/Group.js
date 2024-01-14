@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const GroupSchema = new mongoose.Schema({
    title: {
       type: String,
-      default: 'GROUP'
+      default: ''
    },
    color: {
       type: String,

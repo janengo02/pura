@@ -2,15 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { createTask } from '../../../actions/task'
+import { createTask } from '../../../../actions/task'
 
 import { Droppable } from 'react-beautiful-dnd'
 import { Button, Card, Flex } from '@chakra-ui/react'
 import { PiPlus } from 'react-icons/pi'
-import TaskCard from './TaskCard'
-import NewTaskCard from './NewTaskCard'
+import TaskCard from '../task/TaskCard'
+import NewTaskCard from '../task/NewTaskCard'
 
-import t from '../../../lang/i18n'
+import t from '../../../../lang/i18n'
 
 const Column = ({
    droppableId,
@@ -28,6 +28,7 @@ const Column = ({
                bg={progress.color}
                p={2}
                w={250}
+               minH='48px'
                gap={2}
                boxShadow={snapshot.isDraggingOver ? 'outline' : undefined}
             >
@@ -56,19 +57,22 @@ const Column = ({
                      )
                   )}
                   {provided.placeholder}
-                  <Button
-                     size='sm'
-                     opacity={0.3}
-                     variant='ghost'
-                     justifyContent='flex-start'
-                     leftIcon={<PiPlus />}
-                     onClick={async (e) => {
-                        e.preventDefault()
-                        createTask(newTaskInfo)
-                     }}
-                  >
-                     {t('btn-new')}
-                  </Button>
+                  {newTaskInfo && (
+                     <Button
+                        size='sm'
+                        variant='ghost'
+                        colorScheme='blackAlpha'
+                        color='blackAlpha.400'
+                        justifyContent='flex-start'
+                        leftIcon={<PiPlus />}
+                        onClick={async (e) => {
+                           e.preventDefault()
+                           createTask(newTaskInfo)
+                        }}
+                     >
+                        {t('btn-new')}
+                     </Button>
+                  )}
                </Flex>
             </Card>
          )}

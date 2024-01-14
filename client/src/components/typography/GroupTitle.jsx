@@ -1,11 +1,11 @@
 import React from 'react'
-import { Heading } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 
 const GroupTitle = ({ children, color }) => {
    return (
-      <Heading as='h6' size='xs' color={color}>
+      <Text color={color} fontWeight={500}>
          {children}
-      </Heading>
+      </Text>
    )
 }
 

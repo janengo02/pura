@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const ProgressSchema = new mongoose.Schema({
    title: {
       type: String,
-      default: 'Untitled'
+      default: ''
    },
    title_color: {
       type: String,

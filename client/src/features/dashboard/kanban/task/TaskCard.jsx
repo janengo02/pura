@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, Text } from '@chakra-ui/react'
 import { Draggable } from 'react-beautiful-dnd'
-import t from '../../../lang/i18n'
+import t from '../../../../lang/i18n'
 
 const TaskCard = ({ task, draggableId, index }) => {
    return (

@@ -1,14 +1,14 @@
 import React from 'react'
 import { Flex, Spacer, Button, Divider } from '@chakra-ui/react'
 import { PiPlusCircleFill } from 'react-icons/pi'
-import t from '../../../lang/i18n'
+import t from '../../../../lang/i18n'
 
 import Sort from './Sort'
 import Settings from './Settings'
 import Filter from './Filter'
 const Toolbar = () => {
    return (
-      <Flex w='full' maxW={802} paddingY={5} alignItems='center'>
+      <Flex w='full' maxW={802} paddingY={5} paddingX={3} alignItems='center'>
          <Flex gap={2} alignItems='center'>
             <Sort />
             <Divider orientation='vertical' h={8} />

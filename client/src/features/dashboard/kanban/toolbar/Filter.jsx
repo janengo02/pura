@@ -1,8 +1,8 @@
 import React from 'react'
-import { ControlMenuButton } from '../../../components/CustomMenu'
+import { ControlMenuButton } from '../../../../components/CustomMenu'
 import { MenuList, Menu, Button } from '@chakra-ui/react'
 import { PiCalendar, PiPlus, PiTextTFill } from 'react-icons/pi'
-import t from '../../../lang/i18n'
+import t from '../../../../lang/i18n'
 const Filter = () => {
    return (
       <>

@@ -1,10 +1,11 @@
 import { api } from '../utils'
 import { GET_PAGE, PAGE_ERROR } from './types'
 
-// Get the first page of a user
-export const getFirstPage = () => async (dispatch) => {
+// Create new group
+export const createGroup = (formData) => async (dispatch) => {
+   console.log(formData)
    try {
-      const res = await api.get('/page')
+      const res = await api.post(`/group/new/${formData.page_id}`, formData)
       dispatch({
          type: GET_PAGE,
          payload: res.data
@@ -15,18 +16,19 @@ export const getFirstPage = () => async (dispatch) => {
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: null,
+            _id: formData.page_id,
             errors: errors
          }
       })
       // console.clear()
    }
 }
-// Update a task
-export const moveTask = (formData) => async (dispatch) => {
+
+// Update a group
+export const updateGroup = (formData) => async (dispatch) => {
    try {
       const res = await api.post(
-         `/page/move-task/${formData.page_id}`,
+         `/group/update/${formData.page_id}/${formData.group_id}`,
          formData
       )
       dispatch({
