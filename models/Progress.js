@@ -11,7 +11,7 @@ const ProgressSchema = new mongoose.Schema({
    },
    color: {
       type: String,
-      default: '#F7FAFC'
+      default: '#EDF2F7'
    },
    visibility: {
       type: Boolean,

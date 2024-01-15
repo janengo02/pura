@@ -6,6 +6,7 @@ import { connect } from 'react-redux'
 import { getFirstPage } from '../../actions/page'
 import { moveTask } from '../../actions/page'
 import { createGroup } from '../../actions/group'
+import { createProgress } from '../../actions/progress'
 
 import { DragDropContext } from 'react-beautiful-dnd'
 import {
@@ -26,11 +27,13 @@ import FormAlert from '../../components/errorHandler/FormAlert'
 
 import { PiPlus, PiPlusBold } from 'react-icons/pi'
 import NewGroup from './kanban/group/NewGroup'
+import NewProgressHeader from './kanban/progress/NewProgressHeader'
 
 const Kanban = ({
    getFirstPage,
    moveTask,
    createGroup,
+   createProgress,
    page: { page, loading, error }
 }) => {
    const [state, setState] = useState()
@@ -147,14 +150,20 @@ const Kanban = ({
                               gap={3}
                            >
                               <Flex gap={3} paddingX={3} alignItems='center'>
-                                 {state?.progress_order?.map((progress) => {
-                                    return (
+                                 {state?.progress_order?.map((progress) =>
+                                    progress.title !== '' ? (
                                        <ProgressHeader
                                           key={progress._id}
                                           progress={progress}
                                        />
+                                    ) : (
+                                       <NewProgressHeader
+                                          key={progress._id}
+                                          page_id={state._id}
+                                          progress={progress}
+                                       />
                                     )
-                                 })}
+                                 )}
                                  <IconButton
                                     aria-label='Options'
                                     icon={<PiPlusBold />}
@@ -162,6 +171,10 @@ const Kanban = ({
                                     colorScheme='gray'
                                     color='gray.500'
                                     size='sm'
+                                    onClick={async (e) => {
+                                       e.preventDefault()
+                                       createProgress({ page_id: state._id })
+                                    }}
                                  />
                               </Flex>
                               {state?.group_order?.map((group, i_group) =>
@@ -223,7 +236,8 @@ Kanban.propTypes = {
    getFirstPage: PropTypes.func.isRequired,
    page: PropTypes.object.isRequired,
    moveTask: PropTypes.func.isRequired,
-   createGroup: PropTypes.func.isRequired
+   createGroup: PropTypes.func.isRequired,
+   createProgress: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -233,5 +247,6 @@ const mapStateToProps = (state) => ({
 export default connect(mapStateToProps, {
    getFirstPage,
    moveTask,
-   createGroup
+   createGroup,
+   createProgress
 })(Kanban)

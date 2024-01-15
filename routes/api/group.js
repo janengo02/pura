@@ -43,8 +43,9 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 
    //   Prepare: Set up new task_map
    var newTaskMap = page.task_map
+   var task_count = page.tasks.length
    for (let i = 1; i <= page.progress_order.length; i++) {
-      newTaskMap.push(0)
+      newTaskMap.push(task_count)
    }
 
    try {
@@ -86,7 +87,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 })
 
 // @route   POST api/group/update/:page-id/:group-id
-// @desc    Create a new group
+// @desc    Update group
 // @access  Private
 router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
    //   Validation: Check if page exists
