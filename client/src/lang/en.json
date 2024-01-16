@@ -3,6 +3,7 @@
       "alert-": "---------------------------------------------",
       "alert-bad-request": "Bad Request",
       "alert-group_progress-notfound": "Cannot identify group or progress",
+      "alert-group-notfound": "Cannot identify group",
       "alert-invalid-email": "We couldn't find an account with that email",
       "alert-invalid-password": "That password isn't right.",
       "alert-oops": "Oops!",
