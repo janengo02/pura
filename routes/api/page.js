@@ -204,7 +204,7 @@ router.post('/move-task/:id', [auth], async (req, res) => {
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
-      newPage.save()
+      await newPage.save()
       res.json(newPage)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)

@@ -1,13 +1,34 @@
 import React, { useState } from 'react'
+import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
+import { deleteGroup } from '../../../../actions/group'
 
-import { Flex, IconButton, Spacer, VStack } from '@chakra-ui/react'
+import {
+   Flex,
+   IconButton,
+   Menu,
+   MenuButton,
+   MenuItem,
+   MenuList,
+   Spacer,
+   VStack,
+   useDisclosure
+} from '@chakra-ui/react'
 import GroupTitle from '../../../../components/typography/GroupTitle'
 import Column from '../progress/Column'
-import { PiDotsThreeBold, PiPlusBold } from 'react-icons/pi'
+import { PiDotsThreeBold, PiPlusBold, PiTrash } from 'react-icons/pi'
+import t from '../../../../lang/i18n'
 
-const Group = ({ group, i_group, state }) => {
+const Group = ({ deleteGroup, group, i_group, state }) => {
    const [hovered, setHovered] = useState(false)
-
+   const dropdownMenu = useDisclosure()
+   const delGroup = () => {
+      const formData = {
+         page_id: state._id,
+         group_id: group._id
+      }
+      deleteGroup(formData)
+   }
    return (
       <VStack
          p={3}
@@ -29,15 +50,35 @@ const Group = ({ group, i_group, state }) => {
             <GroupTitle color={group.color}>{group.title}</GroupTitle>
             <Spacer />
             <Flex alignItems='center'>
-               <IconButton
-                  aria-label='Options'
-                  icon={<PiDotsThreeBold />}
-                  variant='ghost'
-                  colorScheme='gray'
-                  color='gray.600'
-                  size='xs'
-                  opacity={hovered ? 1 : 0}
-               />
+               <Menu
+                  isOpen={dropdownMenu.isOpen}
+                  onClose={dropdownMenu.onClose}
+                  isLazy
+               >
+                  <MenuButton
+                     as={IconButton}
+                     icon={<PiDotsThreeBold />}
+                     variant='ghost'
+                     size='xs'
+                     colorScheme='gray'
+                     color='gray.600'
+                     opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
+                     onClick={dropdownMenu.onOpen}
+                  ></MenuButton>
+                  <MenuList>
+                     {state.group_order.length > 1 && (
+                        <MenuItem
+                           icon={<PiTrash size={20} />}
+                           onClick={async (e) => {
+                              e.preventDefault()
+                              delGroup()
+                           }}
+                        >
+                           {t('btn-delete')}
+                        </MenuItem>
+                     )}
+                  </MenuList>
+               </Menu>
                <IconButton
                   aria-label='Options'
                   icon={<PiPlusBold />}
@@ -45,7 +86,7 @@ const Group = ({ group, i_group, state }) => {
                   colorScheme='gray'
                   color='gray.600'
                   size='xs'
-                  opacity={hovered ? 1 : 0}
+                  opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
                />
             </Flex>
          </Flex>
@@ -83,4 +124,8 @@ const Group = ({ group, i_group, state }) => {
    )
 }
 
-export default Group
+Group.propTypes = {
+   deleteGroup: PropTypes.func.isRequired
+}
+
+export default connect(null, { deleteGroup })(Group)

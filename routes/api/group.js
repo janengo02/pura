@@ -74,7 +74,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
-      newPage.save()
+      await newPage.save()
 
       res.json(newPage)
    } catch (error) {
@@ -204,18 +204,23 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
 
    //   Prepare: Set up new tasks array
    var newTasks = page.tasks
+   var newTaskMap = page.task_map
    const { group_id } = req.params
    const groupIndex = page.group_order.indexOf(group_id)
    const progressCount = page.progress_order.length
    const mapStart = progressCount * groupIndex
    const mapEnd = mapStart + progressCount - 1
+   var newTaskStart = 0
+   if (mapStart !== 0) {
+      newTaskStart = newTaskMap[mapStart - 1]
+   }
+   newTaskEnd = newTaskMap[mapEnd] - 1
 
    //   Prepare: Set up new group_order
    var newGroupOrder = page.group_order
    newGroupOrder.splice(groupIndex, 1)
 
    //   Prepare: Set up new task_map
-   var newTaskMap = page.task_map
    var taskCount = newTaskMap[mapEnd]
    if (mapStart !== 0) {
       taskCount = newTaskMap[mapEnd] - newTaskMap[mapStart - 1]
@@ -227,26 +232,25 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
 
    try {
       // Data: Delete tasks
-      if (newTaskMap[mapStart] !== newTaskMap[mapEnd]) {
-         newTaskStart = newTaskMap[mapStart]
-         newTaskEnd = newTaskMap[mapEnd] - 1
 
-         for (let i = newTaskStart; i <= newTaskEnd.length; i++) {
-            deletedTaskId = newTasks[i]
-            await Task.deleteOne({ _id: deletedTaskId })
-         }
-         newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
+      for (let i = newTaskStart; i <= newTaskEnd; i++) {
+         deletedTaskId = newTasks[i]
+         await Task.deleteOne({ _id: deletedTaskId })
       }
+      newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
 
       // Data: Delete group
       await group.deleteOne()
 
-      // Data: Add new group to page
+      // Data: Update page's arrays
+      page.group_order = newGroupOrder
+      page.tasks = newTasks
+      page.task_map = newTaskMap
+      await page.save()
+      // Data: Get new page
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.page_id },
          {
-            $set: { group_order: newGroupOrder },
-            $set: { tasks: newTasks },
             $set: { update_date: new Date() }
          },
          { new: true }
@@ -259,10 +263,6 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'schedule'])
-
-      // Data: Update page's task_map
-      newPage.task_map = newTaskMap
-      newPage.save()
 
       res.json(newPage)
    } catch (error) {

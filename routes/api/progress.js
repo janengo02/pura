@@ -75,7 +75,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
-      newPage.save()
+      await newPage.save()
 
       res.json(newPage)
    } catch (error) {

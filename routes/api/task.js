@@ -71,7 +71,7 @@ router.post(
          // Data: Add new task
          const task = new Task(newTask)
          await task.save()
-
+         console.log(req.params.page_id)
          // Data: Add new progress to page
          const newPage = await Page.findOneAndUpdate(
             { _id: req.params.page_id },
@@ -97,7 +97,7 @@ router.post(
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap
-         newPage.save()
+         await newPage.save()
 
          res.json(newPage)
       } catch (error) {
