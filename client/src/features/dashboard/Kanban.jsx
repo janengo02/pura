@@ -154,6 +154,10 @@ const Kanban = ({
                                     progress.title !== '' ? (
                                        <ProgressHeader
                                           key={progress._id}
+                                          page_id={state._id}
+                                          progressCount={
+                                             state.progress_order.length
+                                          }
                                           progress={progress}
                                        />
                                     ) : (

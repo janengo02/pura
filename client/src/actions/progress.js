@@ -47,3 +47,26 @@ export const updateProgress = (formData) => async (dispatch) => {
       // console.clear()
    }
 }
+
+// Delete a progress
+export const deleteProgress = (formData) => async (dispatch) => {
+   try {
+      const res = await api.delete(
+         `/progress/${formData.page_id}/${formData.progress_id}`
+      )
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data
+      })
+   } catch (err) {
+      const errors = err.response.data.errors
+      dispatch({
+         type: PAGE_ERROR,
+         payload: {
+            _id: formData.page_id,
+            errors: errors
+         }
+      })
+      // console.clear()
+   }
+}
