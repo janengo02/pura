@@ -117,23 +117,25 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
       return res.status(400).json({ errors: result.array() })
    }
 
+   //   Validation: Check if progress exists
+   const progress = await Progress.findById(req.params.progress_id)
+   if (!progress) {
+      return res.status(404).json({
+         errors: [
+            { code: '404', title: 'alert-oops', msg: 'alert-progress-notfound' }
+         ]
+      })
+   }
    //   Prepare: Set up new progress
    const { title, title_color, color } = req.body
-   const newProgress = {
-      title: 'Untitled',
-      update_date: new Date()
-   }
-   if (title && title !== '') newProgress.title = title
-   if (title_color) newProgress.title_color = title_color
-   if (color) newProgress.color = color
+   progress.update_date = new Date()
+   if (title) progress.title = title
+   if (title_color) progress.title_color = title_color
+   if (color) progress.color = color
 
    try {
       // Data: update group
-      const progress = await Progress.findOneAndUpdate(
-         { _id: req.params.progress_id },
-         { $set: newProgress },
-         { new: true }
-      )
+      await progress.save()
 
       // Data: get new page
       const newPage = await Page.findOneAndUpdate(

@@ -7,7 +7,7 @@ const GroupSchema = new mongoose.Schema({
    },
    color: {
       type: String,
-      default: '#63b3ed'
+      default: '#4A5568'
    },
    visibility: {
       type: Boolean,

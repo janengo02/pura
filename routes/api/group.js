@@ -128,21 +128,13 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
 
    //   Prepare: Set up new group
    const { title, color } = req.body
-   const newGroup = {
-      title: 'Untitled',
-      update_date: new Date()
-   }
-   if (title && title !== '') newGroup.title = title
-   if (color) newGroup.color = color
+   group.update_date = new Date()
+   if (title) group.title = title
+   if (color) group.color = color
 
    try {
       // Data: update group
-      const group = await Group.findOneAndUpdate(
-         { _id: req.params.group_id },
-         { $set: newGroup },
-         { new: true }
-      )
-
+      await group.save()
       // Data: get new page
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.page_id },

@@ -22,6 +22,9 @@ const NewGroup = ({ updateGroup, group, i_group, state }) => {
          group_id: group._id,
          title: data.title
       }
+      if (formData.title === '') {
+         formData.title = 'Untitled'
+      }
       updateGroup(formData)
    })
    return (
@@ -30,7 +33,7 @@ const NewGroup = ({ updateGroup, group, i_group, state }) => {
          paddingTop={0}
          gap={0}
          borderWidth={2}
-         borderColor={group.color}
+         borderColor='gray.100'
          borderRadius={8}
          alignItems='flex-start'
       >
@@ -46,8 +49,9 @@ const NewGroup = ({ updateGroup, group, i_group, state }) => {
                      e.preventDefault()
                      onBlur()
                   }}
-                  color='gray.600'
+                  color={group.color}
                   fontWeight={600}
+                  borderRadius={0}
                   autoFocus
                />
             </form>

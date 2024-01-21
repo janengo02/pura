@@ -128,25 +128,28 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() })
    }
+
+   //   Validation: Check if task exists
+   const task = await Task.findById(req.params.task_id)
+   if (!task) {
+      return res.status(404).json({
+         errors: [
+            { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
+         ]
+      })
+   }
    //   Prepare: Set up new task
    const { group_id, progress_id, title, schedule, content } = req.body
-   const newTask = {
-      title: 'Untitled',
-      update_date: new Date()
-   }
-   if (title && title !== '') newTask.title = title
-   if (schedule) newTask.schedule = schedule
-   if (content) newTask.content = content
+   task.update_date = new Date()
+   if (title) task.title = title
+   if (schedule) task.schedule = schedule
+   if (content) task.content = content
 
    if (group_id || progress_id) {
       //   TODO: Prepare: Set up new task_map
    }
    try {
-      const task = await Task.findOneAndUpdate(
-         { _id: req.params.task_id },
-         { $set: newTask },
-         { new: true }
-      )
+      await task.save()
       // Data: get new page
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.page_id },

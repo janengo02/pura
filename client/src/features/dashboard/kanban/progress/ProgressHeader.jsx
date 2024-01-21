@@ -73,13 +73,14 @@ const ProgressHeader = ({
                   <MenuList>
                      {progressCount > 1 && (
                         <MenuItem
-                           icon={<PiTrash size={20} />}
+                           icon={<PiTrash size={18} />}
+                           fontSize='sm'
                            onClick={async (e) => {
                               e.preventDefault()
                               delProgress()
                            }}
                         >
-                           {t('btn-delete')}
+                           {t('btn-delete-column')}
                         </MenuItem>
                      )}
                   </MenuList>

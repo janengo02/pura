@@ -24,6 +24,9 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
          task_id: task_id,
          title: data.title
       }
+      if (formData.title === '') {
+         formData.title = 'Untitled'
+      }
       updateTask(formData)
    })
 
@@ -58,6 +61,7 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                         }}
                         color='gray.600'
                         fontWeight={600}
+                        borderRadius={0}
                         autoFocus
                      />
                   </form>

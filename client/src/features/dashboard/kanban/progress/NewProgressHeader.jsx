@@ -22,6 +22,9 @@ const NewProgressHeader = ({ updateProgress, page_id, progress }) => {
          progress_id: progress._id,
          title: data.title
       }
+      if (formData.title === '') {
+         formData.title = 'Untitled'
+      }
       updateProgress(formData)
    })
    return (
@@ -48,6 +51,7 @@ const NewProgressHeader = ({ updateProgress, page_id, progress }) => {
                      }}
                      color='gray.600'
                      fontWeight={600}
+                     borderRadius={0}
                      p={0}
                      autoFocus
                   />
