@@ -22,7 +22,6 @@ import {
    PiCircleDuotone,
    PiDotsThreeBold,
    PiPencilLine,
-   PiPlusBold,
    PiTrash
 } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -80,7 +79,7 @@ const ProgressHeader = ({
          variant='filled'
          bg={progress.color}
          paddingLeft={3}
-         paddingRight={1}
+         paddingRight={2}
          w={250}
          h={8}
          justifyContent='center'
@@ -125,90 +124,80 @@ const ProgressHeader = ({
                      {progress.title}
                   </Text>
                   <Spacer />
-                  <Flex alignItems='center'>
-                     <Menu
-                        isOpen={dropdownMenu.isOpen}
-                        onClose={dropdownMenu.onClose}
-                        isLazy
-                     >
-                        <MenuButton
-                           as={IconButton}
-                           icon={<PiDotsThreeBold />}
-                           variant='ghost'
-                           size='xs'
-                           colorScheme='blackAlpha'
-                           opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-                           onClick={dropdownMenu.onOpen}
-                        ></MenuButton>
-                        <MenuList>
+                  <Menu
+                     isOpen={dropdownMenu.isOpen}
+                     onClose={dropdownMenu.onClose}
+                     isLazy
+                  >
+                     <MenuButton
+                        as={IconButton}
+                        icon={<PiDotsThreeBold />}
+                        variant='ghost'
+                        size='xs'
+                        colorScheme='blackAlpha'
+                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
+                        onClick={dropdownMenu.onOpen}
+                     ></MenuButton>
+                     <MenuList>
+                        <MenuItem
+                           icon={<PiPencilLine size={18} />}
+                           fontSize='sm'
+                           onClick={async (e) => {
+                              e.preventDefault()
+                              setEditing(true)
+                           }}
+                        >
+                           {t('btn-edit-name')}
+                        </MenuItem>
+                        {progressCount > 1 && (
                            <MenuItem
-                              icon={<PiPencilLine size={18} />}
+                              icon={<PiTrash size={18} />}
                               fontSize='sm'
                               onClick={async (e) => {
                                  e.preventDefault()
-                                 setEditing(true)
+                                 delProgress()
                               }}
                            >
-                              {t('btn-edit-group_title')}
+                              {t('btn-delete-column')}
                            </MenuItem>
-                           {progressCount > 1 && (
-                              <MenuItem
-                                 icon={<PiTrash size={18} />}
+                        )}
+                        <MenuDivider />
+                        <MenuOptionGroup
+                           defaultValue={progress.title_color}
+                           title={t('label-color')}
+                           fontSize='sm'
+                           type='radio'
+                        >
+                           {progressColors.map((colorOption) => (
+                              <MenuItemOption
+                                 key={colorOption.title_color}
+                                 value={colorOption.title_color}
                                  fontSize='sm'
                                  onClick={async (e) => {
                                     e.preventDefault()
-                                    delProgress()
+                                    if (
+                                       colorOption.title_color !==
+                                       progress.title_color
+                                    ) {
+                                       changeColor(
+                                          colorOption.color,
+                                          colorOption.title_color
+                                       )
+                                    }
                                  }}
                               >
-                                 {t('btn-delete-column')}
-                              </MenuItem>
-                           )}
-                           <MenuDivider />
-                           <MenuOptionGroup
-                              defaultValue={progress.title_color}
-                              title={t('label-color')}
-                              fontSize='sm'
-                              type='radio'
-                           >
-                              {progressColors.map((colorOption) => (
-                                 <MenuItemOption
-                                    key={colorOption.title_color}
-                                    value={colorOption.title_color}
-                                    fontSize='sm'
-                                    onClick={async (e) => {
-                                       e.preventDefault()
-                                       if (
-                                          colorOption.title_color !==
-                                          progress.title_color
-                                       ) {
-                                          changeColor(
-                                             colorOption.color,
-                                             colorOption.title_color
-                                          )
-                                       }
-                                    }}
-                                 >
-                                    <Flex alignItems='center' gap={2}>
-                                       <PiCircleDuotone
-                                          size={18}
-                                          color={colorOption.title_color}
-                                       />
-                                       {colorOption.title}
-                                    </Flex>
-                                 </MenuItemOption>
-                              ))}
-                           </MenuOptionGroup>
-                        </MenuList>
-                     </Menu>
-                     <IconButton
-                        aria-label='Options'
-                        icon={<PiPlusBold />}
-                        variant='ghost'
-                        colorScheme='blackAlpha'
-                        size='xs'
-                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-                     />
-                  </Flex>
+                                 <Flex alignItems='center' gap={2}>
+                                    <PiCircleDuotone
+                                       size={18}
+                                       color={colorOption.title_color}
+                                    />
+                                    {colorOption.title}
+                                 </Flex>
+                              </MenuItemOption>
+                           ))}
+                        </MenuOptionGroup>
+                     </MenuList>
+                  </Menu>
                </>
             )}
          </Flex>

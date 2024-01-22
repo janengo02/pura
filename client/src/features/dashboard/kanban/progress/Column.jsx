@@ -42,6 +42,7 @@ const Column = ({
                      task.title !== '' ? (
                         <TaskCard
                            key={taskPointer + i_task} //has to match draggableId
+                           page_id={newTaskInfo.page_id}
                            task={task}
                            draggableId={(taskPointer + i_task).toString()}
                            index={i_task}

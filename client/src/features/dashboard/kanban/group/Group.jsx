@@ -22,7 +22,6 @@ import {
    PiCircleFill,
    PiDotsThreeBold,
    PiPencilLine,
-   PiPlusBold,
    PiTrash
 } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -116,86 +115,75 @@ const Group = ({ updateGroup, deleteGroup, group, i_group, state }) => {
             ) : (
                <>
                   <GroupTitle color={group.color}>{group.title}</GroupTitle>
-                  <Flex alignItems='center'>
-                     <Menu
-                        isOpen={dropdownMenu.isOpen}
-                        onClose={dropdownMenu.onClose}
-                        isLazy
-                     >
-                        <MenuButton
-                           as={IconButton}
-                           icon={<PiDotsThreeBold />}
-                           variant='ghost'
-                           size='xs'
-                           colorScheme='gray'
-                           color='gray.600'
-                           opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-                           onClick={dropdownMenu.onOpen}
-                        ></MenuButton>
-                        <MenuList>
+                  <Menu
+                     isOpen={dropdownMenu.isOpen}
+                     onClose={dropdownMenu.onClose}
+                     isLazy
+                  >
+                     <MenuButton
+                        as={IconButton}
+                        icon={<PiDotsThreeBold />}
+                        variant='ghost'
+                        size='xs'
+                        colorScheme='gray'
+                        color='gray.600'
+                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
+                        onClick={dropdownMenu.onOpen}
+                     ></MenuButton>
+                     <MenuList>
+                        <MenuItem
+                           icon={<PiPencilLine size={18} />}
+                           fontSize='sm'
+                           onClick={async (e) => {
+                              e.preventDefault()
+                              setEditing(true)
+                           }}
+                        >
+                           {t('btn-edit-name')}
+                        </MenuItem>
+                        {state.group_order.length > 1 && (
                            <MenuItem
-                              icon={<PiPencilLine size={18} />}
+                              icon={<PiTrash size={18} />}
                               fontSize='sm'
                               onClick={async (e) => {
                                  e.preventDefault()
-                                 setEditing(true)
+                                 delGroup()
                               }}
                            >
-                              {t('btn-edit-group_title')}
+                              {t('btn-delete-group')}
                            </MenuItem>
-                           {state.group_order.length > 1 && (
-                              <MenuItem
-                                 icon={<PiTrash size={18} />}
+                        )}
+                        <MenuDivider />
+                        <MenuOptionGroup
+                           defaultValue={group.color}
+                           title={t('label-color')}
+                           fontSize='sm'
+                           type='radio'
+                        >
+                           {groupColors.map((colorOption) => (
+                              <MenuItemOption
+                                 key={colorOption.color}
+                                 value={colorOption.color}
                                  fontSize='sm'
                                  onClick={async (e) => {
                                     e.preventDefault()
-                                    delGroup()
+                                    if (colorOption.color !== group.color) {
+                                       changeColor(colorOption.color)
+                                    }
                                  }}
                               >
-                                 {t('btn-delete-group')}
-                              </MenuItem>
-                           )}
-                           <MenuDivider />
-                           <MenuOptionGroup
-                              defaultValue={group.color}
-                              title={t('label-color')}
-                              fontSize='sm'
-                              type='radio'
-                           >
-                              {groupColors.map((colorOption) => (
-                                 <MenuItemOption
-                                    key={colorOption.color}
-                                    value={colorOption.color}
-                                    fontSize='sm'
-                                    onClick={async (e) => {
-                                       e.preventDefault()
-                                       if (colorOption.color !== group.color) {
-                                          changeColor(colorOption.color)
-                                       }
-                                    }}
-                                 >
-                                    <Flex alignItems='center' gap={2}>
-                                       <PiCircleFill
-                                          size={18}
-                                          color={colorOption.color}
-                                       />
-                                       {colorOption.title}
-                                    </Flex>
-                                 </MenuItemOption>
-                              ))}
-                           </MenuOptionGroup>
-                        </MenuList>
-                     </Menu>
-                     <IconButton
-                        aria-label='Options'
-                        icon={<PiPlusBold />}
-                        variant='ghost'
-                        colorScheme='gray'
-                        color='gray.600'
-                        size='xs'
-                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-                     />
-                  </Flex>
+                                 <Flex alignItems='center' gap={2}>
+                                    <PiCircleFill
+                                       size={18}
+                                       color={colorOption.color}
+                                    />
+                                    {colorOption.title}
+                                 </Flex>
+                              </MenuItemOption>
+                           ))}
+                        </MenuOptionGroup>
+                     </MenuList>
+                  </Menu>
                </>
             )}
          </Flex>

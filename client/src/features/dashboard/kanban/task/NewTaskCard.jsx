@@ -44,7 +44,7 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                w='full'
                marginBottom={1}
             >
-               <Text fontSize='xs' color='red.500' marginBottom={-2}>
+               <Text h={6} fontSize='xs' color='red.500' marginBottom={-2}>
                   {t('schedule_status-false')}
                </Text>
                <FormProvider {...methods} h='fit-content'>
