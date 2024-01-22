@@ -35,8 +35,9 @@ const NewProgressHeader = ({ updateProgress, page_id, progress }) => {
          paddingRight={1}
          w={250}
          h={8}
+         justifyContent='center'
       >
-         <Flex flexDirection='column' justifyContent='center' overflow='hidden'>
+         <Flex>
             <FormProvider {...methods} h='fit-content'>
                <form noValidate autoComplete='on'>
                   <MultiInput

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { deleteProgress } from '../../../../actions/progress'
+import { deleteProgress, updateProgress } from '../../../../actions/progress'
 
 import {
    Card,
@@ -9,22 +9,38 @@ import {
    IconButton,
    Menu,
    MenuButton,
+   MenuDivider,
    MenuItem,
+   MenuItemOption,
    MenuList,
+   MenuOptionGroup,
    Spacer,
    Text,
    useDisclosure
 } from '@chakra-ui/react'
-import { PiDotsThreeBold, PiPlusBold, PiTrash } from 'react-icons/pi'
+import {
+   PiCircleDuotone,
+   PiDotsThreeBold,
+   PiPencilLine,
+   PiPlusBold,
+   PiTrash
+} from 'react-icons/pi'
 import t from '../../../../lang/i18n'
+import { FormProvider, useForm } from 'react-hook-form'
+import { MultiInput } from '../../../../components/MultiInput'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { dashboardSchema as s } from '../../DashboardSchema'
+import { progressColors } from '../../../../components/data/defaultColor'
 
 const ProgressHeader = ({
+   updateProgress,
    deleteProgress,
    page_id,
    progressCount,
    progress
 }) => {
    const [hovered, setHovered] = useState(false)
+   const [editing, setEditing] = useState(false)
    const dropdownMenu = useDisclosure()
    const delProgress = () => {
       const formData = {
@@ -33,14 +49,41 @@ const ProgressHeader = ({
       }
       deleteProgress(formData)
    }
+   const methods = useForm({
+      resolver: yupResolver(s)
+   })
+
+   const onBlur = methods.handleSubmit(async (data) => {
+      const formData = {
+         page_id: page_id,
+         progress_id: progress._id,
+         title: data.title
+      }
+      if (formData.title === '') {
+         formData.title = 'Untitled'
+      }
+      await updateProgress(formData)
+      setEditing(false)
+   })
+
+   const changeColor = (color, title_color) => {
+      const formData = {
+         page_id: page_id,
+         progress_id: progress._id,
+         color: color,
+         title_color: title_color
+      }
+      updateProgress(formData)
+   }
    return (
       <Card
          variant='filled'
          bg={progress.color}
          paddingLeft={3}
          paddingRight={1}
-         paddingY={1}
          w={250}
+         h={8}
+         justifyContent='center'
          onMouseEnter={(e) => {
             e.preventDefault()
             setHovered(true)
@@ -50,57 +93,132 @@ const ProgressHeader = ({
             setHovered(false)
          }}
       >
-         <Flex w='full' alignItems='center'>
-            <Text color={progress.title_color} fontWeight={500}>
-               {progress.title}
-            </Text>
-            <Spacer />
-            <Flex alignItems='center'>
-               <Menu
-                  isOpen={dropdownMenu.isOpen}
-                  onClose={dropdownMenu.onClose}
-                  isLazy
-               >
-                  <MenuButton
-                     as={IconButton}
-                     icon={<PiDotsThreeBold />}
-                     variant='ghost'
-                     size='xs'
-                     colorScheme='blackAlpha'
-                     opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-                     onClick={dropdownMenu.onOpen}
-                  ></MenuButton>
-                  <MenuList>
-                     {progressCount > 1 && (
-                        <MenuItem
-                           icon={<PiTrash size={18} />}
-                           fontSize='sm'
-                           onClick={async (e) => {
-                              e.preventDefault()
-                              delProgress()
-                           }}
-                        >
-                           {t('btn-delete-column')}
-                        </MenuItem>
-                     )}
-                  </MenuList>
-               </Menu>
-               <IconButton
-                  aria-label='Options'
-                  icon={<PiPlusBold />}
-                  variant='ghost'
-                  colorScheme='blackAlpha'
-                  size='xs'
-                  opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-               />
-            </Flex>
+         <Flex>
+            {editing ? (
+               <FormProvider {...methods} h='fit-content'>
+                  <form noValidate autoComplete='on'>
+                     <MultiInput
+                        name='title'
+                        type='text'
+                        variant='unstyled'
+                        placeholder={t('placeholder-untitled')}
+                        validation={s.name}
+                        defaultValue={progress.title}
+                        color={progress.title_color}
+                        fontWeight={600}
+                        borderRadius={0}
+                        autoFocus
+                        onFocus={async (e) => {
+                           e.preventDefault()
+                           e.currentTarget.select()
+                        }}
+                        onBlur={async (e) => {
+                           e.preventDefault()
+                           onBlur()
+                        }}
+                     />
+                  </form>
+               </FormProvider>
+            ) : (
+               <>
+                  <Text color={progress.title_color} fontWeight={500}>
+                     {progress.title}
+                  </Text>
+                  <Spacer />
+                  <Flex alignItems='center'>
+                     <Menu
+                        isOpen={dropdownMenu.isOpen}
+                        onClose={dropdownMenu.onClose}
+                        isLazy
+                     >
+                        <MenuButton
+                           as={IconButton}
+                           icon={<PiDotsThreeBold />}
+                           variant='ghost'
+                           size='xs'
+                           colorScheme='blackAlpha'
+                           opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
+                           onClick={dropdownMenu.onOpen}
+                        ></MenuButton>
+                        <MenuList>
+                           <MenuItem
+                              icon={<PiPencilLine size={18} />}
+                              fontSize='sm'
+                              onClick={async (e) => {
+                                 e.preventDefault()
+                                 setEditing(true)
+                              }}
+                           >
+                              {t('btn-edit-group_title')}
+                           </MenuItem>
+                           {progressCount > 1 && (
+                              <MenuItem
+                                 icon={<PiTrash size={18} />}
+                                 fontSize='sm'
+                                 onClick={async (e) => {
+                                    e.preventDefault()
+                                    delProgress()
+                                 }}
+                              >
+                                 {t('btn-delete-column')}
+                              </MenuItem>
+                           )}
+                           <MenuDivider />
+                           <MenuOptionGroup
+                              defaultValue={progress.title_color}
+                              title={t('label-color')}
+                              fontSize='sm'
+                              type='radio'
+                           >
+                              {progressColors.map((colorOption) => (
+                                 <MenuItemOption
+                                    key={colorOption.title_color}
+                                    value={colorOption.title_color}
+                                    fontSize='sm'
+                                    onClick={async (e) => {
+                                       e.preventDefault()
+                                       if (
+                                          colorOption.title_color !==
+                                          progress.title_color
+                                       ) {
+                                          changeColor(
+                                             colorOption.color,
+                                             colorOption.title_color
+                                          )
+                                       }
+                                    }}
+                                 >
+                                    <Flex alignItems='center' gap={2}>
+                                       <PiCircleDuotone
+                                          size={18}
+                                          color={colorOption.title_color}
+                                       />
+                                       {colorOption.title}
+                                    </Flex>
+                                 </MenuItemOption>
+                              ))}
+                           </MenuOptionGroup>
+                        </MenuList>
+                     </Menu>
+                     <IconButton
+                        aria-label='Options'
+                        icon={<PiPlusBold />}
+                        variant='ghost'
+                        colorScheme='blackAlpha'
+                        size='xs'
+                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
+                     />
+                  </Flex>
+               </>
+            )}
          </Flex>
       </Card>
    )
 }
 
 ProgressHeader.propTypes = {
-   deleteProgress: PropTypes.func.isRequired
+   deleteProgress: PropTypes.func.isRequired,
+   updateProgress: PropTypes.func.isRequired
 }
 
-export default connect(null, { deleteProgress })(ProgressHeader)
+export default connect(null, { deleteProgress, updateProgress })(ProgressHeader)
