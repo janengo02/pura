@@ -154,7 +154,6 @@ const TaskCard = ({
                      alignItems='center'
                      overflow='hidden'
                      cursor='pointer'
-                     onClick={modalCard.onOpen}
                   >
                      {editing ? (
                         <FormProvider {...methods} h='fit-content'>
@@ -177,11 +176,22 @@ const TaskCard = ({
                                     e.preventDefault()
                                     onBlur()
                                  }}
+                                 onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                       e.preventDefault()
+                                       onBlur()
+                                    }
+                                 }}
                               />
                            </form>
                         </FormProvider>
                      ) : (
-                        <Text color='gray.600' fontWeight={600}>
+                        <Text
+                           w='full'
+                           color='gray.600'
+                           fontWeight={600}
+                           onClick={modalCard.onOpen}
+                        >
                            {task.title}
                         </Text>
                      )}
@@ -243,6 +253,12 @@ const TaskCard = ({
                            onBlur={async (e) => {
                               e.preventDefault()
                               onBlur()
+                           }}
+                           onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                 e.preventDefault()
+                                 onBlur()
+                              }
                            }}
                         />
                      </form>

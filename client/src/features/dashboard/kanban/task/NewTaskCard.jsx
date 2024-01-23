@@ -55,14 +55,20 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                            variant='unstyled'
                            placeholder={t('placeholder-task_title')}
                            validation={s.name}
-                           onBlur={async (e) => {
-                              e.preventDefault()
-                              onBlur()
-                           }}
                            color='gray.600'
                            fontWeight={600}
                            borderRadius={0}
                            autoFocus
+                           onBlur={async (e) => {
+                              e.preventDefault()
+                              onBlur()
+                           }}
+                           onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                 e.preventDefault()
+                                 onBlur()
+                              }
+                           }}
                         />
                      </form>
                   </FormProvider>
