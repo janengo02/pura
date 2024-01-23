@@ -63,12 +63,6 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                               e.preventDefault()
                               onBlur()
                            }}
-                           onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                 e.preventDefault()
-                                 onBlur()
-                              }
-                           }}
                         />
                      </form>
                   </FormProvider>

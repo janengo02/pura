@@ -41,6 +41,12 @@ export const MultiInput = ({
                placeholder={placeholder}
                size={size}
                validation={validation}
+               onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                     e.preventDefault()
+                     e.currentTarget.blur()
+                  }
+               }}
                {...props}
             />
          )
@@ -53,6 +59,12 @@ export const MultiInput = ({
                variant={variant}
                size={size}
                validation={validation}
+               onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                     e.preventDefault()
+                     e.currentTarget.blur()
+                  }
+               }}
                {...props}
             />
          )

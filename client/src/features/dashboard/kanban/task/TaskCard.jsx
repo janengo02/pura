@@ -176,12 +176,6 @@ const TaskCard = ({
                                     e.preventDefault()
                                     onBlur()
                                  }}
-                                 onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                       e.preventDefault()
-                                       onBlur()
-                                    }
-                                 }}
                               />
                            </form>
                         </FormProvider>
@@ -253,12 +247,6 @@ const TaskCard = ({
                            onBlur={async (e) => {
                               e.preventDefault()
                               onBlur()
-                           }}
-                           onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                 e.preventDefault()
-                                 onBlur()
-                              }
                            }}
                         />
                      </form>
