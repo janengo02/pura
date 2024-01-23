@@ -180,4 +180,70 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    }
 })
 
+// @route   DELETE api/task/:page-id/:task-id
+// @desc    Delete a task
+// @access  Private
+router.delete('/:page_id/:task_id', [auth], async (req, res) => {
+   //   Validation: Check if page exists
+   const page = await Page.findById(req.params.page_id)
+   if (!page) {
+      return res.status(404).json({ msg: 'Page not found' })
+   }
+   //   Validation: Check if user is the owner
+   if (page.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' })
+   }
+
+   //   Validation: Check if task exists
+   const task = await Task.findById(req.params.task_id)
+   if (!task) {
+      return res.status(404).json({
+         errors: [
+            { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
+         ]
+      })
+   }
+   //   Prepare: Set up new tasks array
+   const { task_id } = req.params
+   var newTasks = page.tasks
+   const taskIndex = newTasks.indexOf(task_id)
+   newTasks.splice(taskIndex, 1)
+
+   //   Prepare: Set up new task_map
+   var newTaskMap = page.task_map
+   for (let i = 0; i < newTaskMap.length; i++) {
+      if (newTaskMap[i] > taskIndex) newTaskMap[i]--
+   }
+
+   try {
+      await Task.deleteOne({ _id: task_id })
+      // Data: Update page's arrays
+      page.tasks = newTasks
+      page.task_map = newTaskMap
+      await page.save()
+      // Data: get new page
+      const newPage = await Page.findOneAndUpdate(
+         { _id: req.params.page_id },
+         { $set: { update_date: new Date() } },
+         { new: true }
+      )
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'schedule'])
+
+      res.json(newPage)
+   } catch (error) {
+      console.error('---ERROR---: ' + error.message)
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
+   }
+})
 module.exports = router

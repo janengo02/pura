@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { updateTask } from '../../../../actions/task'
 
 import { Draggable } from 'react-beautiful-dnd'
-import { Card, Text } from '@chakra-ui/react'
+import { Card, Flex, Text } from '@chakra-ui/react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { MultiInput } from '../../../../components/MultiInput'
@@ -40,32 +40,33 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                variant='outline'
                boxShadow={snapshot.isDragging ? 'md' : undefined}
                p={2}
-               paddingBottom={0}
                w='full'
                marginBottom={1}
             >
-               <Text h={6} fontSize='xs' color='red.500' marginBottom={-2}>
+               <Text h={6} fontSize='xs' color='red.500'>
                   {t('schedule_status-false')}
                </Text>
-               <FormProvider {...methods} h='fit-content'>
-                  <form noValidate autoComplete='on'>
-                     <MultiInput
-                        name='title'
-                        type='text'
-                        variant='unstyled'
-                        placeholder={t('placeholder-task_title')}
-                        validation={s.name}
-                        onBlur={async (e) => {
-                           e.preventDefault()
-                           onBlur()
-                        }}
-                        color='gray.600'
-                        fontWeight={600}
-                        borderRadius={0}
-                        autoFocus
-                     />
-                  </form>
-               </FormProvider>
+               <Flex h={6} alignItems='center' overflow='hidden'>
+                  <FormProvider {...methods} h='fit-content'>
+                     <form noValidate autoComplete='on'>
+                        <MultiInput
+                           name='title'
+                           type='text'
+                           variant='unstyled'
+                           placeholder={t('placeholder-task_title')}
+                           validation={s.name}
+                           onBlur={async (e) => {
+                              e.preventDefault()
+                              onBlur()
+                           }}
+                           color='gray.600'
+                           fontWeight={600}
+                           borderRadius={0}
+                           autoFocus
+                        />
+                     </form>
+                  </FormProvider>
+               </Flex>
             </Card>
          )}
       </Draggable>

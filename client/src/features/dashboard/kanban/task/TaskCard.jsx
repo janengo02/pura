@@ -21,13 +21,26 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { MultiInput } from '../../../../components/MultiInput'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { dashboardSchema as s } from '../../DashboardSchema'
-import { updateTask } from '../../../../actions/task'
+import { deleteTask, updateTask } from '../../../../actions/task'
 
-const TaskCard = ({ updateTask, page_id, task, draggableId, index }) => {
+const TaskCard = ({
+   deleteTask,
+   updateTask,
+   page_id,
+   task,
+   draggableId,
+   index
+}) => {
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)
    const dropdownMenu = useDisclosure()
-
+   const delTask = () => {
+      const formData = {
+         page_id: page_id,
+         task_id: task._id
+      }
+      deleteTask(formData)
+   }
    const methods = useForm({
       resolver: yupResolver(s)
    })
@@ -55,7 +68,6 @@ const TaskCard = ({ updateTask, page_id, task, draggableId, index }) => {
                boxShadow={snapshot.isDragging ? 'md' : undefined}
                p={2}
                w='full'
-               paddingBottom={editing ? 0 : undefined}
                marginBottom={1}
                onMouseEnter={(e) => {
                   e.preventDefault()
@@ -108,6 +120,7 @@ const TaskCard = ({ updateTask, page_id, task, draggableId, index }) => {
                            fontSize='sm'
                            onClick={async (e) => {
                               e.preventDefault()
+                              delTask()
                            }}
                         >
                            {t('btn-delete-task')}
@@ -115,35 +128,37 @@ const TaskCard = ({ updateTask, page_id, task, draggableId, index }) => {
                      </MenuList>
                   </Menu>
                </Flex>
-               {editing ? (
-                  <FormProvider {...methods} h='fit-content'>
-                     <form noValidate autoComplete='on'>
-                        <MultiInput
-                           name='title'
-                           type='text'
-                           variant='unstyled'
-                           placeholder={t('placeholder-untitled')}
-                           validation={s.name}
-                           defaultValue={task.title}
-                           fontWeight={600}
-                           borderRadius={0}
-                           autoFocus
-                           onFocus={async (e) => {
-                              e.preventDefault()
-                              e.currentTarget.select()
-                           }}
-                           onBlur={async (e) => {
-                              e.preventDefault()
-                              onBlur()
-                           }}
-                        />
-                     </form>
-                  </FormProvider>
-               ) : (
-                  <Text color='gray.600' fontWeight={600}>
-                     {task.title}
-                  </Text>
-               )}
+               <Flex h={6} alignItems='center' overflow='hidden'>
+                  {editing ? (
+                     <FormProvider {...methods} h='fit-content'>
+                        <form noValidate autoComplete='on'>
+                           <MultiInput
+                              name='title'
+                              type='text'
+                              variant='unstyled'
+                              placeholder={t('placeholder-untitled')}
+                              validation={s.name}
+                              defaultValue={task.title}
+                              fontWeight={600}
+                              borderRadius={0}
+                              autoFocus
+                              onFocus={async (e) => {
+                                 e.preventDefault()
+                                 e.currentTarget.select()
+                              }}
+                              onBlur={async (e) => {
+                                 e.preventDefault()
+                                 onBlur()
+                              }}
+                           />
+                        </form>
+                     </FormProvider>
+                  ) : (
+                     <Text color='gray.600' fontWeight={600}>
+                        {task.title}
+                     </Text>
+                  )}
+               </Flex>
             </Card>
          )}
       </Draggable>
@@ -151,7 +166,8 @@ const TaskCard = ({ updateTask, page_id, task, draggableId, index }) => {
 }
 
 TaskCard.propTypes = {
-   updateTask: PropTypes.func.isRequired
+   updateTask: PropTypes.func.isRequired,
+   deleteTask: PropTypes.func.isRequired
 }
 
-export default connect(null, { updateTask })(TaskCard)
+export default connect(null, { updateTask, deleteTask })(TaskCard)

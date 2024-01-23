@@ -46,3 +46,25 @@ export const updateTask = (formData) => async (dispatch) => {
       // console.clear()
    }
 }
+// Delete a task
+export const deleteTask = (formData) => async (dispatch) => {
+   try {
+      const res = await api.delete(
+         `/task/${formData.page_id}/${formData.task_id}`
+      )
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data
+      })
+   } catch (err) {
+      const errors = err.response.data.errors
+      dispatch({
+         type: PAGE_ERROR,
+         payload: {
+            _id: formData.page_id,
+            errors: errors
+         }
+      })
+      // console.clear()
+   }
+}
