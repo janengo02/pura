@@ -203,7 +203,9 @@ const Group = ({ updateGroup, deleteGroup, group, i_group, state }) => {
                const newTaskInfo = {
                   page_id: state._id,
                   group_id: group._id,
-                  progress_id: progress._id
+                  progress_id: progress._id,
+                  groups: state.group_order,
+                  progresses: state.progress_order
                }
                return (
                   <Column

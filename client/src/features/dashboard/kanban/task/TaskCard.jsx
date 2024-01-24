@@ -18,16 +18,26 @@ import {
    ModalOverlay,
    Spacer,
    Text,
+   VStack,
    useDisclosure
 } from '@chakra-ui/react'
 import { Draggable } from 'react-beautiful-dnd'
 import t from '../../../../lang/i18n'
-import { PiDotsThreeBold, PiPencilLine, PiTrash } from 'react-icons/pi'
+import {
+   PiCalendar,
+   PiCirclesFour,
+   PiDotsThreeBold,
+   PiFlagBanner,
+   PiNote,
+   PiPencilLine,
+   PiTrash
+} from 'react-icons/pi'
 import { FormProvider, useForm } from 'react-hook-form'
 import { MultiInput } from '../../../../components/MultiInput'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { dashboardSchema as s } from '../../DashboardSchema'
 import { deleteTask, updateTask } from '../../../../actions/task'
+import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 
 const TaskCard = ({
    deleteTask,
@@ -233,25 +243,44 @@ const TaskCard = ({
                   </Menu>
                </ModalHeader>
                <ModalBody>
-                  <FormProvider {...methods} h='fit-content'>
-                     <form noValidate autoComplete='on'>
-                        <MultiInput
-                           name='title'
-                           type='textarea'
-                           variant='unstyled'
-                           placeholder={t('placeholder-untitled')}
-                           validation={s.name}
-                           defaultValue={task.title}
-                           fontWeight={600}
-                           borderRadius={0}
-                           fontSize='2xl'
-                           onBlur={async (e) => {
-                              e.preventDefault()
-                              onBlur()
-                           }}
-                        />
-                     </form>
-                  </FormProvider>
+                  <VStack w='full' alignItems='flex-start' gap={5}>
+                     <FormProvider {...methods} h='fit-content' w='full'>
+                        <form
+                           noValidate
+                           autoComplete='on'
+                           style={{ width: '100%' }}
+                        >
+                           <MultiInput
+                              name='title'
+                              type='textarea'
+                              variant='unstyled'
+                              placeholder={t('placeholder-untitled')}
+                              validation={s.name}
+                              defaultValue={task.title}
+                              fontWeight={600}
+                              borderRadius={0}
+                              fontSize='2xl'
+                              onBlur={async (e) => {
+                                 e.preventDefault()
+                                 onBlur()
+                              }}
+                           />
+                        </form>
+                     </FormProvider>
+                     <TaskCardLabel
+                        icon={<PiFlagBanner />}
+                        text={t('label-progress')}
+                     />
+                     <TaskCardLabel
+                        icon={<PiCirclesFour />}
+                        text={t('label-group')}
+                     />
+                     <TaskCardLabel
+                        icon={<PiCalendar />}
+                        text={t('label-schedule')}
+                     />
+                     <TaskCardLabel icon={<PiNote />} text={t('label-note')} />
+                  </VStack>
                </ModalBody>
                <ModalFooter></ModalFooter>
             </ModalContent>
