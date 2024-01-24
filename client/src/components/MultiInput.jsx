@@ -7,6 +7,7 @@ import {
    FormLabel
 } from '@chakra-ui/react'
 import { PasswordInput, TextInput } from './formInput'
+import { TextAreaInput } from './formInput/TextAreaInput'
 
 export const MultiInput = ({
    name,
@@ -40,6 +41,24 @@ export const MultiInput = ({
                type={type}
                placeholder={placeholder}
                size={size}
+               validation={validation}
+               onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                     e.preventDefault()
+                     e.currentTarget.blur()
+                  }
+               }}
+               {...props}
+            />
+         )
+         break
+      case 'textarea':
+         input = (
+            <TextAreaInput
+               register={register}
+               name={name}
+               variant={variant}
+               placeholder={placeholder}
                validation={validation}
                onKeyPress={(e) => {
                   if (e.key === 'Enter') {

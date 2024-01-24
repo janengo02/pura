@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
 import {
-   Button,
    Card,
    Flex,
    IconButton,
@@ -13,7 +12,6 @@ import {
    MenuList,
    Modal,
    ModalBody,
-   ModalCloseButton,
    ModalContent,
    ModalFooter,
    ModalHeader,
@@ -79,6 +77,7 @@ const TaskCard = ({
                   boxShadow={snapshot.isDragging ? 'md' : undefined}
                   bg={hovered ? 'gray.50' : undefined}
                   p={2}
+                  paddingBottom={editing ? 0 : undefined}
                   w='full'
                   marginBottom={1}
                   onMouseEnter={(e) => {
@@ -90,7 +89,10 @@ const TaskCard = ({
                      setHovered(false)
                   }}
                >
-                  <Flex cursor='pointer'>
+                  <Flex
+                     cursor='pointer'
+                     marginBottom={editing ? -2 : undefined}
+                  >
                      {task.schedule.length > 0 ? (
                         <Text
                            fontSize='xs'
@@ -149,18 +151,17 @@ const TaskCard = ({
                         </MenuList>
                      </Menu>
                   </Flex>
-                  <Flex
-                     h={6}
-                     alignItems='center'
-                     overflow='hidden'
-                     cursor='pointer'
-                  >
+                  <Flex alignItems='center' overflow='hidden' cursor='pointer'>
                      {editing ? (
                         <FormProvider {...methods} h='fit-content'>
-                           <form noValidate autoComplete='on'>
+                           <form
+                              noValidate
+                              autoComplete='on'
+                              style={{ width: '100%' }}
+                           >
                               <MultiInput
                                  name='title'
-                                 type='text'
+                                 type='textarea'
                                  variant='unstyled'
                                  placeholder={t('placeholder-untitled')}
                                  validation={s.name}
@@ -236,7 +237,7 @@ const TaskCard = ({
                      <form noValidate autoComplete='on'>
                         <MultiInput
                            name='title'
-                           type='text'
+                           type='textarea'
                            variant='unstyled'
                            placeholder={t('placeholder-untitled')}
                            validation={s.name}

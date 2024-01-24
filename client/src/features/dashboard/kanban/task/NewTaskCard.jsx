@@ -40,18 +40,23 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                variant='outline'
                boxShadow={snapshot.isDragging ? 'md' : undefined}
                p={2}
+               paddingBottom={0}
                w='full'
                marginBottom={1}
             >
-               <Text h={6} fontSize='xs' color='red.500'>
+               <Text h={6} fontSize='xs' color='red.500' marginBottom={-2}>
                   {t('schedule_status-false')}
                </Text>
-               <Flex h={6} alignItems='center' overflow='hidden'>
+               <Flex alignItems='center' overflow='hidden'>
                   <FormProvider {...methods} h='fit-content'>
-                     <form noValidate autoComplete='on'>
+                     <form
+                        noValidate
+                        autoComplete='on'
+                        style={{ width: '100%' }}
+                     >
                         <MultiInput
                            name='title'
-                           type='text'
+                           type='textarea'
                            variant='unstyled'
                            placeholder={t('placeholder-task_title')}
                            validation={s.name}
