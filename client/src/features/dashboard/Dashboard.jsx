@@ -15,6 +15,7 @@ import Navbar from './Navbar'
 import PageDivider from './PageDivider'
 import Kanban from './Kanban'
 import Calendar from './Calendar'
+import TaskModal from './kanban/task/TaskModal'
 
 const leftRef = createRef()
 const rightRef = createRef()
@@ -139,6 +140,7 @@ const Dashboard = () => {
                )}
             </Flex>
          </SplitPaneContext.Provider>
+         <TaskModal />
       </Flex>
    )
 }

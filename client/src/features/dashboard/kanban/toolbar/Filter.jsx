@@ -25,7 +25,7 @@ const Filter = () => {
             variant='ghost'
             leftIcon={<PiPlus />}
          >
-            {t('btn-add_filter')}
+            {t('btn-add-filter')}
          </Button>
       </>
    )

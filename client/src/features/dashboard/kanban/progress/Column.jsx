@@ -16,10 +16,18 @@ const Column = ({
    droppableId,
    taskPointer,
    progress,
+   group,
+   i_progress,
+   i_group,
    tasks,
-   newTaskInfo,
+   state,
    createTask
 }) => {
+   const newTaskInfo = {
+      page_id: state._id,
+      group_id: group._id,
+      progress_id: progress._id
+   }
    return (
       <Droppable droppableId={droppableId}>
          {(provided, snapshot) => (
@@ -42,15 +50,17 @@ const Column = ({
                      task.title !== '' ? (
                         <TaskCard
                            key={taskPointer + i_task} //has to match draggableId
-                           page_id={newTaskInfo.page_id}
+                           state={state}
                            task={task}
+                           i_group={i_group}
+                           i_progress={i_progress}
                            draggableId={(taskPointer + i_task).toString()}
                            index={i_task}
                         />
                      ) : (
                         <NewTaskCard
                            key={taskPointer + i_task} //has to match draggableId
-                           page_id={newTaskInfo.page_id}
+                           page_id={state._id}
                            task_id={task._id}
                            draggableId={(taskPointer + i_task).toString()}
                            index={i_task}

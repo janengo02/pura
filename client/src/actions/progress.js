@@ -3,7 +3,6 @@ import { GET_PAGE, PAGE_ERROR } from './types'
 
 // Create new progress
 export const createProgress = (formData) => async (dispatch) => {
-   console.log(formData)
    try {
       const res = await api.post(`/progress/new/${formData.page_id}`, formData)
       dispatch({

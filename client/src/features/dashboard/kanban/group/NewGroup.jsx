@@ -30,7 +30,7 @@ const NewGroup = ({ updateGroup, group, i_group, state }) => {
    return (
       <VStack
          p={3}
-         paddingTop={0}
+         paddingTop={2}
          gap={0}
          borderWidth={2}
          borderColor='gray.100'
@@ -44,7 +44,7 @@ const NewGroup = ({ updateGroup, group, i_group, state }) => {
                   type='text'
                   variant='unstyled'
                   placeholder={t('placeholder-group_title')}
-                  validation={s.name}
+                  validation={s.title}
                   onBlur={async (e) => {
                      e.preventDefault()
                      onBlur()
@@ -68,7 +68,11 @@ const NewGroup = ({ updateGroup, group, i_group, state }) => {
                      droppableId={i_task_map.toString()}
                      taskPointer={state.task_map[i_task_map] - taskArray.length}
                      progress={progress}
+                     group={group}
+                     i_progress={i_progress}
+                     i_group={i_group}
                      tasks={taskArray}
+                     state={state}
                   />
                )
             })}

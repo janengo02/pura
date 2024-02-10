@@ -209,7 +209,7 @@ const Kanban = ({
                                     createGroup({ page_id: state._id })
                                  }}
                               >
-                                 {t('btn-add_group')}
+                                 {t('btn-add-group')}
                               </Button>
                            </VStack>
                         </DragDropContext>

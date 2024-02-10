@@ -3,7 +3,6 @@ import { GET_PAGE, PAGE_ERROR } from './types'
 
 // Create new group
 export const createGroup = (formData) => async (dispatch) => {
-   console.log(formData)
    try {
       const res = await api.post(`/group/new/${formData.page_id}`, formData)
       dispatch({

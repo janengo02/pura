@@ -3,10 +3,12 @@ import alert from './alert'
 import auth from './auth'
 import loading from './loading'
 import page from './page'
+import task from './task'
 
 export default combineReducers({
    loading,
    alert,
    auth,
-   page
+   page,
+   task
 })

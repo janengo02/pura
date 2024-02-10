@@ -71,7 +71,7 @@ const Group = ({ updateGroup, deleteGroup, group, i_group, state }) => {
    return (
       <VStack
          p={3}
-         paddingTop={editing ? 0 : 2}
+         paddingTop={2}
          gap={editing ? 0 : 2}
          borderWidth={2}
          borderColor='gray.100'
@@ -95,7 +95,7 @@ const Group = ({ updateGroup, deleteGroup, group, i_group, state }) => {
                         type='text'
                         variant='unstyled'
                         placeholder={t('placeholder-untitled')}
-                        validation={s.name}
+                        validation={s.title}
                         defaultValue={group.title}
                         color={group.color}
                         fontWeight={600}
@@ -200,21 +200,18 @@ const Group = ({ updateGroup, deleteGroup, group, i_group, state }) => {
                      state.task_map[i_task_map]
                   )
                }
-               const newTaskInfo = {
-                  page_id: state._id,
-                  group_id: group._id,
-                  progress_id: progress._id,
-                  groups: state.group_order,
-                  progresses: state.progress_order
-               }
+
                return (
                   <Column
                      key={i_task_map} //has to match droppableId
                      droppableId={i_task_map.toString()}
                      taskPointer={state.task_map[i_task_map] - taskArray.length}
                      progress={progress}
+                     group={group}
+                     i_progress={i_progress}
+                     i_group={i_group}
                      tasks={taskArray}
-                     newTaskInfo={newTaskInfo}
+                     state={state}
                   />
                )
             })}

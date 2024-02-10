@@ -19,3 +19,4 @@ export const LOGOUT = 'LOGOUT'
 
 export const GET_PAGE = 'GET_PAGE'
 export const PAGE_ERROR = 'PAGE_ERROR'
+export const SHOW_TASK = 'SHOW_TASK'

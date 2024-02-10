@@ -19,6 +19,7 @@ export const MultiInput = ({
    size,
    helpertext,
    validation,
+   options,
    ...props
 }) => {
    // Set up validation
@@ -92,7 +93,7 @@ export const MultiInput = ({
    }
    return (
       <FormControl isRequired={required} isInvalid={isInvalid}>
-         <FormLabel>{label}</FormLabel>
+         {label && <FormLabel>{label}</FormLabel>}
          {input}
          {!isInvalid ? (
             <FormHelperText>{helpertext}</FormHelperText>

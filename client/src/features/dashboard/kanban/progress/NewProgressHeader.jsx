@@ -37,7 +37,7 @@ const NewProgressHeader = ({ updateProgress, page_id, progress }) => {
          h={8}
          justifyContent='center'
       >
-         <Flex>
+         <Flex marginBottom={-2}>
             <FormProvider {...methods} h='fit-content'>
                <form noValidate autoComplete='on'>
                   <MultiInput
@@ -45,7 +45,7 @@ const NewProgressHeader = ({ updateProgress, page_id, progress }) => {
                      type='text'
                      variant='unstyled'
                      placeholder={t('placeholder-task_title')}
-                     validation={s.name}
+                     validation={s.title}
                      onBlur={async (e) => {
                         e.preventDefault()
                         onBlur()

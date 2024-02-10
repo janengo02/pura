@@ -10,51 +10,36 @@ import {
    MenuButton,
    MenuItem,
    MenuList,
-   Modal,
-   ModalBody,
-   ModalContent,
-   ModalFooter,
-   ModalHeader,
-   ModalOverlay,
    Spacer,
    Text,
-   VStack,
    useDisclosure
 } from '@chakra-ui/react'
 import { Draggable } from 'react-beautiful-dnd'
 import t from '../../../../lang/i18n'
-import {
-   PiCalendar,
-   PiCirclesFour,
-   PiDotsThreeBold,
-   PiFlagBanner,
-   PiNote,
-   PiPencilLine,
-   PiTrash
-} from 'react-icons/pi'
+import { PiDotsThreeBold, PiPencilLine, PiTrash } from 'react-icons/pi'
 import { FormProvider, useForm } from 'react-hook-form'
 import { MultiInput } from '../../../../components/MultiInput'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { dashboardSchema as s } from '../../DashboardSchema'
-import { deleteTask, updateTask } from '../../../../actions/task'
-import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
+import { deleteTask, updateTask, showTaskModal } from '../../../../actions/task'
 
 const TaskCard = ({
    deleteTask,
    updateTask,
-   page_id,
+   showTaskModal,
+   state,
    task,
+   i_group,
+   i_progress,
    draggableId,
    index
 }) => {
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)
    const dropdownMenu = useDisclosure()
-   const modalMenu = useDisclosure()
-   const modalCard = useDisclosure()
    const delTask = () => {
       const formData = {
-         page_id: page_id,
+         page_id: state._id,
          task_id: task._id
       }
       deleteTask(formData)
@@ -65,7 +50,7 @@ const TaskCard = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: page_id,
+         page_id: state._id,
          task_id: task._id,
          title: data.title
       }
@@ -75,6 +60,13 @@ const TaskCard = ({
       await updateTask(formData)
       setEditing(false)
    })
+   const targetTask = {
+      _id: task._id,
+      title: task.title,
+      i_group: i_group,
+      i_progress: i_progress,
+      draggableId: draggableId
+   }
    return (
       <>
          <Draggable draggableId={draggableId} index={index}>
@@ -99,15 +91,15 @@ const TaskCard = ({
                      setHovered(false)
                   }}
                >
-                  <Flex
-                     cursor='pointer'
-                     marginBottom={editing ? -2 : undefined}
-                  >
+                  <Flex cursor='pointer'>
                      {task.schedule.length > 0 ? (
                         <Text
                            fontSize='xs'
                            color='gray.500'
-                           onClick={modalCard.onOpen}
+                           onClick={(e) => {
+                              e.preventDefault()
+                              showTaskModal(targetTask)
+                           }}
                         >
                            {t('schedule_status-true')}
                         </Text>
@@ -115,13 +107,21 @@ const TaskCard = ({
                         <Text
                            fontSize='xs'
                            color='red.500'
-                           onClick={modalCard.onOpen}
+                           onClick={(e) => {
+                              e.preventDefault()
+                              showTaskModal(targetTask)
+                           }}
                         >
                            {t('schedule_status-false')}
                         </Text>
                      )}
 
-                     <Spacer onClick={modalCard.onOpen} />
+                     <Spacer
+                        onClick={(e) => {
+                           e.preventDefault()
+                           showTaskModal(targetTask)
+                        }}
+                     />
                      <Menu
                         isLazy
                         isOpen={dropdownMenu.isOpen}
@@ -174,7 +174,7 @@ const TaskCard = ({
                                  type='textarea'
                                  variant='unstyled'
                                  placeholder={t('placeholder-untitled')}
-                                 validation={s.name}
+                                 validation={s.title}
                                  defaultValue={task.title}
                                  fontWeight={600}
                                  borderRadius={0}
@@ -195,7 +195,10 @@ const TaskCard = ({
                            w='full'
                            color='gray.600'
                            fontWeight={600}
-                           onClick={modalCard.onOpen}
+                           onClick={(e) => {
+                              e.preventDefault()
+                              showTaskModal(targetTask)
+                           }}
                         >
                            {task.title}
                         </Text>
@@ -204,94 +207,16 @@ const TaskCard = ({
                </Card>
             )}
          </Draggable>
-         <Modal
-            isOpen={modalCard.isOpen}
-            onClose={modalCard.onClose}
-            size='2xl'
-            scrollBehavior='inside'
-            blockScrollOnMount={false}
-         >
-            <ModalOverlay />
-            <ModalContent>
-               <ModalHeader display='flex' justifyContent='flex-end'>
-                  <Menu
-                     isLazy
-                     isOpen={modalMenu.isOpen}
-                     onClose={modalMenu.onClose}
-                  >
-                     <MenuButton
-                        as={IconButton}
-                        icon={<PiDotsThreeBold size={20} />}
-                        variant='ghost'
-                        size='xs'
-                        colorScheme='gray'
-                        color='gray.600'
-                        onClick={modalMenu.onOpen}
-                     ></MenuButton>
-                     <MenuList>
-                        <MenuItem
-                           icon={<PiTrash size={18} />}
-                           fontSize='sm'
-                           onClick={async (e) => {
-                              e.preventDefault()
-                              delTask()
-                           }}
-                        >
-                           {t('btn-delete-task')}
-                        </MenuItem>
-                     </MenuList>
-                  </Menu>
-               </ModalHeader>
-               <ModalBody>
-                  <VStack w='full' alignItems='flex-start' gap={5}>
-                     <FormProvider {...methods} h='fit-content' w='full'>
-                        <form
-                           noValidate
-                           autoComplete='on'
-                           style={{ width: '100%' }}
-                        >
-                           <MultiInput
-                              name='title'
-                              type='textarea'
-                              variant='unstyled'
-                              placeholder={t('placeholder-untitled')}
-                              validation={s.name}
-                              defaultValue={task.title}
-                              fontWeight={600}
-                              borderRadius={0}
-                              fontSize='2xl'
-                              onBlur={async (e) => {
-                                 e.preventDefault()
-                                 onBlur()
-                              }}
-                           />
-                        </form>
-                     </FormProvider>
-                     <TaskCardLabel
-                        icon={<PiFlagBanner />}
-                        text={t('label-progress')}
-                     />
-                     <TaskCardLabel
-                        icon={<PiCirclesFour />}
-                        text={t('label-group')}
-                     />
-                     <TaskCardLabel
-                        icon={<PiCalendar />}
-                        text={t('label-schedule')}
-                     />
-                     <TaskCardLabel icon={<PiNote />} text={t('label-note')} />
-                  </VStack>
-               </ModalBody>
-               <ModalFooter></ModalFooter>
-            </ModalContent>
-         </Modal>
       </>
    )
 }
 
 TaskCard.propTypes = {
    updateTask: PropTypes.func.isRequired,
-   deleteTask: PropTypes.func.isRequired
+   deleteTask: PropTypes.func.isRequired,
+   showTaskModal: PropTypes.func.isRequired
 }
 
-export default connect(null, { updateTask, deleteTask })(TaskCard)
+export default connect(null, { updateTask, deleteTask, showTaskModal })(
+   TaskCard
+)

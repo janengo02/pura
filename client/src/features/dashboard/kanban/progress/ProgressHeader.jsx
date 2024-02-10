@@ -92,7 +92,7 @@ const ProgressHeader = ({
             setHovered(false)
          }}
       >
-         <Flex>
+         <Flex marginBottom={editing ? -2 : undefined}>
             {editing ? (
                <FormProvider {...methods} h='fit-content'>
                   <form noValidate autoComplete='on'>
@@ -101,7 +101,7 @@ const ProgressHeader = ({
                         type='text'
                         variant='unstyled'
                         placeholder={t('placeholder-untitled')}
-                        validation={s.name}
+                        validation={s.title}
                         defaultValue={progress.title}
                         color={progress.title_color}
                         fontWeight={600}

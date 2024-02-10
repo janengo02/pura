@@ -44,7 +44,7 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                w='full'
                marginBottom={1}
             >
-               <Text h={6} fontSize='xs' color='red.500' marginBottom={-2}>
+               <Text h={6} fontSize='xs' color='red.500'>
                   {t('schedule_status-false')}
                </Text>
                <Flex alignItems='center' overflow='hidden'>
@@ -59,7 +59,7 @@ const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
                            type='textarea'
                            variant='unstyled'
                            placeholder={t('placeholder-task_title')}
-                           validation={s.name}
+                           validation={s.title}
                            color='gray.600'
                            fontWeight={600}
                            borderRadius={0}
