@@ -16,7 +16,8 @@ const TaskSchema = new mongoose.Schema({
       }
    ],
    content: {
-      type: String
+      type: String,
+      default: ''
    },
    create_date: {
       type: Date,

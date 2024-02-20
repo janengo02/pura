@@ -75,7 +75,7 @@ export const showTaskModal = (formData) => async (dispatch) => {
       payload: formData
    })
 }
-// Show target task modal
+// Update Progress
 export const updateProgress =
    (state, task, newProgress) => async (dispatch) => {
       const i_group = task.i_group
@@ -128,3 +128,54 @@ export const updateProgress =
          // console.clear()
       }
    }
+// Update Group
+export const updateGroup = (state, task, newGroup) => async (dispatch) => {
+   const i_group = task.i_group
+   const i_progress = task.i_progress
+   const i_new_group = state.group_order.indexOf(newGroup)
+   const i_task_map = i_group * state.progress_order.length + i_progress
+   const i_new_task_map = i_new_group * state.progress_order.length + i_progress
+   const dest_index =
+      state.task_map[i_new_task_map] - state.task_map[i_new_task_map - 1]
+   const source = {
+      droppableId: i_task_map.toString()
+   }
+   const destination = {
+      droppableId: i_new_task_map.toString(),
+      index: dest_index
+   }
+   const formData = {
+      page_id: state._id,
+      destination: destination,
+      source: source,
+      draggableId: task.draggableId
+   }
+   const newTask = {
+      ...task,
+      i_group: i_new_group
+   }
+   try {
+      const res = await api.post(
+         `/page/move-task/${formData.page_id}`,
+         formData
+      )
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data
+      })
+      dispatch({
+         type: SHOW_TASK,
+         payload: newTask
+      })
+   } catch (err) {
+      const errors = err.response.data.errors
+      dispatch({
+         type: PAGE_ERROR,
+         payload: {
+            _id: formData.page_id,
+            errors: errors
+         }
+      })
+      // console.clear()
+   }
+}

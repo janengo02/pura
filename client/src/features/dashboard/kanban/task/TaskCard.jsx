@@ -63,6 +63,8 @@ const TaskCard = ({
    const targetTask = {
       _id: task._id,
       title: task.title,
+      schedule: task.schedule,
+      content: task.content,
       i_group: i_group,
       i_progress: i_progress,
       draggableId: draggableId

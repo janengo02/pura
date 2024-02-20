@@ -17,13 +17,7 @@ import {
    VStack,
    useDisclosure
 } from '@chakra-ui/react'
-import {
-   PiCalendar,
-   PiCirclesFour,
-   PiDotsThreeBold,
-   PiNote,
-   PiTrash
-} from 'react-icons/pi'
+import { PiCalendar, PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
 import { deleteTask, updateTask } from '../../../../actions/task'
 import t from '../../../../lang/i18n'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -32,6 +26,7 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { MultiInput } from '../../../../components/MultiInput'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import ProgressSelect from './ProgressSelect'
+import GroupSelect from './GroupSelect'
 
 const TaskModal = ({
    task: { task },
@@ -65,7 +60,14 @@ const TaskModal = ({
       }
       await updateTask(formData)
    })
-
+   const onBlurContent = methods.handleSubmit(async (data) => {
+      const formData = {
+         page_id: page._id,
+         task_id: task._id,
+         content: data.content
+      }
+      await updateTask(formData)
+   })
    return (
       <>
          {task && (
@@ -122,7 +124,7 @@ const TaskModal = ({
                                  variant='unstyled'
                                  placeholder={t('placeholder-untitled')}
                                  validation={s.title}
-                                 defaultValue={task.title}
+                                 value={task.title}
                                  fontWeight={600}
                                  borderRadius={0}
                                  fontSize='2xl'
@@ -134,10 +136,7 @@ const TaskModal = ({
                            </form>
                         </FormProvider>
                         <ProgressSelect state={page} />
-                        <TaskCardLabel
-                           icon={<PiCirclesFour />}
-                           text={t('label-group')}
-                        />
+                        <GroupSelect state={page} />
                         <TaskCardLabel
                            icon={<PiCalendar />}
                            text={t('label-schedule')}
@@ -146,6 +145,25 @@ const TaskModal = ({
                            icon={<PiNote />}
                            text={t('label-note')}
                         />
+                        <FormProvider {...methods} h='fit-content' w='full'>
+                           <form
+                              noValidate
+                              autoComplete='on'
+                              style={{ width: '100%' }}
+                           >
+                              <MultiInput
+                                 name='content'
+                                 type='textarea'
+                                 variant='unstyled'
+                                 value={task.content}
+                                 borderRadius={0}
+                                 onBlur={async (e) => {
+                                    e.preventDefault()
+                                    onBlurContent()
+                                 }}
+                              />
+                           </form>
+                        </FormProvider>
                      </VStack>
                   </ModalBody>
                   <ModalFooter></ModalFooter>
