@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -17,7 +17,7 @@ import {
    VStack,
    useDisclosure
 } from '@chakra-ui/react'
-import { PiCalendar, PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
+import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
 import { deleteTask, updateTask } from '../../../../actions/task'
 import t from '../../../../lang/i18n'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -27,6 +27,7 @@ import { MultiInput } from '../../../../components/MultiInput'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import ProgressSelect from './ProgressSelect'
 import GroupSelect from './GroupSelect'
+import ScheduleSelect from './ScheduleSelect'
 
 const TaskModal = ({
    task: { task },
@@ -34,8 +35,14 @@ const TaskModal = ({
    deleteTask,
    updateTask
 }) => {
+   const [taskTitle, setTaskTitle] = useState()
+   const [taskContent, setTaskContent] = useState()
    const modalCard = useDisclosure()
    useEffect(() => {
+      if (task) {
+         setTaskTitle(task.title)
+         setTaskContent(task.content)
+      }
       modalCard.onOpen()
    }, [task])
    const modalMenu = useDisclosure()
@@ -49,22 +56,22 @@ const TaskModal = ({
       }
       deleteTask(formData)
    }
-   const onBlur = methods.handleSubmit(async (data) => {
+   const onUpdateTitle = methods.handleSubmit(async (data) => {
       const formData = {
          page_id: page._id,
          task_id: task._id,
-         title: data.title
+         title: taskTitle
       }
       if (formData.title === '') {
          formData.title = 'Untitled'
       }
       await updateTask(formData)
    })
-   const onBlurContent = methods.handleSubmit(async (data) => {
+   const onUpdateContent = methods.handleSubmit(async (data) => {
       const formData = {
          page_id: page._id,
          task_id: task._id,
-         content: data.content
+         content: taskContent
       }
       await updateTask(formData)
    })
@@ -124,23 +131,26 @@ const TaskModal = ({
                                  variant='unstyled'
                                  placeholder={t('placeholder-untitled')}
                                  validation={s.title}
-                                 value={task.title}
+                                 value={taskTitle}
                                  fontWeight={600}
                                  borderRadius={0}
                                  fontSize='2xl'
+                                 onChange={async (e) => {
+                                    e.preventDefault()
+                                    setTaskTitle(e.target.value)
+                                    onUpdateTitle()
+                                 }}
                                  onBlur={async (e) => {
                                     e.preventDefault()
-                                    onBlur()
+                                    setTaskTitle(e.target.value)
+                                    onUpdateTitle()
                                  }}
                               />
                            </form>
                         </FormProvider>
                         <ProgressSelect state={page} />
                         <GroupSelect state={page} />
-                        <TaskCardLabel
-                           icon={<PiCalendar />}
-                           text={t('label-schedule')}
-                        />
+                        <ScheduleSelect state={page} />
                         <TaskCardLabel
                            icon={<PiNote />}
                            text={t('label-note')}
@@ -155,11 +165,17 @@ const TaskModal = ({
                                  name='content'
                                  type='textarea'
                                  variant='unstyled'
-                                 value={task.content}
+                                 value={taskContent}
                                  borderRadius={0}
+                                 onChange={async (e) => {
+                                    e.preventDefault()
+                                    setTaskContent(e.target.value)
+                                    onUpdateContent()
+                                 }}
                                  onBlur={async (e) => {
                                     e.preventDefault()
-                                    onBlurContent()
+                                    setTaskContent(e.target.value)
+                                    onUpdateContent()
                                  }}
                               />
                            </form>

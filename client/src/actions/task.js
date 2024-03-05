@@ -84,8 +84,17 @@ export const updateProgress =
       const i_task_map = i_group * state.progress_order.length + i_progress
       const i_new_task_map =
          i_group * state.progress_order.length + i_new_progress
-      const dest_index =
-         state.task_map[i_new_task_map] - state.task_map[i_new_task_map - 1]
+      var dest_index = state.task_map[i_new_task_map]
+      if (i_new_task_map !== 0) {
+         dest_index -= state.task_map[i_new_task_map - 1]
+      }
+      var newDraggableId = dest_index
+      if (i_new_task_map !== 0) {
+         newDraggableId += state.task_map[i_new_task_map - 1]
+      }
+      if (i_new_task_map > i_task_map) {
+         newDraggableId--
+      }
       const source = {
          droppableId: i_task_map.toString()
       }
@@ -101,7 +110,8 @@ export const updateProgress =
       }
       const newTask = {
          ...task,
-         i_progress: i_new_progress
+         i_progress: i_new_progress,
+         draggableId: newDraggableId
       }
       try {
          const res = await api.post(
@@ -135,8 +145,17 @@ export const updateGroup = (state, task, newGroup) => async (dispatch) => {
    const i_new_group = state.group_order.indexOf(newGroup)
    const i_task_map = i_group * state.progress_order.length + i_progress
    const i_new_task_map = i_new_group * state.progress_order.length + i_progress
-   const dest_index =
-      state.task_map[i_new_task_map] - state.task_map[i_new_task_map - 1]
+   var dest_index = state.task_map[i_new_task_map]
+   if (i_new_task_map !== 0) {
+      dest_index -= state.task_map[i_new_task_map - 1]
+   }
+   var newDraggableId = dest_index
+   if (i_new_task_map !== 0) {
+      newDraggableId += state.task_map[i_new_task_map - 1]
+   }
+   if (i_new_task_map > i_task_map) {
+      newDraggableId--
+   }
    const source = {
       droppableId: i_task_map.toString()
    }
@@ -152,7 +171,8 @@ export const updateGroup = (state, task, newGroup) => async (dispatch) => {
    }
    const newTask = {
       ...task,
-      i_group: i_new_group
+      i_group: i_new_group,
+      draggableId: newDraggableId
    }
    try {
       const res = await api.post(
