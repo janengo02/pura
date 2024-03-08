@@ -2,12 +2,12 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateGroup } from '../../../../actions/task'
+import { updateSchedule } from '../../../../actions/task'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCalendar, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 import { Button, Flex, Input, VStack } from '@chakra-ui/react'
-const ScheduleSelect = ({ updateGroup, task: { task }, state }) => {
+const ScheduleSelect = ({ updateSchedule, task: { task }, state }) => {
    return (
       <Flex w='full' gap={3} alignItems='flex-start' paddingTop={1}>
          <TaskCardLabel
@@ -17,23 +17,29 @@ const ScheduleSelect = ({ updateGroup, task: { task }, state }) => {
          />
 
          <VStack w='full' alignItems='flex-start' gap={3}>
-            <Flex w='full' gap={3}>
-               <Input
-                  size='sm'
-                  type='datetime-local'
-                  variant='filled'
-                  bg='gray.50'
-                  borderRadius={5}
-               />
-               -
-               <Input
-                  size='sm'
-                  type='datetime-local'
-                  variant='filled'
-                  bg='gray.50'
-                  borderRadius={5}
-               />
-            </Flex>
+            {task.schedule.map((slot, index) => (
+               <Flex w='full' gap={3}>
+                  <Input
+                     title={`datetime_from_${index}`}
+                     size='sm'
+                     type='datetime-local'
+                     variant='filled'
+                     bg='gray.50'
+                     value={slot.datetime_from}
+                     borderRadius={5}
+                  />
+                  -
+                  <Input
+                     title={`datetime_to_${index}`}
+                     size='sm'
+                     type='datetime-local'
+                     variant='filled'
+                     bg='gray.50'
+                     value={slot.datetime_to}
+                     borderRadius={5}
+                  />
+               </Flex>
+            ))}
             <Button
                size='sm'
                colorScheme='gray'
@@ -50,9 +56,9 @@ const ScheduleSelect = ({ updateGroup, task: { task }, state }) => {
 
 ScheduleSelect.propTypes = {
    task: PropTypes.object.isRequired,
-   updateGroup: PropTypes.func.isRequired
+   updateSchedule: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task
 })
-export default connect(mapStateToProps, { updateGroup })(ScheduleSelect)
+export default connect(mapStateToProps, { updateSchedule })(ScheduleSelect)
