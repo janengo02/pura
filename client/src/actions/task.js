@@ -199,39 +199,3 @@ export const updateGroup = (state, task, newGroup) => async (dispatch) => {
       // console.clear()
    }
 }
-
-// Update Group
-export const updateSchedule =
-   (state, task, newSchedule) => async (dispatch) => {
-      const formData = {
-         page_id: state._id
-      }
-      const newTask = {
-         ...task,
-         schedule: [...task.schedule, newSchedule]
-      }
-      try {
-         const res = await api.post(
-            `/task/update/${formData.page_id}/${formData.task_id}`,
-            formData
-         )
-         dispatch({
-            type: GET_PAGE,
-            payload: res.data
-         })
-         dispatch({
-            type: SHOW_TASK,
-            payload: newTask
-         })
-      } catch (err) {
-         const errors = err.response.data.errors
-         dispatch({
-            type: PAGE_ERROR,
-            payload: {
-               _id: formData.page_id,
-               errors: errors
-            }
-         })
-         // console.clear()
-      }
-   }
