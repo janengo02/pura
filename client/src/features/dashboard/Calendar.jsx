@@ -14,6 +14,7 @@ import * as dates from '../../utils/dates'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Skeleton, VStack } from '@chakra-ui/react'
 import { calendarPage } from '../../utils/formatter'
+import Toolbar from './calendar/toolbar/Toolbar'
 
 const mLocalizer = momentLocalizer(moment)
 
@@ -44,13 +45,13 @@ const Calendar = ({
       <Skeleton isLoaded={!loading}>
          <VStack
             w='fit-content'
-            h='fit-content'
-            minH='full'
+            h='800px'
             minW='full'
             alignItems='center'
             gap={0}
             paddingBottom={10}
          >
+            <Toolbar />
             <BigCalendar
                components={components}
                defaultDate={defaultDate}

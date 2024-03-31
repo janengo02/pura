@@ -38,7 +38,7 @@ const ScheduleSelect = ({
    const onUpdateFrom = async (newFrom, index) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].start = newFrom
-
+      // TODO: CHeck if end time is bigger than start time
       const formData = {
          page_id: state._id,
          task_id: task._id,
@@ -54,6 +54,7 @@ const ScheduleSelect = ({
    const onUpdateTo = async (newTo, index) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].end = newTo
+      // TODO: CHeck if end time is bigger than start time
 
       const formData = {
          page_id: state._id,
@@ -104,6 +105,7 @@ const ScheduleSelect = ({
                         borderRadius={5}
                         onChange={async (e) => {
                            e.preventDefault()
+                           console.log('change')
                            onUpdateFrom(e.target.value, index)
                         }}
                      />

@@ -8,6 +8,9 @@ import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import NotFound from './components/errorHandler/NotFound'
 import ServerError from './components/errorHandler/ServerError'
+
+import { GoogleOAuthProvider } from '@react-oauth/google'
+
 // Redux
 import { Provider } from 'react-redux'
 import store from './store'
@@ -35,25 +38,30 @@ const App = () => {
          if (!localStorage.token) store.dispatch({ type: LOGOUT })
       })
    }, [])
+   const GOOGLE_OAUTH_CLIENT_ID =
+      '468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com'
+   // TODO: Put in .env
    return (
-      <Provider store={store}>
-         <ChakraProvider>
-            <Router>
-               <Routes>
-                  <Route path='/' element={<Landing />} />
-                  <Route path='register' element={<Register />} />
-                  <Route path='login' element={<Login />} />
-                  <Route path='recover' element={<PasswordRecover />} />
-                  <Route path='error' element={<ServerError />} />
-                  <Route
-                     path='dashboard'
-                     element={<PrivateRoute component={Dashboard} />}
-                  />
-                  <Route path='/*' element={<NotFound />} />
-               </Routes>
-            </Router>
-         </ChakraProvider>
-      </Provider>
+      <GoogleOAuthProvider clientId={GOOGLE_OAUTH_CLIENT_ID}>
+         <Provider store={store}>
+            <ChakraProvider>
+               <Router>
+                  <Routes>
+                     <Route path='/' element={<Landing />} />
+                     <Route path='register' element={<Register />} />
+                     <Route path='login' element={<Login />} />
+                     <Route path='recover' element={<PasswordRecover />} />
+                     <Route path='error' element={<ServerError />} />
+                     <Route
+                        path='dashboard'
+                        element={<PrivateRoute component={Dashboard} />}
+                     />
+                     <Route path='/*' element={<NotFound />} />
+                  </Routes>
+               </Router>
+            </ChakraProvider>
+         </Provider>
+      </GoogleOAuthProvider>
    )
 }
 export default App

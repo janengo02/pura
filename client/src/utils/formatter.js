@@ -7,8 +7,10 @@ export const stringToDateTimeLocal = (dString) => {
 
 export const calendarPage = (page) => {
    const events = []
-   page?.tasks.forEach((task) => {
-      task.schedule.forEach((event, index) => {
+   page?.tasks?.forEach((task) => {
+      task?.schedule?.forEach((event, index) => {
+         const newStart = Date.parse(event.start)
+         const newEnd = Date.parse(event.end)
          events.push({
             id: task._id,
             title:
@@ -18,12 +20,10 @@ export const calendarPage = (page) => {
                '/' +
                task.schedule.length +
                ')',
-            start: event.start,
-            end: event.end
+            start: new Date(newStart),
+            end: new Date(newEnd)
          })
       })
    })
-   console.log(events)
-
    return events
 }
