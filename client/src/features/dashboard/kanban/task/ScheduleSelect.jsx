@@ -18,8 +18,8 @@ const ScheduleSelect = ({
 }) => {
    const addSlot = async () => {
       const newSlot = {
-         datetime_from: '',
-         datetime_to: ''
+         start: '',
+         end: ''
       }
       var newSchedule = cloneDeep(task.schedule)
       newSchedule.push(newSlot)
@@ -37,7 +37,7 @@ const ScheduleSelect = ({
    }
    const onUpdateFrom = async (newFrom, index) => {
       var newSchedule = cloneDeep(task.schedule)
-      newSchedule[index].datetime_from = newFrom
+      newSchedule[index].start = newFrom
 
       const formData = {
          page_id: state._id,
@@ -53,7 +53,7 @@ const ScheduleSelect = ({
    }
    const onUpdateTo = async (newTo, index) => {
       var newSchedule = cloneDeep(task.schedule)
-      newSchedule[index].datetime_to = newTo
+      newSchedule[index].end = newTo
 
       const formData = {
          page_id: state._id,
@@ -95,12 +95,12 @@ const ScheduleSelect = ({
                return (
                   <Flex w='full' gap={3} key={index}>
                      <Input
-                        title={`datetime_from_${index}`}
+                        title={`start_${index}`}
                         size='sm'
                         type='datetime-local'
                         variant='filled'
                         bg='gray.50'
-                        value={stringToDateTimeLocal(slot.datetime_from)}
+                        value={stringToDateTimeLocal(slot.start)}
                         borderRadius={5}
                         onChange={async (e) => {
                            e.preventDefault()
@@ -109,12 +109,12 @@ const ScheduleSelect = ({
                      />
                      -
                      <Input
-                        title={`datetime_to_${index}`}
+                        title={`end_${index}`}
                         size='sm'
                         type='datetime-local'
                         variant='filled'
                         bg='gray.50'
-                        value={stringToDateTimeLocal(slot.datetime_to)}
+                        value={stringToDateTimeLocal(slot.end)}
                         borderRadius={5}
                         onChange={async (e) => {
                            e.preventDefault()

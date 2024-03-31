@@ -7,10 +7,10 @@ const TaskSchema = new mongoose.Schema({
    },
    schedule: [
       {
-         datetime_from: {
+         start: {
             type: Date
          },
-         datetime_to: {
+         end: {
             type: Date
          }
       }

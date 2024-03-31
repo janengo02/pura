@@ -44,6 +44,7 @@ const TaskModal = ({
          setTaskContent(task.content)
       }
       modalCard.onOpen()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [task])
    const modalMenu = useDisclosure()
    const methods = useForm({
