@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require('mongoose')
 
 const UserSchema = new mongoose.Schema({
    email: {
@@ -17,14 +17,18 @@ const UserSchema = new mongoose.Schema({
    avatar: {
       type: String
    },
+   google_refresh_token: {
+      type: String,
+      default: null
+   },
    create_date: {
       type: Date,
       default: Date.now
    },
    update_date: {
-    type: Date,
-    default: Date.now
- }
+      type: Date,
+      default: Date.now
+   }
 })
 
-module.exports = User = mongoose.model("user", UserSchema) //name of the database
+module.exports = User = mongoose.model('user', UserSchema) //name of the database

@@ -189,7 +189,7 @@ router.post('/move-task/:id', [auth], async (req, res) => {
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.id },
          {
-            $set: { tasks: newTaskArray }
+            $set: { tasks: newTaskArray, update_date: new Date() }
          },
          { new: true }
       )
