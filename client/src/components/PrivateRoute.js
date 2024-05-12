@@ -11,7 +11,6 @@ const PrivateRoute = ({
 }) => {
    if (isLoading) return <Spinner />
    if (!isLoading && isAuthenticated) return <Component />
-
    return <Navigate to='/login' />
 }
 

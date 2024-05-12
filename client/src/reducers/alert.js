@@ -2,19 +2,19 @@ import { SET_ALERT, REMOVE_ALERT, REMOVE_ALL_ALERTS } from '../actions/types'
 
 const initialState = []
 
-function authReducer(state = initialState, action) {
-  const { type, payload } = action
+function alertReducer(state = initialState, action) {
+   const { type, payload } = action
 
-  switch (type) {
-    case SET_ALERT:
-      return [...state, payload]
-    case REMOVE_ALERT:
-      return state.filter((alert) => alert.id !== payload)
-    case REMOVE_ALL_ALERTS:
-      return []
-    default:
-      return state
-  }
+   switch (type) {
+      case SET_ALERT:
+         return [...state, payload]
+      case REMOVE_ALERT:
+         return state.filter((alert) => alert.id !== payload)
+      case REMOVE_ALL_ALERTS:
+         return []
+      default:
+         return state
+   }
 }
 
-export default authReducer
+export default alertReducer

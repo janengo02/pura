@@ -44,7 +44,16 @@ const App = () => {
    return (
       <GoogleOAuthProvider clientId={GOOGLE_OAUTH_CLIENT_ID}>
          <Provider store={store}>
-            <ChakraProvider>
+            <ChakraProvider
+               toastOptions={{
+                  defaultOptions: {
+                     position: 'top',
+                     duration: 2000,
+                     variant: 'subtle',
+                     isClosable: true
+                  }
+               }}
+            >
                <Router>
                   <Routes>
                      <Route path='/' element={<Landing />} />

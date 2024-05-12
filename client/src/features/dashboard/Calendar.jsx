@@ -18,16 +18,17 @@ import Toolbar from './calendar/toolbar/Toolbar'
 
 const mLocalizer = momentLocalizer(moment)
 
-const ColoredDateCellWrapper = ({ children }) =>
-   React.cloneElement(React.Children.only(children), {
+const ColoredDateCellWrapper = ({ children }) => {
+   return React.cloneElement(React.Children.only(children), {
       style: {
          backgroundColor: 'white'
       }
    })
-
+}
 const Calendar = ({
    localizer = mLocalizer,
-   page: { page, loading, error }
+   page: { page, loading, error },
+   googleAccount: { googleEvents }
 }) => {
    const { components, defaultDate, max, views } = useMemo(
       () => ({
@@ -55,12 +56,13 @@ const Calendar = ({
             <BigCalendar
                components={components}
                defaultDate={defaultDate}
-               events={calendarPage(page)}
+               events={calendarPage(page, googleEvents)}
                localizer={localizer}
                max={max}
                showMultiDayTimes
                step={60}
                views={views}
+               popup
             />
          </VStack>
       </Skeleton>
@@ -69,11 +71,13 @@ const Calendar = ({
 
 Calendar.propTypes = {
    localizer: PropTypes.instanceOf(DateLocalizer),
-   page: PropTypes.object.isRequired
+   page: PropTypes.object.isRequired,
+   googleAccount: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page
+   page: state.page,
+   googleAccount: state.googleAccount
 })
 
 export default connect(mapStateToProps, null)(Calendar)

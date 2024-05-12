@@ -38,7 +38,7 @@ const GroupSelect = ({ updateGroup, task: { task }, state }) => {
             >
                <Flex
                   w='full'
-                  p={2}
+                  p={1}
                   borderRadius='md'
                   bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
                >

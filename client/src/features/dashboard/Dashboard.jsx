@@ -6,6 +6,9 @@ import React, {
    useContext
 } from 'react'
 
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+
 import SplitPaneContext from '../../context/SplitPaneContext'
 import useWindowDimensions from '../../hooks/useWindowDimensions'
 
@@ -16,6 +19,7 @@ import PageDivider from './PageDivider'
 import Kanban from './Kanban'
 import Calendar from './Calendar'
 import TaskModal from './kanban/task/TaskModal'
+import { connectGoogle } from '../../actions/googleAccount'
 
 const leftRef = createRef()
 const rightRef = createRef()
@@ -53,7 +57,7 @@ const SplitPaneRight = () => (
    </Box>
 )
 
-const Dashboard = () => {
+const Dashboard = ({ connectGoogle }) => {
    const [leftWidth, setLeftWidth] = useState(null)
    const [viewCalendar, setViewCalendar] = useState(true)
    const [focusDivider, setFocusDivider] = useState(false)
@@ -116,6 +120,10 @@ const Dashboard = () => {
       }
    }, [viewCalendar])
 
+   useEffect(() => {
+      connectGoogle()
+   }, [connectGoogle])
+
    return (
       <Flex flexDirection='column' w='100vw' h='100vh' overflow='hidden'>
          <SplitPaneContext.Provider
@@ -145,4 +153,9 @@ const Dashboard = () => {
    )
 }
 
-export default Dashboard
+Dashboard.propTypes = {
+   connectGoogle: PropTypes.func.isRequired
+}
+export default connect(null, {
+   connectGoogle
+})(Dashboard)
