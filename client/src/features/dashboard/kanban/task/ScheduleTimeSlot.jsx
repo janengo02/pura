@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateTask, showTaskModal } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/task'
 import { PiTrash } from 'react-icons/pi'
 import { Flex, IconButton, Image, Input, useToast } from '@chakra-ui/react'
 import t from '../../../../lang/i18n'
@@ -17,7 +17,6 @@ import { createGoogleTokens } from '../../../../actions/googleAccount'
 const ScheduleTimeSlot = ({
    isLoggedIn,
    updateTask,
-   showTaskModal,
    createGoogleCalendarEvent,
    createGoogleTokens,
    task: { task },
@@ -26,24 +25,24 @@ const ScheduleTimeSlot = ({
    state,
    googleAccount: { googleEvents }
 }) => {
-   const [isSynced, setIsSynced] = useState(false)
+   const [isSynced, setIsSynced] = useState(true)
    useEffect(() => {
       const gEventId = task.google_events[index]
       const createdGoogleEvent = googleEvents.find((g) => g.id === gEventId)
       if (typeof createdGoogleEvent === 'undefined') {
          setIsSynced(false)
+      } else if (
+         stringToDateTimeLocal(createdGoogleEvent.start) !==
+            stringToDateTimeLocal(slot.start) ||
+         stringToDateTimeLocal(createdGoogleEvent.end) !==
+            stringToDateTimeLocal(slot.end) ||
+         createdGoogleEvent.title !== task.title
+      ) {
+         setIsSynced(false)
       } else {
-         if (
-            // createdGoogleEvent.start !== slot.start ||
-            // createdGoogleEvent.end !== slot.end ||
-            createdGoogleEvent.title !== task.title
-         ) {
-            setIsSynced(false)
-         } else {
-            setIsSynced(true)
-         }
+         setIsSynced(true)
       }
-   }, [googleEvents])
+   }, [task, googleEvents])
    const googleLogin = useGoogleLogin({
       onSuccess: async (tokenResponse) => {
          const { code } = tokenResponse
@@ -67,16 +66,12 @@ const ScheduleTimeSlot = ({
       newSchedule[index].start = newFrom
       // TODO: CHeck if end time is bigger than start time
       const formData = {
+         target_task: task,
          page_id: state._id,
          task_id: task._id,
          schedule: newSchedule
       }
-      const newTask = {
-         ...task,
-         schedule: newSchedule
-      }
       await updateTask(formData)
-      await showTaskModal(newTask)
    }
    const onUpdateTo = async (newTo, index) => {
       var newSchedule = cloneDeep(task.schedule)
@@ -84,16 +79,12 @@ const ScheduleTimeSlot = ({
       // TODO: CHeck if end time is bigger than start time
 
       const formData = {
+         target_task: task,
          page_id: state._id,
          task_id: task._id,
          schedule: newSchedule
       }
-      const newTask = {
-         ...task,
-         schedule: newSchedule
-      }
       await updateTask(formData)
-      await showTaskModal(newTask)
    }
    const onDelete = async (index) => {
       var newSchedule = cloneDeep(task.schedule)
@@ -101,27 +92,19 @@ const ScheduleTimeSlot = ({
       var newGoogleEvents = cloneDeep(task.google_events)
       newGoogleEvents.splice(index, 1)
       const formData = {
+         target_task: task,
          page_id: state._id,
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents
       }
-      const newTask = {
-         ...task,
-         schedule: newSchedule,
-         google_events: newGoogleEvents
-      }
       await updateTask(formData)
-      await showTaskModal(newTask)
    }
    const onCreateGoogleEvent = async () => {
       const reqData = {
-         task_id: task._id,
-         slotIndex: index,
-         google_events: task.google_events,
-         summary: task.title,
-         startDateTime: task.schedule[index].start,
-         endDateTime: task.schedule[index].end
+         target_task: task,
+         slot_index: index,
+         page_id: state._id
       }
       await createGoogleCalendarEvent(reqData)
       toast({
@@ -209,7 +192,6 @@ const ScheduleTimeSlot = ({
 ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired,
-   showTaskModal: PropTypes.func.isRequired,
    createGoogleCalendarEvent: PropTypes.func.isRequired,
    isLoggedIn: PropTypes.bool,
    createGoogleTokens: PropTypes.func.isRequired,
@@ -223,7 +205,6 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
    updateTask,
-   showTaskModal,
    createGoogleCalendarEvent,
    createGoogleTokens
 })(ScheduleTimeSlot)

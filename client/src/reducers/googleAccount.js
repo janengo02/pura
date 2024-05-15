@@ -26,6 +26,8 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: false,
+            googleEvents: null,
+            account: null,
             loading: false
          }
       default:

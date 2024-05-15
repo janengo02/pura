@@ -2,6 +2,7 @@ import { api } from '../utils'
 import {
    GOOGLE_CALENDAR_LOGGED_IN,
    GOOGLE_CALENDAR_AUTH_ERROR,
+   SHOW_TASK,
    GET_PAGE
 } from './types'
 
@@ -41,7 +42,15 @@ export const createGoogleCalendarEvent = (reqData) => async (dispatch) => {
       const res = await api.post('/google-account/create-event', reqData)
       dispatch({
          type: GOOGLE_CALENDAR_LOGGED_IN,
-         payload: res.data
+         payload: res.data.events
+      })
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+      dispatch({
+         type: SHOW_TASK,
+         payload: res.data.task
       })
    } catch (err) {
       const errors = err.response.data.errors

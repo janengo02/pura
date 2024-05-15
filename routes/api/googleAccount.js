@@ -4,6 +4,8 @@ const auth = require('../../middleware/auth')
 const { google } = require('googleapis')
 
 const User = require('../../models/User')
+const Page = require('../../models/Page')
+const Task = require('../../models/Task')
 
 const GOOGLE_CLIENT_ID =
    '468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com'
@@ -77,8 +79,7 @@ router.post('/create-tokens', auth, async (req, res) => {
 // @access  Private
 router.post('/create-event', auth, async (req, res) => {
    try {
-      const { task_id, slotIndex, summary, startDateTime, endDateTime } =
-         req.body
+      const { target_task, slot_index, page_id } = req.body
       const user = await User.findById(req.user.id)
       oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
       const calendar = google.calendar('v3')
@@ -86,18 +87,18 @@ router.post('/create-event', auth, async (req, res) => {
          auth: oath2Client,
          calendarId: 'primary', // TODO: Allow to add more calendars
          requestBody: {
-            summary,
+            summary: target_task.title,
             colorId: '3', // Purple
             start: {
-               dateTime: new Date(startDateTime)
+               dateTime: new Date(target_task.schedule[slot_index].start)
             },
             end: {
-               dateTime: new Date(endDateTime)
+               dateTime: new Date(target_task.schedule[slot_index].end)
             }
          }
       })
       const gEventId = response.data.id
-      const task = await Task.findById(task_id)
+      const task = await Task.findById(target_task._id)
       if (!task) {
          return res.status(404).json({
             errors: [
@@ -105,14 +106,29 @@ router.post('/create-event', auth, async (req, res) => {
             ]
          })
       }
-      task.google_events[slotIndex] = gEventId
+      task.google_events[slot_index] = gEventId
+      target_task.google_events[slot_index] = gEventId
       await task.save()
-
       const events = await calendar.events.list({
          auth: oath2Client,
          calendarId: 'primary' // TODO: Allow to add more calendars
       })
-      res.json(events.data)
+      // Data: get new page
+      const newPage = await Page.findOneAndUpdate(
+         { _id: page_id },
+         { $set: { update_date: new Date() } },
+         { new: true }
+      )
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
+
+      res.json({ events: events.data, page: newPage, task: target_task })
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error

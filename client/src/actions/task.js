@@ -32,8 +32,14 @@ export const updateTask = (formData) => async (dispatch) => {
       )
       dispatch({
          type: GET_PAGE,
-         payload: res.data
+         payload: res.data.page
       })
+      if (typeof formData.target_task !== 'undefined') {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      }
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({

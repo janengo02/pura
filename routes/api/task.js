@@ -144,13 +144,18 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
       })
    }
    //   Prepare: Set up new task
-   const { title, schedule, google_events, content } = req.body
+   const { title, schedule, google_events, content, target_task } = req.body
    task.update_date = new Date()
    if (title) task.title = title
    if (schedule) task.schedule = schedule
    if (google_events) task.google_events = google_events
    if (content) task.content = content
-
+   if (target_task) {
+      if (title) target_task.title = title
+      if (schedule) target_task.schedule = schedule
+      if (google_events) target_task.google_events = google_events
+      if (content) target_task.content = content
+   }
    try {
       await task.save()
       // Data: get new page
@@ -168,7 +173,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
 
-      res.json(newPage)
+      res.json({ page: newPage, task: target_task })
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({

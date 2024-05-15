@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateTask, showTaskModal } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/task'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCalendar, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -10,12 +10,7 @@ import { Button, Flex, VStack } from '@chakra-ui/react'
 import cloneDeep from 'clone-deep'
 import ScheduleTimeSlot from './ScheduleTimeSlot'
 
-const ScheduleSelect = ({
-   updateTask,
-   showTaskModal,
-   task: { task },
-   state
-}) => {
+const ScheduleSelect = ({ updateTask, task: { task }, state }) => {
    const addSlot = async () => {
       const newSlot = {
          start: '',
@@ -27,18 +22,13 @@ const ScheduleSelect = ({
       newSchedule.push(newSlot)
       newGoogleEvents.push(newGoogleEventSlot)
       const formData = {
+         target_task: task,
          page_id: state._id,
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents
       }
-      const newTask = {
-         ...task,
-         schedule: newSchedule,
-         google_events: newGoogleEvents
-      }
       await updateTask(formData)
-      await showTaskModal(newTask)
    }
 
    return (
@@ -75,13 +65,11 @@ const ScheduleSelect = ({
 
 ScheduleSelect.propTypes = {
    task: PropTypes.object.isRequired,
-   updateTask: PropTypes.func.isRequired,
-   showTaskModal: PropTypes.func.isRequired
+   updateTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task
 })
 export default connect(mapStateToProps, {
-   updateTask,
-   showTaskModal
+   updateTask
 })(ScheduleSelect)
