@@ -5,34 +5,16 @@ export const stringToDateTimeLocal = (dString) => {
    return d
 }
 
-export const calendarPage = (page, googleEvents) => {
+export const calendarPage = (googleEvents) => {
    const events = []
    googleEvents?.forEach((event) => {
       const newStart = Date.parse(event.start.dateTime)
       const newEnd = Date.parse(event.end.dateTime)
       events.push({
-         id: event._id,
+         id: event.id,
          title: event.summary,
          start: new Date(newStart),
          end: new Date(newEnd)
-      })
-   })
-   page?.tasks?.forEach((task) => {
-      task?.schedule?.forEach((event, index) => {
-         const newStart = Date.parse(event.start)
-         const newEnd = Date.parse(event.end)
-         events.push({
-            id: task._id,
-            title:
-               task.title +
-               ' (' +
-               (index + 1) +
-               '/' +
-               task.schedule.length +
-               ')',
-            start: new Date(newStart),
-            end: new Date(newEnd)
-         })
       })
    })
    return events

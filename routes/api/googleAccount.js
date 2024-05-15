@@ -77,7 +77,8 @@ router.post('/create-tokens', auth, async (req, res) => {
 // @access  Private
 router.post('/create-event', auth, async (req, res) => {
    try {
-      const { summary, startDateTime, endDateTime } = req.body
+      const { task_id, slotIndex, summary, startDateTime, endDateTime } =
+         req.body
       const user = await User.findById(req.user.id)
       oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
       const calendar = google.calendar('v3')
@@ -95,7 +96,23 @@ router.post('/create-event', auth, async (req, res) => {
             }
          }
       })
-      res.json(response)
+      const gEventId = response.data.id
+      const task = await Task.findById(task_id)
+      if (!task) {
+         return res.status(404).json({
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
+            ]
+         })
+      }
+      task.google_events[slotIndex] = gEventId
+      await task.save()
+
+      const events = await calendar.events.list({
+         auth: oath2Client,
+         calendarId: 'primary' // TODO: Allow to add more calendars
+      })
+      res.json(events.data)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error

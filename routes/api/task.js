@@ -92,7 +92,12 @@ router.post(
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'schedule', 'content'])
+            .populate('tasks', [
+               'title',
+               'schedule',
+               'google_events',
+               'content'
+            ])
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap
@@ -139,10 +144,11 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
       })
    }
    //   Prepare: Set up new task
-   const { title, schedule, content } = req.body
+   const { title, schedule, google_events, content } = req.body
    task.update_date = new Date()
    if (title) task.title = title
    if (schedule) task.schedule = schedule
+   if (google_events) task.google_events = google_events
    if (content) task.content = content
 
    try {
@@ -160,7 +166,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
+         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
 
       res.json(newPage)
    } catch (error) {
@@ -227,7 +233,7 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
+         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
 
       res.json(newPage)
    } catch (error) {

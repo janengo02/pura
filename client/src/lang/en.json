@@ -37,6 +37,8 @@
       "btn-register": "Register",
       "btn-show": "Show",
       "btn-submitting": "Submitting",
+      "btn-synced": "Synced",
+      "btn-not_synced": "Not synced",
       "desc-": "------------------------------------------------",
       "desc-login": "Have a productive day!",
       "desc-register": "Manage all your tasks using Kanban board and Time-boxed method",

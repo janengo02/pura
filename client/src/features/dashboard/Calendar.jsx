@@ -13,7 +13,6 @@ import {
 import * as dates from '../../utils/dates'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Skeleton, VStack } from '@chakra-ui/react'
-import { calendarPage } from '../../utils/formatter'
 import Toolbar from './calendar/toolbar/Toolbar'
 
 const mLocalizer = momentLocalizer(moment)
@@ -27,8 +26,7 @@ const ColoredDateCellWrapper = ({ children }) => {
 }
 const Calendar = ({
    localizer = mLocalizer,
-   page: { page, loading, error },
-   googleAccount: { googleEvents }
+   googleAccount: { googleEvents, loading }
 }) => {
    const { components, defaultDate, max, views } = useMemo(
       () => ({
@@ -56,7 +54,8 @@ const Calendar = ({
             <BigCalendar
                components={components}
                defaultDate={defaultDate}
-               events={calendarPage(page, googleEvents)}
+               events={googleEvents || []}
+               defaultView='week'
                localizer={localizer}
                max={max}
                showMultiDayTimes
@@ -71,12 +70,10 @@ const Calendar = ({
 
 Calendar.propTypes = {
    localizer: PropTypes.instanceOf(DateLocalizer),
-   page: PropTypes.object.isRequired,
    googleAccount: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page,
    googleAccount: state.googleAccount
 })
 

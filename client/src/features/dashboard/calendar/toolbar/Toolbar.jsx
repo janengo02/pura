@@ -4,6 +4,7 @@ import { PiPlusCircleFill } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 
 import Settings from './Settings'
+import ReloadButton from './ReloadButton'
 const Toolbar = () => {
    return (
       <Flex w='full' maxW={802} paddingY={5} paddingX={3} alignItems='center'>
@@ -11,6 +12,7 @@ const Toolbar = () => {
 
          <Spacer />
          <Flex gap={5} alignItems='center'>
+            <ReloadButton />
             <Settings />
             <Button
                size='sm'

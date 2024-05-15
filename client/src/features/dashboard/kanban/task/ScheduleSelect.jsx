@@ -21,16 +21,21 @@ const ScheduleSelect = ({
          start: '',
          end: ''
       }
+      const newGoogleEventSlot = null
       var newSchedule = cloneDeep(task.schedule)
+      var newGoogleEvents = cloneDeep(task.google_events)
       newSchedule.push(newSlot)
+      newGoogleEvents.push(newGoogleEventSlot)
       const formData = {
          page_id: state._id,
          task_id: task._id,
-         schedule: newSchedule
+         schedule: newSchedule,
+         google_events: newGoogleEvents
       }
       const newTask = {
          ...task,
-         schedule: newSchedule
+         schedule: newSchedule,
+         google_events: newGoogleEvents
       }
       await updateTask(formData)
       await showTaskModal(newTask)

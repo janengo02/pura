@@ -2,11 +2,13 @@ import {
    GOOGLE_CALENDAR_LOGGED_IN,
    GOOGLE_CALENDAR_AUTH_ERROR
 } from '../actions/types'
+import { calendarPage } from '../utils/formatter'
 
 const initialState = {
    isLoggedIn: null,
    googleEvents: null,
-   account: null
+   account: null,
+   loading: true
 }
 
 function googleAccountReducer(state = initialState, action) {
@@ -16,13 +18,15 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: true,
-            googleEvents: payload.items,
-            account: payload.summary
+            googleEvents: calendarPage(payload.items),
+            account: payload.summary,
+            loading: false
          }
       case GOOGLE_CALENDAR_AUTH_ERROR:
          return {
             ...state,
-            isLoggedIn: false
+            isLoggedIn: false,
+            loading: false
          }
       default:
          return state

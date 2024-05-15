@@ -1,5 +1,9 @@
 import { api } from '../utils'
-import { GOOGLE_CALENDAR_LOGGED_IN, GOOGLE_CALENDAR_AUTH_ERROR } from './types'
+import {
+   GOOGLE_CALENDAR_LOGGED_IN,
+   GOOGLE_CALENDAR_AUTH_ERROR,
+   GET_PAGE
+} from './types'
 
 export const connectGoogle = () => async (dispatch) => {
    try {
@@ -34,7 +38,11 @@ export const createGoogleTokens = (reqData) => async (dispatch) => {
 // Create Google Calendar Event
 export const createGoogleCalendarEvent = (reqData) => async (dispatch) => {
    try {
-      await api.post('/google-account/create-event', reqData)
+      const res = await api.post('/google-account/create-event', reqData)
+      dispatch({
+         type: GOOGLE_CALENDAR_LOGGED_IN,
+         payload: res.data
+      })
    } catch (err) {
       const errors = err.response.data.errors
       console.log(errors)

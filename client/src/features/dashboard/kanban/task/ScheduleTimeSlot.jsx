@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -23,8 +23,27 @@ const ScheduleTimeSlot = ({
    task: { task },
    slot,
    index,
-   state
+   state,
+   googleAccount: { googleEvents }
 }) => {
+   const [isSynced, setIsSynced] = useState(false)
+   useEffect(() => {
+      const gEventId = task.google_events[index]
+      const createdGoogleEvent = googleEvents.find((g) => g.id === gEventId)
+      if (typeof createdGoogleEvent === 'undefined') {
+         setIsSynced(false)
+      } else {
+         if (
+            // createdGoogleEvent.start !== slot.start ||
+            // createdGoogleEvent.end !== slot.end ||
+            createdGoogleEvent.title !== task.title
+         ) {
+            setIsSynced(false)
+         } else {
+            setIsSynced(true)
+         }
+      }
+   }, [googleEvents])
    const googleLogin = useGoogleLogin({
       onSuccess: async (tokenResponse) => {
          const { code } = tokenResponse
@@ -79,20 +98,27 @@ const ScheduleTimeSlot = ({
    const onDelete = async (index) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule.splice(index, 1)
+      var newGoogleEvents = cloneDeep(task.google_events)
+      newGoogleEvents.splice(index, 1)
       const formData = {
          page_id: state._id,
          task_id: task._id,
-         schedule: newSchedule
+         schedule: newSchedule,
+         google_events: newGoogleEvents
       }
       const newTask = {
          ...task,
-         schedule: newSchedule
+         schedule: newSchedule,
+         google_events: newGoogleEvents
       }
       await updateTask(formData)
       await showTaskModal(newTask)
    }
    const onCreateGoogleEvent = async () => {
       const reqData = {
+         task_id: task._id,
+         slotIndex: index,
+         google_events: task.google_events,
          summary: task.title,
          startDateTime: task.schedule[index].start,
          endDateTime: task.schedule[index].end
@@ -106,6 +132,7 @@ const ScheduleTimeSlot = ({
    }
    const [addGoogleCalendarEvent, addGoogleCalendarLoading] =
       useLoading(onCreateGoogleEvent)
+
    return (
       <Flex w='full' gap={2}>
          <Input
@@ -151,7 +178,16 @@ const ScheduleTimeSlot = ({
             }}
          />
          <IconButton
-            icon={<Image src='assets/img/logos--google-calendar.svg' />}
+            icon={
+               <Image
+                  src={
+                     isSynced
+                        ? 'assets/img/logos--google-calendar-synced.svg'
+                        : 'assets/img/logos--google-calendar-not-synced.svg'
+                  }
+                  size={30}
+               />
+            }
             variant='ghost'
             colorScheme='gray'
             color='gray.500'
@@ -176,11 +212,13 @@ ScheduleTimeSlot.propTypes = {
    showTaskModal: PropTypes.func.isRequired,
    createGoogleCalendarEvent: PropTypes.func.isRequired,
    isLoggedIn: PropTypes.bool,
-   createGoogleTokens: PropTypes.func.isRequired
+   createGoogleTokens: PropTypes.func.isRequired,
+   googleAccount: PropTypes.object.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   isLoggedIn: state.googleAccount.isLoggedIn
+   isLoggedIn: state.googleAccount.isLoggedIn,
+   googleAccount: state.googleAccount
 })
 
 export default connect(mapStateToProps, {

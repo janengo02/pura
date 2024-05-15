@@ -64,6 +64,7 @@ const TaskCard = ({
       _id: task._id,
       title: task.title,
       schedule: task.schedule,
+      google_events: task.google_events,
       content: task.content,
       i_group: i_group,
       i_progress: i_progress,

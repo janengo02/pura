@@ -18,7 +18,7 @@ router.get('/', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
+         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
       res.json(page)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
@@ -51,7 +51,7 @@ router.get('/:id', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
+         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
       if (!page) {
          return res.status(404).json({
             errors: [
@@ -200,7 +200,7 @@ router.post('/move-task/:id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
+         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
