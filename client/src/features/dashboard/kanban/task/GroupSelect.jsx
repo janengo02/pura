@@ -16,7 +16,12 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 
-const GroupSelect = ({ updateGroup, task: { task }, state }) => {
+const GroupSelect = ({
+   state,
+   // Redux props
+   updateGroup,
+   task: { task }
+}) => {
    const [hovered, setHovered] = useState(false)
    const tagSelect = useDisclosure()
    const currentGroup = state.group_order[task.i_group]

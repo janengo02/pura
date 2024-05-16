@@ -24,15 +24,16 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { deleteTask, updateTask, showTaskModal } from '../../../../actions/task'
 
 const TaskCard = ({
-   deleteTask,
-   updateTask,
-   showTaskModal,
    state,
    task,
    i_group,
    i_progress,
    draggableId,
-   index
+   index,
+   // Redux props
+   deleteTask,
+   updateTask,
+   showTaskModal
 }) => {
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)

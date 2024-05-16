@@ -57,7 +57,10 @@ const SplitPaneRight = () => (
    </Box>
 )
 
-const Dashboard = ({ connectGoogle }) => {
+const Dashboard = ({
+   // Redux props
+   connectGoogle
+}) => {
    const [leftWidth, setLeftWidth] = useState(null)
    const [viewCalendar, setViewCalendar] = useState(true)
    const [focusDivider, setFocusDivider] = useState(false)

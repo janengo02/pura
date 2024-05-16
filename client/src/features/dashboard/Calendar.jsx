@@ -25,6 +25,7 @@ const ColoredDateCellWrapper = ({ children }) => {
    })
 }
 const Calendar = ({
+   // Redux props
    localizer = mLocalizer,
    googleAccount: { googleEvents, loading }
 }) => {

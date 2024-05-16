@@ -16,7 +16,12 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 
-const ProgressSelect = ({ updateProgress, task: { task }, state }) => {
+const ProgressSelect = ({
+   state,
+   // Redux props
+   updateProgress,
+   task: { task }
+}) => {
    const [hovered, setHovered] = useState(false)
    const tagSelect = useDisclosure()
    const currentProgress = state.progress_order[task.i_progress]

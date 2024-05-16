@@ -30,6 +30,7 @@ import GroupSelect from './GroupSelect'
 import ScheduleSelect from './ScheduleSelect'
 
 const TaskModal = ({
+   // Redux props
    task: { task },
    page: { page },
    deleteTask,

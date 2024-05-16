@@ -15,15 +15,15 @@ import { useGoogleLogin } from '@react-oauth/google'
 import { createGoogleTokens } from '../../../../actions/googleAccount'
 
 const ScheduleTimeSlot = ({
-   isLoggedIn,
-   updateTask,
-   createGoogleCalendarEvent,
-   createGoogleTokens,
-   task: { task },
    slot,
    index,
    state,
-   googleAccount: { googleEvents }
+   // Redux props
+   googleAccount: { googleEvents, isLoggedIn },
+   updateTask,
+   createGoogleCalendarEvent,
+   createGoogleTokens,
+   task: { task }
 }) => {
    const [isSynced, setIsSynced] = useState(true)
    useEffect(() => {
@@ -193,13 +193,11 @@ ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired,
    createGoogleCalendarEvent: PropTypes.func.isRequired,
-   isLoggedIn: PropTypes.bool,
    createGoogleTokens: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   isLoggedIn: state.googleAccount.isLoggedIn,
    googleAccount: state.googleAccount
 })
 

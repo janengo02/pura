@@ -32,11 +32,12 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { progressColors } from '../../../../components/data/defaultColor'
 
 const ProgressHeader = ({
-   updateProgress,
-   deleteProgress,
    page_id,
    progressCount,
-   progress
+   progress,
+   // Redux props
+   updateProgress,
+   deleteProgress
 }) => {
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)

@@ -32,7 +32,14 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 
 import { groupColors } from '../../../../components/data/defaultColor'
 
-const Group = ({ updateGroup, deleteGroup, group, i_group, state }) => {
+const Group = ({
+   group,
+   i_group,
+   state,
+   // Redux props
+   updateGroup,
+   deleteGroup
+}) => {
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)
    const dropdownMenu = useDisclosure()

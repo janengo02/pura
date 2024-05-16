@@ -10,7 +10,12 @@ import { Button, Flex, VStack } from '@chakra-ui/react'
 import cloneDeep from 'clone-deep'
 import ScheduleTimeSlot from './ScheduleTimeSlot'
 
-const ScheduleSelect = ({ updateTask, task: { task }, state }) => {
+const ScheduleSelect = ({
+   state,
+   // Redux props
+   updateTask,
+   task: { task }
+}) => {
    const addSlot = async () => {
       const newSlot = {
          start: '',

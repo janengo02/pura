@@ -21,6 +21,7 @@ const Column = ({
    i_group,
    tasks,
    state,
+   // Redux props
    createTask
 }) => {
    const newTaskInfo = {

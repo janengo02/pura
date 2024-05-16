@@ -13,7 +13,14 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { yupResolver } from '@hookform/resolvers/yup'
 import t from '../../../../lang/i18n'
 
-const NewTaskCard = ({ page_id, task_id, draggableId, index, updateTask }) => {
+const NewTaskCard = ({
+   page_id,
+   task_id,
+   draggableId,
+   index,
+   // Redux props
+   updateTask
+}) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })

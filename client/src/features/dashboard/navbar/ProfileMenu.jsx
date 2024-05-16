@@ -17,7 +17,11 @@ import {
 import { PiSignOut, PiGearSix } from 'react-icons/pi'
 import t from '../../../lang/i18n'
 
-const ProfileMenu = ({ logout, user }) => {
+const ProfileMenu = ({
+   // Redux props
+   logout,
+   user
+}) => {
    const profileMenu = useDisclosure()
    return (
       <Menu isOpen={profileMenu.isOpen} onClose={profileMenu.onClose}>

@@ -11,7 +11,12 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { yupResolver } from '@hookform/resolvers/yup'
 import t from '../../../../lang/i18n'
 
-const NewProgressHeader = ({ updateProgress, page_id, progress }) => {
+const NewProgressHeader = ({
+   page_id,
+   progress,
+   // Redux props
+   updateProgress
+}) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })

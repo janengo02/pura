@@ -30,6 +30,7 @@ import NewGroup from './kanban/group/NewGroup'
 import NewProgressHeader from './kanban/progress/NewProgressHeader'
 
 const Kanban = ({
+   // Redux props
    getFirstPage,
    moveTask,
    createGroup,

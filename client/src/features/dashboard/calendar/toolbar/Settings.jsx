@@ -27,6 +27,7 @@ const GoogleCalendarGroupTitle = () => (
    </Flex>
 )
 const Settings = ({
+   // Redux props
    createGoogleTokens,
    googleAccount: { isLoggedIn, account }
 }) => {

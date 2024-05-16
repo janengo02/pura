@@ -6,7 +6,10 @@ import { IconButton } from '@chakra-ui/react'
 import { PiArrowClockwise } from 'react-icons/pi'
 import { connectGoogle } from '../../../../actions/googleAccount'
 
-const ReloadButton = ({ connectGoogle }) => {
+const ReloadButton = ({
+   // Redux props
+   connectGoogle
+}) => {
    return (
       <IconButton
          aria-label='Options'

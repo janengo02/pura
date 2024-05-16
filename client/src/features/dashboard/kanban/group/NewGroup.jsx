@@ -11,7 +11,13 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { updateGroup } from '../../../../actions/group'
 import t from '../../../../lang/i18n'
 
-const NewGroup = ({ updateGroup, group, i_group, state }) => {
+const NewGroup = ({
+   group,
+   i_group,
+   state,
+   // Redux props
+   updateGroup
+}) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })

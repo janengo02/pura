@@ -80,7 +80,10 @@ const NavbarRight = () => {
       </Flex>
    )
 }
-const Navbar = ({ page: { page } }) => {
+const Navbar = ({
+   // Redux props
+   page: { page }
+}) => {
    const sidebar = useDisclosure()
    const dropdownMenu = useDisclosure()
    return (
