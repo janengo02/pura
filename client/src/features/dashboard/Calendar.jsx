@@ -14,6 +14,7 @@ import * as dates from '../../utils/dates'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Skeleton, VStack } from '@chakra-ui/react'
 import Toolbar from './calendar/toolbar/Toolbar'
+import EventWrapper from './calendar/event/EventWrapper'
 
 const mLocalizer = momentLocalizer(moment)
 
@@ -32,7 +33,8 @@ const Calendar = ({
    const { components, defaultDate, max, views } = useMemo(
       () => ({
          components: {
-            timeSlotWrapper: ColoredDateCellWrapper
+            timeSlotWrapper: ColoredDateCellWrapper,
+            eventWrapper: EventWrapper
          },
          defaultDate: new Date(),
          max: dates.add(dates.endOf(new Date(2015, 17, 1), 'day'), -1, 'hours'),

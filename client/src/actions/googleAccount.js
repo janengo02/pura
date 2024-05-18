@@ -62,3 +62,29 @@ export const createGoogleCalendarEvent = (reqData) => async (dispatch) => {
       // console.clear()
    }
 }
+
+// Delete Google Calendar Event
+export const deleteGoogleCalendarEvent = (reqData) => async (dispatch) => {
+   try {
+      const res = await api.post(
+         `/google-account/delete-event/${reqData.eventId}`,
+         reqData
+      )
+      dispatch({
+         type: GOOGLE_CALENDAR_LOGGED_IN,
+         payload: res.data.events
+      })
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+   } catch (err) {
+      const errors = err.response.data.errors
+      console.log(errors)
+      dispatch({
+         type: GOOGLE_CALENDAR_AUTH_ERROR
+      })
+      //  @Todo Handle error
+      // console.clear()
+   }
+}

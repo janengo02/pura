@@ -31,7 +31,6 @@ const Settings = ({
    createGoogleTokens,
    googleAccount: { isLoggedIn, account }
 }) => {
-   console.log(account)
    const googleLogin = useGoogleLogin({
       onSuccess: (tokenResponse) => {
          const { code } = tokenResponse
