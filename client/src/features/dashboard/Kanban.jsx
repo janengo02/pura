@@ -26,8 +26,7 @@ import ProgressHeader from './kanban/progress/ProgressHeader'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 import { PiPlus, PiPlusBold } from 'react-icons/pi'
-import NewGroup from './kanban/group/NewGroup'
-import NewProgressHeader from './kanban/progress/NewProgressHeader'
+import Column from './kanban/progress/Column'
 
 const Kanban = ({
    // Redux props
@@ -41,7 +40,10 @@ const Kanban = ({
    const navigate = useNavigate()
 
    useEffect(() => {
-      setState(page)
+      setState({
+         task_map: page?.task_map || [],
+         tasks: page?.tasks || []
+      })
    }, [page])
 
    useEffect(() => {
@@ -112,7 +114,6 @@ const Kanban = ({
          }
       }
       const newState = {
-         ...state,
          task_map: newTaskMap,
          tasks: newTaskArray
       }
@@ -151,24 +152,13 @@ const Kanban = ({
                               gap={3}
                            >
                               <Flex gap={3} paddingX={3} alignItems='center'>
-                                 {state?.progress_order?.map((progress) =>
-                                    progress.title !== '' ? (
-                                       <ProgressHeader
-                                          key={progress._id}
-                                          page_id={state._id}
-                                          progressCount={
-                                             state.progress_order.length
-                                          }
-                                          progress={progress}
-                                       />
-                                    ) : (
-                                       <NewProgressHeader
-                                          key={progress._id}
-                                          page_id={state._id}
-                                          progress={progress}
-                                       />
-                                    )
-                                 )}
+                                 {page?.progress_order?.map((progress) => (
+                                    <ProgressHeader
+                                       key={progress._id}
+                                       progress={progress}
+                                       isNew={progress.title === ''}
+                                    />
+                                 ))}
                                  <IconButton
                                     aria-label='Options'
                                     icon={<PiPlusBold />}
@@ -178,27 +168,26 @@ const Kanban = ({
                                     size='sm'
                                     onClick={async (e) => {
                                        e.preventDefault()
-                                       createProgress({ page_id: state._id })
+                                       createProgress({ page_id: page._id })
                                     }}
                                  />
                               </Flex>
-                              {state?.group_order?.map((group, i_group) =>
-                                 group.title !== '' ? (
-                                    <Group
-                                       key={group._id}
-                                       group={group}
-                                       i_group={i_group}
-                                       state={state}
-                                    />
-                                 ) : (
-                                    <NewGroup
-                                       key={group._id}
-                                       group={group}
-                                       i_group={i_group}
-                                       state={state}
-                                    />
-                                 )
-                              )}
+                              {page?.group_order?.map((group) => (
+                                 <Group
+                                    key={group._id}
+                                    group={group}
+                                    isNew={group.title === ''}
+                                 >
+                                    {page?.progress_order?.map((progress) => (
+                                       <Column
+                                          key={progress._id} //has to match droppableId
+                                          progress={progress}
+                                          group={group}
+                                          state={state}
+                                       />
+                                    ))}
+                                 </Group>
+                              ))}
                               <Button
                                  size='sm'
                                  colorScheme='gray'
@@ -207,7 +196,7 @@ const Kanban = ({
                                  leftIcon={<PiPlus />}
                                  onClick={async (e) => {
                                     e.preventDefault()
-                                    createGroup({ page_id: state._id })
+                                    createGroup({ page_id: page._id })
                                  }}
                               >
                                  {t('btn-add-group')}

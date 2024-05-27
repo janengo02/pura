@@ -32,19 +32,20 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { progressColors } from '../../../../components/data/defaultColor'
 
 const ProgressHeader = ({
-   page_id,
-   progressCount,
    progress,
+   isNew,
    // Redux props
    updateProgress,
-   deleteProgress
+   deleteProgress,
+   page: { page }
 }) => {
+   console.log('rendered')
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)
    const dropdownMenu = useDisclosure()
    const delProgress = () => {
       const formData = {
-         page_id: page_id,
+         page_id: page._id,
          progress_id: progress._id
       }
       deleteProgress(formData)
@@ -55,7 +56,7 @@ const ProgressHeader = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: page_id,
+         page_id: page._id,
          progress_id: progress._id,
          title: data.title
       }
@@ -68,7 +69,7 @@ const ProgressHeader = ({
 
    const changeColor = (color, title_color) => {
       const formData = {
-         page_id: page_id,
+         page_id: page._id,
          progress_id: progress._id,
          color: color,
          title_color: title_color
@@ -93,8 +94,8 @@ const ProgressHeader = ({
             setHovered(false)
          }}
       >
-         <Flex marginBottom={editing ? -2 : undefined}>
-            {editing ? (
+         <Flex marginBottom={editing || isNew ? -2 : undefined}>
+            {editing || isNew ? (
                <FormProvider {...methods} h='fit-content'>
                   <form noValidate autoComplete='on'>
                      <MultiInput
@@ -150,7 +151,7 @@ const ProgressHeader = ({
                         >
                            {t('btn-edit-name')}
                         </MenuItem>
-                        {progressCount > 1 && (
+                        {page.progress_order.length > 1 && (
                            <MenuItem
                               icon={<PiTrash size={18} />}
                               fontSize='sm'
@@ -208,7 +209,13 @@ const ProgressHeader = ({
 
 ProgressHeader.propTypes = {
    deleteProgress: PropTypes.func.isRequired,
-   updateProgress: PropTypes.func.isRequired
+   updateProgress: PropTypes.func.isRequired,
+   page: PropTypes.object.isRequired
 }
 
-export default connect(null, { deleteProgress, updateProgress })(ProgressHeader)
+const mapStateToProps = (state) => ({
+   page: state.page
+})
+export default connect(mapStateToProps, { deleteProgress, updateProgress })(
+   ProgressHeader
+)

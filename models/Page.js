@@ -10,16 +10,6 @@ const PageSchema = new mongoose.Schema({
       type: String,
       default: 'Untitled'
    },
-   sync_accounts: [
-      {
-         tool: {
-            type: String
-         },
-         email: {
-            type: String
-         }
-      }
-   ],
    progress_order: [
       {
          type: mongoose.Schema.Types.ObjectId,

@@ -8,27 +8,39 @@ import { Droppable } from 'react-beautiful-dnd'
 import { Button, Card, Flex } from '@chakra-ui/react'
 import { PiPlus } from 'react-icons/pi'
 import TaskCard from '../task/TaskCard'
-import NewTaskCard from '../task/NewTaskCard'
 
 import t from '../../../../lang/i18n'
 
 const Column = ({
-   droppableId,
-   taskPointer,
    progress,
    group,
-   i_progress,
-   i_group,
-   tasks,
    state,
    // Redux props
+   page: { page },
    createTask
 }) => {
    const newTaskInfo = {
-      page_id: state._id,
+      page_id: page._id,
       group_id: group._id,
       progress_id: progress._id
    }
+   const groupIndex = page.group_order.findIndex((g) => g._id === group._id)
+   const progressIndex = page.progress_order.findIndex(
+      (p) => p._id === progress._id
+   )
+   const taskMapIndex = groupIndex * page.progress_order.length + progressIndex
+   var taskArray = []
+   if (taskMapIndex === 0) {
+      taskArray = state?.tasks.slice(0, state.task_map[0])
+   } else {
+      taskArray = state?.tasks.slice(
+         state?.task_map[taskMapIndex - 1],
+         state?.task_map[taskMapIndex]
+      )
+   }
+   const droppableId = taskMapIndex.toString()
+   const taskPointer = state?.task_map[taskMapIndex] - taskArray?.length
+
    return (
       <Droppable droppableId={droppableId}>
          {(provided, snapshot) => (
@@ -47,27 +59,15 @@ const Column = ({
                   flexDirection='column'
                   flexGrow={1}
                >
-                  {tasks?.map((task, i_task) =>
-                     task.title !== '' ? (
-                        <TaskCard
-                           key={taskPointer + i_task} //has to match draggableId
-                           state={state}
-                           task={task}
-                           i_group={i_group}
-                           i_progress={i_progress}
-                           draggableId={(taskPointer + i_task).toString()}
-                           index={i_task}
-                        />
-                     ) : (
-                        <NewTaskCard
-                           key={taskPointer + i_task} //has to match draggableId
-                           page_id={state._id}
-                           task_id={task._id}
-                           draggableId={(taskPointer + i_task).toString()}
-                           index={i_task}
-                        />
-                     )
-                  )}
+                  {taskArray?.map((task, taskIndex) => (
+                     <TaskCard
+                        key={taskPointer + taskIndex} //has to match draggableId
+                        task={task}
+                        isNew={task.title === ''}
+                        draggableId={(taskPointer + taskIndex).toString()}
+                        taskIndex={taskIndex}
+                     />
+                  ))}
                   {provided.placeholder}
                   {newTaskInfo && (
                      <Button
@@ -92,6 +92,10 @@ const Column = ({
    )
 }
 Column.propTypes = {
+   page: PropTypes.object.isRequired,
    createTask: PropTypes.func.isRequired
 }
-export default connect(null, { createTask })(Column)
+const mapStateToProps = (state) => ({
+   page: state.page
+})
+export default connect(mapStateToProps, { createTask })(Column)

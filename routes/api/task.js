@@ -6,6 +6,42 @@ const { check, validationResult } = require('express-validator')
 const Page = require('../../models/Page')
 const Task = require('../../models/Task')
 
+// @route   GET POST api/task/:page-id/:task-id
+// @desc    Get task info
+// @access  Private
+router.get('/:page_id/:task_id', auth, async (req, res) => {
+   try {
+      //   Validation: Check if page exists
+      const page = await Page.findById(req.params.page_id)
+      if (!page) {
+         return res.status(404).json({ msg: 'Page not found' })
+      }
+      //   Validation: Check if user is the owner
+      if (page.user.toString() !== req.user.id) {
+         return res.status(401).json({ msg: 'User not authorized' })
+      }
+
+      //   Validation: Check if task exists
+      const task = await Task.findById(req.params.task_id)
+      // TODO: return task's group and progress
+      res.json(task)
+   } catch (err) {
+      console.error('---ERROR---: ' + err.message)
+
+      if (err.kind === 'ObjectId') {
+         return res.status(404).json({
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
+            ]
+         })
+      }
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
+   }
+})
 // @route   POST api/task/new/:page-id
 // @desc    Create a new task
 // @access  Private
@@ -92,12 +128,7 @@ router.post(
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', [
-               'title',
-               'schedule',
-               'google_events',
-               'content'
-            ])
+            .populate('tasks', ['title', 'is_scheduled'])
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap
@@ -171,7 +202,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
+         .populate('tasks', ['title', 'is_scheduled'])
 
       res.json({ page: newPage, task: target_task })
    } catch (error) {
@@ -238,7 +269,7 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
+         .populate('tasks', ['title', 'is_scheduled'])
 
       res.json(newPage)
    } catch (error) {

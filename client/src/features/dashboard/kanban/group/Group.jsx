@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { deleteGroup, updateGroup } from '../../../../actions/group'
@@ -17,7 +17,6 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 import GroupTitle from '../../../../components/typography/GroupTitle'
-import Column from '../progress/Column'
 import {
    PiCircleFill,
    PiDotsThreeBold,
@@ -31,21 +30,24 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { dashboardSchema as s } from '../../DashboardSchema'
 
 import { groupColors } from '../../../../components/data/defaultColor'
+import { useHover } from '../../../../hooks/useHover'
+import { useEditing } from '../../../../hooks/useEditing'
 
 const Group = ({
    group,
-   i_group,
-   state,
+   isNew,
+   children,
    // Redux props
+   page: { page },
    updateGroup,
    deleteGroup
 }) => {
-   const [hovered, setHovered] = useState(false)
-   const [editing, setEditing] = useState(false)
+   const groupHover = useHover()
+   const titleEditing = useEditing()
    const dropdownMenu = useDisclosure()
    const delGroup = () => {
       const formData = {
-         page_id: state._id,
+         page_id: page._id,
          group_id: group._id
       }
       deleteGroup(formData)
@@ -56,7 +58,7 @@ const Group = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: state._id,
+         page_id: page._id,
          group_id: group._id,
          title: data.title
       }
@@ -64,12 +66,12 @@ const Group = ({
          formData.title = 'Untitled'
       }
       await updateGroup(formData)
-      setEditing(false)
+      titleEditing.end()
    })
 
    const changeColor = (color) => {
       const formData = {
-         page_id: state._id,
+         page_id: page._id,
          group_id: group._id,
          color: color
       }
@@ -79,22 +81,22 @@ const Group = ({
       <VStack
          p={3}
          paddingTop={2}
-         gap={editing ? 0 : 2}
+         gap={titleEditing.isEditing || isNew ? 0 : 2}
          borderWidth={2}
          borderColor='gray.100'
          borderRadius={8}
          alignItems='flex-start'
          onMouseEnter={(e) => {
             e.preventDefault()
-            setHovered(true)
+            groupHover.start()
          }}
          onMouseLeave={(e) => {
             e.preventDefault()
-            setHovered(false)
+            groupHover.end()
          }}
       >
          <Flex w='full' alignItems='center' gap={2}>
-            {editing ? (
+            {titleEditing.isEditing || isNew ? (
                <FormProvider {...methods} h='fit-content'>
                   <form noValidate autoComplete='on'>
                      <MultiInput
@@ -134,7 +136,9 @@ const Group = ({
                         size='xs'
                         colorScheme='gray'
                         color='gray.600'
-                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
+                        opacity={
+                           groupHover.isHovered || dropdownMenu.isOpen ? 1 : 0
+                        }
                         onClick={dropdownMenu.onOpen}
                      ></MenuButton>
                      <MenuList>
@@ -143,12 +147,12 @@ const Group = ({
                            fontSize='sm'
                            onClick={async (e) => {
                               e.preventDefault()
-                              setEditing(true)
+                              titleEditing.start()
                            }}
                         >
                            {t('btn-edit-name')}
                         </MenuItem>
-                        {state.group_order.length > 1 && (
+                        {page.group_order.length > 1 && (
                            <MenuItem
                               icon={<PiTrash size={18} />}
                               fontSize='sm'
@@ -194,42 +198,19 @@ const Group = ({
                </>
             )}
          </Flex>
-         <Flex gap={3}>
-            {state?.progress_order?.map((progress, i_progress) => {
-               const i_task_map =
-                  i_group * state.progress_order.length + i_progress
-               var taskArray = []
-               if (i_task_map === 0) {
-                  taskArray = state.tasks.slice(0, state.task_map[0])
-               } else {
-                  taskArray = state.tasks.slice(
-                     state.task_map[i_task_map - 1],
-                     state.task_map[i_task_map]
-                  )
-               }
-
-               return (
-                  <Column
-                     key={i_task_map} //has to match droppableId
-                     droppableId={i_task_map.toString()}
-                     taskPointer={state.task_map[i_task_map] - taskArray.length}
-                     progress={progress}
-                     group={group}
-                     i_progress={i_progress}
-                     i_group={i_group}
-                     tasks={taskArray}
-                     state={state}
-                  />
-               )
-            })}
-         </Flex>
+         <Flex gap={3}>{children}</Flex>
       </VStack>
    )
 }
 
 Group.propTypes = {
+   page: PropTypes.object.isRequired,
    deleteGroup: PropTypes.func.isRequired,
    updateGroup: PropTypes.func.isRequired
 }
 
-export default connect(null, { deleteGroup, updateGroup })(Group)
+const mapStateToProps = (state) => ({
+   page: state.page
+})
+
+export default connect(mapStateToProps, { deleteGroup, updateGroup })(Group)

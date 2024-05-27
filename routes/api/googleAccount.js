@@ -34,9 +34,10 @@ router.get('/list-events', auth, async (req, res) => {
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error
-      res.status(err.code).json({
-         errors: [{ code: err.code, title: 'alert-oops', msg: err.message }]
-      })
+      res.json(err.code)
+      // res.status(err.code).json({
+      //    errors: [{ code: err.code, title: 'alert-oops', msg: err.message }]
+      // })
    }
 })
 
@@ -127,7 +128,7 @@ router.post('/create-event', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
+         .populate('tasks', ['title', 'is_scheduled'])
 
       res.json({ events: events.data, page: newPage, task: target_task })
    } catch (err) {
@@ -187,7 +188,7 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'google_events', 'content'])
+         .populate('tasks', ['title', 'is_scheduled'])
 
       res.json({ events: events.data, page: newPage })
    } catch (err) {

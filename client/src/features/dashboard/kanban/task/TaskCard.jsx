@@ -24,13 +24,12 @@ import { dashboardSchema as s } from '../../DashboardSchema'
 import { deleteTask, updateTask, showTaskModal } from '../../../../actions/task'
 
 const TaskCard = ({
-   state,
    task,
-   i_group,
-   i_progress,
+   isNew,
    draggableId,
-   index,
+   taskIndex,
    // Redux props
+   page: { page },
    deleteTask,
    updateTask,
    showTaskModal
@@ -40,7 +39,7 @@ const TaskCard = ({
    const dropdownMenu = useDisclosure()
    const delTask = () => {
       const formData = {
-         page_id: state._id,
+         page_id: page._id,
          task_id: task._id
       }
       deleteTask(formData)
@@ -51,7 +50,7 @@ const TaskCard = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: state._id,
+         page_id: page._id,
          task_id: task._id,
          title: data.title
       }
@@ -61,19 +60,19 @@ const TaskCard = ({
       await updateTask(formData)
       setEditing(false)
    })
-   const targetTask = {
-      _id: task._id,
-      title: task.title,
-      schedule: task.schedule,
-      google_events: task.google_events,
-      content: task.content,
-      i_group: i_group,
-      i_progress: i_progress,
-      draggableId: draggableId
-   }
+   // const targetTask = {
+   //    _id: task._id,
+   //    title: task.title,
+   //    schedule: task.schedule,
+   //    google_events: task.google_events,
+   //    content: task.content,
+   //    i_group: i_group,
+   //    i_progress: i_progress,
+   //    draggableId: draggableId
+   // }
    return (
       <>
-         <Draggable draggableId={draggableId} index={index}>
+         <Draggable draggableId={draggableId} index={taskIndex}>
             {(provided, snapshot) => (
                <Card
                   {...provided.draggableProps}
@@ -83,7 +82,7 @@ const TaskCard = ({
                   boxShadow={snapshot.isDragging ? 'md' : undefined}
                   bg={hovered ? 'gray.50' : undefined}
                   p={2}
-                  paddingBottom={editing ? 0 : undefined}
+                  paddingBottom={editing || isNew ? 0 : undefined}
                   w='full'
                   marginBottom={1}
                   onMouseEnter={(e) => {
@@ -96,13 +95,13 @@ const TaskCard = ({
                   }}
                >
                   <Flex cursor='pointer'>
-                     {task.schedule.length > 0 ? (
+                     {task.is_scheduled ? (
                         <Text
                            fontSize='xs'
                            color='gray.500'
                            onClick={(e) => {
                               e.preventDefault()
-                              showTaskModal(targetTask)
+                              // showTaskModal(targetTask)
                            }}
                         >
                            {t('schedule_status-true')}
@@ -113,7 +112,7 @@ const TaskCard = ({
                            color='red.500'
                            onClick={(e) => {
                               e.preventDefault()
-                              showTaskModal(targetTask)
+                              // showTaskModal(targetTask)
                            }}
                         >
                            {t('schedule_status-false')}
@@ -123,7 +122,7 @@ const TaskCard = ({
                      <Spacer
                         onClick={(e) => {
                            e.preventDefault()
-                           showTaskModal(targetTask)
+                           // showTaskModal(targetTask)
                         }}
                      />
                      <Menu
@@ -166,7 +165,7 @@ const TaskCard = ({
                      </Menu>
                   </Flex>
                   <Flex alignItems='center' overflow='hidden' cursor='pointer'>
-                     {editing ? (
+                     {editing || isNew ? (
                         <FormProvider {...methods} h='fit-content'>
                            <form
                               noValidate
@@ -179,7 +178,7 @@ const TaskCard = ({
                                  variant='unstyled'
                                  placeholder={t('placeholder-untitled')}
                                  validation={s.title}
-                                 defaultValue={task.title}
+                                 defaultValue={isNew ? undefined : task.title}
                                  fontWeight={600}
                                  borderRadius={0}
                                  autoFocus
@@ -201,7 +200,7 @@ const TaskCard = ({
                            fontWeight={600}
                            onClick={(e) => {
                               e.preventDefault()
-                              showTaskModal(targetTask)
+                              // showTaskModal(targetTask)
                            }}
                         >
                            {task.title}
@@ -216,11 +215,17 @@ const TaskCard = ({
 }
 
 TaskCard.propTypes = {
+   page: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired,
    deleteTask: PropTypes.func.isRequired,
    showTaskModal: PropTypes.func.isRequired
 }
+const mapStateToProps = (state) => ({
+   page: state.page
+})
 
-export default connect(null, { updateTask, deleteTask, showTaskModal })(
-   TaskCard
-)
+export default connect(mapStateToProps, {
+   updateTask,
+   deleteTask,
+   showTaskModal
+})(TaskCard)

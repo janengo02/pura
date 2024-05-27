@@ -82,7 +82,7 @@ const NavbarRight = () => {
 }
 const Navbar = ({
    // Redux props
-   page: { page }
+   title
 }) => {
    const sidebar = useDisclosure()
    const dropdownMenu = useDisclosure()
@@ -99,7 +99,7 @@ const Navbar = ({
             <NavbarLeft
                dropdownMenu={dropdownMenu}
                sidebar={sidebar}
-               title={page ? page.title : ''}
+               title={typeof title === 'string' ? title : ''}
             />
             <Spacer />
             <NavbarRight />
@@ -108,11 +108,11 @@ const Navbar = ({
    )
 }
 Navbar.propTypes = {
-   page: PropTypes.object.isRequired
+   title: PropTypes.string
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page
+   title: state.page.page?.title
 })
 
 export default connect(mapStateToProps)(Navbar)
