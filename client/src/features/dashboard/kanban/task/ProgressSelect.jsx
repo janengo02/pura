@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateProgress } from '../../../../actions/task'
+import { updateTaskProgress } from '../../../../actions/task'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiFlagBanner, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -17,14 +17,13 @@ import {
 } from '@chakra-ui/react'
 
 const ProgressSelect = ({
-   state,
    // Redux props
-   updateProgress,
-   task: { task }
+   updateTaskProgress,
+   task: { task },
+   page: { page }
 }) => {
    const [hovered, setHovered] = useState(false)
    const tagSelect = useDisclosure()
-   const currentProgress = state.progress_order[task.i_progress]
    return (
       <Flex w='full' gap={3}>
          <TaskCardLabel icon={<PiFlagBanner />} text={t('label-progress')} />
@@ -48,21 +47,25 @@ const ProgressSelect = ({
                   bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
                >
                   <Tag
-                     bg={currentProgress.color}
-                     color={currentProgress.title_color}
+                     bg={task.progress.color}
+                     color={task.progress.title_color}
                   >
-                     {currentProgress.title}
+                     {task.progress.title}
                   </Tag>
                </Flex>
             </MenuButton>
             <MenuList w='512px'>
-               {state?.progress_order?.map((progress_item) => (
+               {page?.progress_order?.map((progress_item) => (
                   <MenuItem
                      key={progress_item._id}
                      onClick={async (e) => {
                         e.preventDefault()
-                        if (progress_item._id !== currentProgress._id) {
-                           updateProgress(state, task, progress_item)
+                        if (progress_item._id !== task.progress._id) {
+                           updateTaskProgress(
+                              page._id,
+                              task._id,
+                              progress_item._id
+                           )
                         }
                      }}
                   >
@@ -92,9 +95,11 @@ const ProgressSelect = ({
 
 ProgressSelect.propTypes = {
    task: PropTypes.object.isRequired,
-   updateProgress: PropTypes.func.isRequired
+   page: PropTypes.object.isRequired,
+   updateTaskProgress: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
-   task: state.task
+   task: state.task,
+   page: state.page
 })
-export default connect(mapStateToProps, { updateProgress })(ProgressSelect)
+export default connect(mapStateToProps, { updateTaskProgress })(ProgressSelect)

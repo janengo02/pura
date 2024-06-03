@@ -11,10 +11,10 @@ import cloneDeep from 'clone-deep'
 import ScheduleTimeSlot from './ScheduleTimeSlot'
 
 const ScheduleSelect = ({
-   state,
    // Redux props
    updateTask,
-   task: { task }
+   task: { task },
+   page: { page }
 }) => {
    const addSlot = async () => {
       const newSlot = {
@@ -28,7 +28,7 @@ const ScheduleSelect = ({
       newGoogleEvents.push(newGoogleEventSlot)
       const formData = {
          target_task: task,
-         page_id: state._id,
+         page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents
@@ -46,12 +46,7 @@ const ScheduleSelect = ({
 
          <VStack w='full' alignItems='flex-start' gap={3}>
             {task.schedule.map((slot, index) => (
-               <ScheduleTimeSlot
-                  key={index}
-                  slot={slot}
-                  index={index}
-                  state={state}
-               />
+               <ScheduleTimeSlot key={index} slot={slot} index={index} />
             ))}
             <Button
                size='xs'
@@ -70,10 +65,12 @@ const ScheduleSelect = ({
 
 ScheduleSelect.propTypes = {
    task: PropTypes.object.isRequired,
+   page: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
-   task: state.task
+   task: state.task,
+   page: state.page
 })
 export default connect(mapStateToProps, {
    updateTask

@@ -24,6 +24,7 @@ export const createTask = (formData) => async (dispatch) => {
 }
 
 // Update a task
+// TODO: Fix this
 export const updateTask = (formData) => async (dispatch) => {
    try {
       const res = await api.post(
@@ -76,122 +77,11 @@ export const deleteTask = (formData) => async (dispatch) => {
 }
 // Show target task modal
 export const showTaskModal = (formData) => async (dispatch) => {
-   dispatch({
-      type: SHOW_TASK,
-      payload: formData
-   })
-}
-// Update Progress
-export const updateProgress =
-   (state, task, newProgress) => async (dispatch) => {
-      const i_group = task.i_group
-      const i_progress = task.i_progress
-      const i_new_progress = state.progress_order.indexOf(newProgress)
-      const i_task_map = i_group * state.progress_order.length + i_progress
-      const i_new_task_map =
-         i_group * state.progress_order.length + i_new_progress
-      var dest_index = state.task_map[i_new_task_map]
-      if (i_new_task_map !== 0) {
-         dest_index -= state.task_map[i_new_task_map - 1]
-      }
-      var newDraggableId = dest_index
-      if (i_new_task_map !== 0) {
-         newDraggableId += state.task_map[i_new_task_map - 1]
-      }
-      if (i_new_task_map > i_task_map) {
-         newDraggableId--
-      }
-      const source = {
-         droppableId: i_task_map.toString()
-      }
-      const destination = {
-         droppableId: i_new_task_map.toString(),
-         index: dest_index
-      }
-      const formData = {
-         page_id: state._id,
-         destination: destination,
-         source: source,
-         draggableId: task.draggableId
-      }
-      const newTask = {
-         ...task,
-         i_progress: i_new_progress,
-         draggableId: newDraggableId
-      }
-      try {
-         const res = await api.post(
-            `/page/move-task/${formData.page_id}`,
-            formData
-         )
-         dispatch({
-            type: GET_PAGE,
-            payload: res.data
-         })
-         dispatch({
-            type: SHOW_TASK,
-            payload: newTask
-         })
-      } catch (err) {
-         const errors = err.response.data.errors
-         dispatch({
-            type: PAGE_ERROR,
-            payload: {
-               _id: formData.page_id,
-               errors: errors
-            }
-         })
-         // console.clear()
-      }
-   }
-// Update Group
-export const updateGroup = (state, task, newGroup) => async (dispatch) => {
-   const i_group = task.i_group
-   const i_progress = task.i_progress
-   const i_new_group = state.group_order.indexOf(newGroup)
-   const i_task_map = i_group * state.progress_order.length + i_progress
-   const i_new_task_map = i_new_group * state.progress_order.length + i_progress
-   var dest_index = state.task_map[i_new_task_map]
-   if (i_new_task_map !== 0) {
-      dest_index -= state.task_map[i_new_task_map - 1]
-   }
-   var newDraggableId = dest_index
-   if (i_new_task_map !== 0) {
-      newDraggableId += state.task_map[i_new_task_map - 1]
-   }
-   if (i_new_task_map > i_task_map) {
-      newDraggableId--
-   }
-   const source = {
-      droppableId: i_task_map.toString()
-   }
-   const destination = {
-      droppableId: i_new_task_map.toString(),
-      index: dest_index
-   }
-   const formData = {
-      page_id: state._id,
-      destination: destination,
-      source: source,
-      draggableId: task.draggableId
-   }
-   const newTask = {
-      ...task,
-      i_group: i_new_group,
-      draggableId: newDraggableId
-   }
    try {
-      const res = await api.post(
-         `/page/move-task/${formData.page_id}`,
-         formData
-      )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data
-      })
+      const res = await api.get(`/task/${formData.page_id}/${formData.task_id}`)
       dispatch({
          type: SHOW_TASK,
-         payload: newTask
+         payload: res.data
       })
    } catch (err) {
       const errors = err.response.data.errors
@@ -205,3 +95,63 @@ export const updateGroup = (state, task, newGroup) => async (dispatch) => {
       // console.clear()
    }
 }
+// Update Progress
+export const updateTaskProgress =
+   (page_id, task_id, progress_id) => async (dispatch) => {
+      try {
+         const res = await api.post(
+            `/task/update-progress/${page_id}/${task_id}`,
+            {
+               progress_id
+            }
+         )
+         dispatch({
+            type: GET_PAGE,
+            payload: res.data.page
+         })
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      } catch (err) {
+         const errors = err.response.data.errors
+         dispatch({
+            type: PAGE_ERROR,
+            payload: {
+               _id: page_id,
+               errors: errors
+            }
+         })
+         // console.clear()
+      }
+   }
+// Update Group
+export const updateTaskGroup =
+   (page_id, task_id, group_id) => async (dispatch) => {
+      try {
+         const res = await api.post(
+            `/task/update-group/${page_id}/${task_id}`,
+            {
+               group_id
+            }
+         )
+         dispatch({
+            type: GET_PAGE,
+            payload: res.data.page
+         })
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      } catch (err) {
+         const errors = err.response.data.errors
+         dispatch({
+            type: PAGE_ERROR,
+            payload: {
+               _id: page_id,
+               errors: errors
+            }
+         })
+         // console.clear()
+      }
+   }

@@ -150,9 +150,9 @@ const TaskModal = ({
                               />
                            </form>
                         </FormProvider>
-                        <ProgressSelect state={page} />
-                        <GroupSelect state={page} />
-                        <ScheduleSelect state={page} />
+                        <ProgressSelect />
+                        <GroupSelect />
+                        <ScheduleSelect />
                         <TaskCardLabel
                            icon={<PiNote />}
                            text={t('label-note')}

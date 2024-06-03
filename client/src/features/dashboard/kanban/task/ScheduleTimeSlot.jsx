@@ -17,13 +17,13 @@ import { createGoogleTokens } from '../../../../actions/googleAccount'
 const ScheduleTimeSlot = ({
    slot,
    index,
-   state,
    // Redux props
    googleAccount: { googleEvents, isLoggedIn },
    updateTask,
    createGoogleCalendarEvent,
    createGoogleTokens,
-   task: { task }
+   task: { task },
+   page: { page }
 }) => {
    const [isSynced, setIsSynced] = useState(true)
    useEffect(() => {
@@ -67,7 +67,7 @@ const ScheduleTimeSlot = ({
       // TODO: CHeck if end time is bigger than start time
       const formData = {
          target_task: task,
-         page_id: state._id,
+         page_id: page._id,
          task_id: task._id,
          schedule: newSchedule
       }
@@ -80,7 +80,7 @@ const ScheduleTimeSlot = ({
 
       const formData = {
          target_task: task,
-         page_id: state._id,
+         page_id: page._id,
          task_id: task._id,
          schedule: newSchedule
       }
@@ -93,7 +93,7 @@ const ScheduleTimeSlot = ({
       newGoogleEvents.splice(index, 1)
       const formData = {
          target_task: task,
-         page_id: state._id,
+         page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents
@@ -104,7 +104,7 @@ const ScheduleTimeSlot = ({
       const reqData = {
          target_task: task,
          slot_index: index,
-         page_id: state._id
+         page_id: page._id
       }
       await createGoogleCalendarEvent(reqData)
       toast({
@@ -191,6 +191,7 @@ const ScheduleTimeSlot = ({
 
 ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
+   page: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired,
    createGoogleCalendarEvent: PropTypes.func.isRequired,
    createGoogleTokens: PropTypes.func.isRequired,
@@ -198,6 +199,7 @@ ScheduleTimeSlot.propTypes = {
 }
 const mapStateToProps = (state) => ({
    task: state.task,
+   page: state.page,
    googleAccount: state.googleAccount
 })
 

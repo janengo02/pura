@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateGroup } from '../../../../actions/task'
+import { updateTaskGroup } from '../../../../actions/task'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCirclesFour, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -17,14 +17,13 @@ import {
 } from '@chakra-ui/react'
 
 const GroupSelect = ({
-   state,
    // Redux props
-   updateGroup,
-   task: { task }
+   updateTaskGroup,
+   task: { task },
+   page: { page }
 }) => {
    const [hovered, setHovered] = useState(false)
    const tagSelect = useDisclosure()
-   const currentGroup = state.group_order[task.i_group]
    return (
       <Flex w='full' gap={3}>
          <TaskCardLabel icon={<PiCirclesFour />} text={t('label-group')} />
@@ -51,20 +50,20 @@ const GroupSelect = ({
                      borderColor='gray.100'
                      borderWidth={1}
                      bg='white'
-                     color={currentGroup.color}
+                     color={task.group.color}
                   >
-                     {currentGroup.title}
+                     {task.group.title}
                   </Tag>
                </Flex>
             </MenuButton>
             <MenuList w='512px'>
-               {state?.group_order?.map((group_item) => (
+               {page?.group_order?.map((group_item) => (
                   <MenuItem
                      key={group_item._id}
                      onClick={async (e) => {
                         e.preventDefault()
-                        if (group_item._id !== currentGroup._id) {
-                           updateGroup(state, task, group_item)
+                        if (group_item._id !== task.group._id) {
+                           updateTaskGroup(page._id, task._id, group_item._id)
                         }
                      }}
                   >
@@ -96,9 +95,11 @@ const GroupSelect = ({
 
 GroupSelect.propTypes = {
    task: PropTypes.object.isRequired,
-   updateGroup: PropTypes.func.isRequired
+   page: PropTypes.object.isRequired,
+   updateTaskGroup: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
-   task: state.task
+   task: state.task,
+   page: state.page
 })
-export default connect(mapStateToProps, { updateGroup })(GroupSelect)
+export default connect(mapStateToProps, { updateTaskGroup })(GroupSelect)

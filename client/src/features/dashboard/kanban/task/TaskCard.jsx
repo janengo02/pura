@@ -60,16 +60,14 @@ const TaskCard = ({
       await updateTask(formData)
       setEditing(false)
    })
-   // const targetTask = {
-   //    _id: task._id,
-   //    title: task.title,
-   //    schedule: task.schedule,
-   //    google_events: task.google_events,
-   //    content: task.content,
-   //    i_group: i_group,
-   //    i_progress: i_progress,
-   //    draggableId: draggableId
-   // }
+   const showTask = async () => {
+      const formData = {
+         page_id: page._id,
+         task_id: task._id
+      }
+      await showTaskModal(formData)
+   }
+
    return (
       <>
          <Draggable draggableId={draggableId} index={taskIndex}>
@@ -101,7 +99,7 @@ const TaskCard = ({
                            color='gray.500'
                            onClick={(e) => {
                               e.preventDefault()
-                              // showTaskModal(targetTask)
+                              showTask()
                            }}
                         >
                            {t('schedule_status-true')}
@@ -112,7 +110,7 @@ const TaskCard = ({
                            color='red.500'
                            onClick={(e) => {
                               e.preventDefault()
-                              // showTaskModal(targetTask)
+                              showTask()
                            }}
                         >
                            {t('schedule_status-false')}
@@ -122,7 +120,7 @@ const TaskCard = ({
                      <Spacer
                         onClick={(e) => {
                            e.preventDefault()
-                           // showTaskModal(targetTask)
+                           showTask()
                         }}
                      />
                      <Menu
@@ -200,7 +198,7 @@ const TaskCard = ({
                            fontWeight={600}
                            onClick={(e) => {
                               e.preventDefault()
-                              // showTaskModal(targetTask)
+                              showTask()
                            }}
                         >
                            {task.title}

@@ -5,6 +5,8 @@ const { check, validationResult } = require('express-validator')
 
 const Page = require('../../models/Page')
 const Task = require('../../models/Task')
+const Progress = require('../../models/Progress')
+const Group = require('../../models/Group')
 
 // @route   GET POST api/task/:page-id/:task-id
 // @desc    Get task info
@@ -23,8 +25,52 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
 
       //   Validation: Check if task exists
       const task = await Task.findById(req.params.task_id)
-      // TODO: return task's group and progress
-      res.json(task)
+
+      // Get group and progress data
+      const taskIndex = page.tasks.findIndex((t) => t.equals(task._id))
+      var taskMapIndex = 0
+      if (page.task_map[0] <= taskIndex) {
+         for (let i = 1; i < page.task_map.length; i++) {
+            if (
+               page.task_map[i - 1] <= taskIndex &&
+               page.task_map[i] > taskIndex
+            ) {
+               taskMapIndex = i
+               break
+            }
+         }
+      }
+      const progressIndex = taskMapIndex % page.progress_order.length
+      const groupIndex = parseInt(
+         (taskMapIndex - progressIndex) / page.group_order.length
+      )
+      const group = await Group.findById(page.group_order[groupIndex])
+      const progress = await Progress.findById(
+         page.progress_order[progressIndex]
+      )
+      const {
+         _id,
+         title,
+         schedule,
+         google_events,
+         is_scheduled,
+         content,
+         create_date,
+         update_date
+      } = task
+      const response = {
+         _id,
+         title,
+         schedule,
+         google_events,
+         is_scheduled,
+         content,
+         create_date,
+         update_date,
+         group,
+         progress
+      }
+      res.json(response)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
 
@@ -149,6 +195,7 @@ router.post(
 // @route   POST api/task/update/:page-id/:task-id
 // @desc    Update a task
 // @access  Private
+// TODO: merge update group and progress
 router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    //   Validation: Check if page exists
    const page = await Page.findById(req.params.page_id)
@@ -215,6 +262,257 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    }
 })
 
+// @route   GET POST api/task/update-group/:page-id/:task-id
+// @desc    Update task's group
+// @access  Private
+router.post('/update-group/:page_id/:task_id', auth, async (req, res) => {
+   try {
+      //   Validation: Check if page exists
+      const page = await Page.findById(req.params.page_id)
+      if (!page) {
+         return res.status(404).json({ msg: 'Page not found' })
+      }
+      //   Validation: Check if user is the owner
+      if (page.user.toString() !== req.user.id) {
+         return res.status(401).json({ msg: 'User not authorized' })
+      }
+
+      //   Validation: Check if task exists
+      const task = await Task.findById(req.params.task_id)
+
+      // Get group and progress data
+      const taskIndex = page.tasks.findIndex((t) => t.equals(task._id))
+      var taskMapIndex = 0
+      if (page.task_map[0] <= taskIndex) {
+         for (let i = 1; i < page.task_map.length; i++) {
+            if (
+               page.task_map[i - 1] <= taskIndex &&
+               page.task_map[i] > taskIndex
+            ) {
+               taskMapIndex = i
+               break
+            }
+         }
+      }
+      const { group_id } = req.body
+      const progressIndex = taskMapIndex % page.progress_order.length
+      const newGroupIndex = page.group_order.indexOf(group_id)
+
+      const newTaskMapIndex =
+         newGroupIndex * page.progress_order.length + progressIndex
+
+      const targetTask = page.tasks[taskIndex]
+
+      var newTaskIndex = page.task_map[newTaskMapIndex]
+      if (newTaskMapIndex > taskMapIndex) {
+         newTaskIndex--
+      }
+
+      const newTaskArray = Array.from(page.tasks)
+      const newTaskMap = Array.from(page.task_map)
+
+      newTaskArray.splice(taskIndex, 1)
+      newTaskArray.splice(newTaskIndex, 0, targetTask)
+      // Moving between different columns
+      if (newTaskMapIndex < taskMapIndex) {
+         for (let i = newTaskMapIndex; i < taskMapIndex; i++) {
+            newTaskMap[i]++
+         }
+      } else {
+         for (let i = taskMapIndex; i < newTaskMapIndex; i++) {
+            newTaskMap[i]--
+         }
+      }
+      const newPage = await Page.findOneAndUpdate(
+         { _id: req.params.page_id },
+         {
+            $set: { tasks: newTaskArray, update_date: new Date() }
+         },
+         { new: true }
+      )
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'is_scheduled'])
+
+      // Data: Update page's task_map
+      newPage.task_map = newTaskMap
+      await newPage.save()
+
+      const group = await Group.findById(group_id)
+      const progress = await Progress.findById(
+         page.progress_order[progressIndex]
+      )
+      const {
+         _id,
+         title,
+         schedule,
+         google_events,
+         is_scheduled,
+         content,
+         create_date,
+         update_date
+      } = task
+      const newTask = {
+         _id,
+         title,
+         schedule,
+         google_events,
+         is_scheduled,
+         content,
+         create_date,
+         update_date,
+         group,
+         progress
+      }
+      res.json({ page: newPage, task: newTask })
+   } catch (err) {
+      console.error('---ERROR---: ' + err.message)
+
+      if (err.kind === 'ObjectId') {
+         return res.status(404).json({
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
+            ]
+         })
+      }
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
+   }
+})
+
+// @route   GET POST api/task/update-group/:page-id/:task-id
+// @desc    Update task's group
+// @access  Private
+router.post('/update-progress/:page_id/:task_id', auth, async (req, res) => {
+   try {
+      //   Validation: Check if page exists
+      const page = await Page.findById(req.params.page_id)
+      if (!page) {
+         return res.status(404).json({ msg: 'Page not found' })
+      }
+      //   Validation: Check if user is the owner
+      if (page.user.toString() !== req.user.id) {
+         return res.status(401).json({ msg: 'User not authorized' })
+      }
+
+      //   Validation: Check if task exists
+      const task = await Task.findById(req.params.task_id)
+
+      // Get group and progress data
+      const taskIndex = page.tasks.findIndex((t) => t.equals(task._id))
+      var taskMapIndex = 0
+      if (page.task_map[0] <= taskIndex) {
+         for (let i = 1; i < page.task_map.length; i++) {
+            if (
+               page.task_map[i - 1] <= taskIndex &&
+               page.task_map[i] > taskIndex
+            ) {
+               taskMapIndex = i
+               break
+            }
+         }
+      }
+      const { progress_id } = req.body
+      const progressIndex = taskMapIndex % page.progress_order.length
+      const groupIndex = parseInt(
+         (taskMapIndex - progressIndex) / page.group_order.length
+      )
+      const newProgressIndex = page.progress_order.indexOf(progress_id)
+      const newTaskMapIndex =
+         groupIndex * page.progress_order.length + newProgressIndex
+
+      const targetTask = page.tasks[taskIndex]
+
+      var newTaskIndex = page.task_map[newTaskMapIndex]
+      if (newTaskMapIndex > taskMapIndex) {
+         newTaskIndex--
+      }
+
+      const newTaskArray = Array.from(page.tasks)
+      const newTaskMap = Array.from(page.task_map)
+
+      newTaskArray.splice(taskIndex, 1)
+      newTaskArray.splice(newTaskIndex, 0, targetTask)
+      // Moving between different columns
+      if (newTaskMapIndex < taskMapIndex) {
+         for (let i = newTaskMapIndex; i < taskMapIndex; i++) {
+            newTaskMap[i]++
+         }
+      } else {
+         for (let i = taskMapIndex; i < newTaskMapIndex; i++) {
+            newTaskMap[i]--
+         }
+      }
+      const newPage = await Page.findOneAndUpdate(
+         { _id: req.params.page_id },
+         {
+            $set: { tasks: newTaskArray, update_date: new Date() }
+         },
+         { new: true }
+      )
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'is_scheduled'])
+
+      // Data: Update page's task_map
+      newPage.task_map = newTaskMap
+      await newPage.save()
+
+      const group = await Group.findById(page.group_order[groupIndex])
+      const progress = await Progress.findById(progress_id)
+      const {
+         _id,
+         title,
+         schedule,
+         google_events,
+         is_scheduled,
+         content,
+         create_date,
+         update_date
+      } = task
+      const newTask = {
+         _id,
+         title,
+         schedule,
+         google_events,
+         is_scheduled,
+         content,
+         create_date,
+         update_date,
+         group,
+         progress
+      }
+      res.json({ page: newPage, task: newTask })
+   } catch (err) {
+      console.error('---ERROR---: ' + err.message)
+
+      if (err.kind === 'ObjectId') {
+         return res.status(404).json({
+            errors: [
+               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
+            ]
+         })
+      }
+      res.status(500).json({
+         errors: [
+            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+         ]
+      })
+   }
+})
 // @route   DELETE api/task/:page-id/:task-id
 // @desc    Delete a task
 // @access  Private
