@@ -27,11 +27,11 @@ const ScheduleSelect = ({
       newSchedule.push(newSlot)
       newGoogleEvents.push(newGoogleEventSlot)
       const formData = {
-         target_task: task,
          page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
-         google_events: newGoogleEvents
+         google_events: newGoogleEvents,
+         task_detail_flg: true
       }
       await updateTask(formData)
    }

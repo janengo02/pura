@@ -24,7 +24,6 @@ export const createTask = (formData) => async (dispatch) => {
 }
 
 // Update a task
-// TODO: Fix this
 export const updateTask = (formData) => async (dispatch) => {
    try {
       const res = await api.post(
@@ -35,7 +34,7 @@ export const updateTask = (formData) => async (dispatch) => {
          type: GET_PAGE,
          payload: res.data.page
       })
-      if (typeof formData.target_task !== 'undefined') {
+      if (formData.task_detail_flg) {
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task
@@ -95,63 +94,3 @@ export const showTaskModal = (formData) => async (dispatch) => {
       // console.clear()
    }
 }
-// Update Progress
-export const updateTaskProgress =
-   (page_id, task_id, progress_id) => async (dispatch) => {
-      try {
-         const res = await api.post(
-            `/task/update-progress/${page_id}/${task_id}`,
-            {
-               progress_id
-            }
-         )
-         dispatch({
-            type: GET_PAGE,
-            payload: res.data.page
-         })
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      } catch (err) {
-         const errors = err.response.data.errors
-         dispatch({
-            type: PAGE_ERROR,
-            payload: {
-               _id: page_id,
-               errors: errors
-            }
-         })
-         // console.clear()
-      }
-   }
-// Update Group
-export const updateTaskGroup =
-   (page_id, task_id, group_id) => async (dispatch) => {
-      try {
-         const res = await api.post(
-            `/task/update-group/${page_id}/${task_id}`,
-            {
-               group_id
-            }
-         )
-         dispatch({
-            type: GET_PAGE,
-            payload: res.data.page
-         })
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      } catch (err) {
-         const errors = err.response.data.errors
-         dispatch({
-            type: PAGE_ERROR,
-            payload: {
-               _id: page_id,
-               errors: errors
-            }
-         })
-         // console.clear()
-      }
-   }

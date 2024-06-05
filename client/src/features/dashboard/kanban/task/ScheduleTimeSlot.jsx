@@ -66,10 +66,10 @@ const ScheduleTimeSlot = ({
       newSchedule[index].start = newFrom
       // TODO: CHeck if end time is bigger than start time
       const formData = {
-         target_task: task,
          page_id: page._id,
          task_id: task._id,
-         schedule: newSchedule
+         schedule: newSchedule,
+         task_detail_flg: true
       }
       await updateTask(formData)
    }
@@ -79,10 +79,10 @@ const ScheduleTimeSlot = ({
       // TODO: CHeck if end time is bigger than start time
 
       const formData = {
-         target_task: task,
          page_id: page._id,
          task_id: task._id,
-         schedule: newSchedule
+         schedule: newSchedule,
+         task_detail_flg: true
       }
       await updateTask(formData)
    }
@@ -92,11 +92,11 @@ const ScheduleTimeSlot = ({
       var newGoogleEvents = cloneDeep(task.google_events)
       newGoogleEvents.splice(index, 1)
       const formData = {
-         target_task: task,
          page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
-         google_events: newGoogleEvents
+         google_events: newGoogleEvents,
+         task_detail_flg: true
       }
       await updateTask(formData)
    }

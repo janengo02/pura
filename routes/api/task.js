@@ -8,6 +8,64 @@ const Task = require('../../models/Task')
 const Progress = require('../../models/Progress')
 const Group = require('../../models/Group')
 
+const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
+   const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
+   var taskMapIndex = 0
+   if (page.task_map[0] <= taskIndex) {
+      for (let i = 1; i < page.task_map.length; i++) {
+         if (
+            page.task_map[i - 1] <= taskIndex &&
+            page.task_map[i] > taskIndex
+         ) {
+            taskMapIndex = i
+            break
+         }
+      }
+   }
+   const progressIndex = taskMapIndex % page.progress_order.length
+   const groupIndex = parseInt(
+      (taskMapIndex - progressIndex) / page.group_order.length
+   )
+   var newProgressIndex = progressIndex
+   var newGroupIndex = groupIndex
+   var newTaskMapIndex = taskMapIndex
+   const newTaskArray = Array.from(page.tasks)
+   const newTaskMap = Array.from(page.task_map)
+
+   if (group_id) {
+      newGroupIndex = page.group_order.indexOf(group_id)
+      newTaskMapIndex =
+         newGroupIndex * page.progress_order.length + progressIndex
+   }
+   if (progress_id) {
+      newProgressIndex = page.progress_order.indexOf(progress_id)
+      newTaskMapIndex =
+         groupIndex * page.progress_order.length + newProgressIndex
+   }
+   if (group_id || progress_id) {
+      const targetTask = page.tasks[taskIndex]
+
+      var newTaskIndex = page.task_map[newTaskMapIndex]
+      if (newTaskMapIndex > taskMapIndex) {
+         newTaskIndex--
+      }
+      newTaskArray.splice(taskIndex, 1)
+      newTaskArray.splice(newTaskIndex, 0, targetTask)
+      // Moving between different columns
+      if (newTaskMapIndex < taskMapIndex) {
+         for (let i = newTaskMapIndex; i < taskMapIndex; i++) {
+            newTaskMap[i]++
+         }
+      } else {
+         for (let i = taskMapIndex; i < newTaskMapIndex; i++) {
+            newTaskMap[i]--
+         }
+      }
+   }
+
+   return { newTaskArray, newTaskMap, newGroupIndex, newProgressIndex }
+}
+
 // @route   GET POST api/task/:page-id/:task-id
 // @desc    Get task info
 // @access  Private
@@ -27,26 +85,13 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       const task = await Task.findById(req.params.task_id)
 
       // Get group and progress data
-      const taskIndex = page.tasks.findIndex((t) => t.equals(task._id))
-      var taskMapIndex = 0
-      if (page.task_map[0] <= taskIndex) {
-         for (let i = 1; i < page.task_map.length; i++) {
-            if (
-               page.task_map[i - 1] <= taskIndex &&
-               page.task_map[i] > taskIndex
-            ) {
-               taskMapIndex = i
-               break
-            }
-         }
-      }
-      const progressIndex = taskMapIndex % page.progress_order.length
-      const groupIndex = parseInt(
-         (taskMapIndex - progressIndex) / page.group_order.length
+      const { newGroupIndex, newProgressIndex } = getNewMap(
+         page,
+         req.params.task_id
       )
-      const group = await Group.findById(page.group_order[groupIndex])
+      const group = await Group.findById(page.group_order[newGroupIndex])
       const progress = await Progress.findById(
-         page.progress_order[progressIndex]
+         page.progress_order[newProgressIndex]
       )
       const {
          _id,
@@ -195,7 +240,6 @@ router.post(
 // @route   POST api/task/update/:page-id/:task-id
 // @desc    Update a task
 // @access  Private
-// TODO: merge update group and progress
 router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    //   Validation: Check if page exists
    const page = await Page.findById(req.params.page_id)
@@ -221,37 +265,98 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
          ]
       })
    }
+
    //   Prepare: Set up new task
-   const { title, schedule, google_events, content, target_task } = req.body
+   const {
+      title,
+      schedule,
+      google_events,
+      content,
+      group_id,
+      progress_id,
+      task_detail_flg
+   } = req.body
    task.update_date = new Date()
    if (title) task.title = title
    if (schedule) task.schedule = schedule
    if (google_events) task.google_events = google_events
    if (content) task.content = content
-   if (target_task) {
-      if (title) target_task.title = title
-      if (schedule) target_task.schedule = schedule
-      if (google_events) target_task.google_events = google_events
-      if (content) target_task.content = content
-   }
    try {
-      await task.save()
-      // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+      if (!group_id && !progress_id) {
+         await task.save()
+      }
+      if (task_detail_flg) {
+         const { newTaskArray, newTaskMap, newGroupIndex, newProgressIndex } =
+            getNewMap(page, req.params.task_id, group_id, progress_id)
 
-      res.json({ page: newPage, task: target_task })
+         const newPageValues =
+            progress_id || group_id
+               ? { tasks: newTaskArray, update_date: new Date() }
+               : { update_date: new Date() }
+         const newPage = await Page.findOneAndUpdate(
+            { _id: req.params.page_id },
+            { $set: newPageValues },
+            { new: true }
+         )
+            .populate('progress_order', [
+               'title',
+               'title_color',
+               'color',
+               'visibility'
+            ])
+            .populate('group_order', ['title', 'color', 'visibility'])
+            .populate('tasks', ['title', 'is_scheduled'])
+         // Data: Update page's task_map
+         if (progress_id || group_id) {
+            newPage.task_map = newTaskMap
+            await newPage.save()
+         }
+
+         const group = await Group.findById(page.group_order[newGroupIndex])
+         const progress = await Progress.findById(
+            page.progress_order[newProgressIndex]
+         )
+         const {
+            _id,
+            title,
+            schedule,
+            google_events,
+            is_scheduled,
+            content,
+            create_date,
+            update_date
+         } = task
+         const newTask = {
+            _id,
+            title,
+            schedule,
+            google_events,
+            is_scheduled,
+            content,
+            create_date,
+            update_date,
+            group,
+            progress
+         }
+
+         res.json({ page: newPage, task: newTask })
+      } else {
+         const newPage = await Page.findOneAndUpdate(
+            { _id: req.params.page_id },
+            { $set: { update_date: new Date() } },
+            { new: true }
+         )
+            .populate('progress_order', [
+               'title',
+               'title_color',
+               'color',
+               'visibility'
+            ])
+            .populate('group_order', ['title', 'color', 'visibility'])
+            .populate('tasks', ['title', 'is_scheduled'])
+
+         res.json({ page: newPage, task: {} })
+      }
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
@@ -262,257 +367,6 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    }
 })
 
-// @route   GET POST api/task/update-group/:page-id/:task-id
-// @desc    Update task's group
-// @access  Private
-router.post('/update-group/:page_id/:task_id', auth, async (req, res) => {
-   try {
-      //   Validation: Check if page exists
-      const page = await Page.findById(req.params.page_id)
-      if (!page) {
-         return res.status(404).json({ msg: 'Page not found' })
-      }
-      //   Validation: Check if user is the owner
-      if (page.user.toString() !== req.user.id) {
-         return res.status(401).json({ msg: 'User not authorized' })
-      }
-
-      //   Validation: Check if task exists
-      const task = await Task.findById(req.params.task_id)
-
-      // Get group and progress data
-      const taskIndex = page.tasks.findIndex((t) => t.equals(task._id))
-      var taskMapIndex = 0
-      if (page.task_map[0] <= taskIndex) {
-         for (let i = 1; i < page.task_map.length; i++) {
-            if (
-               page.task_map[i - 1] <= taskIndex &&
-               page.task_map[i] > taskIndex
-            ) {
-               taskMapIndex = i
-               break
-            }
-         }
-      }
-      const { group_id } = req.body
-      const progressIndex = taskMapIndex % page.progress_order.length
-      const newGroupIndex = page.group_order.indexOf(group_id)
-
-      const newTaskMapIndex =
-         newGroupIndex * page.progress_order.length + progressIndex
-
-      const targetTask = page.tasks[taskIndex]
-
-      var newTaskIndex = page.task_map[newTaskMapIndex]
-      if (newTaskMapIndex > taskMapIndex) {
-         newTaskIndex--
-      }
-
-      const newTaskArray = Array.from(page.tasks)
-      const newTaskMap = Array.from(page.task_map)
-
-      newTaskArray.splice(taskIndex, 1)
-      newTaskArray.splice(newTaskIndex, 0, targetTask)
-      // Moving between different columns
-      if (newTaskMapIndex < taskMapIndex) {
-         for (let i = newTaskMapIndex; i < taskMapIndex; i++) {
-            newTaskMap[i]++
-         }
-      } else {
-         for (let i = taskMapIndex; i < newTaskMapIndex; i++) {
-            newTaskMap[i]--
-         }
-      }
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         {
-            $set: { tasks: newTaskArray, update_date: new Date() }
-         },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
-
-      // Data: Update page's task_map
-      newPage.task_map = newTaskMap
-      await newPage.save()
-
-      const group = await Group.findById(group_id)
-      const progress = await Progress.findById(
-         page.progress_order[progressIndex]
-      )
-      const {
-         _id,
-         title,
-         schedule,
-         google_events,
-         is_scheduled,
-         content,
-         create_date,
-         update_date
-      } = task
-      const newTask = {
-         _id,
-         title,
-         schedule,
-         google_events,
-         is_scheduled,
-         content,
-         create_date,
-         update_date,
-         group,
-         progress
-      }
-      res.json({ page: newPage, task: newTask })
-   } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-
-      if (err.kind === 'ObjectId') {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
-            ]
-         })
-      }
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
-   }
-})
-
-// @route   GET POST api/task/update-group/:page-id/:task-id
-// @desc    Update task's group
-// @access  Private
-router.post('/update-progress/:page_id/:task_id', auth, async (req, res) => {
-   try {
-      //   Validation: Check if page exists
-      const page = await Page.findById(req.params.page_id)
-      if (!page) {
-         return res.status(404).json({ msg: 'Page not found' })
-      }
-      //   Validation: Check if user is the owner
-      if (page.user.toString() !== req.user.id) {
-         return res.status(401).json({ msg: 'User not authorized' })
-      }
-
-      //   Validation: Check if task exists
-      const task = await Task.findById(req.params.task_id)
-
-      // Get group and progress data
-      const taskIndex = page.tasks.findIndex((t) => t.equals(task._id))
-      var taskMapIndex = 0
-      if (page.task_map[0] <= taskIndex) {
-         for (let i = 1; i < page.task_map.length; i++) {
-            if (
-               page.task_map[i - 1] <= taskIndex &&
-               page.task_map[i] > taskIndex
-            ) {
-               taskMapIndex = i
-               break
-            }
-         }
-      }
-      const { progress_id } = req.body
-      const progressIndex = taskMapIndex % page.progress_order.length
-      const groupIndex = parseInt(
-         (taskMapIndex - progressIndex) / page.group_order.length
-      )
-      const newProgressIndex = page.progress_order.indexOf(progress_id)
-      const newTaskMapIndex =
-         groupIndex * page.progress_order.length + newProgressIndex
-
-      const targetTask = page.tasks[taskIndex]
-
-      var newTaskIndex = page.task_map[newTaskMapIndex]
-      if (newTaskMapIndex > taskMapIndex) {
-         newTaskIndex--
-      }
-
-      const newTaskArray = Array.from(page.tasks)
-      const newTaskMap = Array.from(page.task_map)
-
-      newTaskArray.splice(taskIndex, 1)
-      newTaskArray.splice(newTaskIndex, 0, targetTask)
-      // Moving between different columns
-      if (newTaskMapIndex < taskMapIndex) {
-         for (let i = newTaskMapIndex; i < taskMapIndex; i++) {
-            newTaskMap[i]++
-         }
-      } else {
-         for (let i = taskMapIndex; i < newTaskMapIndex; i++) {
-            newTaskMap[i]--
-         }
-      }
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         {
-            $set: { tasks: newTaskArray, update_date: new Date() }
-         },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
-
-      // Data: Update page's task_map
-      newPage.task_map = newTaskMap
-      await newPage.save()
-
-      const group = await Group.findById(page.group_order[groupIndex])
-      const progress = await Progress.findById(progress_id)
-      const {
-         _id,
-         title,
-         schedule,
-         google_events,
-         is_scheduled,
-         content,
-         create_date,
-         update_date
-      } = task
-      const newTask = {
-         _id,
-         title,
-         schedule,
-         google_events,
-         is_scheduled,
-         content,
-         create_date,
-         update_date,
-         group,
-         progress
-      }
-      res.json({ page: newPage, task: newTask })
-   } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-
-      if (err.kind === 'ObjectId') {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
-            ]
-         })
-      }
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
-   }
-})
 // @route   DELETE api/task/:page-id/:task-id
 // @desc    Delete a task
 // @access  Private

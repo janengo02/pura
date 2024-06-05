@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateTaskGroup } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/task'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCirclesFour, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -18,7 +18,7 @@ import {
 
 const GroupSelect = ({
    // Redux props
-   updateTaskGroup,
+   updateTask,
    task: { task },
    page: { page }
 }) => {
@@ -63,7 +63,12 @@ const GroupSelect = ({
                      onClick={async (e) => {
                         e.preventDefault()
                         if (group_item._id !== task.group._id) {
-                           updateTaskGroup(page._id, task._id, group_item._id)
+                           updateTask({
+                              page_id: page._id,
+                              task_id: task._id,
+                              group_id: group_item._id,
+                              task_detail_flg: true
+                           })
                         }
                      }}
                   >
@@ -96,10 +101,10 @@ const GroupSelect = ({
 GroupSelect.propTypes = {
    task: PropTypes.object.isRequired,
    page: PropTypes.object.isRequired,
-   updateTaskGroup: PropTypes.func.isRequired
+   updateTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
    page: state.page
 })
-export default connect(mapStateToProps, { updateTaskGroup })(GroupSelect)
+export default connect(mapStateToProps, { updateTask })(GroupSelect)

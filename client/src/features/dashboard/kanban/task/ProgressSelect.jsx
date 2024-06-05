@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { updateTaskProgress } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/task'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiFlagBanner, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -18,7 +18,7 @@ import {
 
 const ProgressSelect = ({
    // Redux props
-   updateTaskProgress,
+   updateTask,
    task: { task },
    page: { page }
 }) => {
@@ -61,11 +61,12 @@ const ProgressSelect = ({
                      onClick={async (e) => {
                         e.preventDefault()
                         if (progress_item._id !== task.progress._id) {
-                           updateTaskProgress(
-                              page._id,
-                              task._id,
-                              progress_item._id
-                           )
+                           updateTask({
+                              page_id: page._id,
+                              task_id: task._id,
+                              progress_id: progress_item._id,
+                              task_detail_flg: true
+                           })
                         }
                      }}
                   >
@@ -96,10 +97,10 @@ const ProgressSelect = ({
 ProgressSelect.propTypes = {
    task: PropTypes.object.isRequired,
    page: PropTypes.object.isRequired,
-   updateTaskProgress: PropTypes.func.isRequired
+   updateTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
    page: state.page
 })
-export default connect(mapStateToProps, { updateTaskProgress })(ProgressSelect)
+export default connect(mapStateToProps, { updateTask })(ProgressSelect)
