@@ -23,8 +23,8 @@ const EventWrapper = ({
    deleteGoogleCalendarEvent
 }) => {
    const initRef = useRef()
-   const taskIndex = page.tasks.findIndex((t) =>
-      t.google_events.includes(event.id)
+   const taskIndex = page.tasks.findIndex(
+      (t) => t.google_events.includes(event.id) && event.title === t.title
    )
 
    const taskId = taskIndex !== -1 ? page.tasks[taskIndex]._id : null

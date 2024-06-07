@@ -128,7 +128,7 @@ router.post('/create-event', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+         .populate('tasks', ['title', 'google_events'])
 
       res.json({ events: events.data, page: newPage, task: target_task })
    } catch (err) {
@@ -188,7 +188,7 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+         .populate('tasks', ['title', 'google_events'])
 
       res.json({ events: events.data, page: newPage })
    } catch (err) {

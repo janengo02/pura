@@ -9,10 +9,16 @@ import {
 export const connectGoogle = () => async (dispatch) => {
    try {
       const res = await api.get('/google-account/list-events')
-      dispatch({
-         type: GOOGLE_CALENDAR_LOGGED_IN,
-         payload: res.data
-      })
+      if (res.data.summary) {
+         dispatch({
+            type: GOOGLE_CALENDAR_LOGGED_IN,
+            payload: res.data
+         })
+      } else {
+         dispatch({
+            type: GOOGLE_CALENDAR_AUTH_ERROR
+         })
+      }
    } catch (err) {
       dispatch({
          type: GOOGLE_CALENDAR_AUTH_ERROR

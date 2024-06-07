@@ -29,6 +29,9 @@ const ScheduleTimeSlot = ({
    useEffect(() => {
       const gEventId = task.google_events[index]
       const createdGoogleEvent = googleEvents.find((g) => g.id === gEventId)
+      console.log('gg', gEventId)
+      console.log('gg', createdGoogleEvent)
+      console.log('gg', slot)
       if (typeof createdGoogleEvent === 'undefined') {
          setIsSynced(false)
       } else if (

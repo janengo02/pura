@@ -5,8 +5,8 @@ import {
 import { calendarPage } from '../utils/formatter'
 
 const initialState = {
-   isLoggedIn: null,
-   googleEvents: null,
+   isLoggedIn: false,
+   googleEvents: [],
    account: null,
    loading: true
 }
@@ -26,7 +26,7 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: false,
-            googleEvents: null,
+            googleEvents: [],
             account: null,
             loading: false
          }

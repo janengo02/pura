@@ -98,7 +98,6 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
          title,
          schedule,
          google_events,
-         is_scheduled,
          content,
          create_date,
          update_date
@@ -108,7 +107,6 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
          title,
          schedule,
          google_events,
-         is_scheduled,
          content,
          create_date,
          update_date,
@@ -219,7 +217,7 @@ router.post(
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'is_scheduled'])
+            .populate('tasks', ['title', 'google_events'])
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap
@@ -305,7 +303,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'is_scheduled'])
+            .populate('tasks', ['title', 'google_events'])
          // Data: Update page's task_map
          if (progress_id || group_id) {
             newPage.task_map = newTaskMap
@@ -321,7 +319,6 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             title,
             schedule,
             google_events,
-            is_scheduled,
             content,
             create_date,
             update_date
@@ -331,7 +328,6 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             title,
             schedule,
             google_events,
-            is_scheduled,
             content,
             create_date,
             update_date,
@@ -353,7 +349,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'is_scheduled'])
+            .populate('tasks', ['title', 'google_events'])
 
          res.json({ page: newPage, task: {} })
       }
@@ -421,7 +417,7 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+         .populate('tasks', ['title', 'google_events'])
 
       res.json(newPage)
    } catch (error) {

@@ -21,10 +21,6 @@ const TaskSchema = new mongoose.Schema({
          default: null
       }
    ],
-   is_scheduled: {
-      type: Boolean,
-      default: false
-   },
    content: {
       type: String,
       default: ''

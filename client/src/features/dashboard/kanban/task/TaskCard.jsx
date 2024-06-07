@@ -93,7 +93,7 @@ const TaskCard = ({
                   }}
                >
                   <Flex cursor='pointer'>
-                     {task.is_scheduled ? (
+                     {task.google_events.length > 0 ? (
                         <Text
                            fontSize='xs'
                            color='gray.500'

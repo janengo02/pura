@@ -71,7 +71,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+         .populate('tasks', ['title', 'google_events'])
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
@@ -150,7 +150,7 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+         .populate('tasks', ['title', 'google_events'])
 
       res.json(newPage)
    } catch (error) {
@@ -262,7 +262,7 @@ router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'is_scheduled'])
+         .populate('tasks', ['title', 'google_events'])
 
       res.json(newPage)
    } catch (error) {
