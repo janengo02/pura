@@ -48,6 +48,7 @@ const SplitPaneLeft = () => {
    return (
       <Box ref={leftRef} w='full' h='full' overflow='auto'>
          <Kanban />
+         <TaskModal leftWidth={`${leftWidth}%`} />
       </Box>
    )
 }
@@ -151,7 +152,6 @@ const Dashboard = ({
                )}
             </Flex>
          </SplitPaneContext.Provider>
-         <TaskModal />
       </Flex>
    )
 }

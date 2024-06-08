@@ -3,17 +3,16 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
 import {
+   Box,
+   Card,
+   CardBody,
+   CardHeader,
    IconButton,
    Menu,
    MenuButton,
    MenuItem,
    MenuList,
-   Modal,
-   ModalBody,
-   ModalContent,
-   ModalFooter,
-   ModalHeader,
-   ModalOverlay,
+   ScaleFade,
    VStack,
    useDisclosure
 } from '@chakra-ui/react'
@@ -30,6 +29,7 @@ import GroupSelect from './GroupSelect'
 import ScheduleSelect from './ScheduleSelect'
 
 const TaskModal = ({
+   leftWidth,
    // Redux props
    task: { task },
    page: { page },
@@ -43,8 +43,10 @@ const TaskModal = ({
       if (task) {
          setTaskTitle(task.title)
          setTaskContent(task.content)
+         modalCard.onOpen()
+      } else {
+         modalCard.onClose()
       }
-      modalCard.onOpen()
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [task])
    const modalMenu = useDisclosure()
@@ -79,115 +81,135 @@ const TaskModal = ({
    })
    return (
       <>
-         {task && (
-            <Modal
-               isOpen={modalCard.isOpen}
-               onClose={modalCard.onClose}
-               size='2xl'
-               scrollBehavior='inside'
-               blockScrollOnMount={false}
+         {modalCard.isOpen ? (
+            <Box
+               position='fixed'
+               w={leftWidth}
+               h='95%'
+               top={20}
+               left={0}
+               display='flex'
+               justifyContent='center'
+               alignItems='center'
+               overflow='hidden'
             >
-               <ModalOverlay />
+               <Box
+                  position='fixed'
+                  w={leftWidth}
+                  h='95%'
+                  top={20}
+                  left={0}
+                  bg='gray.500'
+                  opacity={0.3}
+                  onClick={modalCard.onClose}
+               />
+               <ScaleFade initialScale={0.9} in={modalCard.isOpen}>
+                  <Card
+                     size='2xl'
+                     paddingX={6}
+                     paddingY={4}
+                     borderRadius={8}
+                     boxShadow='xl'
+                  >
+                     <CardHeader display='flex' justifyContent='flex-end'>
+                        <Menu
+                           isLazy
+                           isOpen={modalMenu.isOpen}
+                           onClose={modalMenu.onClose}
+                        >
+                           <MenuButton
+                              as={IconButton}
+                              icon={<PiDotsThreeBold size={20} />}
+                              variant='ghost'
+                              size='xs'
+                              colorScheme='gray'
+                              color='gray.600'
+                              onClick={modalMenu.onOpen}
+                           ></MenuButton>
+                           <MenuList>
+                              <MenuItem
+                                 icon={<PiTrash size={18} />}
+                                 fontSize='sm'
+                                 onClick={async (e) => {
+                                    e.preventDefault()
+                                    delTask()
+                                 }}
+                              >
+                                 {t('btn-delete-task')}
+                              </MenuItem>
+                           </MenuList>
+                        </Menu>
+                     </CardHeader>
 
-               <ModalContent h='full'>
-                  <ModalHeader display='flex' justifyContent='flex-end'>
-                     <Menu
-                        isLazy
-                        isOpen={modalMenu.isOpen}
-                        onClose={modalMenu.onClose}
-                     >
-                        <MenuButton
-                           as={IconButton}
-                           icon={<PiDotsThreeBold size={20} />}
-                           variant='ghost'
-                           size='xs'
-                           colorScheme='gray'
-                           color='gray.600'
-                           onClick={modalMenu.onOpen}
-                        ></MenuButton>
-                        <MenuList>
-                           <MenuItem
-                              icon={<PiTrash size={18} />}
-                              fontSize='sm'
-                              onClick={async (e) => {
-                                 e.preventDefault()
-                                 delTask()
-                              }}
-                           >
-                              {t('btn-delete-task')}
-                           </MenuItem>
-                        </MenuList>
-                     </Menu>
-                  </ModalHeader>
-                  <ModalBody>
-                     <VStack w='full' alignItems='flex-start' gap={5}>
-                        <FormProvider {...methods} h='fit-content' w='full'>
-                           <form
-                              noValidate
-                              autoComplete='on'
-                              style={{ width: '100%' }}
-                           >
-                              <MultiInput
-                                 name='title'
-                                 type='textarea'
-                                 variant='unstyled'
-                                 placeholder={t('placeholder-untitled')}
-                                 validation={s.title}
-                                 value={taskTitle}
-                                 fontWeight={600}
-                                 borderRadius={0}
-                                 fontSize='2xl'
-                                 onChange={async (e) => {
-                                    e.preventDefault()
-                                    setTaskTitle(e.target.value)
-                                    onUpdateTitle()
-                                 }}
-                                 onBlur={async (e) => {
-                                    e.preventDefault()
-                                    setTaskTitle(e.target.value)
-                                    onUpdateTitle()
-                                 }}
-                              />
-                           </form>
-                        </FormProvider>
-                        <ProgressSelect />
-                        <GroupSelect />
-                        <ScheduleSelect />
-                        <TaskCardLabel
-                           icon={<PiNote />}
-                           text={t('label-note')}
-                        />
-                        <FormProvider {...methods} h='fit-content' w='full'>
-                           <form
-                              noValidate
-                              autoComplete='on'
-                              style={{ width: '100%' }}
-                           >
-                              <MultiInput
-                                 name='content'
-                                 type='textarea'
-                                 variant='unstyled'
-                                 value={taskContent}
-                                 borderRadius={0}
-                                 onChange={async (e) => {
-                                    e.preventDefault()
-                                    setTaskContent(e.target.value)
-                                    onUpdateContent()
-                                 }}
-                                 onBlur={async (e) => {
-                                    e.preventDefault()
-                                    setTaskContent(e.target.value)
-                                    onUpdateContent()
-                                 }}
-                              />
-                           </form>
-                        </FormProvider>
-                     </VStack>
-                  </ModalBody>
-                  <ModalFooter></ModalFooter>
-               </ModalContent>
-            </Modal>
-         )}
+                     <CardBody h='full'>
+                        <VStack w='full' alignItems='flex-start' gap={5}>
+                           <FormProvider {...methods} h='fit-content' w='full'>
+                              <form
+                                 noValidate
+                                 autoComplete='on'
+                                 style={{ width: '100%' }}
+                              >
+                                 <MultiInput
+                                    name='title'
+                                    type='textarea'
+                                    variant='unstyled'
+                                    placeholder={t('placeholder-untitled')}
+                                    validation={s.title}
+                                    value={taskTitle}
+                                    fontWeight={600}
+                                    borderRadius={0}
+                                    fontSize='2xl'
+                                    onChange={async (e) => {
+                                       e.preventDefault()
+                                       setTaskTitle(e.target.value)
+                                       onUpdateTitle()
+                                    }}
+                                    onBlur={async (e) => {
+                                       e.preventDefault()
+                                       setTaskTitle(e.target.value)
+                                       onUpdateTitle()
+                                    }}
+                                 />
+                              </form>
+                           </FormProvider>
+                           <ProgressSelect />
+                           <GroupSelect />
+                           <ScheduleSelect />
+                           <TaskCardLabel
+                              icon={<PiNote />}
+                              text={t('label-note')}
+                           />
+                           <FormProvider {...methods} h='fit-content' w='full'>
+                              <form
+                                 noValidate
+                                 autoComplete='on'
+                                 style={{ width: '100%' }}
+                              >
+                                 <MultiInput
+                                    name='content'
+                                    type='textarea'
+                                    variant='unstyled'
+                                    value={taskContent}
+                                    borderRadius={0}
+                                    onChange={async (e) => {
+                                       e.preventDefault()
+                                       setTaskContent(e.target.value)
+                                       onUpdateContent()
+                                    }}
+                                    onBlur={async (e) => {
+                                       e.preventDefault()
+                                       setTaskContent(e.target.value)
+                                       onUpdateContent()
+                                    }}
+                                 />
+                              </form>
+                           </FormProvider>
+                        </VStack>
+                     </CardBody>
+                  </Card>
+               </ScaleFade>
+            </Box>
+         ) : null}
       </>
    )
 }

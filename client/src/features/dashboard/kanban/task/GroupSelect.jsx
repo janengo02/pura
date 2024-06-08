@@ -56,7 +56,7 @@ const GroupSelect = ({
                   </Tag>
                </Flex>
             </MenuButton>
-            <MenuList w='512px'>
+            <MenuList w='488px'>
                {page?.group_order?.map((group_item) => (
                   <MenuItem
                      key={group_item._id}

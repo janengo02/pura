@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 
 import {
    IconButton,
+   Image,
    Popover,
    PopoverBody,
    PopoverContent,
@@ -14,13 +15,17 @@ import {
 import { PiPencilLine, PiTrash } from 'react-icons/pi'
 import { deleteGoogleCalendarEvent } from '../../../../actions/googleAccount'
 import useLoading from '../../../../hooks/useLoading'
+import EventWrapperTitle from '../../../../components/typography/EventWrapperTitle'
+import EventTimeText from './EventTimeText'
+import { showTaskModal } from '../../../../actions/task'
 
 const EventWrapper = ({
    children,
    event,
    // Redux props
    page: { page },
-   deleteGoogleCalendarEvent
+   deleteGoogleCalendarEvent,
+   showTaskModal
 }) => {
    const initRef = useRef()
    const taskIndex = page.tasks.findIndex(
@@ -44,12 +49,20 @@ const EventWrapper = ({
    }
    const [deleteEvent, deleteLoading] = useLoading(onDelete)
 
+   const showTask = async () => {
+      const formData = {
+         page_id: page._id,
+         task_id: taskId,
+         g_event_index: gEventIndex
+      }
+      await showTaskModal(formData)
+   }
    return (
       <Popover placement='auto' isLazy initialFocusRef={initRef}>
          {({ isOpen, onClose }) => (
             <>
                <PopoverTrigger>{children}</PopoverTrigger>
-               <PopoverContent boxShadow='md'>
+               <PopoverContent boxShadow='md' minW='max-content'>
                   <PopoverHeader
                      display='flex'
                      justifyContent='flex-end'
@@ -58,6 +71,24 @@ const EventWrapper = ({
                      paddingBottom={0}
                      border='none'
                   >
+                     {taskId && (
+                        <IconButton
+                           icon={
+                              <Image
+                                 src='assets/img/pura-logo-icon.svg'
+                                 size={30}
+                              />
+                           }
+                           variant='ghost'
+                           size='sm'
+                           colorScheme='gray'
+                           onClick={async (e) => {
+                              e.preventDefault()
+                              showTask()
+                           }}
+                        />
+                     )}
+
                      <IconButton
                         icon={<PiPencilLine />}
                         variant='ghost'
@@ -82,9 +113,8 @@ const EventWrapper = ({
                      />
                   </PopoverHeader>
                   <PopoverBody>
-                     {event.title}
-                     {taskId}___
-                     {gEventIndex}
+                     <EventWrapperTitle text={event.title} />
+                     <EventTimeText start={event.start} end={event.end} />
                   </PopoverBody>
                </PopoverContent>
             </>
@@ -94,13 +124,15 @@ const EventWrapper = ({
 }
 EventWrapper.propTypes = {
    page: PropTypes.object.isRequired,
-   deleteGoogleCalendarEvent: PropTypes.func.isRequired
+   deleteGoogleCalendarEvent: PropTypes.func.isRequired,
+   showTaskModal: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
    page: state.page
 })
 
-export default connect(mapStateToProps, { deleteGoogleCalendarEvent })(
-   EventWrapper
-)
+export default connect(mapStateToProps, {
+   deleteGoogleCalendarEvent,
+   showTaskModal
+})(EventWrapper)

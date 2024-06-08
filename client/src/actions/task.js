@@ -80,7 +80,12 @@ export const showTaskModal = (formData) => async (dispatch) => {
       const res = await api.get(`/task/${formData.page_id}/${formData.task_id}`)
       dispatch({
          type: SHOW_TASK,
-         payload: res.data
+         payload: {
+            ...res.data,
+            ...(typeof formData.g_event_index === 'number' && {
+               g_event_index: formData.g_event_index
+            })
+         }
       })
    } catch (err) {
       const errors = err.response.data.errors

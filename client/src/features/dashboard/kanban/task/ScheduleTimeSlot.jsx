@@ -29,9 +29,6 @@ const ScheduleTimeSlot = ({
    useEffect(() => {
       const gEventId = task.google_events[index]
       const createdGoogleEvent = googleEvents.find((g) => g.id === gEventId)
-      console.log('gg', gEventId)
-      console.log('gg', createdGoogleEvent)
-      console.log('gg', slot)
       if (typeof createdGoogleEvent === 'undefined') {
          setIsSynced(false)
       } else if (
@@ -126,7 +123,7 @@ const ScheduleTimeSlot = ({
             size='sm'
             type='datetime-local'
             variant='filled'
-            bg='gray.50'
+            bg={task.g_event_index === index ? 'purple.100' : 'gray.50'}
             width='auto'
             fontSize='xs'
             value={stringToDateTimeLocal(slot.start)}
@@ -142,7 +139,7 @@ const ScheduleTimeSlot = ({
             size='sm'
             type='datetime-local'
             variant='filled'
-            bg='gray.50'
+            bg={task.g_event_index === index ? 'purple.100' : 'gray.50'}
             width='auto'
             fontSize='xs'
             value={stringToDateTimeLocal(slot.end)}
@@ -183,8 +180,13 @@ const ScheduleTimeSlot = ({
                e.preventDefault()
                if (!isLoggedIn) {
                   googleLogin()
-               } else {
+               } else if (!isSynced) {
                   addGoogleCalendarEvent()
+               } else {
+                  toast({
+                     title: t('alert-google_calendar-event_already_synced'),
+                     status: 'info'
+                  })
                }
             }}
          />

@@ -54,7 +54,7 @@ const ProgressSelect = ({
                   </Tag>
                </Flex>
             </MenuButton>
-            <MenuList w='512px'>
+            <MenuList w='488px'>
                {page?.progress_order?.map((progress_item) => (
                   <MenuItem
                      key={progress_item._id}

@@ -14,6 +14,7 @@
       "alert-user-exists": "User already exists.",
       "alert-user-unauthorize": "You don't have the permission to edit this page",
       "alert-google_calendar-event_created": "Google Calendar event created",
+      "alert-google_calendar-event_already_synced": "Already synced!",
       "btn-": "---------------------------------------------",
       "btn-account_settings": "Account Settings",
       "btn-add-filter": "Add filter",
