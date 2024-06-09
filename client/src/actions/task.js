@@ -1,5 +1,10 @@
 import { api } from '../utils'
-import { GET_PAGE, PAGE_ERROR, SHOW_TASK } from './types'
+import {
+   GET_PAGE,
+   GOOGLE_CALENDAR_LOGGED_IN,
+   PAGE_ERROR,
+   SHOW_TASK
+} from './types'
 
 // Create new task
 export const createTask = (formData) => async (dispatch) => {
@@ -38,6 +43,12 @@ export const updateTask = (formData) => async (dispatch) => {
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task
+         })
+      }
+      if (typeof formData.synced_g_event === 'number') {
+         dispatch({
+            type: GOOGLE_CALENDAR_LOGGED_IN,
+            payload: res.data.events
          })
       }
    } catch (err) {

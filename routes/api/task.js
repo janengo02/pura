@@ -2,11 +2,24 @@ const express = require('express')
 const router = express.Router()
 const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator')
+const { google } = require('googleapis')
 
+const User = require('../../models/User')
 const Page = require('../../models/Page')
 const Task = require('../../models/Task')
 const Progress = require('../../models/Progress')
 const Group = require('../../models/Group')
+
+const GOOGLE_CLIENT_ID =
+   '468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com'
+const GOOGLE_CLIENT_SECRET = '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'
+const APP_PATH = 'http://localhost:2000'
+
+const oath2Client = new google.auth.OAuth2(
+   GOOGLE_CLIENT_ID,
+   GOOGLE_CLIENT_SECRET,
+   APP_PATH
+)
 
 const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
@@ -272,6 +285,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
       content,
       group_id,
       progress_id,
+      synced_g_event,
       task_detail_flg
    } = req.body
    task.update_date = new Date()
@@ -335,7 +349,37 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             progress
          }
 
-         res.json({ page: newPage, task: newTask })
+         if (typeof synced_g_event === 'number') {
+            const gEventId = google_events[synced_g_event]
+            const gEventStart = schedule[synced_g_event].start
+            const gEventEnd = schedule[synced_g_event].end
+
+            const user = await User.findById(req.user.id)
+            oath2Client.setCredentials({
+               refresh_token: user.google_refresh_token
+            })
+            const calendar = google.calendar('v3')
+            const response = await calendar.events.patch({
+               auth: oath2Client,
+               calendarId: 'primary', // TODO: Allow to add more calendars
+               eventId: gEventId,
+               requestBody: {
+                  start: {
+                     dateTime: new Date(gEventStart)
+                  },
+                  end: {
+                     dateTime: new Date(gEventEnd)
+                  }
+               }
+            })
+            const events = await calendar.events.list({
+               auth: oath2Client,
+               calendarId: 'primary' // TODO: Allow to add more calendars
+            })
+            res.json({ events: events.data, page: newPage, task: newTask })
+         } else {
+            res.json({ page: newPage, task: newTask })
+         }
       } else {
          const newPage = await Page.findOneAndUpdate(
             { _id: req.params.page_id },

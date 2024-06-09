@@ -4,15 +4,19 @@ import PropTypes from 'prop-types'
 
 import { updateTask } from '../../../../actions/task'
 import { PiTrash } from 'react-icons/pi'
-import { Flex, IconButton, Image, Input, useToast } from '@chakra-ui/react'
+import {
+   Flex,
+   IconButton,
+   Image,
+   Input,
+   Tooltip,
+   useToast
+} from '@chakra-ui/react'
 import t from '../../../../lang/i18n'
 import cloneDeep from 'clone-deep'
 import { stringToDateTimeLocal } from '../../../../utils/formatter'
 import { createGoogleCalendarEvent } from '../../../../actions/googleAccount'
 import useLoading from '../../../../hooks/useLoading'
-
-import { useGoogleLogin } from '@react-oauth/google'
-import { createGoogleTokens } from '../../../../actions/googleAccount'
 
 const ScheduleTimeSlot = ({
    slot,
@@ -21,11 +25,18 @@ const ScheduleTimeSlot = ({
    googleAccount: { googleEvents, isLoggedIn },
    updateTask,
    createGoogleCalendarEvent,
-   createGoogleTokens,
    task: { task },
    page: { page }
 }) => {
    const [isSynced, setIsSynced] = useState(true)
+   const startTime = stringToDateTimeLocal(slot.start)
+   const endTime = stringToDateTimeLocal(slot.end)
+   const isViewingCalendarEvent = task.g_event_index === index && isSynced
+   const isInvalidTimeSlot =
+      startTime === 'Invalid date' ||
+      endTime === 'Invalid date' ||
+      startTime >= endTime
+
    useEffect(() => {
       const gEventId = task.google_events[index]
       const createdGoogleEvent = googleEvents.find((g) => g.id === gEventId)
@@ -35,40 +46,29 @@ const ScheduleTimeSlot = ({
          stringToDateTimeLocal(createdGoogleEvent.start) !==
             stringToDateTimeLocal(slot.start) ||
          stringToDateTimeLocal(createdGoogleEvent.end) !==
-            stringToDateTimeLocal(slot.end) ||
-         createdGoogleEvent.title !== task.title
+            stringToDateTimeLocal(slot.end)
       ) {
          setIsSynced(false)
       } else {
          setIsSynced(true)
       }
    }, [task, googleEvents])
-   const googleLogin = useGoogleLogin({
-      onSuccess: async (tokenResponse) => {
-         const { code } = tokenResponse
-         await createGoogleTokens({ code })
-         addGoogleCalendarEvent(index)
-      },
-      // TODO Error Handling
-      onError: (responseError) => {
-         console.log('onError', responseError)
-      },
-      onNonOAuthError: (responseError) => {
-         console.log('onNonOAuthError', responseError)
-      },
-      scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-      flow: 'auth-code',
-      auto_select: true
-   })
+
    const toast = useToast()
    const onUpdateFrom = async (newFrom, index) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].start = newFrom
-      // TODO: CHeck if end time is bigger than start time
+      const newStartTime = stringToDateTimeLocal(newFrom)
+      const isNewInvalidTimeSlot =
+         newStartTime === 'Invalid date' ||
+         endTime === 'Invalid date' ||
+         newStartTime >= endTime
+
       const formData = {
          page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
+         synced_g_event: !isNewInvalidTimeSlot && isSynced ? index : null,
          task_detail_flg: true
       }
       await updateTask(formData)
@@ -76,12 +76,17 @@ const ScheduleTimeSlot = ({
    const onUpdateTo = async (newTo, index) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].end = newTo
-      // TODO: CHeck if end time is bigger than start time
+      const newEndTime = stringToDateTimeLocal(newTo)
+      const isNewInvalidTimeSlot =
+         startTime === 'Invalid date' ||
+         newEndTime === 'Invalid date' ||
+         startTime >= newEndTime
 
       const formData = {
          page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
+         synced_g_event: !isNewInvalidTimeSlot && isSynced ? index : null,
          task_detail_flg: true
       }
       await updateTask(formData)
@@ -115,18 +120,16 @@ const ScheduleTimeSlot = ({
    }
    const [addGoogleCalendarEvent, addGoogleCalendarLoading] =
       useLoading(onCreateGoogleEvent)
-
    return (
-      <Flex w='full' gap={2}>
+      <Flex w='full' gap={2} color={isInvalidTimeSlot ? 'red.600' : undefined}>
          <Input
-            title={`start_${index}`}
             size='sm'
             type='datetime-local'
             variant='filled'
-            bg={task.g_event_index === index ? 'purple.100' : 'gray.50'}
+            bg={isViewingCalendarEvent ? 'purple.100' : 'gray.50'}
             width='auto'
             fontSize='xs'
-            value={stringToDateTimeLocal(slot.start)}
+            value={startTime}
             borderRadius={5}
             onChange={async (e) => {
                e.preventDefault()
@@ -135,14 +138,13 @@ const ScheduleTimeSlot = ({
          />
          -
          <Input
-            title={`end_${index}`}
             size='sm'
             type='datetime-local'
             variant='filled'
-            bg={task.g_event_index === index ? 'purple.100' : 'gray.50'}
+            bg={isViewingCalendarEvent ? 'purple.100' : 'gray.50'}
             width='auto'
             fontSize='xs'
-            value={stringToDateTimeLocal(slot.end)}
+            value={endTime}
             borderRadius={5}
             onChange={async (e) => {
                e.preventDefault()
@@ -160,36 +162,45 @@ const ScheduleTimeSlot = ({
                onDelete(index)
             }}
          />
-         <IconButton
-            icon={
-               <Image
-                  src={
-                     isSynced
-                        ? 'assets/img/logos--google-calendar-synced.svg'
-                        : 'assets/img/logos--google-calendar-not-synced.svg'
-                  }
-                  size={30}
-               />
+         <Tooltip
+            hasArrow
+            label={
+               isInvalidTimeSlot
+                  ? t('tooltip-time_slot-invalid')
+                  : t('tooltip-time_slot-sync')
             }
-            variant='ghost'
-            colorScheme='gray'
-            color='gray.500'
-            size='sm'
-            isLoading={addGoogleCalendarLoading}
-            onClick={async (e) => {
-               e.preventDefault()
-               if (!isLoggedIn) {
-                  googleLogin()
-               } else if (!isSynced) {
-                  addGoogleCalendarEvent()
-               } else {
-                  toast({
-                     title: t('alert-google_calendar-event_already_synced'),
-                     status: 'info'
-                  })
+            placement='bottom'
+         >
+            <IconButton
+               icon={
+                  <Image
+                     src={
+                        isSynced
+                           ? 'assets/img/logos--google-calendar-synced.svg'
+                           : 'assets/img/logos--google-calendar-not-synced.svg'
+                     }
+                     size={30}
+                  />
                }
-            }}
-         />
+               variant='ghost'
+               colorScheme='gray'
+               color='gray.500'
+               size='sm'
+               isLoading={addGoogleCalendarLoading}
+               isDisabled={!isLoggedIn || isInvalidTimeSlot}
+               onClick={async (e) => {
+                  e.preventDefault()
+                  if (!isSynced) {
+                     addGoogleCalendarEvent()
+                  } else {
+                     toast({
+                        title: t('alert-google_calendar-event_already_synced'),
+                        status: 'info'
+                     })
+                  }
+               }}
+            />
+         </Tooltip>
       </Flex>
    )
 }
@@ -199,7 +210,6 @@ ScheduleTimeSlot.propTypes = {
    page: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired,
    createGoogleCalendarEvent: PropTypes.func.isRequired,
-   createGoogleTokens: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired
 }
 const mapStateToProps = (state) => ({
@@ -210,6 +220,5 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
    updateTask,
-   createGoogleCalendarEvent,
-   createGoogleTokens
+   createGoogleCalendarEvent
 })(ScheduleTimeSlot)
