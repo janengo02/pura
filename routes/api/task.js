@@ -349,29 +349,39 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             progress
          }
 
-         if (typeof synced_g_event === 'number') {
-            const gEventId = google_events[synced_g_event]
-            const gEventStart = schedule[synced_g_event].start
-            const gEventEnd = schedule[synced_g_event].end
-
+         if (typeof synced_g_event === 'string') {
+            const gEventIndex = google_events.findIndex(
+               (g) => g === synced_g_event
+            )
             const user = await User.findById(req.user.id)
             oath2Client.setCredentials({
                refresh_token: user.google_refresh_token
             })
             const calendar = google.calendar('v3')
-            const response = await calendar.events.patch({
-               auth: oath2Client,
-               calendarId: 'primary', // TODO: Allow to add more calendars
-               eventId: gEventId,
-               requestBody: {
-                  start: {
-                     dateTime: new Date(gEventStart)
-                  },
-                  end: {
-                     dateTime: new Date(gEventEnd)
+            if (gEventIndex !== -1) {
+               const gEventStart = schedule[gEventIndex].start
+               const gEventEnd = schedule[gEventIndex].end
+               const response = await calendar.events.patch({
+                  auth: oath2Client,
+                  calendarId: 'primary', // TODO: Allow to add more calendars
+                  eventId: synced_g_event,
+                  requestBody: {
+                     start: {
+                        dateTime: new Date(gEventStart)
+                     },
+                     end: {
+                        dateTime: new Date(gEventEnd)
+                     }
                   }
-               }
-            })
+               })
+            } else {
+               const response = await calendar.events.delete({
+                  auth: oath2Client,
+                  calendarId: 'primary', // TODO: Allow to add more calendars
+                  eventId: synced_g_event
+               })
+            }
+
             const events = await calendar.events.list({
                auth: oath2Client,
                calendarId: 'primary' // TODO: Allow to add more calendars

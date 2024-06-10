@@ -55,7 +55,7 @@ const ScheduleTimeSlot = ({
    }, [task, googleEvents])
 
    const toast = useToast()
-   const onUpdateFrom = async (newFrom, index) => {
+   const onUpdateFrom = async (newFrom) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].start = newFrom
       const newStartTime = stringToDateTimeLocal(newFrom)
@@ -63,17 +63,19 @@ const ScheduleTimeSlot = ({
          newStartTime === 'Invalid date' ||
          endTime === 'Invalid date' ||
          newStartTime >= endTime
+      const synced_g_event =
+         !isNewInvalidTimeSlot && isSynced ? task.google_events[index] : null
 
       const formData = {
          page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
-         synced_g_event: !isNewInvalidTimeSlot && isSynced ? index : null,
+         synced_g_event,
          task_detail_flg: true
       }
       await updateTask(formData)
    }
-   const onUpdateTo = async (newTo, index) => {
+   const onUpdateTo = async (newTo) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].end = newTo
       const newEndTime = stringToDateTimeLocal(newTo)
@@ -81,17 +83,20 @@ const ScheduleTimeSlot = ({
          startTime === 'Invalid date' ||
          newEndTime === 'Invalid date' ||
          startTime >= newEndTime
+      const synced_g_event =
+         !isNewInvalidTimeSlot && isSynced ? task.google_events[index] : null
 
       const formData = {
          page_id: page._id,
          task_id: task._id,
          schedule: newSchedule,
-         synced_g_event: !isNewInvalidTimeSlot && isSynced ? index : null,
+         synced_g_event,
          task_detail_flg: true
       }
       await updateTask(formData)
    }
-   const onDelete = async (index) => {
+   const onDelete = async () => {
+      const synced_g_event = isSynced ? task.google_events[index] : null
       var newSchedule = cloneDeep(task.schedule)
       newSchedule.splice(index, 1)
       var newGoogleEvents = cloneDeep(task.google_events)
@@ -101,6 +106,7 @@ const ScheduleTimeSlot = ({
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents,
+         synced_g_event,
          task_detail_flg: true
       }
       await updateTask(formData)
@@ -120,6 +126,7 @@ const ScheduleTimeSlot = ({
    }
    const [addGoogleCalendarEvent, addGoogleCalendarLoading] =
       useLoading(onCreateGoogleEvent)
+   const [deleteEvent, deleteEventLoading] = useLoading(onDelete)
    return (
       <Flex w='full' gap={2} color={isInvalidTimeSlot ? 'red.600' : undefined}>
          <Input
@@ -133,7 +140,7 @@ const ScheduleTimeSlot = ({
             borderRadius={5}
             onChange={async (e) => {
                e.preventDefault()
-               onUpdateFrom(e.target.value, index)
+               onUpdateFrom(e.target.value)
             }}
          />
          -
@@ -148,7 +155,7 @@ const ScheduleTimeSlot = ({
             borderRadius={5}
             onChange={async (e) => {
                e.preventDefault()
-               onUpdateTo(e.target.value, index)
+               onUpdateTo(e.target.value)
             }}
          />
          <IconButton
@@ -157,9 +164,10 @@ const ScheduleTimeSlot = ({
             colorScheme='gray'
             color='gray.500'
             size='sm'
+            isLoading={deleteEventLoading}
             onClick={async (e) => {
                e.preventDefault()
-               onDelete(index)
+               deleteEvent()
             }}
          />
          <Tooltip

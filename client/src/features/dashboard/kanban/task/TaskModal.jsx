@@ -49,6 +49,7 @@ const TaskModal = ({
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [task])
+
    const modalMenu = useDisclosure()
    const methods = useForm({
       resolver: yupResolver(s)
@@ -60,7 +61,8 @@ const TaskModal = ({
       }
       deleteTask(formData)
    }
-   const onUpdateTitle = methods.handleSubmit(async (data) => {
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   const onUpdateTitle = async () => {
       const formData = {
          page_id: page._id,
          task_id: task._id,
@@ -70,15 +72,22 @@ const TaskModal = ({
          formData.title = 'Untitled'
       }
       await updateTask(formData)
-   })
-   const onUpdateContent = methods.handleSubmit(async (data) => {
+   }
+   const onUpdateContent = async () => {
       const formData = {
          page_id: page._id,
          task_id: task._id,
          content: taskContent
       }
       await updateTask(formData)
-   })
+   }
+
+   useEffect(() => {
+      if (taskTitle) {
+         const timeOutId = setTimeout(() => onUpdateTitle(), 500)
+         return () => clearTimeout(timeOutId)
+      }
+   }, [taskTitle])
    return (
       <>
          {modalCard.isOpen ? (
@@ -162,12 +171,10 @@ const TaskModal = ({
                                     onChange={async (e) => {
                                        e.preventDefault()
                                        setTaskTitle(e.target.value)
-                                       onUpdateTitle()
                                     }}
                                     onBlur={async (e) => {
                                        e.preventDefault()
                                        setTaskTitle(e.target.value)
-                                       onUpdateTitle()
                                     }}
                                  />
                               </form>

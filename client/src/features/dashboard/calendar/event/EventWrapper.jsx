@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 import {
+   Box,
    IconButton,
    Image,
    Popover,
@@ -25,7 +26,8 @@ const EventWrapper = ({
    // Redux props
    page: { page },
    deleteGoogleCalendarEvent,
-   showTaskModal
+   showTaskModal,
+   syncedEventLoading
 }) => {
    const initRef = useRef()
    const taskIndex = page.tasks.findIndex(
@@ -61,7 +63,11 @@ const EventWrapper = ({
       <Popover placement='auto' isLazy initialFocusRef={initRef}>
          {({ isOpen, onClose }) => (
             <>
-               <PopoverTrigger>{children}</PopoverTrigger>
+               <PopoverTrigger>
+                  <Box opacity={event.id === syncedEventLoading ? 0.5 : 1}>
+                     {children}
+                  </Box>
+               </PopoverTrigger>
                <PopoverContent boxShadow='md' minW='max-content'>
                   <PopoverHeader
                      display='flex'
@@ -81,6 +87,7 @@ const EventWrapper = ({
                            }
                            variant='ghost'
                            size='sm'
+                           isDisabled={event.id === syncedEventLoading}
                            colorScheme='gray'
                            onClick={async (e) => {
                               e.preventDefault()
@@ -94,6 +101,7 @@ const EventWrapper = ({
                         variant='ghost'
                         size='sm'
                         colorScheme='gray'
+                        isDisabled={event.id === syncedEventLoading}
                         onClick={async (e) => {
                            e.preventDefault()
                         }}
@@ -104,6 +112,7 @@ const EventWrapper = ({
                         size='sm'
                         colorScheme='gray'
                         ref={initRef}
+                        isDisabled={event.id === syncedEventLoading}
                         isLoading={deleteLoading}
                         onClick={async (e) => {
                            e.preventDefault()
@@ -125,11 +134,13 @@ const EventWrapper = ({
 EventWrapper.propTypes = {
    page: PropTypes.object.isRequired,
    deleteGoogleCalendarEvent: PropTypes.func.isRequired,
-   showTaskModal: PropTypes.func.isRequired
+   showTaskModal: PropTypes.func.isRequired,
+   syncedEventLoading: PropTypes.string.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page
+   page: state.page,
+   syncedEventLoading: state.googleAccount.syncedEventLoading
 })
 
 export default connect(mapStateToProps, {

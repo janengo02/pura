@@ -1,6 +1,6 @@
 import { api } from '../utils'
 import {
-   GOOGLE_CALENDAR_LOGGED_IN,
+   GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
    SHOW_TASK,
    GET_PAGE
@@ -11,7 +11,7 @@ export const connectGoogle = () => async (dispatch) => {
       const res = await api.get('/google-account/list-events')
       if (res.data.summary) {
          dispatch({
-            type: GOOGLE_CALENDAR_LOGGED_IN,
+            type: GOOGLE_CALENDAR_LOADED,
             payload: res.data
          })
       } else {
@@ -31,7 +31,7 @@ export const createGoogleTokens = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/create-tokens', reqData)
       dispatch({
-         type: GOOGLE_CALENDAR_LOGGED_IN,
+         type: GOOGLE_CALENDAR_LOADED,
          payload: res.data
       })
    } catch (err) {
@@ -47,7 +47,7 @@ export const createGoogleCalendarEvent = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/create-event', reqData)
       dispatch({
-         type: GOOGLE_CALENDAR_LOGGED_IN,
+         type: GOOGLE_CALENDAR_LOADED,
          payload: res.data.events
       })
       dispatch({
@@ -77,7 +77,7 @@ export const deleteGoogleCalendarEvent = (reqData) => async (dispatch) => {
          reqData
       )
       dispatch({
-         type: GOOGLE_CALENDAR_LOGGED_IN,
+         type: GOOGLE_CALENDAR_LOADED,
          payload: res.data.events
       })
       dispatch({
