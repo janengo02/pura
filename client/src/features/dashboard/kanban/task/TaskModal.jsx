@@ -83,11 +83,17 @@ const TaskModal = ({
    }
 
    useEffect(() => {
-      if (taskTitle) {
+      if (taskTitle && taskTitle !== task.title) {
          const timeOutId = setTimeout(() => onUpdateTitle(), 500)
          return () => clearTimeout(timeOutId)
       }
    }, [taskTitle])
+   useEffect(() => {
+      if (taskContent && taskContent !== task.content) {
+         const timeOutId = setTimeout(() => onUpdateContent(), 500)
+         return () => clearTimeout(timeOutId)
+      }
+   }, [taskContent])
    return (
       <>
          {modalCard.isOpen ? (
@@ -201,12 +207,10 @@ const TaskModal = ({
                                     onChange={async (e) => {
                                        e.preventDefault()
                                        setTaskContent(e.target.value)
-                                       onUpdateContent()
                                     }}
                                     onBlur={async (e) => {
                                        e.preventDefault()
                                        setTaskContent(e.target.value)
-                                       onUpdateContent()
                                     }}
                                  />
                               </form>
