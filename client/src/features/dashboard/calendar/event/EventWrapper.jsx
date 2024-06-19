@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 import {
-   Box,
    IconButton,
    Image,
    Popover,
@@ -63,11 +62,7 @@ const EventWrapper = ({
       <Popover placement='auto' isLazy initialFocusRef={initRef}>
          {({ isOpen, onClose }) => (
             <>
-               <PopoverTrigger>
-                  <Box opacity={event.id === syncedEventLoading ? 0.5 : 1}>
-                     {children}
-                  </Box>
-               </PopoverTrigger>
+               <PopoverTrigger>{children}</PopoverTrigger>
                <PopoverContent boxShadow='md' minW='max-content'>
                   <PopoverHeader
                      display='flex'

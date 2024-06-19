@@ -36,16 +36,21 @@ export function monthsInYear(year) {
    return MONTHS.map((i) => dates.month(date, i))
 }
 
+// Get firstVisibleDay of default view === "week"
 export function firstVisibleDay(date, localizer) {
-   let firstOfMonth = dates.startOf(date, 'month')
-
-   return dates.startOf(firstOfMonth, 'week', localizer.startOfWeek())
+   return dates.startOf(date, 'week', localizer.startOfWeek())
 }
 
+// Get lastVisibleDay of default view === "week"
 export function lastVisibleDay(date, localizer) {
-   let endOfMonth = dates.endOf(date, 'month')
+   return dates.endOf(date, 'week', localizer.startOfWeek())
+}
 
-   return dates.endOf(endOfMonth, 'week', localizer.startOfWeek())
+export function startOfDay(date) {
+   return dates.startOf(date, 'day')
+}
+export function endOfDay(date) {
+   return dates.endOf(date, 'day')
 }
 
 export function visibleDays(date, localizer) {

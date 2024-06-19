@@ -58,20 +58,19 @@ const Settings = ({
          ></MenuButton>
          <MenuList zIndex={10}>
             <MenuGroup title={<GoogleCalendarGroupTitle />}>
-               {isLoggedIn ? (
+               {isLoggedIn && (
                   <Text marginX={4} color='gray.400'>
                      {account}
                   </Text>
-               ) : (
-                  <MenuItem
-                     icon={<PiPlus />}
-                     onClick={() => {
-                        googleLogin()
-                     }}
-                  >
-                     {t('btn-connect-google_calendar')}
-                  </MenuItem>
                )}
+               <MenuItem
+                  icon={<PiPlus />}
+                  onClick={() => {
+                     googleLogin()
+                  }}
+               >
+                  {t('btn-connect-google_calendar')}
+               </MenuItem>
             </MenuGroup>
             <MenuDivider />
             <MenuGroup title='Settings'></MenuGroup>

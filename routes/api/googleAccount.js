@@ -21,14 +21,20 @@ const oath2Client = new google.auth.OAuth2(
 // @desc    Get Google Events
 // @access  Private
 router.get('/list-events', auth, async (req, res) => {
-   // TODO: Only list events in a specific period to save load time
    try {
       const user = await User.findById(req.user.id)
       oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
       const calendar = google.calendar('v3')
+      const { minDate, maxDate } = req.query
       const events = await calendar.events.list({
          auth: oath2Client,
-         calendarId: 'primary' // TODO: Allow to add more calendars
+         calendarId: 'primary', // TODO: Allow to add more calendars
+         timeMin: minDate,
+         timeMax: maxDate,
+         singleEvents: true,
+         orderBy: 'startTime',
+         showDeleted: false,
+         showHiddenInvitations: true
       })
       res.json(events.data)
    } catch (err) {
@@ -63,7 +69,13 @@ router.post('/create-tokens', auth, async (req, res) => {
       const calendar = google.calendar('v3')
       const events = await calendar.events.list({
          auth: oath2Client,
-         calendarId: 'primary' // TODO: Allow to add more calendars
+         calendarId: 'primary', // TODO: Allow to add more calendars
+         timeMin: new Date(),
+         timeMax: new Date('2024-8-25'),
+         singleEvents: true,
+         orderBy: 'startTime',
+         showDeleted: false,
+         showHiddenInvitations: true
       })
       res.json(events.data)
    } catch (err) {

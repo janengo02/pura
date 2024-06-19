@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -10,11 +10,17 @@ import {
    DateLocalizer,
    momentLocalizer
 } from 'react-big-calendar'
-import * as dates from '../../utils/dates'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Skeleton, VStack } from '@chakra-ui/react'
 import Toolbar from './calendar/toolbar/Toolbar'
 import EventWrapper from './calendar/event/EventWrapper'
+import { listGoogleEvents } from '../../actions/googleAccount'
+import {
+   endOfDay,
+   firstVisibleDay,
+   lastVisibleDay,
+   startOfDay
+} from '../../utils/dates'
 
 const mLocalizer = momentLocalizer(moment)
 
@@ -27,28 +33,62 @@ const ColoredDateCellWrapper = ({ children }) => {
 }
 const Calendar = ({
    // Redux props
+   listGoogleEvents,
    localizer = mLocalizer,
    googleAccount: { googleEvents, loading }
 }) => {
-   const { components, defaultDate, max, views } = useMemo(
+   const { components, defaultDate, views, scrollToTime } = useMemo(
       () => ({
          components: {
             timeSlotWrapper: ColoredDateCellWrapper,
             eventWrapper: EventWrapper
          },
          defaultDate: new Date(),
-         max: dates.add(dates.endOf(new Date(2015, 17, 1), 'day'), -1, 'hours'),
-         views: Object.keys(Views).map((k) => Views[k])
+         views: Object.keys(Views).map((k) => Views[k]),
+         scrollToTime: new Date()
       }),
       []
    )
+   const onRangeChange = useCallback((range) => {
+      if (!range) {
+         return
+      }
+      if (!Array.isArray(range)) {
+         const reqData = {
+            minDate: range.start,
+            maxDate: range.end
+         }
+         listGoogleEvents(reqData)
+         return
+      }
+      if (range.length === 1) {
+         const reqData = {
+            minDate: startOfDay(range[0]),
+            maxDate: endOfDay(range[0])
+         }
+         listGoogleEvents(reqData)
+         return
+      }
+      const reqData = {
+         minDate: range[0],
+         maxDate: range[6]
+      }
+      listGoogleEvents(reqData)
+   }, [])
 
+   useEffect(() => {
+      const reqData = {
+         minDate: firstVisibleDay(defaultDate, localizer),
+         maxDate: lastVisibleDay(defaultDate, localizer)
+      }
+      listGoogleEvents(reqData)
+   }, [])
    return (
       <Skeleton isLoaded={!loading}>
          <VStack
-            w='fit-content'
+            // w='fit-content'
             h='800px'
-            minW='full'
+            // minW='full'
             alignItems='center'
             gap={0}
             paddingBottom={10}
@@ -60,10 +100,11 @@ const Calendar = ({
                events={googleEvents || []}
                defaultView='week'
                localizer={localizer}
-               max={max}
                showMultiDayTimes
-               step={60}
+               step={30}
                views={views}
+               scrollToTime={scrollToTime}
+               onRangeChange={onRangeChange}
                popup
             />
          </VStack>
@@ -72,6 +113,7 @@ const Calendar = ({
 }
 
 Calendar.propTypes = {
+   listGoogleEvents: PropTypes.func.isRequired,
    localizer: PropTypes.instanceOf(DateLocalizer),
    googleAccount: PropTypes.object.isRequired
 }
@@ -80,4 +122,4 @@ const mapStateToProps = (state) => ({
    googleAccount: state.googleAccount
 })
 
-export default connect(mapStateToProps, null)(Calendar)
+export default connect(mapStateToProps, { listGoogleEvents })(Calendar)

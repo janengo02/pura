@@ -6,9 +6,11 @@ import {
    GET_PAGE
 } from './types'
 
-export const connectGoogle = () => async (dispatch) => {
+export const listGoogleEvents = (reqData) => async (dispatch) => {
    try {
-      const res = await api.get('/google-account/list-events')
+      const res = await api.get('/google-account/list-events', {
+         params: { ...reqData }
+      })
       if (res.data.summary) {
          dispatch({
             type: GOOGLE_CALENDAR_LOADED,
@@ -35,8 +37,8 @@ export const createGoogleTokens = (reqData) => async (dispatch) => {
          payload: res.data
       })
    } catch (err) {
-      const errors = err.response.data.errors
-      console.log(errors)
+      // const errors = err.response.data.errors
+      console.log(err)
       //  @Todo Handle error
       // console.clear()
    }

@@ -4,11 +4,11 @@ import { connect } from 'react-redux'
 
 import { IconButton } from '@chakra-ui/react'
 import { PiArrowClockwise } from 'react-icons/pi'
-import { connectGoogle } from '../../../../actions/googleAccount'
+import { listGoogleEvents } from '../../../../actions/googleAccount'
 
 const ReloadButton = ({
    // Redux props
-   connectGoogle
+   listGoogleEvents
 }) => {
    return (
       <IconButton
@@ -19,15 +19,15 @@ const ReloadButton = ({
          colorScheme='gray'
          onClick={async (e) => {
             e.preventDefault()
-            connectGoogle()
+            listGoogleEvents()
          }}
       />
    )
 }
 
 ReloadButton.propTypes = {
-   connectGoogle: PropTypes.func.isRequired
+   listGoogleEvents: PropTypes.func.isRequired
 }
 export default connect(null, {
-   connectGoogle
+   listGoogleEvents
 })(ReloadButton)
