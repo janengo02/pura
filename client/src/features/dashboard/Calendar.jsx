@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -16,12 +16,17 @@ import Toolbar from './calendar/toolbar/Toolbar'
 import EventWrapper from './calendar/event/EventWrapper'
 import { listGoogleEvents } from '../../actions/googleAccount'
 import {
-   endOfDay,
    firstVisibleDay,
+   neq,
    lastVisibleDay,
-   startOfDay
+   inRange
 } from '../../utils/dates'
 
+moment.locale('es-es', {
+   week: {
+      dow: 1 //Monday is the first day of the week.
+   }
+})
 const mLocalizer = momentLocalizer(moment)
 
 const ColoredDateCellWrapper = ({ children }) => {
@@ -49,40 +54,37 @@ const Calendar = ({
       }),
       []
    )
-   const onRangeChange = useCallback((range) => {
-      if (!range) {
-         return
-      }
-      if (!Array.isArray(range)) {
-         const reqData = {
-            minDate: range.start,
-            maxDate: range.end
+   const [visibleRange, setVisibleRange] = useState([
+      firstVisibleDay(defaultDate, localizer),
+      lastVisibleDay(defaultDate, localizer)
+   ])
+   const onRangeChange = useCallback(
+      (range) => {
+         if (!range) {
+            return
          }
-         listGoogleEvents(reqData)
-         return
-      }
-      if (range.length === 1) {
-         const reqData = {
-            minDate: startOfDay(range[0]),
-            maxDate: endOfDay(range[0])
+         if (!Array.isArray(range)) {
+            // Change month
+            if (
+               neq(range.start, visibleRange[0], 'day') ||
+               neq(range.end, visibleRange[1], 'day')
+            )
+               setVisibleRange([range.start, range.end])
+            return
          }
-         listGoogleEvents(reqData)
-         return
-      }
-      const reqData = {
-         minDate: range[0],
-         maxDate: range[6]
-      }
-      listGoogleEvents(reqData)
-   }, [])
+         if (!inRange(range[0], visibleRange[0], visibleRange[1], 'day')) {
+            setVisibleRange([
+               firstVisibleDay(range[0], localizer),
+               lastVisibleDay(range[0], localizer)
+            ])
+         }
+      },
+      [visibleRange]
+   )
 
    useEffect(() => {
-      const reqData = {
-         minDate: firstVisibleDay(defaultDate, localizer),
-         maxDate: lastVisibleDay(defaultDate, localizer)
-      }
-      listGoogleEvents(reqData)
-   }, [])
+      listGoogleEvents(visibleRange)
+   }, [visibleRange])
    return (
       <Skeleton isLoaded={!loading}>
          <VStack

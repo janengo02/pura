@@ -6,10 +6,10 @@ import {
    GET_PAGE
 } from './types'
 
-export const listGoogleEvents = (reqData) => async (dispatch) => {
+export const listGoogleEvents = (visibleRange) => async (dispatch) => {
    try {
       const res = await api.get('/google-account/list-events', {
-         params: { ...reqData }
+         params: { minDate: visibleRange[0], maxDate: visibleRange[1] }
       })
       if (res.data.summary) {
          dispatch({
