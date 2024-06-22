@@ -17,26 +17,54 @@ const oath2Client = new google.auth.OAuth2(
    GOOGLE_CLIENT_SECRET,
    APP_PATH
 )
+
+const listEvent = async (refreshToken, minDate, maxDate) => {
+   try {
+      oath2Client.setCredentials({ refresh_token: refreshToken })
+      const googleCalendarApi = google.calendar('v3')
+      const calendars = await googleCalendarApi.calendarList.list({
+         auth: oath2Client,
+         maxResults: 50,
+         showDeleted: false
+      })
+      const events = await Promise.all(
+         calendars.data.items.map(async (calendar) => {
+            const event = await googleCalendarApi.events.list({
+               auth: oath2Client,
+               calendarId: calendar.id,
+               timeMin: minDate,
+               timeMax: maxDate,
+               singleEvents: true,
+               orderBy: 'startTime',
+               showDeleted: false,
+               showHiddenInvitations: true
+            })
+            return {
+               ...event.data,
+               ...calendar
+            }
+         })
+      )
+      return events
+   } catch (err) {
+      // TODO: Handle Google authentication error
+      console.log('hihihi', err)
+      return []
+   }
+}
 // @route   GET api/google-account/list-events
 // @desc    Get Google Events
 // @access  Private
 router.get('/list-events', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id)
-      oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
-      const calendar = google.calendar('v3')
       const { minDate, maxDate } = req.query
-      const events = await calendar.events.list({
-         auth: oath2Client,
-         calendarId: 'primary', // TODO: Allow to add more calendars
-         timeMin: minDate,
-         timeMax: maxDate,
-         singleEvents: true,
-         orderBy: 'startTime',
-         showDeleted: false,
-         showHiddenInvitations: true
-      })
-      res.json(events.data)
+      const events = await listEvent(
+         user.google_refresh_token,
+         minDate,
+         maxDate
+      )
+      res.json(events)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error
@@ -52,7 +80,7 @@ router.get('/list-events', auth, async (req, res) => {
 // @access  Private
 router.post('/create-tokens', auth, async (req, res) => {
    try {
-      const { code } = req.body
+      const { code, range } = req.body
       const { tokens } = await oath2Client.getToken(code)
       const { refresh_token } = tokens
       const user = await User.findOneAndUpdate(
@@ -65,19 +93,8 @@ router.post('/create-tokens', auth, async (req, res) => {
          },
          { new: true }
       )
-      oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
-      const calendar = google.calendar('v3')
-      const events = await calendar.events.list({
-         auth: oath2Client,
-         calendarId: 'primary', // TODO: Allow to add more calendars
-         timeMin: new Date(),
-         timeMax: new Date('2024-8-25'),
-         singleEvents: true,
-         orderBy: 'startTime',
-         showDeleted: false,
-         showHiddenInvitations: true
-      })
-      res.json(events.data)
+      const events = await listEvent(refresh_token, range[0], range[1])
+      res.json(events)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       res.status(500).json({

@@ -29,12 +29,12 @@ const GoogleCalendarGroupTitle = () => (
 const Settings = ({
    // Redux props
    createGoogleTokens,
-   googleAccount: { isLoggedIn, account }
+   googleAccount: { isLoggedIn, account, range }
 }) => {
    const googleLogin = useGoogleLogin({
       onSuccess: (tokenResponse) => {
          const { code } = tokenResponse
-         createGoogleTokens({ code }).then(() => {})
+         createGoogleTokens({ code, range }).then(() => {})
       },
       // TODO Error Handling
       onError: (responseError) => {

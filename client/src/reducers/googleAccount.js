@@ -10,7 +10,8 @@ const initialState = {
    googleEvents: [],
    account: null,
    loading: true,
-   syncedEventLoading: ''
+   syncedEventLoading: '',
+   range: []
 }
 
 function googleAccountReducer(state = initialState, action) {
@@ -20,10 +21,11 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: true,
-            googleEvents: calendarPage(payload.items),
-            account: payload.summary,
+            googleEvents: calendarPage(payload.data),
+            account: 'Synced account email (TODO)',
             loading: false,
-            syncedEventLoading: ''
+            syncedEventLoading: '',
+            range: payload.range
          }
       case GOOGLE_CALENDAR_SYNCED_EVENT_LOADING:
          return {
@@ -37,7 +39,8 @@ function googleAccountReducer(state = initialState, action) {
             googleEvents: [],
             account: null,
             loading: false,
-            syncedEventLoading: ''
+            syncedEventLoading: '',
+            range: payload.range
          }
       default:
          return state

@@ -19,24 +19,27 @@ export const stringToTime = (dString) => {
    return d
 }
 
-export const calendarPage = (googleEvents) => {
-   console.log(googleEvents)
+export const calendarPage = (googleCalendars) => {
    const events = []
-   googleEvents?.forEach((event) => {
-      // @todo: Deal with full date events
-      if (
-         event.start?.hasOwnProperty('dateTime') &&
-         event.end?.hasOwnProperty('dateTime')
-      ) {
-         const newStart = Date.parse(event.start.dateTime)
-         const newEnd = Date.parse(event.end.dateTime)
-         events.push({
-            id: event.id,
-            title: event.summary,
-            start: new Date(newStart),
-            end: new Date(newEnd)
-         })
-      }
+   googleCalendars.forEach((calendar) => {
+      calendar?.items?.forEach((event) => {
+         // @todo: Deal with full date events
+         if (
+            event.start?.hasOwnProperty('dateTime') &&
+            event.end?.hasOwnProperty('dateTime')
+         ) {
+            const newStart = Date.parse(event.start.dateTime)
+            const newEnd = Date.parse(event.end.dateTime)
+            events.push({
+               id: event.id,
+               title: event.summary,
+               start: new Date(newStart),
+               end: new Date(newEnd),
+               calendarId: calendar.id
+            })
+         }
+      })
    })
+
    return events
 }

@@ -40,7 +40,7 @@ const Calendar = ({
    // Redux props
    listGoogleEvents,
    localizer = mLocalizer,
-   googleAccount: { googleEvents, loading }
+   googleAccount: { googleEvents, loading, range }
 }) => {
    const { components, defaultDate, views, scrollToTime } = useMemo(
       () => ({
@@ -54,37 +54,38 @@ const Calendar = ({
       }),
       []
    )
-   const [visibleRange, setVisibleRange] = useState([
-      firstVisibleDay(defaultDate, localizer),
-      lastVisibleDay(defaultDate, localizer)
-   ])
+
    const onRangeChange = useCallback(
-      (range) => {
-         if (!range) {
+      (newRange) => {
+         if (!newRange) {
             return
          }
-         if (!Array.isArray(range)) {
+         if (!Array.isArray(newRange)) {
             // Change month
             if (
-               neq(range.start, visibleRange[0], 'day') ||
-               neq(range.end, visibleRange[1], 'day')
+               neq(newRange.start, range[0], 'day') ||
+               neq(newRange.end, range[1], 'day')
             )
-               setVisibleRange([range.start, range.end])
+               listGoogleEvents([newRange.start, newRange.end])
             return
          }
-         if (!inRange(range[0], visibleRange[0], visibleRange[1], 'day')) {
-            setVisibleRange([
-               firstVisibleDay(range[0], localizer),
-               lastVisibleDay(range[0], localizer)
+         if (!inRange(newRange[0], range[0], range[1], 'day')) {
+            listGoogleEvents([
+               firstVisibleDay(newRange[0], localizer),
+               lastVisibleDay(newRange[0], localizer)
             ])
          }
       },
-      [visibleRange]
+      [listGoogleEvents, localizer, range]
    )
 
    useEffect(() => {
-      listGoogleEvents(visibleRange)
-   }, [visibleRange])
+      const initialRange = [
+         firstVisibleDay(defaultDate, localizer),
+         lastVisibleDay(defaultDate, localizer)
+      ]
+      listGoogleEvents(initialRange)
+   }, [defaultDate, listGoogleEvents, localizer])
    return (
       <Skeleton isLoaded={!loading}>
          <VStack

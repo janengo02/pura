@@ -11,19 +11,21 @@ export const listGoogleEvents = (visibleRange) => async (dispatch) => {
       const res = await api.get('/google-account/list-events', {
          params: { minDate: visibleRange[0], maxDate: visibleRange[1] }
       })
-      if (res.data.summary) {
+      if (Array.isArray(res.data)) {
          dispatch({
             type: GOOGLE_CALENDAR_LOADED,
-            payload: res.data
+            payload: { data: res.data, range: visibleRange }
          })
       } else {
          dispatch({
-            type: GOOGLE_CALENDAR_AUTH_ERROR
+            type: GOOGLE_CALENDAR_AUTH_ERROR,
+            payload: { range: visibleRange }
          })
       }
    } catch (err) {
       dispatch({
-         type: GOOGLE_CALENDAR_AUTH_ERROR
+         type: GOOGLE_CALENDAR_AUTH_ERROR,
+         payload: { range: visibleRange }
       })
    }
 }
@@ -32,15 +34,22 @@ export const listGoogleEvents = (visibleRange) => async (dispatch) => {
 export const createGoogleTokens = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/create-tokens', reqData)
-      dispatch({
-         type: GOOGLE_CALENDAR_LOADED,
-         payload: res.data
-      })
+      if (Array.isArray(res.data)) {
+         dispatch({
+            type: GOOGLE_CALENDAR_LOADED,
+            payload: { data: res.data, range: reqData.range }
+         })
+      } else {
+         dispatch({
+            type: GOOGLE_CALENDAR_AUTH_ERROR,
+            payload: { range: reqData.range }
+         })
+      }
    } catch (err) {
-      // const errors = err.response.data.errors
-      console.log(err)
-      //  @Todo Handle error
-      // console.clear()
+      dispatch({
+         type: GOOGLE_CALENDAR_AUTH_ERROR,
+         payload: { range: reqData.range }
+      })
    }
 }
 
