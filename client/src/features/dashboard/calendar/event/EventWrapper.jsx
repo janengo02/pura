@@ -119,6 +119,7 @@ const EventWrapper = ({
                   <PopoverBody>
                      <EventWrapperTitle text={event.title} />
                      <EventTimeText start={event.start} end={event.end} />
+                     {event.calendar}
                   </PopoverBody>
                </PopoverContent>
             </>

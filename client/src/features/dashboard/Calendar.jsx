@@ -40,7 +40,7 @@ const Calendar = ({
    // Redux props
    listGoogleEvents,
    localizer = mLocalizer,
-   googleAccount: { googleEvents, loading, range }
+   googleAccount: { googleEvents, loading, range, syncedEventLoading }
 }) => {
    const { components, defaultDate, views, scrollToTime } = useMemo(
       () => ({
@@ -86,6 +86,27 @@ const Calendar = ({
       ]
       listGoogleEvents(initialRange)
    }, [defaultDate, listGoogleEvents, localizer])
+
+   const eventPropGetter = useCallback(
+      (event, start, end, isSelected) => {
+         const eventOpacity = event.id === syncedEventLoading ? 0.5 : 1
+         const backgroundColor = event.color
+         const boxShadow = isSelected
+            ? '0px 6px 10px 0px rgba(0,0,0,.14),0px 1px 18px 0px rgba(0,0,0,.12),0px 3px 5px -1px rgba(0,0,0,.2)'
+            : 'none'
+         return {
+            style: {
+               opacity: eventOpacity,
+               backgroundColor: backgroundColor,
+               border: 'none',
+               color: '#1A202C', // TODO: put in const
+               boxShadow: boxShadow,
+               outline: 'none'
+            }
+         }
+      },
+      [syncedEventLoading]
+   )
    return (
       <Skeleton isLoaded={!loading}>
          <VStack
@@ -108,6 +129,7 @@ const Calendar = ({
                views={views}
                scrollToTime={scrollToTime}
                onRangeChange={onRangeChange}
+               eventPropGetter={eventPropGetter}
                popup
             />
          </VStack>

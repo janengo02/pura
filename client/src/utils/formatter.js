@@ -19,14 +19,15 @@ export const stringToTime = (dString) => {
    return d
 }
 
-export const calendarPage = (googleCalendars) => {
+export const eventListFormatter = (googleCalendars) => {
    const events = []
    googleCalendars.forEach((calendar) => {
       calendar?.items?.forEach((event) => {
          // @todo: Deal with full date events
          if (
             event.start?.hasOwnProperty('dateTime') &&
-            event.end?.hasOwnProperty('dateTime')
+            event.end?.hasOwnProperty('dateTime') &&
+            calendar.selected
          ) {
             const newStart = Date.parse(event.start.dateTime)
             const newEnd = Date.parse(event.end.dateTime)
@@ -35,11 +36,36 @@ export const calendarPage = (googleCalendars) => {
                title: event.summary,
                start: new Date(newStart),
                end: new Date(newEnd),
-               calendarId: calendar.id
+               calendarId: calendar.id,
+               calendar: calendar.summary,
+               color: calendar.backgroundColor,
+               accessRole: calendar.accessRole
             })
          }
       })
    })
 
    return events
+}
+export const calendarListFormatter = (googleCalendars) => {
+   const calendars = []
+   googleCalendars.forEach((calendar) => {
+      calendars.push({
+         calendarId: calendar.id,
+         title: calendar.summary,
+         color: calendar.backgroundColor,
+         selected: calendar.selected || false
+      })
+   })
+
+   return calendars
+}
+
+export const calendarOwnerFormatter = (googleCalendars) => {
+   const owner = googleCalendars.find((c) => c.primary === true)
+   if (typeof owner !== 'undefined') {
+      return owner.id
+   }
+
+   return null
 }

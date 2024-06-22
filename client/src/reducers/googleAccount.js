@@ -3,12 +3,17 @@ import {
    GOOGLE_CALENDAR_AUTH_ERROR,
    GOOGLE_CALENDAR_SYNCED_EVENT_LOADING
 } from '../actions/types'
-import { calendarPage } from '../utils/formatter'
+import {
+   calendarListFormatter,
+   calendarOwnerFormatter,
+   eventListFormatter
+} from '../utils/formatter'
 
 const initialState = {
    isLoggedIn: false,
    googleEvents: [],
    account: null,
+   googleCalendars: [],
    loading: true,
    syncedEventLoading: '',
    range: []
@@ -21,8 +26,9 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: true,
-            googleEvents: calendarPage(payload.data),
-            account: 'Synced account email (TODO)',
+            account: calendarOwnerFormatter(payload.data),
+            googleEvents: eventListFormatter(payload.data),
+            googleCalendars: calendarListFormatter(payload.data),
             loading: false,
             syncedEventLoading: '',
             range: payload.range
@@ -36,8 +42,9 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: false,
-            googleEvents: [],
             account: null,
+            googleEvents: [],
+            googleCalendars: [],
             loading: false,
             syncedEventLoading: '',
             range: payload.range

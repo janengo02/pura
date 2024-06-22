@@ -12,9 +12,11 @@ import {
    MenuDivider,
    Text,
    Image,
-   Flex
+   Flex,
+   MenuOptionGroup,
+   MenuItemOption
 } from '@chakra-ui/react'
-import { PiSlidersHorizontalFill, PiPlus } from 'react-icons/pi'
+import { PiSlidersHorizontalFill, PiPlus, PiCircleFill } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 
 import { useGoogleLogin } from '@react-oauth/google'
@@ -29,7 +31,7 @@ const GoogleCalendarGroupTitle = () => (
 const Settings = ({
    // Redux props
    createGoogleTokens,
-   googleAccount: { isLoggedIn, account, range }
+   googleAccount: { isLoggedIn, account, range, googleCalendars }
 }) => {
    const googleLogin = useGoogleLogin({
       onSuccess: (tokenResponse) => {
@@ -47,6 +49,9 @@ const Settings = ({
       flow: 'auth-code',
       auto_select: true
    })
+   const visibleCalendars = googleCalendars.map(
+      (c) => c.selected && c.calendarId
+   )
    return (
       <Menu isLazy>
          <MenuButton
@@ -58,7 +63,7 @@ const Settings = ({
          ></MenuButton>
          <MenuList zIndex={10}>
             <MenuGroup title={<GoogleCalendarGroupTitle />}>
-               {isLoggedIn && (
+               {isLoggedIn && account && (
                   <Text marginX={4} color='gray.400'>
                      {account}
                   </Text>
@@ -73,7 +78,29 @@ const Settings = ({
                </MenuItem>
             </MenuGroup>
             <MenuDivider />
-            <MenuGroup title='Settings'></MenuGroup>
+            <MenuOptionGroup
+               title='My calendars'
+               fontSize='sm'
+               type='checkbox'
+               defaultValue={visibleCalendars}
+            >
+               {googleCalendars.map((calendar) => (
+                  <MenuItemOption
+                     key={calendar.calendarId}
+                     value={calendar.calendarId}
+                     fontSize='sm'
+                     onClick={async (e) => {
+                        e.preventDefault()
+                     }}
+                     isChecked={calendar.selected}
+                  >
+                     <Flex alignItems='center' gap={2}>
+                        <PiCircleFill size={18} color={calendar.color} />
+                        {calendar.title}
+                     </Flex>
+                  </MenuItemOption>
+               ))}
+            </MenuOptionGroup>
          </MenuList>
       </Menu>
    )
