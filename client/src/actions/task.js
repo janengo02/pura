@@ -52,12 +52,12 @@ export const updateTask = (formData) => async (dispatch) => {
             payload: res.data.task
          })
       }
-      if (typeof formData.synced_g_event === 'string') {
-         dispatch({
-            type: GOOGLE_CALENDAR_LOADED,
-            payload: res.data.events
-         })
-      }
+      // if (typeof formData.synced_g_event === 'string') {
+      //    dispatch({
+      //       type: GOOGLE_CALENDAR_LOADED,
+      //       payload: res.data.events
+      //    })
+      // }
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({
@@ -100,8 +100,8 @@ export const showTaskModal = (formData) => async (dispatch) => {
          type: SHOW_TASK,
          payload: {
             ...res.data,
-            ...(typeof formData.g_event_index === 'number' && {
-               g_event_index: formData.g_event_index
+            ...(typeof formData.target_g_event_index === 'number' && {
+               target_g_event_index: formData.target_g_event_index
             })
          }
       })

@@ -54,7 +54,7 @@ const EventWrapper = ({
       const formData = {
          page_id: page._id,
          task_id: taskId,
-         g_event_index: gEventIndex
+         target_g_event_index: gEventIndex
       }
       await showTaskModal(formData)
    }

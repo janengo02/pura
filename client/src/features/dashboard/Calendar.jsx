@@ -54,7 +54,7 @@ const Calendar = ({
       }),
       []
    )
-
+   const visibleEvents = googleEvents.filter((ev) => ev.calendarVisible)
    const onRangeChange = useCallback(
       (newRange) => {
          if (!newRange) {
@@ -78,15 +78,6 @@ const Calendar = ({
       },
       [listGoogleEvents, localizer, range]
    )
-
-   useEffect(() => {
-      const initialRange = [
-         firstVisibleDay(defaultDate, localizer),
-         lastVisibleDay(defaultDate, localizer)
-      ]
-      listGoogleEvents(initialRange)
-   }, [defaultDate, listGoogleEvents, localizer])
-
    const eventPropGetter = useCallback(
       (event, start, end, isSelected) => {
          const eventOpacity = event.id === syncedEventLoading ? 0.5 : 1
@@ -107,6 +98,14 @@ const Calendar = ({
       },
       [syncedEventLoading]
    )
+   useEffect(() => {
+      const initialRange = [
+         firstVisibleDay(defaultDate, localizer),
+         lastVisibleDay(defaultDate, localizer)
+      ]
+      listGoogleEvents(initialRange)
+   }, [defaultDate, listGoogleEvents, localizer])
+
    return (
       <Skeleton isLoaded={!loading}>
          <VStack
@@ -121,7 +120,7 @@ const Calendar = ({
             <BigCalendar
                components={components}
                defaultDate={defaultDate}
-               events={googleEvents || []}
+               events={visibleEvents || []}
                defaultView='week'
                localizer={localizer}
                showMultiDayTimes

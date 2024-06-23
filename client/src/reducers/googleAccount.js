@@ -1,12 +1,17 @@
 import {
    GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
-   GOOGLE_CALENDAR_SYNCED_EVENT_LOADING
+   GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
+   GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
+   CREATE_GOOGLE_EVENT
 } from '../actions/types'
 import {
+   calendarListChangeVisibilityFormatter,
    calendarListFormatter,
    calendarOwnerFormatter,
-   eventListFormatter
+   eventListChangeVisibilityFormatter,
+   eventListFormatter,
+   newEventFormatter
 } from '../utils/formatter'
 
 const initialState = {
@@ -27,8 +32,14 @@ function googleAccountReducer(state = initialState, action) {
             ...state,
             isLoggedIn: true,
             account: calendarOwnerFormatter(payload.data),
-            googleEvents: eventListFormatter(payload.data),
-            googleCalendars: calendarListFormatter(payload.data),
+            googleEvents: eventListFormatter(
+               state.googleCalendars,
+               payload.data
+            ),
+            googleCalendars: calendarListFormatter(
+               state.googleCalendars,
+               payload.data
+            ),
             loading: false,
             syncedEventLoading: '',
             range: payload.range
@@ -37,6 +48,26 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             syncedEventLoading: payload.synced_g_event
+         }
+      case GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY:
+         return {
+            ...state,
+            googleEvents: eventListChangeVisibilityFormatter(
+               state.googleEvents,
+               payload.calendarId
+            ),
+            googleCalendars: calendarListChangeVisibilityFormatter(
+               state.googleCalendars,
+               payload.calendarId
+            )
+         }
+      case CREATE_GOOGLE_EVENT:
+         return {
+            ...state,
+            googleEvents: [
+               ...state.googleEvents,
+               newEventFormatter(payload, state.googleCalendars)
+            ]
          }
       case GOOGLE_CALENDAR_AUTH_ERROR:
          return {

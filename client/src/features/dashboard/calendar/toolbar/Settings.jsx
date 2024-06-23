@@ -20,7 +20,10 @@ import { PiSlidersHorizontalFill, PiPlus, PiCircleFill } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 
 import { useGoogleLogin } from '@react-oauth/google'
-import { createGoogleTokens } from '../../../../actions/googleAccount'
+import {
+   createGoogleTokens,
+   setVisibleCalendar
+} from '../../../../actions/googleAccount'
 
 const GoogleCalendarGroupTitle = () => (
    <Flex w='full' gap={3}>
@@ -31,6 +34,7 @@ const GoogleCalendarGroupTitle = () => (
 const Settings = ({
    // Redux props
    createGoogleTokens,
+   setVisibleCalendar,
    googleAccount: { isLoggedIn, account, range, googleCalendars }
 }) => {
    const googleLogin = useGoogleLogin({
@@ -53,7 +57,7 @@ const Settings = ({
       (c) => c.selected && c.calendarId
    )
    return (
-      <Menu isLazy>
+      <Menu isLazy closeOnSelect={false}>
          <MenuButton
             as={IconButton}
             icon={<PiSlidersHorizontalFill size={22} />}
@@ -91,6 +95,7 @@ const Settings = ({
                      fontSize='sm'
                      onClick={async (e) => {
                         e.preventDefault()
+                        setVisibleCalendar(calendar.calendarId)
                      }}
                      isChecked={calendar.selected}
                   >
@@ -108,6 +113,7 @@ const Settings = ({
 
 Settings.propTypes = {
    createGoogleTokens: PropTypes.func.isRequired,
+   setVisibleCalendar: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired
 }
 
@@ -115,4 +121,7 @@ const mapStateToProps = (state) => ({
    googleAccount: state.googleAccount
 })
 
-export default connect(mapStateToProps, { createGoogleTokens })(Settings)
+export default connect(mapStateToProps, {
+   createGoogleTokens,
+   setVisibleCalendar
+})(Settings)

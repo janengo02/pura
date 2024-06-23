@@ -93,6 +93,7 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       if (page.user.toString() !== req.user.id) {
          return res.status(401).json({ msg: 'User not authorized' })
       }
+      const user = await User.findById(req.user.id)
 
       //   Validation: Check if task exists
       const task = await Task.findById(req.params.task_id)
@@ -115,10 +116,44 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
          create_date,
          update_date
       } = task
+      const syncedSchedule = await Promise.all(
+         schedule.map(async (s, si) => {
+            if (typeof google_events[si] === 'string') {
+               oath2Client.setCredentials({
+                  refresh_token: user.google_refresh_token
+               })
+               const googleCalendarApi = google.calendar('v3')
+               const event = await googleCalendarApi.events
+                  .get({
+                     auth: oath2Client,
+                     calendarId: 'primary',
+                     eventId: google_events[si]
+                  })
+                  .then(() => {
+                     return true
+                  })
+                  .catch(() => {
+                     return false
+                  })
+               return {
+                  start: s.start,
+                  end: s.end,
+                  _id: s._id,
+                  gEventId: event ? google_events[si] : null
+               }
+            }
+            return {
+               start: s.start,
+               end: s.end,
+               _id: s._id,
+               gEventId: null
+            }
+         })
+      )
       const response = {
          _id,
          title,
-         schedule,
+         schedule: syncedSchedule,
          google_events,
          content,
          create_date,
@@ -361,7 +396,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
             if (gEventIndex !== -1) {
                const gEventStart = schedule[gEventIndex].start
                const gEventEnd = schedule[gEventIndex].end
-               const response = await calendar.events.patch({
+               const event = await calendar.events.patch({
                   auth: oath2Client,
                   calendarId: 'primary', // TODO: Allow to add more calendars
                   eventId: synced_g_event,
@@ -374,19 +409,19 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
                      }
                   }
                })
+               res.json({ page: newPage, task: newTask, event: event.data })
             } else {
-               const response = await calendar.events.delete({
+               const event = await calendar.events.delete({
                   auth: oath2Client,
-                  calendarId: 'primary', // TODO: Allow to add more calendars
+                  calendarId: 'primary',
                   eventId: synced_g_event
                })
+               res.json({
+                  page: newPage,
+                  task: newTask,
+                  event: { id: synced_g_event, deleted: true }
+               })
             }
-
-            const events = await calendar.events.list({
-               auth: oath2Client,
-               calendarId: 'primary' // TODO: Allow to add more calendars
-            })
-            res.json({ events: events.data, page: newPage, task: newTask })
          } else {
             res.json({ page: newPage, task: newTask })
          }

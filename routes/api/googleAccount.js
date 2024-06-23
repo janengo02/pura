@@ -114,7 +114,7 @@ router.post('/create-event', auth, async (req, res) => {
       const user = await User.findById(req.user.id)
       oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
       const calendar = google.calendar('v3')
-      const response = await calendar.events.insert({
+      const event = await calendar.events.insert({
          auth: oath2Client,
          calendarId: 'primary', // TODO: Allow to add more calendars
          requestBody: {
@@ -128,7 +128,6 @@ router.post('/create-event', auth, async (req, res) => {
             }
          }
       })
-      const gEventId = response.data.id
       const task = await Task.findById(target_task._id)
       if (!task) {
          return res.status(404).json({
@@ -137,13 +136,11 @@ router.post('/create-event', auth, async (req, res) => {
             ]
          })
       }
-      task.google_events[slot_index] = gEventId
-      target_task.google_events[slot_index] = gEventId
+      task.google_events[slot_index] = event.data.id
+      target_task.google_events[slot_index] = event.data.id
+      target_task.schedule[slot_index].gEventId = event.data.id
       await task.save()
-      const events = await calendar.events.list({
-         auth: oath2Client,
-         calendarId: 'primary' // TODO: Allow to add more calendars
-      })
+
       // Data: get new page
       const newPage = await Page.findOneAndUpdate(
          { _id: page_id },
@@ -159,7 +156,7 @@ router.post('/create-event', auth, async (req, res) => {
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'google_events'])
 
-      res.json({ events: events.data, page: newPage, task: target_task })
+      res.json({ event: event.data, page: newPage, task: target_task })
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error
@@ -200,10 +197,6 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
          await task.save()
       }
 
-      const events = await calendar.events.list({
-         auth: oath2Client,
-         calendarId: 'primary' // TODO: Allow to add more calendars
-      })
       // Data: get new page
       const newPage = await Page.findOneAndUpdate(
          { _id: pageId },
@@ -219,7 +212,7 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'google_events'])
 
-      res.json({ events: events.data, page: newPage })
+      res.json({ page: newPage })
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error

@@ -22,37 +22,21 @@ const ScheduleTimeSlot = ({
    slot,
    index,
    // Redux props
-   googleAccount: { googleEvents, isLoggedIn },
+   googleAccount: { isLoggedIn },
    updateTask,
    createGoogleCalendarEvent,
    task: { task },
    page: { page }
 }) => {
-   const [isSynced, setIsSynced] = useState(true)
+   const isSynced = typeof task.schedule[index].gEventId === 'string'
    const startTime = stringToDateTimeLocal(slot.start)
    const endTime = stringToDateTimeLocal(slot.end)
-   const isViewingCalendarEvent = task.g_event_index === index && isSynced
+   const isViewingCalendarEvent =
+      task.target_g_event_index === index && isSynced
    const isInvalidTimeSlot =
       startTime === 'Invalid date' ||
       endTime === 'Invalid date' ||
       startTime >= endTime
-
-   useEffect(() => {
-      const gEventId = task.google_events[index]
-      const createdGoogleEvent = googleEvents.find((g) => g.id === gEventId)
-      if (typeof createdGoogleEvent === 'undefined') {
-         setIsSynced(false)
-      } else if (
-         stringToDateTimeLocal(createdGoogleEvent.start) !==
-            stringToDateTimeLocal(slot.start) ||
-         stringToDateTimeLocal(createdGoogleEvent.end) !==
-            stringToDateTimeLocal(slot.end)
-      ) {
-         setIsSynced(false)
-      } else {
-         setIsSynced(true)
-      }
-   }, [task, googleEvents])
 
    const toast = useToast()
    const onUpdateFrom = async (newFrom) => {
