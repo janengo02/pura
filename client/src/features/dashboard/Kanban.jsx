@@ -36,12 +36,7 @@ const Kanban = ({
    createProgress,
    page: { page, loading, error }
 }) => {
-   const [state, setState] = useState()
    const navigate = useNavigate()
-
-   useEffect(() => {
-      setState(page)
-   }, [page])
 
    useEffect(() => {
       getFirstPage()
@@ -74,29 +69,21 @@ const Kanban = ({
       ) {
          return
       }
-      const formData = {
-         page_id: page._id,
-         destination: destination,
-         source: source,
-         draggableId: draggableId
-      }
-      // update backend
-      moveTask(formData)
 
       // update front end simultaneously
       const startSpace = +source.droppableId
       const endSpace = +destination.droppableId
       const oldTaskId = +draggableId
-      const targetTask = state.tasks[oldTaskId]
+      const targetTask = page.tasks[oldTaskId]
       var newTaskId = destination.index
       if (endSpace !== 0) {
-         newTaskId += state.task_map[endSpace - 1]
+         newTaskId += page.task_map[endSpace - 1]
       }
       if (endSpace > startSpace) {
          newTaskId--
       }
-      const newTaskArray = Array.from(state.tasks)
-      const newTaskMap = Array.from(state.task_map)
+      const newTaskArray = Array.from(page.tasks)
+      const newTaskMap = Array.from(page.task_map)
       newTaskArray.splice(oldTaskId, 1)
       newTaskArray.splice(newTaskId, 0, targetTask)
 
@@ -110,11 +97,14 @@ const Kanban = ({
             newTaskMap[i]--
          }
       }
-      const newState = {
+
+      const reqData = {
+         page_id: page._id,
          task_map: newTaskMap,
          tasks: newTaskArray
       }
-      setState(newState)
+
+      moveTask(reqData)
    }
 
    return (
@@ -180,7 +170,6 @@ const Kanban = ({
                                           key={progress._id} //has to match droppableId
                                           progress={progress}
                                           group={group}
-                                          state={state}
                                        />
                                     ))}
                                  </Group>

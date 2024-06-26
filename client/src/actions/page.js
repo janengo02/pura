@@ -1,5 +1,5 @@
 import { api } from '../utils'
-import { GET_PAGE, PAGE_ERROR } from './types'
+import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from './types'
 
 // Get the first page of a user
 export const getFirstPage = () => async (dispatch) => {
@@ -23,22 +23,19 @@ export const getFirstPage = () => async (dispatch) => {
    }
 }
 // Update a task
-export const moveTask = (formData) => async (dispatch) => {
+export const moveTask = (reqData) => async (dispatch) => {
+   dispatch({
+      type: MOVE_TASK,
+      payload: reqData
+   })
    try {
-      const res = await api.post(
-         `/page/move-task/${formData.page_id}`,
-         formData
-      )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data
-      })
+      api.post(`/page/move-task/${reqData.page_id}`, reqData)
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: formData.page_id,
+            _id: reqData.page_id,
             errors: errors
          }
       })

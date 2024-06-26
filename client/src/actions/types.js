@@ -20,6 +20,7 @@ export const LOGOUT = 'LOGOUT'
 export const GET_PAGE = 'GET_PAGE'
 export const PAGE_ERROR = 'PAGE_ERROR'
 export const SHOW_TASK = 'SHOW_TASK'
+export const MOVE_TASK = 'MOVE_TASK'
 
 export const GOOGLE_CALENDAR_LOADED = 'GOOGLE_CALENDAR_LOADED'
 export const GOOGLE_CALENDAR_AUTH_ERROR = 'GOOGLE_CALENDAR_AUTH_ERROR'

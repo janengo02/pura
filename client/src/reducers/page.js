@@ -1,4 +1,4 @@
-import { GET_PAGE, PAGE_ERROR } from '../actions/types'
+import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from '../actions/types'
 
 const initialState = {
    page: null,
@@ -15,6 +15,17 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             page: payload,
+            loading: false,
+            error: false
+         }
+      case MOVE_TASK:
+         return {
+            ...state,
+            page: {
+               ...state.page,
+               task_map: payload.task_map,
+               tasks: payload.tasks
+            },
             loading: false,
             error: false
          }

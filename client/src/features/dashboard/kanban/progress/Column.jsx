@@ -14,7 +14,6 @@ import t from '../../../../lang/i18n'
 const Column = ({
    progress,
    group,
-   state,
    // Redux props
    page: { page },
    createTask
