@@ -14,7 +14,15 @@ const User = require('../../models/User')
 router.get('/', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id).select('-password')
-      res.json(user)
+      if (typeof user !== 'undefined' && user) {
+         res.json(user)
+      } else {
+         res.status(500).json({
+            errors: [
+               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
+            ]
+         })
+      }
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       res.status(500).json({

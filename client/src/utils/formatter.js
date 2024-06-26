@@ -128,3 +128,18 @@ export const newEventFormatter = (newEvent, currentCalendarList) => {
       calendarVisible: primaryCalendar.selected
    }
 }
+
+export const updateEventFormatter = (currentEventList, updatedEvent) => {
+   if (updatedEvent.deleted) {
+      return currentEventList.filter((ev) => ev.id !== updatedEvent.id)
+   }
+   const updatedEventList = currentEventList
+   const newStart = Date.parse(updatedEvent.start.dateTime)
+   const newEnd = Date.parse(updatedEvent.end.dateTime)
+   const updatedEventIndex = currentEventList.findIndex(
+      (ev) => ev.id === updatedEvent.id
+   )
+   updatedEventList[updatedEventIndex].start = new Date(newStart)
+   updatedEventList[updatedEventIndex].end = new Date(newEnd)
+   return updatedEventList
+}

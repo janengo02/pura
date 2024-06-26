@@ -28,18 +28,19 @@ const Column = ({
    const progressIndex = page.progress_order.findIndex(
       (p) => p._id === progress._id
    )
+
    const taskMapIndex = groupIndex * page.progress_order.length + progressIndex
    var taskArray = []
    if (taskMapIndex === 0) {
-      taskArray = state?.tasks.slice(0, state.task_map[0])
+      taskArray = page?.tasks.slice(0, page.task_map[0])
    } else {
-      taskArray = state?.tasks.slice(
-         state?.task_map[taskMapIndex - 1],
-         state?.task_map[taskMapIndex]
+      taskArray = page?.tasks.slice(
+         page?.task_map[taskMapIndex - 1],
+         page?.task_map[taskMapIndex]
       )
    }
    const droppableId = taskMapIndex.toString()
-   const taskPointer = state?.task_map[taskMapIndex] - taskArray?.length
+   const taskPointer = page?.task_map[taskMapIndex] - taskArray?.length
 
    return (
       <Droppable droppableId={droppableId}>

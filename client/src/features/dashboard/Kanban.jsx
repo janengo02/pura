@@ -40,10 +40,7 @@ const Kanban = ({
    const navigate = useNavigate()
 
    useEffect(() => {
-      setState({
-         task_map: page?.task_map || [],
-         tasks: page?.tasks || []
-      })
+      setState(page)
    }, [page])
 
    useEffect(() => {

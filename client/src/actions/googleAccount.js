@@ -5,7 +5,8 @@ import {
    SHOW_TASK,
    GET_PAGE,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
-   CREATE_GOOGLE_EVENT
+   CREATE_GOOGLE_EVENT,
+   GOOGLE_CALENDAR_UPDATE_EVENT
 } from './types'
 
 export const listGoogleEvents = (visibleRange) => async (dispatch) => {
@@ -89,10 +90,10 @@ export const deleteGoogleCalendarEvent = (reqData) => async (dispatch) => {
          `/google-account/delete-event/${reqData.eventId}`,
          reqData
       )
-      // dispatch({
-      //    type: GOOGLE_CALENDAR_LOADED,
-      //    payload: res.data.events
-      // })
+      dispatch({
+         type: GOOGLE_CALENDAR_UPDATE_EVENT,
+         payload: res.data.event
+      })
       dispatch({
          type: GET_PAGE,
          payload: res.data.page

@@ -509,6 +509,7 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
          .populate('tasks', ['title', 'google_events'])
 
       res.json(newPage)
+      // TODO: Delete related google events
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({

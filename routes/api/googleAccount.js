@@ -212,7 +212,10 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'google_events'])
 
-      res.json({ page: newPage })
+      res.json({
+         page: newPage,
+         event: { id: req.params.eventId, deleted: true }
+      })
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error

@@ -1,8 +1,8 @@
 import { api } from '../utils'
 import {
    GET_PAGE,
-   GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
+   GOOGLE_CALENDAR_UPDATE_EVENT,
    PAGE_ERROR,
    SHOW_TASK
 } from './types'
@@ -52,12 +52,12 @@ export const updateTask = (formData) => async (dispatch) => {
             payload: res.data.task
          })
       }
-      // if (typeof formData.synced_g_event === 'string') {
-      //    dispatch({
-      //       type: GOOGLE_CALENDAR_LOADED,
-      //       payload: res.data.events
-      //    })
-      // }
+      if (typeof formData.synced_g_event === 'string') {
+         dispatch({
+            type: GOOGLE_CALENDAR_UPDATE_EVENT,
+            payload: res.data.event
+         })
+      }
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({
