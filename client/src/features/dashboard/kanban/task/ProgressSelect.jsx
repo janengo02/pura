@@ -20,7 +20,8 @@ const ProgressSelect = ({
    // Redux props
    updateTask,
    task: { task },
-   page: { page }
+   _id,
+   progress_order
 }) => {
    const [hovered, setHovered] = useState(false)
    const tagSelect = useDisclosure()
@@ -55,14 +56,14 @@ const ProgressSelect = ({
                </Flex>
             </MenuButton>
             <MenuList w='488px'>
-               {page?.progress_order?.map((progress_item) => (
+               {progress_order?.map((progress_item) => (
                   <MenuItem
                      key={progress_item._id}
                      onClick={async (e) => {
                         e.preventDefault()
                         if (progress_item._id !== task.progress._id) {
                            updateTask({
-                              page_id: page._id,
+                              page_id: _id,
                               task_id: task._id,
                               progress_id: progress_item._id,
                               task_detail_flg: true
@@ -96,11 +97,13 @@ const ProgressSelect = ({
 
 ProgressSelect.propTypes = {
    task: PropTypes.object.isRequired,
-   page: PropTypes.object.isRequired,
+   _id: PropTypes.string.isRequired,
+   progress_order: PropTypes.array.isRequired,
    updateTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   page: state.page
+   _id: state.page._id,
+   progress_order: state.page.progress_order
 })
 export default connect(mapStateToProps, { updateTask })(ProgressSelect)

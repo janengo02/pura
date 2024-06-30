@@ -112,7 +112,7 @@ Navbar.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-   title: state.page.page?.title
+   title: state.page.title
 })
 
 export default connect(mapStateToProps)(Navbar)

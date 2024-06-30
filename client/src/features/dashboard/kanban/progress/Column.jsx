@@ -15,31 +15,34 @@ const Column = ({
    progress,
    group,
    // Redux props
-   page: { page },
+   _id,
+   group_order,
+   progress_order,
+   task_map,
+   tasks,
+
    createTask
 }) => {
    const newTaskInfo = {
-      page_id: page._id,
+      page_id: _id,
       group_id: group._id,
       progress_id: progress._id
    }
-   const groupIndex = page.group_order.findIndex((g) => g._id === group._id)
-   const progressIndex = page.progress_order.findIndex(
-      (p) => p._id === progress._id
-   )
+   const groupIndex = group_order.findIndex((g) => g._id === group._id)
+   const progressIndex = progress_order.findIndex((p) => p._id === progress._id)
 
-   const taskMapIndex = groupIndex * page.progress_order.length + progressIndex
+   const taskMapIndex = groupIndex * progress_order.length + progressIndex
    var taskArray = []
    if (taskMapIndex === 0) {
-      taskArray = page?.tasks.slice(0, page.task_map[0])
+      taskArray = tasks.slice(0, task_map[0])
    } else {
-      taskArray = page?.tasks.slice(
-         page?.task_map[taskMapIndex - 1],
-         page?.task_map[taskMapIndex]
+      taskArray = tasks.slice(
+         task_map[taskMapIndex - 1],
+         task_map[taskMapIndex]
       )
    }
    const droppableId = taskMapIndex.toString()
-   const taskPointer = page?.task_map[taskMapIndex] - taskArray?.length
+   const taskPointer = task_map[taskMapIndex] - taskArray?.length
 
    return (
       <Droppable droppableId={droppableId}>
@@ -92,10 +95,18 @@ const Column = ({
    )
 }
 Column.propTypes = {
-   page: PropTypes.object.isRequired,
+   _id: PropTypes.string.isRequired,
+   group_order: PropTypes.array.isRequired,
+   progress_order: PropTypes.array.isRequired,
+   task_map: PropTypes.array.isRequired,
+   tasks: PropTypes.array.isRequired,
    createTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
-   page: state.page
+   _id: state.page._id,
+   group_order: state.page.group_order,
+   progress_order: state.page.progress_order,
+   task_map: state.page.task_map,
+   tasks: state.page.tasks
 })
 export default connect(mapStateToProps, { createTask })(Column)

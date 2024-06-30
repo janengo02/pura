@@ -29,7 +29,7 @@ const TaskCard = ({
    draggableId,
    taskIndex,
    // Redux props
-   page: { page },
+   _id,
    deleteTask,
    updateTask,
    showTaskModal
@@ -39,7 +39,7 @@ const TaskCard = ({
    const dropdownMenu = useDisclosure()
    const delTask = () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id
       }
       deleteTask(formData)
@@ -50,7 +50,7 @@ const TaskCard = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          title: data.title
       }
@@ -62,7 +62,7 @@ const TaskCard = ({
    })
    const showTask = async () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id
       }
       await showTaskModal(formData)
@@ -213,13 +213,13 @@ const TaskCard = ({
 }
 
 TaskCard.propTypes = {
-   page: PropTypes.object.isRequired,
+   _id: PropTypes.string.isRequired,
    updateTask: PropTypes.func.isRequired,
    deleteTask: PropTypes.func.isRequired,
    showTaskModal: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
-   page: state.page
+   _id: state.page._id
 })
 
 export default connect(mapStateToProps, {

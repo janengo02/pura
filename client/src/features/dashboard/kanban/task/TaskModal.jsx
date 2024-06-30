@@ -32,7 +32,7 @@ const TaskModal = ({
    leftWidth,
    // Redux props
    task: { task },
-   page: { page },
+   _id,
    deleteTask,
    updateTask
 }) => {
@@ -56,7 +56,7 @@ const TaskModal = ({
    })
    const delTask = () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id
       }
       deleteTask(formData)
@@ -64,7 +64,7 @@ const TaskModal = ({
    // eslint-disable-next-line react-hooks/exhaustive-deps
    const onUpdateTitle = async () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          title: taskTitle
       }
@@ -75,7 +75,7 @@ const TaskModal = ({
    }
    const onUpdateContent = async () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          content: taskContent
       }
@@ -227,12 +227,12 @@ const TaskModal = ({
 
 TaskModal.propTypes = {
    task: PropTypes.object.isRequired,
-   page: PropTypes.object.isRequired,
+   _id: PropTypes.string.isRequired,
    updateTask: PropTypes.func.isRequired,
    deleteTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   page: state.page
+   _id: state.page._id
 })
 export default connect(mapStateToProps, { updateTask, deleteTask })(TaskModal)

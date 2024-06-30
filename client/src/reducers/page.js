@@ -1,8 +1,16 @@
 import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from '../actions/types'
 
 const initialState = {
-   page: null,
+   // page: null,
    pages: [],
+   group_order: [],
+   progress_order: [],
+   task_map: [],
+   tasks: [],
+   title: null,
+   user: null,
+   errors: null,
+   _id: null,
    loading: true,
    error: false
 }
@@ -14,25 +22,27 @@ function pageReducer(state = initialState, action) {
       case GET_PAGE:
          return {
             ...state,
-            page: payload,
+            ...payload,
             loading: false,
             error: false
          }
       case MOVE_TASK:
          return {
             ...state,
-            page: {
-               ...state.page,
-               task_map: payload.task_map,
-               tasks: payload.tasks
-            },
+            ...payload,
+            // page: {
+            //    ...state.page,
+            //    task_map: payload.task_map,
+            //    tasks: payload.tasks
+            // },
             loading: false,
             error: false
          }
       case PAGE_ERROR:
          return {
             ...state,
-            page: payload,
+            ...payload,
+            // page: payload,
             loading: false,
             error: true
          }

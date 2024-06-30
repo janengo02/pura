@@ -23,26 +23,26 @@ const EventWrapper = ({
    children,
    event,
    // Redux props
-   page: { page },
    deleteGoogleCalendarEvent,
    showTaskModal,
-   syncedEventLoading
+   syncedEventLoading,
+
+   _id,
+   tasks
 }) => {
    const initRef = useRef()
-   const taskIndex = page.tasks.findIndex((t) =>
-      t.google_events.includes(event.id)
-   )
+   const taskIndex = tasks.findIndex((t) => t.google_events.includes(event.id))
 
-   const taskId = taskIndex !== -1 ? page.tasks[taskIndex]._id : null
+   const taskId = taskIndex !== -1 ? tasks[taskIndex]._id : null
    const gEventIndex =
       taskIndex !== -1
-         ? page.tasks[taskIndex].google_events.findIndex((g) => g === event.id)
+         ? tasks[taskIndex].google_events.findIndex((g) => g === event.id)
          : null
 
    const onDelete = async () => {
       const reqData = {
          eventId: event.id,
-         pageId: page._id,
+         pageId: _id,
          taskId,
          gEventIndex
       }
@@ -52,7 +52,7 @@ const EventWrapper = ({
 
    const showTask = async () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: taskId,
          target_g_event_index: gEventIndex
       }
@@ -128,15 +128,18 @@ const EventWrapper = ({
    )
 }
 EventWrapper.propTypes = {
-   page: PropTypes.object.isRequired,
    deleteGoogleCalendarEvent: PropTypes.func.isRequired,
    showTaskModal: PropTypes.func.isRequired,
-   syncedEventLoading: PropTypes.string.isRequired
+   syncedEventLoading: PropTypes.string.isRequired,
+
+   _id: PropTypes.string.isRequired,
+   tasks: PropTypes.array.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page,
-   syncedEventLoading: state.googleAccount.syncedEventLoading
+   syncedEventLoading: state.googleAccount.syncedEventLoading,
+   _id: state.page._id,
+   tasks: state.page.tasks
 })
 
 export default connect(mapStateToProps, {

@@ -37,7 +37,8 @@ const ProgressHeader = ({
    // Redux props
    updateProgress,
    deleteProgress,
-   page: { page }
+   _id,
+   progress_order
 }) => {
    console.log('rendered')
    const [hovered, setHovered] = useState(false)
@@ -45,7 +46,7 @@ const ProgressHeader = ({
    const dropdownMenu = useDisclosure()
    const delProgress = () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          progress_id: progress._id
       }
       deleteProgress(formData)
@@ -56,7 +57,7 @@ const ProgressHeader = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          progress_id: progress._id,
          title: data.title
       }
@@ -69,7 +70,7 @@ const ProgressHeader = ({
 
    const changeColor = (color, title_color) => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          progress_id: progress._id,
          color: color,
          title_color: title_color
@@ -151,7 +152,7 @@ const ProgressHeader = ({
                         >
                            {t('btn-edit-name')}
                         </MenuItem>
-                        {page.progress_order.length > 1 && (
+                        {progress_order.length > 1 && (
                            <MenuItem
                               icon={<PiTrash size={18} />}
                               fontSize='sm'
@@ -208,13 +209,17 @@ const ProgressHeader = ({
 }
 
 ProgressHeader.propTypes = {
+   _id: PropTypes.string.isRequired,
+   progress_order: PropTypes.array.isRequired,
+
    deleteProgress: PropTypes.func.isRequired,
    updateProgress: PropTypes.func.isRequired,
    page: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page
+   _id: state.page._id,
+   progress_order: state.page.progress_order
 })
 export default connect(mapStateToProps, { deleteProgress, updateProgress })(
    ProgressHeader

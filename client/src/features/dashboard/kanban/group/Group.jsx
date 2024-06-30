@@ -38,7 +38,9 @@ const Group = ({
    isNew,
    children,
    // Redux props
-   page: { page },
+   _id,
+   group_order,
+
    updateGroup,
    deleteGroup
 }) => {
@@ -47,7 +49,7 @@ const Group = ({
    const dropdownMenu = useDisclosure()
    const delGroup = () => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          group_id: group._id
       }
       deleteGroup(formData)
@@ -58,7 +60,7 @@ const Group = ({
 
    const onBlur = methods.handleSubmit(async (data) => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          group_id: group._id,
          title: data.title
       }
@@ -71,7 +73,7 @@ const Group = ({
 
    const changeColor = (color) => {
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          group_id: group._id,
          color: color
       }
@@ -152,7 +154,7 @@ const Group = ({
                         >
                            {t('btn-edit-name')}
                         </MenuItem>
-                        {page.group_order.length > 1 && (
+                        {group_order.length > 1 && (
                            <MenuItem
                               icon={<PiTrash size={18} />}
                               fontSize='sm'
@@ -204,13 +206,16 @@ const Group = ({
 }
 
 Group.propTypes = {
-   page: PropTypes.object.isRequired,
+   _id: PropTypes.string.isRequired,
+   group_order: PropTypes.array.isRequired,
+
    deleteGroup: PropTypes.func.isRequired,
    updateGroup: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   page: state.page
+   _id: state.page._id,
+   group_order: state.page.group_order
 })
 
 export default connect(mapStateToProps, { deleteGroup, updateGroup })(Group)

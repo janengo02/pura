@@ -26,7 +26,7 @@ const ScheduleTimeSlot = ({
    updateTask,
    createGoogleCalendarEvent,
    task: { task },
-   page: { page }
+   _id
 }) => {
    const isSynced = typeof task.schedule[index].gEventId === 'string'
    const startTime = stringToDateTimeLocal(slot.start)
@@ -51,7 +51,7 @@ const ScheduleTimeSlot = ({
          !isNewInvalidTimeSlot && isSynced ? task.google_events[index] : null
 
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
          synced_g_event,
@@ -71,7 +71,7 @@ const ScheduleTimeSlot = ({
          !isNewInvalidTimeSlot && isSynced ? task.google_events[index] : null
 
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
          synced_g_event,
@@ -86,7 +86,7 @@ const ScheduleTimeSlot = ({
       var newGoogleEvents = cloneDeep(task.google_events)
       newGoogleEvents.splice(index, 1)
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents,
@@ -99,7 +99,7 @@ const ScheduleTimeSlot = ({
       const reqData = {
          target_task: task,
          slot_index: index,
-         page_id: page._id
+         page_id: _id
       }
       await createGoogleCalendarEvent(reqData)
       toast({
@@ -199,14 +199,14 @@ const ScheduleTimeSlot = ({
 
 ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
-   page: PropTypes.object.isRequired,
+   _id: PropTypes.string.isRequired,
    updateTask: PropTypes.func.isRequired,
    createGoogleCalendarEvent: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   page: state.page,
+   _id: state.page._id,
    googleAccount: state.googleAccount
 })
 

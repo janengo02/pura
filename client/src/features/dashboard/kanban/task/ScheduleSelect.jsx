@@ -14,7 +14,7 @@ const ScheduleSelect = ({
    // Redux props
    updateTask,
    task: { task },
-   page: { page }
+   _id
 }) => {
    const addSlot = async () => {
       const newSlot = {
@@ -27,7 +27,7 @@ const ScheduleSelect = ({
       newSchedule.push(newSlot)
       newGoogleEvents.push(newGoogleEventSlot)
       const formData = {
-         page_id: page._id,
+         page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
          google_events: newGoogleEvents,
@@ -64,13 +64,14 @@ const ScheduleSelect = ({
 }
 
 ScheduleSelect.propTypes = {
+   _id: PropTypes.string.isRequired,
    task: PropTypes.object.isRequired,
    page: PropTypes.object.isRequired,
    updateTask: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   page: state.page
+   _id: state.page._id
 })
 export default connect(mapStateToProps, {
    updateTask
