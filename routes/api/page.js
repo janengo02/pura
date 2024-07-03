@@ -153,14 +153,42 @@ router.post('/move-task/:id', [auth], async (req, res) => {
          ]
       })
    }
-   const { task_map, tasks } = req.body
+   const { destination, source, draggableId } = req.body.result
+   const startSpace = +source.droppableId
+   const endSpace = +destination.droppableId
+
+   const oldTaskId = +draggableId
+   const targetTask = page.tasks[oldTaskId]
+   var newTaskId = destination.index
+   if (endSpace !== 0) {
+      newTaskId += page.task_map[endSpace - 1]
+   }
+   if (endSpace > startSpace) {
+      newTaskId--
+   }
+
+   const newTaskArray = Array.from(page.tasks)
+   const newTaskMap = Array.from(page.task_map)
+
+   newTaskArray.splice(oldTaskId, 1)
+   newTaskArray.splice(newTaskId, 0, targetTask)
+   // Moving between different columns
+   if (endSpace < startSpace) {
+      for (let i = endSpace; i < startSpace; i++) {
+         newTaskMap[i]++
+      }
+   } else {
+      for (let i = startSpace; i < endSpace; i++) {
+         newTaskMap[i]--
+      }
+   }
 
    try {
       // Data: Add new group to page
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.id },
          {
-            $set: { tasks: tasks, update_date: new Date() }
+            $set: { tasks: newTaskArray, update_date: new Date() }
          },
          { new: true }
       )
@@ -174,7 +202,7 @@ router.post('/move-task/:id', [auth], async (req, res) => {
          .populate('tasks', ['title', 'google_events'])
 
       // Data: Update page's task_map
-      newPage.task_map = task_map
+      newPage.task_map = newTaskMap
       await newPage.save()
       res.json(newPage)
    } catch (err) {

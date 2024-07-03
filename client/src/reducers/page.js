@@ -1,4 +1,5 @@
 import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from '../actions/types'
+import { optimisticMoveTask } from '../utils/optimistic'
 
 const initialState = {
    // page: null,
@@ -27,14 +28,15 @@ function pageReducer(state = initialState, action) {
             error: false
          }
       case MOVE_TASK:
+         const { task_map, tasks } = optimisticMoveTask(
+            payload,
+            state.tasks,
+            state.task_map
+         )
          return {
             ...state,
-            ...payload,
-            // page: {
-            //    ...state.page,
-            //    task_map: payload.task_map,
-            //    tasks: payload.tasks
-            // },
+            task_map: task_map,
+            tasks: tasks,
             loading: false,
             error: false
          }

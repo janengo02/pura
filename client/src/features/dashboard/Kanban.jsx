@@ -38,8 +38,6 @@ const Kanban = ({
    _id,
    group_order,
    progress_order,
-   task_map,
-   tasks,
    errors,
    error,
    loading
@@ -67,49 +65,9 @@ const Kanban = ({
    }, [error, navigate, _id, errors])
 
    const onDragEnd = (result) => {
-      const { destination, source, draggableId } = result
-      if (!destination) {
-         return
-      }
-      if (
-         destination.droppableId === source.droppableId &&
-         destination.index === source.index
-      ) {
-         return
-      }
-
-      // update front end simultaneously
-      const startSpace = +source.droppableId
-      const endSpace = +destination.droppableId
-      const oldTaskId = +draggableId
-      const targetTask = tasks[oldTaskId]
-      var newTaskId = destination.index
-      if (endSpace !== 0) {
-         newTaskId += task_map[endSpace - 1]
-      }
-      if (endSpace > startSpace) {
-         newTaskId--
-      }
-      const newTaskArray = Array.from(tasks)
-      const newTaskMap = Array.from(task_map)
-      newTaskArray.splice(oldTaskId, 1)
-      newTaskArray.splice(newTaskId, 0, targetTask)
-
-      // Moving between different columns
-      if (endSpace < startSpace) {
-         for (let i = endSpace; i < startSpace; i++) {
-            newTaskMap[i]++
-         }
-      } else {
-         for (let i = startSpace; i < endSpace; i++) {
-            newTaskMap[i]--
-         }
-      }
-
       const reqData = {
          page_id: _id,
-         task_map: newTaskMap,
-         tasks: newTaskArray
+         result: result
       }
 
       moveTask(reqData)
@@ -229,8 +187,6 @@ Kanban.propTypes = {
    _id: PropTypes.string.isRequired,
    group_order: PropTypes.array.isRequired,
    progress_order: PropTypes.array.isRequired,
-   task_map: PropTypes.array.isRequired,
-   tasks: PropTypes.array.isRequired,
    loading: PropTypes.bool.isRequired,
    errors: PropTypes.array.isRequired,
    error: PropTypes.bool.isRequired
@@ -240,8 +196,6 @@ const mapStateToProps = (state) => ({
    _id: state.page._id,
    group_order: state.page.group_order,
    progress_order: state.page.progress_order,
-   task_map: state.page.task_map,
-   tasks: state.page.tasks,
    loading: state.page.loading,
    errors: state.page.errors,
    error: state.page.error

@@ -26,7 +26,7 @@ export const getFirstPage = () => async (dispatch) => {
 export const moveTask = (reqData) => async (dispatch) => {
    dispatch({
       type: MOVE_TASK,
-      payload: reqData
+      payload: reqData.result
    })
    try {
       api.post(`/page/move-task/${reqData.page_id}`, reqData)
@@ -39,6 +39,7 @@ export const moveTask = (reqData) => async (dispatch) => {
             errors: errors
          }
       })
+      // TODO: Revert state
       // console.clear()
    }
 }
