@@ -1,3 +1,9 @@
+import { optimisticMoveTask } from '../actions/page'
+import {
+   optimisticCreateProgress,
+   optimisticDeleteProgress,
+   optimisticUpdateProgress
+} from '../actions/progress'
 import {
    GET_PAGE,
    MOVE_TASK,
@@ -6,12 +12,6 @@ import {
    UPDATE_PROGRESS,
    DELETE_PROGRESS
 } from '../actions/types'
-import {
-   optimisticCreateProgress,
-   optimisticDeleteProgress,
-   optimisticMoveTask,
-   optimisticUpdateProgress
-} from '../utils/optimistic'
 
 const initialState = {
    pages: [],
