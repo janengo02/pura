@@ -43,7 +43,6 @@ const Column = ({
    }
    const droppableId = taskMapIndex.toString()
    const taskPointer = task_map[taskMapIndex] - taskArray?.length
-
    return (
       <Droppable droppableId={droppableId}>
          {(provided, snapshot) => (
@@ -82,7 +81,9 @@ const Column = ({
                         leftIcon={<PiPlus />}
                         onClick={async (e) => {
                            e.preventDefault()
-                           createTask(newTaskInfo)
+                           if (progress._id !== 'new' && group._id !== 'new') {
+                              createTask(newTaskInfo)
+                           }
                         }}
                      >
                         {t('btn-new')}

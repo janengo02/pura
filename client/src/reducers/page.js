@@ -1,8 +1,19 @@
-import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from '../actions/types'
-import { optimisticMoveTask } from '../utils/optimistic'
+import {
+   GET_PAGE,
+   MOVE_TASK,
+   PAGE_ERROR,
+   CREATE_PROGRESS,
+   UPDATE_PROGRESS,
+   DELETE_PROGRESS
+} from '../actions/types'
+import {
+   optimisticCreateProgress,
+   optimisticDeleteProgress,
+   optimisticMoveTask,
+   optimisticUpdateProgress
+} from '../utils/optimistic'
 
 const initialState = {
-   // page: null,
    pages: [],
    group_order: [],
    progress_order: [],
@@ -28,15 +39,42 @@ function pageReducer(state = initialState, action) {
             error: false
          }
       case MOVE_TASK:
-         const { task_map, tasks } = optimisticMoveTask(
-            payload,
-            state.tasks,
-            state.task_map
-         )
          return {
             ...state,
-            task_map: task_map,
-            tasks: tasks,
+            ...optimisticMoveTask(payload, state.tasks, state.task_map),
+            loading: false,
+            error: false
+         }
+      case CREATE_PROGRESS:
+         return {
+            ...state,
+            ...optimisticCreateProgress(
+               payload,
+               state.progress_order,
+               state.group_order,
+               state.task_map
+            ),
+            loading: false,
+            error: false
+         }
+      case UPDATE_PROGRESS:
+         return {
+            ...state,
+            ...optimisticUpdateProgress(payload, state.progress_order),
+            loading: false,
+            error: false
+         }
+
+      case DELETE_PROGRESS:
+         return {
+            ...state,
+            ...optimisticDeleteProgress(
+               payload,
+               state.progress_order,
+               state.group_order,
+               state.tasks,
+               state.task_map
+            ),
             loading: false,
             error: false
          }
@@ -44,7 +82,6 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...payload,
-            // page: payload,
             loading: false,
             error: true
          }

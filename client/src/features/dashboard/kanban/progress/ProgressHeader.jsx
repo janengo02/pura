@@ -116,7 +116,11 @@ const ProgressHeader = ({
                         }}
                         onBlur={async (e) => {
                            e.preventDefault()
-                           onBlur()
+                           if (progress._id !== 'new') {
+                              onBlur()
+                           } else {
+                              e.currentTarget.select()
+                           }
                         }}
                      />
                   </form>

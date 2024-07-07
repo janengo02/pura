@@ -45,7 +45,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
       const n_group = page.group_order.length
       const m_progress = page.progress_order.length + 1
       for (let i = 1; i <= n_group; i++) {
-         task_count = newTaskMap[i * m_progress - 2]
+         const task_count = newTaskMap[i * m_progress - 2]
          newTaskMap.splice(i * m_progress - 1, 0, task_count)
       }
    }
@@ -64,20 +64,12 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          },
          { new: true }
       )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
       await newPage.save()
 
-      res.json(newPage)
+      res.json({ progress_id: progress._id })
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
@@ -138,21 +130,13 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
       await progress.save()
 
       // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
+      await Page.findOneAndUpdate(
          { _id: req.params.page_id },
          { $set: { update_date: new Date() } },
          { new: true }
       )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
 
-      res.json(newPage)
+      res.json()
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
@@ -197,28 +181,28 @@ router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
    }
 
    //   Prepare: Set up new tasks array & task_map
-   var oldTasks = page.tasks
-   var newTasks = []
-   var oldTaskMap = page.task_map
-   var newTaskMap = []
+   const oldTasks = page.tasks
+   const newTasks = []
+   const oldTaskMap = page.task_map
+   const newTaskMap = []
    const { progress_id } = req.params
    const progressIndex = page.progress_order.indexOf(progress_id)
    const groupCount = page.group_order.length
    const progressCount = page.progress_order.length
 
-   var deletedCount = 0
+   let deletedCount = 0
    for (let i = 0; i < groupCount; i++) {
       for (let j = 0; j < progressCount; j++) {
-         currentMap = i * progressCount + j
-         currentMapCount = oldTaskMap[currentMap]
-         prevMapCount = 0
-         if (currentMap != 0) {
+         const currentMap = i * progressCount + j
+         const currentMapCount = oldTaskMap[currentMap]
+         let prevMapCount = 0
+         if (currentMap !== 0) {
             prevMapCount = oldTaskMap[currentMap - 1]
          }
-         if (j == progressIndex) {
+         if (j === progressIndex) {
             deletedCount += currentMapCount - prevMapCount
          } else {
-            newMapCount = currentMapCount - deletedCount
+            const newMapCount = currentMapCount - deletedCount
             newTaskMap.push(newMapCount)
             for (let t = prevMapCount; t < currentMapCount; t++) {
                newTasks.push(oldTasks[t])
@@ -246,25 +230,9 @@ router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
       page.progress_order = newProgressOrder
       page.tasks = newTasks
       page.task_map = newTaskMap
+      page.update_date = new Date()
       await page.save()
-      // Data: Get new page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         {
-            $set: { update_date: new Date() }
-         },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
-
-      res.json(newPage)
+      res.json()
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({

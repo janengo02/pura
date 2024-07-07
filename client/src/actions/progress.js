@@ -1,13 +1,22 @@
 import { api } from '../utils'
-import { GET_PAGE, PAGE_ERROR } from './types'
+import {
+   CREATE_PROGRESS,
+   DELETE_PROGRESS,
+   PAGE_ERROR,
+   UPDATE_PROGRESS
+} from './types'
 
 // Create new progress
-export const createProgress = (formData) => async (dispatch) => {
+export const createProgress = (reqData) => async (dispatch) => {
+   dispatch({
+      type: CREATE_PROGRESS,
+      payload: 'new'
+   })
    try {
-      const res = await api.post(`/progress/new/${formData.page_id}`, formData)
+      const res = await api.post(`/progress/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: GET_PAGE,
-         payload: res.data
+         type: CREATE_PROGRESS,
+         payload: res.data.progress_id
       })
    } catch (err) {
       const errors = err.response.data.errors
@@ -15,7 +24,7 @@ export const createProgress = (formData) => async (dispatch) => {
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: formData.page_id,
+            _id: reqData.page_id,
             errors: errors
          }
       })
@@ -24,45 +33,44 @@ export const createProgress = (formData) => async (dispatch) => {
 }
 
 // Update a group
-export const updateProgress = (formData) => async (dispatch) => {
+export const updateProgress = (reqData) => async (dispatch) => {
+   dispatch({
+      type: UPDATE_PROGRESS,
+      payload: reqData
+   })
    try {
-      const res = await api.post(
-         `/progress/update/${formData.page_id}/${formData.progress_id}`,
-         formData
+      await api.post(
+         `/progress/update/${reqData.page_id}/${reqData.progress_id}`,
+         reqData
       )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data
-      })
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: formData.page_id,
+            _id: reqData.page_id,
             errors: errors
          }
       })
+      // Todo: revert action
       // console.clear()
    }
 }
 
 // Delete a progress
-export const deleteProgress = (formData) => async (dispatch) => {
+export const deleteProgress = (reqData) => async (dispatch) => {
+   dispatch({
+      type: DELETE_PROGRESS,
+      payload: reqData.progress_id
+   })
    try {
-      const res = await api.delete(
-         `/progress/${formData.page_id}/${formData.progress_id}`
-      )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data
-      })
+      await api.delete(`/progress/${reqData.page_id}/${reqData.progress_id}`)
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: formData.page_id,
+            _id: reqData.page_id,
             errors: errors
          }
       })
