@@ -70,7 +70,6 @@ const Group = ({
       await updateGroup(formData)
       titleEditing.end()
    })
-
    const changeColor = (color) => {
       const formData = {
          page_id: _id,
@@ -118,7 +117,11 @@ const Group = ({
                         }}
                         onBlur={async (e) => {
                            e.preventDefault()
-                           onBlur()
+                           if (group._id !== 'new') {
+                              onBlur()
+                           } else {
+                              e.currentTarget.select()
+                           }
                         }}
                      />
                   </form>

@@ -43,8 +43,8 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    if (color) newGroup.color = color
 
    //   Prepare: Set up new task_map
-   var newTaskMap = page.task_map
-   var task_count = page.tasks.length
+   const newTaskMap = page.task_map
+   const task_count = page.tasks.length
    for (let i = 1; i <= page.progress_order.length; i++) {
       newTaskMap.push(task_count)
    }
@@ -63,20 +63,12 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          },
          { new: true }
       )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
 
       // Data: Update page's task_map
       newPage.task_map = newTaskMap
       await newPage.save()
 
-      res.json(newPage)
+      res.json({ group_id: group._id })
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
@@ -141,16 +133,8 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
          { $set: { update_date: new Date() } },
          { new: true }
       )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
 
-      res.json(newPage)
+      res.json()
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
@@ -202,18 +186,18 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
    const progressCount = page.progress_order.length
    const mapStart = progressCount * groupIndex
    const mapEnd = mapStart + progressCount - 1
-   var newTaskStart = 0
+   let newTaskStart = 0
    if (mapStart !== 0) {
       newTaskStart = newTaskMap[mapStart - 1]
    }
-   newTaskEnd = newTaskMap[mapEnd] - 1
+   const newTaskEnd = newTaskMap[mapEnd] - 1
 
    //   Prepare: Set up new group_order
-   var newGroupOrder = page.group_order
+   let newGroupOrder = page.group_order
    newGroupOrder.splice(groupIndex, 1)
 
    //   Prepare: Set up new task_map
-   var taskCount = newTaskMap[mapEnd]
+   let taskCount = newTaskMap[mapEnd]
    if (mapStart !== 0) {
       taskCount = newTaskMap[mapEnd] - newTaskMap[mapStart - 1]
    }
@@ -238,25 +222,9 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
       page.group_order = newGroupOrder
       page.tasks = newTasks
       page.task_map = newTaskMap
+      page.update_date = new Date()
       await page.save()
-      // Data: Get new page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         {
-            $set: { update_date: new Date() }
-         },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
-
-      res.json(newPage)
+      res.json()
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
