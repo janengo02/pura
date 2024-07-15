@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import cloneDeep from 'clone-deep'
 import { api } from '../utils'
 import { CREATE_GROUP, DELETE_GROUP, PAGE_ERROR, UPDATE_GROUP } from './types'
@@ -82,10 +83,11 @@ export const optimisticCreateGroup = (
 ) => {
    if (group_id === 'new') {
       const newGroup = {
-         _id: 'new',
+         _id: uuid(),
          title: '',
          color: '#4A5568',
-         visibility: true
+         visibility: true,
+         isNew: true
       }
       const newTaskMap = cloneDeep(task_map)
       const task_count = tasks.length
@@ -97,10 +99,11 @@ export const optimisticCreateGroup = (
       return { group_order: newGroupOrder, task_map: newTaskMap }
    } else {
       const newGroupOrder = group_order.map((g) =>
-         g._id === 'new'
+         g.isNew
             ? {
                  ...g,
-                 _id: group_id
+                 _id: group_id,
+                 isNew: false
               }
             : g
       )

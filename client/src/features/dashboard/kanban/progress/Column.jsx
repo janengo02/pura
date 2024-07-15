@@ -81,7 +81,7 @@ const Column = ({
                         leftIcon={<PiPlus />}
                         onClick={async (e) => {
                            e.preventDefault()
-                           if (progress._id !== 'new' && group._id !== 'new') {
+                           if (!progress.isNew && !group.isNew) {
                               createTask(newTaskInfo)
                            }
                         }}

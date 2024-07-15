@@ -1,18 +1,28 @@
+import { v4 as uuid } from 'uuid'
 import { api } from '../utils'
 import {
+   CREATE_TASK,
    GET_PAGE,
    GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
    GOOGLE_CALENDAR_UPDATE_EVENT,
    PAGE_ERROR,
    SHOW_TASK
 } from './types'
+import cloneDeep from 'clone-deep'
 
 // Create new task
-export const createTask = (formData) => async (dispatch) => {
+export const createTask = (reqData) => async (dispatch) => {
+   dispatch({
+      type: CREATE_TASK,
+      payload: {
+         ...reqData,
+         task_id: 'new'
+      }
+   })
    try {
-      const res = await api.post(`/task/new/${formData.page_id}`, formData)
+      const res = await api.post(`/task/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: GET_PAGE,
+         type: CREATE_TASK,
          payload: res.data
       })
    } catch (err) {
@@ -21,7 +31,7 @@ export const createTask = (formData) => async (dispatch) => {
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: formData.page_id,
+            _id: reqData.page_id,
             errors: errors
          }
       })
@@ -115,5 +125,50 @@ export const showTaskModal = (formData) => async (dispatch) => {
          }
       })
       // console.clear()
+   }
+}
+export const optimisticAddTask = (
+   new_task_info,
+   group_order,
+   progress_order,
+   task_map,
+   tasks
+) => {
+   const { task_id, group_id, progress_id } = new_task_info
+   if (task_id === 'new') {
+      const newTask = {
+         _id: uuid(),
+         title: '',
+         schedule: [],
+         google_events: [],
+         content: '',
+         isNew: true
+      }
+      const progressIndex = progress_order.findIndex(
+         (p) => p._id === progress_id
+      )
+      const groupIndex = group_order.findIndex((g) => g._id === group_id)
+      const taskMapIndex = groupIndex * progress_order.length + progressIndex
+      const newTaskMap = cloneDeep(task_map)
+      for (let i = taskMapIndex; i < newTaskMap.length; i++) {
+         newTaskMap[i]++
+      }
+      const newTasks = cloneDeep(tasks)
+      newTasks.splice(newTaskMap[taskMapIndex] - 1, 0, newTask)
+      return {
+         tasks: newTasks,
+         task_map: newTaskMap
+      }
+   } else {
+      const newTasks = tasks.map((t) =>
+         t.isNew
+            ? {
+                 ...t,
+                 _id: task_id,
+                 isNew: false
+              }
+            : t
+      )
+      return { tasks: newTasks }
    }
 }

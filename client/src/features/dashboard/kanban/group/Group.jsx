@@ -117,7 +117,7 @@ const Group = ({
                         }}
                         onBlur={async (e) => {
                            e.preventDefault()
-                           if (group._id !== 'new') {
+                           if (!group.isNew) {
                               onBlur()
                            } else {
                               e.currentTarget.select()

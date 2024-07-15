@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import cloneDeep from 'clone-deep'
 import { api } from '../utils'
 import {
@@ -86,11 +87,12 @@ export const optimisticCreateProgress = (
 ) => {
    if (progress_id === 'new') {
       const newProgress = {
-         _id: 'new',
+         _id: uuid(),
          title: '',
          title_color: '#4A5568',
          color: '#EDF2F7',
-         visibility: true
+         visibility: true,
+         isNew: true
       }
       var newTaskMap = cloneDeep(task_map)
       if (group_order.length > 0) {
@@ -106,10 +108,11 @@ export const optimisticCreateProgress = (
       return { progress_order: newProgressOrder, task_map: newTaskMap }
    } else {
       const newProgressOrder = progress_order.map((p) =>
-         p._id === 'new'
+         p.isNew
             ? {
                  ...p,
-                 _id: progress_id
+                 _id: progress_id,
+                 isNew: false
               }
             : p
       )
