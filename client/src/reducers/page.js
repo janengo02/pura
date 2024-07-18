@@ -9,7 +9,7 @@ import {
    optimisticDeleteProgress,
    optimisticUpdateProgress
 } from '../actions/progress'
-import { optimisticAddTask } from '../actions/task'
+import { optimisticAddTask, optimisticDeleteTask } from '../actions/task'
 import {
    GET_PAGE,
    MOVE_TASK,
@@ -20,7 +20,8 @@ import {
    CREATE_GROUP,
    UPDATE_GROUP,
    DELETE_GROUP,
-   CREATE_TASK
+   CREATE_TASK,
+   DELETE_TASK
 } from '../actions/types'
 
 const initialState = {
@@ -131,6 +132,13 @@ function pageReducer(state = initialState, action) {
                state.task_map,
                state.tasks
             ),
+            loading: false,
+            error: false
+         }
+      case DELETE_TASK:
+         return {
+            ...state,
+            ...optimisticDeleteTask(payload, state.task_map, state.tasks),
             loading: false,
             error: false
          }

@@ -492,23 +492,9 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
       // Data: Update page's arrays
       page.tasks = newTasks
       page.task_map = newTaskMap
+      page.update_date = new Date()
       await page.save()
-      // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
-
-      res.json(newPage)
+      res.json()
       // TODO: Delete related google events
    } catch (error) {
       console.error('---ERROR---: ' + error.message)

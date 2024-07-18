@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid'
 import { api } from '../utils'
 import {
    CREATE_TASK,
+   DELETE_TASK,
    GET_PAGE,
    GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
    GOOGLE_CALENDAR_UPDATE_EVENT,
@@ -81,21 +82,19 @@ export const updateTask = (formData) => async (dispatch) => {
    }
 }
 // Delete a task
-export const deleteTask = (formData) => async (dispatch) => {
+export const deleteTask = (reqData) => async (dispatch) => {
+   dispatch({
+      type: DELETE_TASK,
+      payload: reqData.task_id
+   })
    try {
-      const res = await api.delete(
-         `/task/${formData.page_id}/${formData.task_id}`
-      )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data
-      })
+      await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
    } catch (err) {
       const errors = err.response.data.errors
       dispatch({
          type: PAGE_ERROR,
          payload: {
-            _id: formData.page_id,
+            _id: reqData.page_id,
             errors: errors
          }
       })
@@ -171,4 +170,17 @@ export const optimisticAddTask = (
       )
       return { tasks: newTasks }
    }
+}
+
+export const optimisticDeleteTask = (task_id, task_map, tasks) => {
+   const newTasks = cloneDeep(tasks)
+   const taskIndex = newTasks.findIndex((t) => t._id === task_id)
+   newTasks.splice(taskIndex, 1)
+
+   //   Prepare: Set up new task_map
+   var newTaskMap = cloneDeep(task_map)
+   for (let i = 0; i < newTaskMap.length; i++) {
+      if (newTaskMap[i] > taskIndex) newTaskMap[i]--
+   }
+   return { tasks: newTasks, task_map: newTaskMap }
 }
