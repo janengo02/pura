@@ -328,6 +328,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    if (schedule) task.schedule = schedule
    if (google_events) task.google_events = google_events
    if (content) task.content = content
+   const currentSchedule = schedule
    try {
       if (!group_id && !progress_id) {
          await task.save()
@@ -366,7 +367,6 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
          const {
             _id,
             title,
-            schedule,
             google_events,
             content,
             create_date,
@@ -375,7 +375,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
          const newTask = {
             _id,
             title,
-            schedule,
+            schedule: currentSchedule,
             google_events,
             content,
             create_date,
