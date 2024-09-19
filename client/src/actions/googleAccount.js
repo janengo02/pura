@@ -9,29 +9,34 @@ import {
    GOOGLE_CALENDAR_UPDATE_EVENT
 } from './types'
 
-export const listGoogleEvents = (visibleRange) => async (dispatch) => {
-   try {
-      const res = await api.get('/google-account/list-events', {
-         params: { minDate: visibleRange[0], maxDate: visibleRange[1] }
-      })
-      if (Array.isArray(res.data)) {
-         dispatch({
-            type: GOOGLE_CALENDAR_LOADED,
-            payload: { data: res.data, range: visibleRange }
+export const listGoogleEvents =
+   (visibleRange, tasksArray) => async (dispatch) => {
+      try {
+         const res = await api.get('/google-account/list-events', {
+            params: { minDate: visibleRange[0], maxDate: visibleRange[1] }
          })
-      } else {
+         if (Array.isArray(res.data)) {
+            dispatch({
+               type: GOOGLE_CALENDAR_LOADED,
+               payload: {
+                  data: res.data,
+                  range: visibleRange,
+                  tasks: tasksArray
+               }
+            })
+         } else {
+            dispatch({
+               type: GOOGLE_CALENDAR_AUTH_ERROR,
+               payload: { range: visibleRange }
+            })
+         }
+      } catch (err) {
          dispatch({
             type: GOOGLE_CALENDAR_AUTH_ERROR,
             payload: { range: visibleRange }
          })
       }
-   } catch (err) {
-      dispatch({
-         type: GOOGLE_CALENDAR_AUTH_ERROR,
-         payload: { range: visibleRange }
-      })
    }
-}
 
 // Create Google Account Tokens
 export const createGoogleTokens = (reqData) => async (dispatch) => {
@@ -40,7 +45,11 @@ export const createGoogleTokens = (reqData) => async (dispatch) => {
       if (Array.isArray(res.data)) {
          dispatch({
             type: GOOGLE_CALENDAR_LOADED,
-            payload: { data: res.data, range: reqData.range }
+            payload: {
+               data: res.data,
+               range: reqData.range,
+               tasks: reqData.tasks
+            }
          })
       } else {
          dispatch({

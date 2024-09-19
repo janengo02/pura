@@ -21,16 +21,12 @@ const ScheduleSelect = ({
          start: '',
          end: ''
       }
-      const newGoogleEventSlot = null
       var newSchedule = cloneDeep(task.schedule)
-      var newGoogleEvents = cloneDeep(task.google_events)
       newSchedule.push(newSlot)
-      newGoogleEvents.push(newGoogleEventSlot)
       const formData = {
          page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
-         google_events: newGoogleEvents,
          task_detail_flg: true
       }
       await updateTask(formData)
@@ -45,7 +41,7 @@ const ScheduleSelect = ({
          />
 
          <VStack w='full' alignItems='flex-start' gap={3}>
-            {task.schedule.map((slot, index) => (
+            {task?.schedule?.map((slot, index) => (
                <ScheduleTimeSlot key={index} slot={slot} index={index} />
             ))}
             <Button

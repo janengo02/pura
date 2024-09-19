@@ -15,12 +15,6 @@ const TaskSchema = new mongoose.Schema({
          }
       }
    ],
-   google_events: [
-      {
-         type: String,
-         default: null
-      }
-   ],
    content: {
       type: String,
       default: ''

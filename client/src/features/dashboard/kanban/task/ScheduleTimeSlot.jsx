@@ -28,11 +28,9 @@ const ScheduleTimeSlot = ({
    task: { task },
    _id
 }) => {
-   const isSynced = typeof task.schedule[index].gEventId === 'string'
    const startTime = stringToDateTimeLocal(slot.start)
    const endTime = stringToDateTimeLocal(slot.end)
-   const isViewingCalendarEvent =
-      task.target_g_event_index === index && isSynced
+   const isViewingCalendarEvent = task.target_event_index === index
    const isInvalidTimeSlot =
       startTime === 'Invalid date' ||
       endTime === 'Invalid date' ||
@@ -42,19 +40,11 @@ const ScheduleTimeSlot = ({
    const onUpdateFrom = async (newFrom) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].start = newFrom
-      const newStartTime = stringToDateTimeLocal(newFrom)
-      const isNewInvalidTimeSlot =
-         newStartTime === 'Invalid date' ||
-         endTime === 'Invalid date' ||
-         newStartTime >= endTime
-      const synced_g_event =
-         !isNewInvalidTimeSlot && isSynced ? task.google_events[index] : null
 
       const formData = {
          page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
-         synced_g_event,
          task_detail_flg: true
       }
       await updateTask(formData)
@@ -62,35 +52,22 @@ const ScheduleTimeSlot = ({
    const onUpdateTo = async (newTo) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].end = newTo
-      const newEndTime = stringToDateTimeLocal(newTo)
-      const isNewInvalidTimeSlot =
-         startTime === 'Invalid date' ||
-         newEndTime === 'Invalid date' ||
-         startTime >= newEndTime
-      const synced_g_event =
-         !isNewInvalidTimeSlot && isSynced ? task.google_events[index] : null
 
       const formData = {
          page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
-         synced_g_event,
          task_detail_flg: true
       }
       await updateTask(formData)
    }
    const onDelete = async () => {
-      const synced_g_event = isSynced ? task.google_events[index] : null
       var newSchedule = cloneDeep(task.schedule)
       newSchedule.splice(index, 1)
-      var newGoogleEvents = cloneDeep(task.google_events)
-      newGoogleEvents.splice(index, 1)
       const formData = {
          page_id: _id,
          task_id: task._id,
          schedule: newSchedule,
-         google_events: newGoogleEvents,
-         synced_g_event,
          task_detail_flg: true
       }
       await updateTask(formData)
@@ -166,11 +143,7 @@ const ScheduleTimeSlot = ({
             <IconButton
                icon={
                   <Image
-                     src={
-                        isSynced
-                           ? 'assets/img/logos--google-calendar-synced.svg'
-                           : 'assets/img/logos--google-calendar-not-synced.svg'
-                     }
+                     src={'assets/img/logos--google-calendar-synced.svg'}
                      size={30}
                   />
                }
@@ -182,14 +155,7 @@ const ScheduleTimeSlot = ({
                isDisabled={!isLoggedIn || isInvalidTimeSlot}
                onClick={async (e) => {
                   e.preventDefault()
-                  if (!isSynced) {
-                     addGoogleCalendarEvent()
-                  } else {
-                     toast({
-                        title: t('alert-google_calendar-event_already_synced'),
-                        status: 'info'
-                     })
-                  }
+                  addGoogleCalendarEvent()
                }}
             />
          </Tooltip>

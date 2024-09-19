@@ -1,7 +1,6 @@
 import {
    GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
-   GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    CREATE_GOOGLE_EVENT,
    GOOGLE_CALENDAR_UPDATE_EVENT
@@ -22,7 +21,6 @@ const initialState = {
    account: null,
    googleCalendars: [],
    loading: true,
-   syncedEventLoading: '',
    range: []
 }
 
@@ -36,20 +34,15 @@ function googleAccountReducer(state = initialState, action) {
             account: calendarOwnerFormatter(payload.data),
             googleEvents: eventListFormatter(
                state.googleCalendars,
-               payload.data
+               payload.data,
+               payload.tasks
             ),
             googleCalendars: calendarListFormatter(
                state.googleCalendars,
                payload.data
             ),
             loading: false,
-            syncedEventLoading: '',
             range: payload.range
-         }
-      case GOOGLE_CALENDAR_SYNCED_EVENT_LOADING:
-         return {
-            ...state,
-            syncedEventLoading: payload.synced_g_event
          }
       case GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY:
          return {
@@ -74,8 +67,7 @@ function googleAccountReducer(state = initialState, action) {
       case GOOGLE_CALENDAR_UPDATE_EVENT:
          return {
             ...state,
-            googleEvents: updateEventFormatter(state.googleEvents, payload),
-            syncedEventLoading: ''
+            googleEvents: updateEventFormatter(state.googleEvents, payload)
          }
       case GOOGLE_CALENDAR_AUTH_ERROR:
          return {
@@ -85,7 +77,6 @@ function googleAccountReducer(state = initialState, action) {
             googleEvents: [],
             googleCalendars: [],
             loading: false,
-            syncedEventLoading: '',
             range: payload.range
          }
       default:

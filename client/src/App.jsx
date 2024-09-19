@@ -21,6 +21,7 @@ import { LOGOUT } from './actions/types'
 // Style
 import './App.css'
 import { ChakraProvider } from '@chakra-ui/react'
+import { googleAuthClientId } from './config/env'
 
 const App = () => {
    useEffect(() => {
@@ -38,11 +39,9 @@ const App = () => {
          if (!localStorage.token) store.dispatch({ type: LOGOUT })
       })
    }, [])
-   const GOOGLE_OAUTH_CLIENT_ID =
-      '468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com'
-   // TODO: Put in .env
+
    return (
-      <GoogleOAuthProvider clientId={GOOGLE_OAUTH_CLIENT_ID}>
+      <GoogleOAuthProvider clientId={googleAuthClientId}>
          <Provider store={store}>
             <ChakraProvider
                toastOptions={{

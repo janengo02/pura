@@ -2,15 +2,15 @@ const express = require('express')
 const router = express.Router()
 const auth = require('../../middleware/auth')
 const { google } = require('googleapis')
+const config = require('config')
 
 const User = require('../../models/User')
 const Page = require('../../models/Page')
 const Task = require('../../models/Task')
 
-const GOOGLE_CLIENT_ID =
-   '468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com'
-const GOOGLE_CLIENT_SECRET = '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'
-const APP_PATH = 'http://localhost:2000'
+const GOOGLE_CLIENT_ID = config.get('GOOGLE_CLIENT_ID')
+const GOOGLE_CLIENT_SECRET = config.get('GOOGLE_CLIENT_SECRET')
+const APP_PATH = config.get('APP_PATH')
 
 const oath2Client = new google.auth.OAuth2(
    GOOGLE_CLIENT_ID,
@@ -136,9 +136,6 @@ router.post('/create-event', auth, async (req, res) => {
             ]
          })
       }
-      task.google_events[slot_index] = event.data.id
-      target_task.google_events[slot_index] = event.data.id
-      target_task.schedule[slot_index].gEventId = event.data.id
       await task.save()
 
       // Data: get new page
@@ -154,7 +151,7 @@ router.post('/create-event', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
+         .populate('tasks', ['title', 'schedule'])
 
       res.json({ event: event.data, page: newPage, task: target_task })
    } catch (err) {
@@ -179,23 +176,7 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
          calendarId: 'primary', // TODO: Allow to add more calendars
          eventId: req.params.eventId
       })
-      const { taskId, gEventIndex, pageId } = req.body
-      if (taskId) {
-         const task = await Task.findById(taskId)
-         if (!task) {
-            return res.status(404).json({
-               errors: [
-                  {
-                     code: '404',
-                     title: 'alert-oops',
-                     msg: 'alert-task-notfound'
-                  }
-               ]
-            })
-         }
-         task.google_events[gEventIndex] = null
-         await task.save()
-      }
+      const { pageId } = req.body
 
       // Data: get new page
       const newPage = await Page.findOneAndUpdate(
@@ -210,7 +191,7 @@ router.post('/delete-event/:eventId', auth, async (req, res) => {
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'google_events'])
+         .populate('tasks', ['title', 'schedule'])
 
       res.json({
          page: newPage,

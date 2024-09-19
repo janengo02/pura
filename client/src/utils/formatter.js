@@ -19,7 +19,11 @@ export const stringToTime = (dString) => {
    return d
 }
 
-export const eventListFormatter = (currentCalendarList, googleCalendars) => {
+export const eventListFormatter = (
+   currentCalendarList,
+   googleCalendars,
+   tasks
+) => {
    const events = []
    googleCalendars.forEach((calendar) => {
       calendar?.items?.forEach((event) => {
@@ -49,6 +53,25 @@ export const eventListFormatter = (currentCalendarList, googleCalendars) => {
          }
       })
    })
+   tasks.forEach((task) => {
+      task.schedule.forEach((slot, slotIndex) => {
+         const newStart = Date.parse(slot.start)
+         const newEnd = Date.parse(slot.end)
+         events.push({
+            id: task._id,
+            pura_schedule_index: slotIndex,
+            title: task.title,
+            start: new Date(newStart),
+            end: new Date(newEnd),
+            calendarId: '',
+            calendar: '',
+            color: '#805AD5',
+            accessRole: 'owner',
+            calendarVisible: true
+         })
+      })
+   })
+   console.log(events)
 
    return events
 }

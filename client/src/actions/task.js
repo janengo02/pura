@@ -4,8 +4,6 @@ import {
    CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
-   GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
-   GOOGLE_CALENDAR_UPDATE_EVENT,
    PAGE_ERROR,
    SHOW_TASK
 } from './types'
@@ -42,12 +40,6 @@ export const createTask = (reqData) => async (dispatch) => {
 
 // Update a task
 export const updateTask = (formData) => async (dispatch) => {
-   if (typeof formData.synced_g_event === 'string') {
-      dispatch({
-         type: GOOGLE_CALENDAR_SYNCED_EVENT_LOADING,
-         payload: { synced_g_event: formData.synced_g_event }
-      })
-   }
    try {
       const res = await api.post(
          `/task/update/${formData.page_id}/${formData.task_id}`,
@@ -61,12 +53,6 @@ export const updateTask = (formData) => async (dispatch) => {
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task
-         })
-      }
-      if (typeof formData.synced_g_event === 'string') {
-         dispatch({
-            type: GOOGLE_CALENDAR_UPDATE_EVENT,
-            payload: res.data.event
          })
       }
    } catch (err) {
@@ -109,8 +95,8 @@ export const showTaskModal = (formData) => async (dispatch) => {
          type: SHOW_TASK,
          payload: {
             ...res.data,
-            ...(typeof formData.target_g_event_index === 'number' && {
-               target_g_event_index: formData.target_g_event_index
+            ...(typeof formData.target_event_index === 'number' && {
+               target_event_index: formData.target_event_index
             })
          }
       })
@@ -139,7 +125,6 @@ export const optimisticAddTask = (
          _id: uuid(),
          title: '',
          schedule: [],
-         google_events: [],
          content: '',
          isNew: true
       }

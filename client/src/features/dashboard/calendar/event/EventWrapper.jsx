@@ -25,26 +25,15 @@ const EventWrapper = ({
    // Redux props
    deleteGoogleCalendarEvent,
    showTaskModal,
-   syncedEventLoading,
-
-   _id,
-   tasks
+   _id
 }) => {
    const initRef = useRef()
-   const taskIndex = tasks.findIndex((t) => t.google_events.includes(event.id))
-
-   const taskId = taskIndex !== -1 ? tasks[taskIndex]._id : null
-   const gEventIndex =
-      taskIndex !== -1
-         ? tasks[taskIndex].google_events.findIndex((g) => g === event.id)
-         : null
-
+   const taskId =
+      typeof event.pura_schedule_index !== 'undefined' ? event.id : null
    const onDelete = async () => {
       const reqData = {
          eventId: event.id,
-         pageId: _id,
-         taskId,
-         gEventIndex
+         pageId: _id
       }
       await deleteGoogleCalendarEvent(reqData)
    }
@@ -54,7 +43,7 @@ const EventWrapper = ({
       const formData = {
          page_id: _id,
          task_id: taskId,
-         target_g_event_index: gEventIndex
+         target_event_index: event.pura_schedule_index
       }
       await showTaskModal(formData)
    }
@@ -82,7 +71,6 @@ const EventWrapper = ({
                            }
                            variant='ghost'
                            size='sm'
-                           isDisabled={event.id === syncedEventLoading}
                            colorScheme='gray'
                            onClick={async (e) => {
                               e.preventDefault()
@@ -96,7 +84,6 @@ const EventWrapper = ({
                         variant='ghost'
                         size='sm'
                         colorScheme='gray'
-                        isDisabled={event.id === syncedEventLoading}
                         onClick={async (e) => {
                            e.preventDefault()
                         }}
@@ -107,7 +94,6 @@ const EventWrapper = ({
                         size='sm'
                         colorScheme='gray'
                         ref={initRef}
-                        isDisabled={event.id === syncedEventLoading}
                         isLoading={deleteLoading}
                         onClick={async (e) => {
                            e.preventDefault()
@@ -130,14 +116,12 @@ const EventWrapper = ({
 EventWrapper.propTypes = {
    deleteGoogleCalendarEvent: PropTypes.func.isRequired,
    showTaskModal: PropTypes.func.isRequired,
-   syncedEventLoading: PropTypes.string.isRequired,
 
    _id: PropTypes.string.isRequired,
    tasks: PropTypes.array.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   syncedEventLoading: state.googleAccount.syncedEventLoading,
    _id: state.page._id,
    tasks: state.page.tasks
 })

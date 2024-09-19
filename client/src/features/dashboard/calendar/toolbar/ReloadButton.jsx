@@ -8,7 +8,8 @@ import { listGoogleEvents } from '../../../../actions/googleAccount'
 
 const ReloadButton = ({
    // Redux props
-   listGoogleEvents
+   listGoogleEvents,
+   tasks
 }) => {
    return (
       <IconButton
@@ -19,15 +20,19 @@ const ReloadButton = ({
          colorScheme='gray'
          onClick={async (e) => {
             e.preventDefault()
-            listGoogleEvents()
+            // listGoogleEvents()
          }}
       />
    )
 }
 
 ReloadButton.propTypes = {
-   listGoogleEvents: PropTypes.func.isRequired
+   listGoogleEvents: PropTypes.func.isRequired,
+   tasks: PropTypes.array.isRequired
 }
-export default connect(null, {
+const mapStateToProps = (state) => ({
+   tasks: state.page.tasks
+})
+export default connect(mapStateToProps, {
    listGoogleEvents
 })(ReloadButton)

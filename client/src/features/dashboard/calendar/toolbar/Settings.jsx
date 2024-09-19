@@ -35,12 +35,13 @@ const Settings = ({
    // Redux props
    createGoogleTokens,
    setVisibleCalendar,
-   googleAccount: { isLoggedIn, account, range, googleCalendars }
+   googleAccount: { isLoggedIn, account, range, googleCalendars },
+   tasks
 }) => {
    const googleLogin = useGoogleLogin({
       onSuccess: (tokenResponse) => {
          const { code } = tokenResponse
-         createGoogleTokens({ code, range }).then(() => {})
+         createGoogleTokens({ code, range, tasks }).then(() => {})
       },
       // TODO Error Handling
       onError: (responseError) => {
@@ -114,11 +115,13 @@ const Settings = ({
 Settings.propTypes = {
    createGoogleTokens: PropTypes.func.isRequired,
    setVisibleCalendar: PropTypes.func.isRequired,
-   googleAccount: PropTypes.object.isRequired
+   googleAccount: PropTypes.object.isRequired,
+   tasks: PropTypes.array.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   googleAccount: state.googleAccount
+   googleAccount: state.googleAccount,
+   tasks: state.page.tasks
 })
 
 export default connect(mapStateToProps, {

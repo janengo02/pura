@@ -1,0 +1,1 @@
+export const googleAuthClientId = process.env?.REACT_APP_GOOGLE_OAUTH_CLIENT_ID

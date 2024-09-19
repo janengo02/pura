@@ -3,6 +3,7 @@ const router = express.Router()
 const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator')
 const { google } = require('googleapis')
+const config = require('config')
 
 const User = require('../../models/User')
 const Page = require('../../models/Page')
@@ -10,10 +11,9 @@ const Task = require('../../models/Task')
 const Progress = require('../../models/Progress')
 const Group = require('../../models/Group')
 
-const GOOGLE_CLIENT_ID =
-   '468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com'
-const GOOGLE_CLIENT_SECRET = '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'
-const APP_PATH = 'http://localhost:2000'
+const GOOGLE_CLIENT_ID = config.get('GOOGLE_CLIENT_ID')
+const GOOGLE_CLIENT_SECRET = config.get('GOOGLE_CLIENT_SECRET')
+const APP_PATH = config.get('APP_PATH')
 
 const oath2Client = new google.auth.OAuth2(
    GOOGLE_CLIENT_ID,
@@ -107,54 +107,12 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       const progress = await Progress.findById(
          page.progress_order[newProgressIndex]
       )
-      const {
-         _id,
-         title,
-         schedule,
-         google_events,
-         content,
-         create_date,
-         update_date
-      } = task
-      const syncedSchedule = await Promise.all(
-         schedule.map(async (s, si) => {
-            if (typeof google_events[si] === 'string') {
-               oath2Client.setCredentials({
-                  refresh_token: user.google_refresh_token
-               })
-               const googleCalendarApi = google.calendar('v3')
-               const event = await googleCalendarApi.events
-                  .get({
-                     auth: oath2Client,
-                     calendarId: 'primary',
-                     eventId: google_events[si]
-                  })
-                  .then(() => {
-                     return true
-                  })
-                  .catch(() => {
-                     return false
-                  })
-               return {
-                  start: s.start,
-                  end: s.end,
-                  _id: s._id,
-                  gEventId: event ? google_events[si] : null
-               }
-            }
-            return {
-               start: s.start,
-               end: s.end,
-               _id: s._id,
-               gEventId: null
-            }
-         })
-      )
+      const { _id, title, schedule, content, create_date, update_date } = task
+
       const response = {
          _id,
          title,
-         schedule: syncedSchedule,
-         google_events,
+         schedule,
          content,
          create_date,
          update_date,
@@ -265,7 +223,7 @@ router.post(
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'google_events'])
+            .populate('tasks', ['title', 'shcedule'])
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap
@@ -313,20 +271,11 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    }
 
    //   Prepare: Set up new task
-   const {
-      title,
-      schedule,
-      google_events,
-      content,
-      group_id,
-      progress_id,
-      synced_g_event,
-      task_detail_flg
-   } = req.body
+   const { title, schedule, content, group_id, progress_id, task_detail_flg } =
+      req.body
    task.update_date = new Date()
    if (title) task.title = title
    if (schedule) task.schedule = schedule
-   if (google_events) task.google_events = google_events
    if (content) task.content = content
    const currentSchedule = schedule
    try {
@@ -353,7 +302,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'google_events'])
+            .populate('tasks', ['title', 'schedule'])
          // Data: Update page's task_map
          if (progress_id || group_id) {
             newPage.task_map = newTaskMap
@@ -364,67 +313,18 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
          const progress = await Progress.findById(
             page.progress_order[newProgressIndex]
          )
-         const {
-            _id,
-            title,
-            google_events,
-            content,
-            create_date,
-            update_date
-         } = task
+         const { _id, title, content, create_date, update_date } = task
          const newTask = {
             _id,
             title,
             schedule: currentSchedule,
-            google_events,
             content,
             create_date,
             update_date,
             group,
             progress
          }
-
-         if (typeof synced_g_event === 'string') {
-            const gEventIndex = google_events.findIndex(
-               (g) => g === synced_g_event
-            )
-            const user = await User.findById(req.user.id)
-            oath2Client.setCredentials({
-               refresh_token: user.google_refresh_token
-            })
-            const calendar = google.calendar('v3')
-            if (gEventIndex !== -1) {
-               const gEventStart = schedule[gEventIndex].start
-               const gEventEnd = schedule[gEventIndex].end
-               const event = await calendar.events.patch({
-                  auth: oath2Client,
-                  calendarId: 'primary', // TODO: Allow to add more calendars
-                  eventId: synced_g_event,
-                  requestBody: {
-                     start: {
-                        dateTime: new Date(gEventStart)
-                     },
-                     end: {
-                        dateTime: new Date(gEventEnd)
-                     }
-                  }
-               })
-               res.json({ page: newPage, task: newTask, event: event.data })
-            } else {
-               const event = await calendar.events.delete({
-                  auth: oath2Client,
-                  calendarId: 'primary',
-                  eventId: synced_g_event
-               })
-               res.json({
-                  page: newPage,
-                  task: newTask,
-                  event: { id: synced_g_event, deleted: true }
-               })
-            }
-         } else {
-            res.json({ page: newPage, task: newTask })
-         }
+         res.json({ page: newPage, task: newTask })
       } else {
          const newPage = await Page.findOneAndUpdate(
             { _id: req.params.page_id },
@@ -438,7 +338,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'google_events'])
+            .populate('tasks', ['title', 'schedule'])
 
          res.json({ page: newPage, task: {} })
       }
