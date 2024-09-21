@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -9,8 +9,6 @@ import {
    MenuList,
    MenuItem,
    MenuGroup,
-   MenuDivider,
-   Text,
    Image,
    Flex,
    MenuOptionGroup,
@@ -35,7 +33,7 @@ const Settings = ({
    // Redux props
    createGoogleTokens,
    setVisibleCalendar,
-   googleAccount: { isLoggedIn, account, range, googleCalendars },
+   googleAccount: { range, googleCalendars, googleAccounts },
    tasks
 }) => {
    const googleLogin = useGoogleLogin({
@@ -54,61 +52,80 @@ const Settings = ({
       flow: 'auth-code',
       auto_select: true
    })
-   const visibleCalendars = googleCalendars.map(
-      (c) => c.selected && c.calendarId
-   )
+
    return (
-      <Menu isLazy closeOnSelect={false}>
-         <MenuButton
-            as={IconButton}
-            icon={<PiSlidersHorizontalFill size={22} />}
-            variant='ghost'
-            size='sm'
-            colorScheme='gray'
-         ></MenuButton>
-         <MenuList zIndex={10}>
-            <MenuGroup title={<GoogleCalendarGroupTitle />}>
-               {isLoggedIn && account && (
-                  <Text marginX={4} color='gray.400'>
-                     {account}
-                  </Text>
-               )}
-               <MenuItem
-                  icon={<PiPlus />}
-                  onClick={() => {
-                     googleLogin()
-                  }}
-               >
-                  {t('btn-connect-google_calendar')}
-               </MenuItem>
-            </MenuGroup>
-            <MenuDivider />
-            <MenuOptionGroup
-               title='My calendars'
-               fontSize='sm'
-               type='checkbox'
-               defaultValue={visibleCalendars}
-            >
-               {googleCalendars.map((calendar) => (
-                  <MenuItemOption
-                     key={calendar.calendarId}
-                     value={calendar.calendarId}
-                     fontSize='sm'
-                     onClick={async (e) => {
-                        e.preventDefault()
-                        setVisibleCalendar(calendar.calendarId)
-                     }}
-                     isChecked={calendar.selected}
+      <>
+         {googleAccounts.map((account) => {
+            const currentCalendars = googleCalendars.filter(
+               (c) => c.accountId === account.accountId
+            )
+            const visibleCalendars = currentCalendars.map(
+               (c) => c.selected && c.calendarId
+            )
+            return (
+               <Menu isLazy closeOnSelect={false}>
+                  <MenuButton
+                     as={IconButton}
+                     variant='ghost'
+                     size='sm'
+                     colorScheme='gray'
                   >
-                     <Flex alignItems='center' gap={2}>
-                        <PiCircleFill size={18} color={calendar.color} />
-                        {calendar.title}
-                     </Flex>
-                  </MenuItemOption>
-               ))}
-            </MenuOptionGroup>
-         </MenuList>
-      </Menu>
+                     {account.accountEmail}
+                  </MenuButton>
+                  <MenuList zIndex={10}>
+                     <MenuOptionGroup
+                        title='My calendars'
+                        fontSize='sm'
+                        type='checkbox'
+                        defaultValue={visibleCalendars}
+                     >
+                        {currentCalendars.map((calendar) => (
+                           <MenuItemOption
+                              key={calendar.calendarId}
+                              value={calendar.calendarId}
+                              fontSize='sm'
+                              onClick={async (e) => {
+                                 e.preventDefault()
+                                 setVisibleCalendar(calendar.calendarId)
+                              }}
+                              isChecked={calendar.selected}
+                           >
+                              <Flex alignItems='center' gap={2}>
+                                 <PiCircleFill
+                                    size={18}
+                                    color={calendar.color}
+                                 />
+                                 {calendar.title}
+                              </Flex>
+                           </MenuItemOption>
+                        ))}
+                     </MenuOptionGroup>
+                  </MenuList>
+               </Menu>
+            )
+         })}
+         <Menu isLazy closeOnSelect={false}>
+            <MenuButton
+               as={IconButton}
+               icon={<PiSlidersHorizontalFill size={22} />}
+               variant='ghost'
+               size='sm'
+               colorScheme='gray'
+            ></MenuButton>
+            <MenuList zIndex={10}>
+               <MenuGroup title={<GoogleCalendarGroupTitle />}>
+                  <MenuItem
+                     icon={<PiPlus />}
+                     onClick={() => {
+                        googleLogin()
+                     }}
+                  >
+                     {t('btn-connect-google_calendar')}
+                  </MenuItem>
+               </MenuGroup>
+            </MenuList>
+         </Menu>
+      </>
    )
 }
 

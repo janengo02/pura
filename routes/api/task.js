@@ -223,7 +223,7 @@ router.post(
                'visibility'
             ])
             .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'shcedule'])
+            .populate('tasks', ['title', 'schedule'])
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap

@@ -83,6 +83,7 @@
       "tooltip-": "---------------------------------------------",
       "tooltip-time_slot-sync": "Sync schedule",
       "tooltip-time_slot-invalid": "Schedule is invalid",
+      "tooltip-time_slot-view_calendar": "View in calendar",
       "yup-": "---------------------------------------------",
       "yup-custom-confirm_password": "Passwords must match",
       "yup-date-max": "Date must be on or before ${max}",

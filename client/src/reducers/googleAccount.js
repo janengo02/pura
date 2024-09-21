@@ -6,9 +6,9 @@ import {
    GOOGLE_CALENDAR_UPDATE_EVENT
 } from '../actions/types'
 import {
+   accountListFormatter,
    calendarListChangeVisibilityFormatter,
    calendarListFormatter,
-   calendarOwnerFormatter,
    eventListChangeVisibilityFormatter,
    eventListFormatter,
    newEventFormatter,
@@ -18,8 +18,8 @@ import {
 const initialState = {
    isLoggedIn: false,
    googleEvents: [],
-   account: null,
    googleCalendars: [],
+   googleAccounts: [],
    loading: true,
    range: []
 }
@@ -31,7 +31,6 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: true,
-            account: calendarOwnerFormatter(payload.data),
             googleEvents: eventListFormatter(
                state.googleCalendars,
                payload.data,
@@ -41,6 +40,7 @@ function googleAccountReducer(state = initialState, action) {
                state.googleCalendars,
                payload.data
             ),
+            googleAccounts: accountListFormatter(payload.data),
             loading: false,
             range: payload.range
          }
@@ -73,7 +73,6 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: false,
-            account: null,
             googleEvents: [],
             googleCalendars: [],
             loading: false,

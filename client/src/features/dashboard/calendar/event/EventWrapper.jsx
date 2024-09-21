@@ -61,7 +61,7 @@ const EventWrapper = ({
                      paddingBottom={0}
                      border='none'
                   >
-                     {taskId && (
+                     {taskId ? (
                         <IconButton
                            icon={
                               <Image
@@ -77,30 +77,32 @@ const EventWrapper = ({
                               showTask()
                            }}
                         />
+                     ) : (
+                        <>
+                           <IconButton
+                              icon={<PiPencilLine />}
+                              variant='ghost'
+                              size='sm'
+                              colorScheme='gray'
+                              onClick={async (e) => {
+                                 e.preventDefault()
+                              }}
+                           />
+                           <IconButton
+                              icon={<PiTrash />}
+                              variant='ghost'
+                              size='sm'
+                              colorScheme='gray'
+                              ref={initRef}
+                              isLoading={deleteLoading}
+                              onClick={async (e) => {
+                                 e.preventDefault()
+                                 await deleteEvent()
+                                 onClose()
+                              }}
+                           />
+                        </>
                      )}
-
-                     <IconButton
-                        icon={<PiPencilLine />}
-                        variant='ghost'
-                        size='sm'
-                        colorScheme='gray'
-                        onClick={async (e) => {
-                           e.preventDefault()
-                        }}
-                     />
-                     <IconButton
-                        icon={<PiTrash />}
-                        variant='ghost'
-                        size='sm'
-                        colorScheme='gray'
-                        ref={initRef}
-                        isLoading={deleteLoading}
-                        onClick={async (e) => {
-                           e.preventDefault()
-                           await deleteEvent()
-                           onClose()
-                        }}
-                     />
                   </PopoverHeader>
                   <PopoverBody>
                      <EventWrapperTitle text={event.title} />

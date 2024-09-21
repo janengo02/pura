@@ -1,30 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
 import { updateTask } from '../../../../actions/task'
-import { PiTrash } from 'react-icons/pi'
-import {
-   Flex,
-   IconButton,
-   Image,
-   Input,
-   Tooltip,
-   useToast
-} from '@chakra-ui/react'
+import { PiCalendarFill, PiTrash } from 'react-icons/pi'
+import { Flex, IconButton, Input, Tooltip } from '@chakra-ui/react'
 import t from '../../../../lang/i18n'
 import cloneDeep from 'clone-deep'
 import { stringToDateTimeLocal } from '../../../../utils/formatter'
-import { createGoogleCalendarEvent } from '../../../../actions/googleAccount'
 import useLoading from '../../../../hooks/useLoading'
 
 const ScheduleTimeSlot = ({
    slot,
    index,
    // Redux props
-   googleAccount: { isLoggedIn },
    updateTask,
-   createGoogleCalendarEvent,
    task: { task },
    _id
 }) => {
@@ -36,7 +26,6 @@ const ScheduleTimeSlot = ({
       endTime === 'Invalid date' ||
       startTime >= endTime
 
-   const toast = useToast()
    const onUpdateFrom = async (newFrom) => {
       var newSchedule = cloneDeep(task.schedule)
       newSchedule[index].start = newFrom
@@ -72,21 +61,7 @@ const ScheduleTimeSlot = ({
       }
       await updateTask(formData)
    }
-   const onCreateGoogleEvent = async () => {
-      const reqData = {
-         target_task: task,
-         slot_index: index,
-         page_id: _id
-      }
-      await createGoogleCalendarEvent(reqData)
-      toast({
-         title: t('alert-google_calendar-event_created'),
-         status: 'success'
-      })
-      // TODO: Handle Google authentication error
-   }
-   const [addGoogleCalendarEvent, addGoogleCalendarLoading] =
-      useLoading(onCreateGoogleEvent)
+
    const [deleteEvent, deleteEventLoading] = useLoading(onDelete)
    return (
       <Flex w='full' gap={2} color={isInvalidTimeSlot ? 'red.600' : undefined}>
@@ -120,7 +95,7 @@ const ScheduleTimeSlot = ({
             }}
          />
          <IconButton
-            icon={<PiTrash />}
+            icon={<PiTrash size={16} />}
             variant='ghost'
             colorScheme='gray'
             color='gray.500'
@@ -133,29 +108,18 @@ const ScheduleTimeSlot = ({
          />
          <Tooltip
             hasArrow
-            label={
-               isInvalidTimeSlot
-                  ? t('tooltip-time_slot-invalid')
-                  : t('tooltip-time_slot-sync')
-            }
+            label={t('tooltip-time_slot-view_calendar')}
             placement='bottom'
          >
             <IconButton
-               icon={
-                  <Image
-                     src={'assets/img/logos--google-calendar-synced.svg'}
-                     size={30}
-                  />
-               }
+               icon={<PiCalendarFill size={16} />}
                variant='ghost'
                colorScheme='gray'
                color='gray.500'
                size='sm'
-               isLoading={addGoogleCalendarLoading}
-               isDisabled={!isLoggedIn || isInvalidTimeSlot}
+               isDisabled={isInvalidTimeSlot}
                onClick={async (e) => {
                   e.preventDefault()
-                  addGoogleCalendarEvent()
                }}
             />
          </Tooltip>
@@ -167,16 +131,13 @@ ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
    _id: PropTypes.string.isRequired,
    updateTask: PropTypes.func.isRequired,
-   createGoogleCalendarEvent: PropTypes.func.isRequired,
-   googleAccount: PropTypes.object.isRequired
+   createGoogleCalendarEvent: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   _id: state.page._id,
-   googleAccount: state.googleAccount
+   _id: state.page._id
 })
 
 export default connect(mapStateToProps, {
-   updateTask,
-   createGoogleCalendarEvent
+   updateTask
 })(ScheduleTimeSlot)

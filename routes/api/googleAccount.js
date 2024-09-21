@@ -57,14 +57,39 @@ const listEvent = async (refreshToken, minDate, maxDate) => {
 // @access  Private
 router.get('/list-events', auth, async (req, res) => {
    try {
-      const user = await User.findById(req.user.id)
-      const { minDate, maxDate } = req.query
-      const events = await listEvent(
-         user.google_refresh_token,
-         minDate,
-         maxDate
+      const user = await User.findById(req.user.id).populate(
+         'google_accounts',
+         ['refresh_token']
       )
-      res.json(events)
+      const { minDate, maxDate } = req.query
+      const newGoogleAccounts = []
+      const gAccounts = await Promise.all(
+         user.google_accounts.map(async (account) => {
+            const accountCalendars = await listEvent(
+               account.refresh_token,
+               minDate,
+               maxDate
+            )
+            if (accountCalendars.length > 0) {
+               newGoogleAccounts.push(account)
+            }
+            return {
+               _id: account._id,
+               calendars: accountCalendars
+            }
+         })
+      )
+      await User.findOneAndUpdate(
+         { _id: req.user.id },
+         {
+            $set: {
+               google_accounts: newGoogleAccounts,
+               update_date: new Date()
+            }
+         },
+         { new: true }
+      )
+      res.json(gAccounts)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error
@@ -86,15 +111,25 @@ router.post('/create-tokens', auth, async (req, res) => {
       const user = await User.findOneAndUpdate(
          { _id: req.user.id },
          {
-            $set: {
-               google_refresh_token: refresh_token,
-               update_date: new Date()
-            }
+            $push: { google_accounts: { refresh_token: refresh_token } },
+            $set: { update_date: new Date() }
          },
          { new: true }
       )
-      const events = await listEvent(refresh_token, range[0], range[1])
-      res.json(events)
+      const gAccounts = await Promise.all(
+         user.google_accounts.map(async (account) => {
+            const accountCalendars = await listEvent(
+               account.refresh_token,
+               range[0],
+               range[1]
+            )
+            return {
+               _id: account._id,
+               calendars: accountCalendars
+            }
+         })
+      )
+      res.json(gAccounts)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       res.status(500).json({

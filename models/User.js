@@ -17,10 +17,14 @@ const UserSchema = new mongoose.Schema({
    avatar: {
       type: String
    },
-   google_refresh_token: {
-      type: String,
-      default: null
-   },
+   google_accounts: [
+      {
+         refresh_token: {
+            type: String,
+            required: true
+         }
+      }
+   ],
    create_date: {
       type: Date,
       default: Date.now
