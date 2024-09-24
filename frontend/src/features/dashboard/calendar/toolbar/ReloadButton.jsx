@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 import { IconButton } from '@chakra-ui/react'
 import { PiArrowClockwise } from 'react-icons/pi'
-import { listGoogleEvents } from '../../../../actions/googleAccount'
+import { listGoogleEvents } from '../../../../actions/googleAccountActions'
 
 const ReloadButton = ({
    // Redux props

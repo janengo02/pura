@@ -13,11 +13,11 @@ import {
    PopoverTrigger
 } from '@chakra-ui/react'
 import { PiPencilLine, PiTrash } from 'react-icons/pi'
-import { deleteGoogleCalendarEvent } from '../../../../actions/googleAccount'
+import { deleteGoogleCalendarEvent } from '../../../../actions/googleAccountActions'
 import useLoading from '../../../../hooks/useLoading'
 import EventWrapperTitle from '../../../../components/typography/EventWrapperTitle'
 import EventTimeText from './EventTimeText'
-import { showTaskModal } from '../../../../actions/task'
+import { showTaskModal } from '../../../../actions/taskActions'
 
 const EventWrapper = ({
    children,

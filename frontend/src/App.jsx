@@ -15,7 +15,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Provider } from 'react-redux'
 import store from './store'
 import { setAuthToken } from './utils'
-import { loadUser } from './actions/auth'
+import { loadUser } from './actions/authActions'
 import { LOGOUT } from './actions/types'
 
 // Style

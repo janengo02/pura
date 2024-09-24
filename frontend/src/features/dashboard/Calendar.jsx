@@ -1,20 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-
+import React, { useCallback, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-
 import moment from 'moment'
 import {
    Calendar as BigCalendar,
    Views,
-   DateLocalizer,
    momentLocalizer
 } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { DateLocalizer } from 'react-big-calendar'
 import { Skeleton, VStack } from '@chakra-ui/react'
 import Toolbar from './calendar/toolbar/Toolbar'
 import EventWrapper from './calendar/event/EventWrapper'
-import { listGoogleEvents } from '../../actions/googleAccount'
+import { listGoogleEvents } from '../../actions/googleAccountActions'
 import {
    firstVisibleDay,
    neq,

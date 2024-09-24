@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
 import {
    Card,
    Flex,
@@ -15,13 +14,18 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 import { Draggable } from 'react-beautiful-dnd'
-import t from '../../../../lang/i18n'
 import { PiDotsThreeBold, PiPencilLine, PiTrash } from 'react-icons/pi'
 import { FormProvider, useForm } from 'react-hook-form'
-import { MultiInput } from '../../../../components/MultiInput'
 import { yupResolver } from '@hookform/resolvers/yup'
+
+import t from '../../../../lang/i18n'
+import { MultiInput } from '../../../../components/MultiInput'
 import { dashboardSchema as s } from '../../DashboardSchema'
-import { deleteTask, updateTask, showTaskModal } from '../../../../actions/task'
+import {
+   deleteTask,
+   updateTask,
+   showTaskModal
+} from '../../../../actions/taskActions'
 
 const TaskCard = ({
    task,

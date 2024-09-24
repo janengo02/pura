@@ -2,14 +2,14 @@ import {
    optimisticCreateGroup,
    optimisticDeleteGroup,
    optimisticUpdateGroup
-} from '../actions/group'
-import { optimisticMoveTask } from '../actions/page'
+} from '../actions/groupActions'
+import { optimisticMoveTask } from '../actions/pageActions'
 import {
    optimisticCreateProgress,
    optimisticDeleteProgress,
    optimisticUpdateProgress
-} from '../actions/progress'
-import { optimisticAddTask, optimisticDeleteTask } from '../actions/task'
+} from '../actions/progressActions'
+import { optimisticAddTask, optimisticDeleteTask } from '../actions/taskActions'
 import {
    GET_PAGE,
    MOVE_TASK,

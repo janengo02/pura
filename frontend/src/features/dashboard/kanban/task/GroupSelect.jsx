@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
-import { updateTask } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/taskActions'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCirclesFour, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'

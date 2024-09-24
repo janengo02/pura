@@ -1,10 +1,7 @@
 import React, { useContext } from 'react'
-
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-
 import SplitPaneContext from '../../context/SplitPaneContext'
-
 import {
    Flex,
    Heading,
@@ -19,9 +16,9 @@ import {
 } from '@chakra-ui/react'
 import { PiCalendarFill, PiDotsNine, PiFilePlus } from 'react-icons/pi'
 import t from '../../lang/i18n'
-
 import ProfileMenu from './navbar/ProfileMenu'
 import Sidebar from './navbar/Sidebar'
+
 const NavbarWrapper = ({ children }) => (
    <Flex
       h={20}

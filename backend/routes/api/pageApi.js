@@ -3,7 +3,7 @@ const router = express.Router()
 const auth = require('../../middleware/auth')
 const { validationResult } = require('express-validator')
 
-const Page = require('../../models/Page')
+const Page = require('../../models/PageModel')
 
 // @route   GET api/page
 // @desc    Get the first page of the user (temporary)

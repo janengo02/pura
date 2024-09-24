@@ -3,9 +3,9 @@ const router = express.Router()
 const auth = require('../../middleware/auth')
 const { google } = require('googleapis')
 
-const User = require('../../models/User')
-const Page = require('../../models/Page')
-const Task = require('../../models/Task')
+const User = require('../../models/UserModel')
+const Page = require('../../models/PageModel')
+const Task = require('../../models/TaskModel')
 const dotenv = require('dotenv')
 
 dotenv.config()

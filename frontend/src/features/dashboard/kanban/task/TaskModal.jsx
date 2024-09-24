@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
 import {
    Box,
    Card,
@@ -17,7 +16,7 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
-import { deleteTask, updateTask } from '../../../../actions/task'
+import { deleteTask, updateTask } from '../../../../actions/taskActions'
 import t from '../../../../lang/i18n'
 import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'

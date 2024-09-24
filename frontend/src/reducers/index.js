@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux'
-import alert from './alert'
-import auth from './auth'
-import loading from './loading'
-import page from './page'
-import task from './task'
-import googleAccount from './googleAccount'
+import alert from './alertReducers'
+import auth from './authReducers'
+import loading from './loadingReducers'
+import page from './pageReducers'
+import task from './taskReducers'
+import googleAccount from './googleAccountReducers'
 
 export default combineReducers({
    loading,

@@ -1,14 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
-import { createTask } from '../../../../actions/task'
-
+import { createTask } from '../../../../actions/taskActions'
 import { Droppable } from 'react-beautiful-dnd'
 import { Button, Card, Flex } from '@chakra-ui/react'
 import { PiPlus } from 'react-icons/pi'
 import TaskCard from '../task/TaskCard'
-
 import t from '../../../../lang/i18n'
 
 const Column = ({

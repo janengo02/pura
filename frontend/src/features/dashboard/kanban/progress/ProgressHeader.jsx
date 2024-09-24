@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { deleteProgress, updateProgress } from '../../../../actions/progress'
-
+import {
+   deleteProgress,
+   updateProgress
+} from '../../../../actions/progressActions'
 import {
    Card,
    Flex,

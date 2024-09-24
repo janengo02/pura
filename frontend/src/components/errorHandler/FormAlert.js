@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { removeAlert } from '../../actions/alert'
+import { removeAlert } from '../../actions/alertActions'
 import Link from '../typography/Link'
 import t from '../../lang/i18n'
 

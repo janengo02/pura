@@ -1,8 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
-import { updateTask } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/taskActions'
 import { PiCalendarFill, PiTrash } from 'react-icons/pi'
 import { Flex, IconButton, Input, Tooltip } from '@chakra-ui/react'
 import t from '../../../../lang/i18n'

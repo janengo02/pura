@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 const { check, validationResult } = require('express-validator')
 const bcrypt = require('bcryptjs')
 
-const User = require('../../models/User')
+const User = require('../../models/UserModel')
 const dotenv = require('dotenv')
 
 dotenv.config()

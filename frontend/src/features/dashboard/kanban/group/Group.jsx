@@ -1,8 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { deleteGroup, updateGroup } from '../../../../actions/group'
-
+import { deleteGroup, updateGroup } from '../../../../actions/groupActions'
 import {
    Flex,
    IconButton,
@@ -28,7 +27,6 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { MultiInput } from '../../../../components/MultiInput'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { dashboardSchema as s } from '../../DashboardSchema'
-
 import { groupColors } from '../../../../components/data/defaultColor'
 import { useHover } from '../../../../hooks/useHover'
 import { useEditing } from '../../../../hooks/useEditing'

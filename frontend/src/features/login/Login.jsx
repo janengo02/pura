@@ -17,7 +17,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { loginSchema as s } from './LoginSchema'
 import { yupResolver } from '@hookform/resolvers/yup'
 import t from '../../lang/i18n'
-import { login } from '../../actions/auth'
+import { login } from '../../actions/authActions'
 import PropTypes from 'prop-types'
 import FormAlert from '../../components/errorHandler/FormAlert'
 

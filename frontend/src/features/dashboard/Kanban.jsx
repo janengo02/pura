@@ -1,13 +1,10 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { getFirstPage } from '../../actions/page'
-import { moveTask } from '../../actions/page'
-import { createGroup } from '../../actions/group'
-import { createProgress } from '../../actions/progress'
-
+import { getFirstPage, moveTask } from '../../actions/pageActions'
+import { createGroup } from '../../actions/groupActions'
+import { createProgress } from '../../actions/progressActions'
 import { DragDropContext } from 'react-beautiful-dnd'
 import {
    Button,
@@ -17,14 +14,11 @@ import {
    Text,
    VStack
 } from '@chakra-ui/react'
-
 import t from '../../lang/i18n'
-
 import Toolbar from './kanban/toolbar/Toolbar'
 import Group from './kanban/group/Group'
 import ProgressHeader from './kanban/progress/ProgressHeader'
 import FormAlert from '../../components/errorHandler/FormAlert'
-
 import { PiPlus, PiPlusBold } from 'react-icons/pi'
 import Column from './kanban/progress/Column'
 

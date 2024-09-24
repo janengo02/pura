@@ -8,8 +8,8 @@ import {
    LOGIN_FAIL,
    LOGOUT
 } from './types'
-import { setAlert, removeAllAlert } from './alert'
-import { setLoading } from './loading'
+import { setAlert, removeAllAlert } from './alertActions'
+import { setLoading } from './loadingActions'
 
 // Load User
 export const loadUser = () => async (dispatch) => {

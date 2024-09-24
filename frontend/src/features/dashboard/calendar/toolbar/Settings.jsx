@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
 import {
    IconButton,
    Menu,
@@ -16,12 +15,11 @@ import {
 } from '@chakra-ui/react'
 import { PiSlidersHorizontalFill, PiPlus, PiCircleFill } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
-
 import { useGoogleLogin } from '@react-oauth/google'
 import {
    createGoogleTokens,
    setVisibleCalendar
-} from '../../../../actions/googleAccount'
+} from '../../../../actions/googleAccountActions'
 
 const GoogleCalendarGroupTitle = () => (
    <Flex w='full' gap={3}>

@@ -1,13 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-
-import { updateTask } from '../../../../actions/task'
+import { updateTask } from '../../../../actions/taskActions'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCalendar, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 import { Button, Flex, VStack } from '@chakra-ui/react'
-import cloneDeep from 'clone-deep'
+import cloneDeep from 'lodash/cloneDeep'
 import ScheduleTimeSlot from './ScheduleTimeSlot'
 
 const ScheduleSelect = ({

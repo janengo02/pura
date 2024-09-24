@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link as ChakraLink } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { removeAllAlert } from '../../actions/alert'
+import { removeAllAlert } from '../../actions/alertActions'
 
 const Link = ({ removeAllAlert, to, text, ...props }) => {
    return (

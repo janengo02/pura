@@ -2,17 +2,15 @@ const express = require('express')
 const router = express.Router()
 const auth = require('../../middleware/auth')
 const { validationResult } = require('express-validator')
+const PageModel = require('../../models/PageModel')
+const ProgressModel = require('../../models/ProgressModel')
 
-const Page = require('../../models/Page')
-const Group = require('../../models/Group')
-const Task = require('../../models/Task')
-
-// @route   POST api/group/new/:page-id
-// @desc    Create a new group
+// @route   POST api/progress/new/:page-id
+// @desc    Create a new progress
 // @access  Private
 router.post('/new/:page_id', [auth], async (req, res) => {
    //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
+   const page = await PageModel.findById(req.params.page_id)
    if (!page) {
       return res.status(404).json({
          errors: [
@@ -20,7 +18,6 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          ]
       })
    }
-
    //   Validation: Check if user is the owner
    if (page.user.toString() !== req.user.id) {
       return res.status(401).json({
@@ -29,36 +26,39 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          ]
       })
    }
-
    //   Validation: Form input
    const result = validationResult(req)
    if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() })
    }
-
-   //   Prepare: Set up new group
-   const { title, color } = req.body
-   const newGroup = {}
-   if (title) newGroup.title = title
-   if (color) newGroup.color = color
+   //   Prepare: Set up new progress
+   const { title, title_color, color } = req.body
+   const newProgress = {}
+   if (title) newProgress.title = title
+   if (title_color) newProgress.title_color = title_color
+   if (color) newProgress.color = color
 
    //   Prepare: Set up new task_map
-   const newTaskMap = page.task_map
-   const task_count = page.tasks.length
-   for (let i = 1; i <= page.progress_order.length; i++) {
-      newTaskMap.push(task_count)
+   var newTaskMap = page.task_map
+   if (page.group_order.length > 0) {
+      const n_group = page.group_order.length
+      const m_progress = page.progress_order.length + 1
+      for (let i = 1; i <= n_group; i++) {
+         const task_count = newTaskMap[i * m_progress - 2]
+         newTaskMap.splice(i * m_progress - 1, 0, task_count)
+      }
    }
 
    try {
-      // Data: Add new group
-      const group = new Group(newGroup)
-      await group.save()
+      // Data: Add new progress
+      const progress = new Progress(newProgress)
+      await progress.save()
 
-      // Data: Add new group to page
+      // Data: Add new progress to page
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.page_id },
          {
-            $push: { group_order: group },
+            $push: { progress_order: progress },
             $set: { update_date: new Date() }
          },
          { new: true }
@@ -68,7 +68,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
       newPage.task_map = newTaskMap
       await newPage.save()
 
-      res.json({ group_id: group._id })
+      res.json({ progress_id: progress._id })
    } catch (error) {
       console.error('---ERROR---: ' + error.message)
       res.status(500).json({
@@ -79,10 +79,10 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    }
 })
 
-// @route   POST api/group/update/:page-id/:group-id
-// @desc    Update group
+// @route   POST api/progress/update/:page-id/:progress-id
+// @desc    Update progress
 // @access  Private
-router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
+router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    //   Validation: Check if page exists
    const page = await Page.findById(req.params.page_id)
    if (!page) {
@@ -102,33 +102,34 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
       })
    }
 
-   //   Validation: Check if group exists
-   const group = await Group.findById(req.params.group_id)
-   if (!group) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-group-notfound' }
-         ]
-      })
-   }
-
    //   Validation: Form input
    const result = validationResult(req)
    if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() })
    }
 
-   //   Prepare: Set up new group
-   const { title, color } = req.body
-   group.update_date = new Date()
-   if (title) group.title = title
-   if (color) group.color = color
+   //   Validation: Check if progress exists
+   const progress = await ProgressModel.findById(req.params.progress_id)
+   if (!progress) {
+      return res.status(404).json({
+         errors: [
+            { code: '404', title: 'alert-oops', msg: 'alert-progress-notfound' }
+         ]
+      })
+   }
+   //   Prepare: Set up new progress
+   const { title, title_color, color } = req.body
+   progress.update_date = new Date()
+   if (title) progress.title = title
+   if (title_color) progress.title_color = title_color
+   if (color) progress.color = color
 
    try {
       // Data: update group
-      await group.save()
+      await progress.save()
+
       // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
+      await Page.findOneAndUpdate(
          { _id: req.params.page_id },
          { $set: { update_date: new Date() } },
          { new: true }
@@ -145,10 +146,10 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
    }
 })
 
-// @route   DELETE api/group/:page-id/:group-id
-// @desc    Delete a group
+// @route   DELETE api/group/:page-id/:progress-id
+// @desc    Delete a progress
 // @access  Private
-router.delete('/:page_id/:group_id', [auth], async (req, res) => {
+router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
    //   Validation: Check if page exists
    const page = await Page.findById(req.params.page_id)
    if (!page) {
@@ -169,8 +170,8 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
    }
 
    //   Validation: Check if group exists
-   const group = await Group.findById(req.params.group_id)
-   if (!group) {
+   const progress = await Progress.findById(req.params.progress_id)
+   if (!progress) {
       return res.status(404).json({
          errors: [
             { code: '404', title: 'alert-oops', msg: 'alert-group-notfound' }
@@ -178,48 +179,54 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
       })
    }
 
-   //   Prepare: Set up new tasks array
-   var newTasks = page.tasks
-   var newTaskMap = page.task_map
-   const { group_id } = req.params
-   const groupIndex = page.group_order.indexOf(group_id)
+   //   Prepare: Set up new tasks array & task_map
+   const oldTasks = page.tasks
+   const newTasks = []
+   const oldTaskMap = page.task_map
+   const newTaskMap = []
+   const { progress_id } = req.params
+   const progressIndex = page.progress_order.indexOf(progress_id)
+   const groupCount = page.group_order.length
    const progressCount = page.progress_order.length
-   const mapStart = progressCount * groupIndex
-   const mapEnd = mapStart + progressCount - 1
-   let newTaskStart = 0
-   if (mapStart !== 0) {
-      newTaskStart = newTaskMap[mapStart - 1]
-   }
-   const newTaskEnd = newTaskMap[mapEnd] - 1
 
-   //   Prepare: Set up new group_order
-   let newGroupOrder = page.group_order
-   newGroupOrder.splice(groupIndex, 1)
+   let deletedCount = 0
+   for (let i = 0; i < groupCount; i++) {
+      for (let j = 0; j < progressCount; j++) {
+         const currentMap = i * progressCount + j
+         const currentMapCount = oldTaskMap[currentMap]
+         let prevMapCount = 0
+         if (currentMap !== 0) {
+            prevMapCount = oldTaskMap[currentMap - 1]
+         }
+         if (j === progressIndex) {
+            deletedCount += currentMapCount - prevMapCount
+         } else {
+            const newMapCount = currentMapCount - deletedCount
+            newTaskMap.push(newMapCount)
+            for (let t = prevMapCount; t < currentMapCount; t++) {
+               newTasks.push(oldTasks[t])
+            }
+         }
+      }
+   }
 
-   //   Prepare: Set up new task_map
-   let taskCount = newTaskMap[mapEnd]
-   if (mapStart !== 0) {
-      taskCount = newTaskMap[mapEnd] - newTaskMap[mapStart - 1]
-   }
-   for (let i = mapEnd + 1; i < newTaskMap.length; i++) {
-      newTaskMap[i] -= taskCount
-   }
-   newTaskMap.splice(mapStart, mapEnd - mapStart + 1)
+   //   Prepare: Set up new progress_order
+   var newProgressOrder = page.progress_order
+   newProgressOrder.splice(progressIndex, 1)
 
    try {
       // Data: Delete tasks
-
-      for (let i = newTaskStart; i <= newTaskEnd; i++) {
-         deletedTaskId = newTasks[i]
-         await Task.deleteOne({ _id: deletedTaskId })
+      for (let i = 0; i < oldTasks.length; i++) {
+         if (!newTasks.includes(oldTasks[i])) {
+            deletedTaskId = oldTasks[i]
+            await Task.deleteOne({ _id: deletedTaskId })
+         }
       }
-      newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
-
-      // Data: Delete group
-      await group.deleteOne()
+      // Data: Delete progress
+      await progress.deleteOne()
 
       // Data: Update page's arrays
-      page.group_order = newGroupOrder
+      page.progress_order = newProgressOrder
       page.tasks = newTasks
       page.task_map = newTaskMap
       page.update_date = new Date()
