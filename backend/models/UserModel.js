@@ -22,6 +22,15 @@ const UserSchema = new mongoose.Schema({
          refresh_token: {
             type: String,
             required: true
+         },
+         account_email: {
+            type: String,
+            required: true
+         },
+         sync_status: {
+            type: Boolean,
+            required: true,
+            default: true
          }
       }
    ],

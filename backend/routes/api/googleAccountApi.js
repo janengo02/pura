@@ -55,12 +55,8 @@ const listEvent = async (refreshToken, minDate, maxDate) => {
 // @access  Private
 router.get('/list-events', auth, async (req, res) => {
    try {
-      const user = await User.findById(req.user.id).populate(
-         'google_accounts',
-         ['refresh_token']
-      )
+      const user = await User.findById(req.user.id)
       const { minDate, maxDate } = req.query
-      const newGoogleAccounts = []
       const gAccounts = await Promise.all(
          user.google_accounts.map(async (account) => {
             const accountCalendars = await listEvent(
@@ -68,24 +64,13 @@ router.get('/list-events', auth, async (req, res) => {
                minDate,
                maxDate
             )
-            if (accountCalendars.length > 0) {
-               newGoogleAccounts.push(account)
-            }
             return {
                _id: account._id,
+               account_email: account.account_email,
+               sync_status: account.sync_status,
                calendars: accountCalendars
             }
          })
-      )
-      await User.findOneAndUpdate(
-         { _id: req.user.id },
-         {
-            $set: {
-               google_accounts: newGoogleAccounts,
-               update_date: new Date()
-            }
-         },
-         { new: true }
       )
       res.json(gAccounts)
    } catch (err) {
@@ -98,36 +83,65 @@ router.get('/list-events', auth, async (req, res) => {
    }
 })
 
-// @route   POST api/google-account/create-tokens
+// @route   POST api/google-account/add-account
 // @desc    Create Google Account Auth Tokens
 // @access  Private
-router.post('/create-tokens', auth, async (req, res) => {
+router.post('/add-account', auth, async (req, res) => {
    try {
       const { code, range } = req.body
       const { tokens } = await oath2Client.getToken(code)
-      const { refresh_token } = tokens
-      const user = await User.findOneAndUpdate(
-         { _id: req.user.id },
-         {
-            $push: { google_accounts: { refresh_token: refresh_token } },
-            $set: { update_date: new Date() }
-         },
-         { new: true }
+      const { refresh_token, id_token } = tokens
+      //get email
+      const ticket = await oath2Client.verifyIdToken({
+         idToken: id_token,
+         audience: process.env?.GOOGLE_CLIENT_ID
+      })
+      const payload = ticket.getPayload()
+      const account_email = payload['email']
+      const user = await User.findById(req.user.id)
+      let existingGoogleAccount = user.google_accounts.find(
+         (acc) => acc.account_email === account_email
       )
-      const gAccounts = await Promise.all(
-         user.google_accounts.map(async (account) => {
-            const accountCalendars = await listEvent(
-               account.refresh_token,
-               range[0],
-               range[1]
-            )
-            return {
-               _id: account._id,
-               calendars: accountCalendars
-            }
-         })
+      if (existingGoogleAccount) {
+         user.google_accounts = user.google_accounts.map((acc) =>
+            acc.account_email === account_email
+               ? { ...acc, refresh_token: refresh_token, sync_status: true }
+               : acc
+         )
+         user.update_date = new Date()
+         user.save()
+      } else {
+         const newUSer = await User.findOneAndUpdate(
+            { _id: req.user.id },
+            {
+               $push: {
+                  google_accounts: {
+                     refresh_token: refresh_token,
+                     account_email: account_email,
+                     sync_status: true
+                  }
+               },
+               $set: { update_date: new Date() }
+            },
+            { new: true }
+         )
+         existingGoogleAccount = newUSer.google_accounts.find(
+            (acc) => acc.account_email === account_email
+         )
+      }
+
+      const newAccountCalendars = await listEvent(
+         refresh_token,
+         range[0],
+         range[1]
       )
-      res.json(gAccounts)
+
+      res.json({
+         _id: existingGoogleAccount._id,
+         email: existingGoogleAccount.account_email,
+         sync_status: existingGoogleAccount.sync_status,
+         calendars: newAccountCalendars
+      })
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       res.status(500).json({

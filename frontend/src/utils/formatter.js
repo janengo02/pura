@@ -80,6 +80,46 @@ export const eventListFormatter = (
 
    return events
 }
+
+export const addNewAccountEventListFormatter = (
+   currentCalendarEvents,
+   newGoogleAccountEvents
+) => {
+   const events = currentCalendarEvents.filter(
+      (ev) => ev.accountId !== newGoogleAccountEvents._id
+   )
+   newGoogleAccountEvents.calendars.forEach((calendar) => {
+      calendar?.items?.forEach((event) => {
+         // @todo: Deal with full date events
+         if (
+            event.start?.hasOwnProperty('dateTime') &&
+            event.end?.hasOwnProperty('dateTime')
+         ) {
+            const currentCalendarVisible = currentCalendarEvents.find(
+               (c) => c.calendarId === calendar.id
+            )
+            const newStart = Date.parse(event.start.dateTime)
+            const newEnd = Date.parse(event.end.dateTime)
+            events.push({
+               id: event.id,
+               title: event.summary,
+               start: new Date(newStart),
+               end: new Date(newEnd),
+               calendarId: calendar.id,
+               calendar: calendar.summary,
+               color: calendar.backgroundColor,
+               accessRole: calendar.accessRole,
+               calendarVisible: currentCalendarVisible
+                  ? currentCalendarVisible.calendarVisible
+                  : calendar.selected || false,
+               accountId: newGoogleAccountEvents._id
+            })
+         }
+      })
+   })
+   return events
+}
+
 export const calendarListFormatter = (currentCalendarList, googleAccounts) => {
    const calendars = []
    googleAccounts.forEach((account) => {
@@ -103,6 +143,33 @@ export const calendarListFormatter = (currentCalendarList, googleAccounts) => {
 
    return calendars
 }
+export const addAccountCalendarListFormatter = (
+   currentCalendarList,
+   newAccountCalendars
+) => {
+   const calendars = currentCalendarList.filter(
+      (c) => c.accountId !== newAccountCalendars._id
+   )
+   return [
+      ...calendars,
+      ...newAccountCalendars.calendars.map((calendar) => {
+         const currentCalendarSelected = currentCalendarList.find(
+            (c) => c.calendarId === calendar.id
+         )
+         return {
+            accountId: newAccountCalendars._id,
+            calendarId: calendar.id,
+            title: calendar.summary,
+            color: calendar.backgroundColor,
+            accessRole: calendar.accessRole,
+            isPrimary: calendar.primary || false,
+            selected: currentCalendarSelected
+               ? currentCalendarSelected.selected
+               : calendar.selected || false
+         }
+      })
+   ]
+}
 
 export const calendarOwnerFormatter = (googleCalendars) => {
    const owner = googleCalendars.find((c) => c.primary === true)
@@ -116,14 +183,38 @@ export const calendarOwnerFormatter = (googleCalendars) => {
 export const accountListFormatter = (googleAccounts) => {
    const accounts = []
    googleAccounts.forEach((account) => {
-      if (account.calendars.length > 0) {
-         accounts.push({
-            accountId: account._id,
-            accountEmail: calendarOwnerFormatter(account.calendars)
-         })
-      }
+      accounts.push({
+         accountId: account._id,
+         accountEmail: account.account_email,
+         accountSyncStatus: account.sync_status
+      })
    })
    return accounts
+}
+
+export const addNewAccountListFormatter = (
+   currentGoogleAccounts,
+   newGoogleAccount
+) => {
+   const isExistingAccount = currentGoogleAccounts.find(
+      (acc) => acc.accountId === newGoogleAccount._id
+   )
+   if (isExistingAccount) {
+      return currentGoogleAccounts.map((acc) =>
+         acc.accountId === newGoogleAccount._id
+            ? { ...acc, accountSyncStatus: newGoogleAccount.sync_status }
+            : acc
+      )
+   } else {
+      return [
+         ...currentGoogleAccounts,
+         {
+            accountId: newGoogleAccount._id,
+            accountEmail: newGoogleAccount.account_email,
+            accountSyncStatus: newGoogleAccount.sync_status
+         }
+      ]
+   }
 }
 
 export const calendarListChangeVisibilityFormatter = (

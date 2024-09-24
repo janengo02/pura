@@ -6,7 +6,8 @@ import {
    GET_PAGE,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    CREATE_GOOGLE_EVENT,
-   GOOGLE_CALENDAR_UPDATE_EVENT
+   GOOGLE_CALENDAR_UPDATE_EVENT,
+   GOOGLE_CALENDAR_ADD_ACCOUNT
 } from './types'
 
 export const listGoogleEvents =
@@ -39,16 +40,15 @@ export const listGoogleEvents =
    }
 
 // Create Google Account Tokens
-export const createGoogleTokens = (reqData) => async (dispatch) => {
+export const addGoogleAccount = (reqData) => async (dispatch) => {
    try {
-      const res = await api.post('/google-account/create-tokens', reqData)
-      if (Array.isArray(res.data)) {
+      const res = await api.post('/google-account/add-account', reqData)
+      if (res.data) {
          dispatch({
-            type: GOOGLE_CALENDAR_LOADED,
+            type: GOOGLE_CALENDAR_ADD_ACCOUNT,
             payload: {
                data: res.data,
-               range: reqData.range,
-               tasks: reqData.tasks
+               range: reqData.range
             }
          })
       } else {

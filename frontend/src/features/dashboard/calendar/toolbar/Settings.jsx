@@ -17,7 +17,7 @@ import { PiSlidersHorizontalFill, PiPlus, PiCircleFill } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 import { useGoogleLogin } from '@react-oauth/google'
 import {
-   createGoogleTokens,
+   addGoogleAccount,
    setVisibleCalendar
 } from '../../../../actions/googleAccountActions'
 
@@ -29,15 +29,14 @@ const GoogleCalendarGroupTitle = () => (
 )
 const Settings = ({
    // Redux props
-   createGoogleTokens,
+   addGoogleAccount,
    setVisibleCalendar,
-   googleAccount: { range, googleCalendars, googleAccounts },
-   tasks
+   googleAccount: { range, googleCalendars, googleAccounts }
 }) => {
    const googleLogin = useGoogleLogin({
       onSuccess: (tokenResponse) => {
          const { code } = tokenResponse
-         createGoogleTokens({ code, range, tasks }).then(() => {})
+         addGoogleAccount({ code, range }).then(() => {})
       },
       // TODO Error Handling
       onError: (responseError) => {
@@ -64,9 +63,9 @@ const Settings = ({
                <Menu isLazy closeOnSelect={false}>
                   <MenuButton
                      as={IconButton}
-                     variant='ghost'
                      size='sm'
                      colorScheme='gray'
+                     px={4}
                   >
                      {account.accountEmail}
                   </MenuButton>
@@ -128,18 +127,16 @@ const Settings = ({
 }
 
 Settings.propTypes = {
-   createGoogleTokens: PropTypes.func.isRequired,
+   addGoogleAccount: PropTypes.func.isRequired,
    setVisibleCalendar: PropTypes.func.isRequired,
-   googleAccount: PropTypes.object.isRequired,
-   tasks: PropTypes.array.isRequired
+   googleAccount: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   googleAccount: state.googleAccount,
-   tasks: state.page.tasks
+   googleAccount: state.googleAccount
 })
 
 export default connect(mapStateToProps, {
-   createGoogleTokens,
+   addGoogleAccount,
    setVisibleCalendar
 })(Settings)
