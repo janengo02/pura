@@ -1,9 +1,9 @@
-import { initReactI18next } from "react-i18next"
-import i18n from "i18next"
-import en from "./en.json"
-import ja from "./ja.json"
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import en from './en.json'
+import ja from './ja.json'
 
-const language = "en"
+const language = 'en'
 const resources = {
    en: { ...en },
    ja: { ...ja }
@@ -18,10 +18,10 @@ i18n
          escapeValue: false // react already safes from xss
       },
       react: {
-         transKeepBasicHtmlNodesFor: ["br", "wbr"]
+         transKeepBasicHtmlNodesFor: ['br', 'wbr']
       }
    })
 
-const { t } = i18n;
+const { t } = i18n
 
 export default t

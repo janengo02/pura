@@ -3,7 +3,6 @@ const router = express.Router()
 const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const config = require('config')
 const { check, validationResult } = require('express-validator')
 
 const Page = require('../../models/Page')
@@ -11,6 +10,9 @@ const User = require('../../models/User')
 const Group = require('../../models/Group')
 const Progress = require('../../models/Progress')
 const Task = require('../../models/Task')
+const dotenv = require('dotenv')
+
+dotenv.config()
 
 // @route   POST api/users
 // @desc    Register user route
@@ -115,7 +117,7 @@ router.post(
 
          jwt.sign(
             payload,
-            config.get('jwtSecret'),
+            process.env?.JWT_SECRET,
             { expiresIn: 36000 },
             (err, token) => {
                if (err) throw err

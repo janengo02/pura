@@ -128,10 +128,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# config
-
-config/default.json
-client/.env
-
-#TODO: Make sure no secretkey is visible on Github (all versions)

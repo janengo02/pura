@@ -1,7 +1,0 @@
-{
-   "mongoURI": "mongodb+srv://puramaster:eSkmP16TdJZcj2Jx@cluster0.jdwycyf.mongodb.net/?retryWrites=true&w=majority",
-   "jwtSecret": "purasecrettoken",
-   "GOOGLE_CLIENT_ID": "468371290571-ul1g9cfmv5gvk8plu5lh32tomo20s767.apps.googleusercontent.com",
-   "GOOGLE_CLIENT_SECRET": "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",
-   "APP_PATH": "http://localhost:2000"
-}

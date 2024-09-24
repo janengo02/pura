@@ -3,22 +3,20 @@ const router = express.Router()
 const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator')
 const { google } = require('googleapis')
-const config = require('config')
 
 const User = require('../../models/User')
 const Page = require('../../models/Page')
 const Task = require('../../models/Task')
 const Progress = require('../../models/Progress')
 const Group = require('../../models/Group')
+const dotenv = require('dotenv')
 
-const GOOGLE_CLIENT_ID = config.get('GOOGLE_CLIENT_ID')
-const GOOGLE_CLIENT_SECRET = config.get('GOOGLE_CLIENT_SECRET')
-const APP_PATH = config.get('APP_PATH')
+dotenv.config()
 
 const oath2Client = new google.auth.OAuth2(
-   GOOGLE_CLIENT_ID,
-   GOOGLE_CLIENT_SECRET,
-   APP_PATH
+   process.env?.GOOGLE_CLIENT_ID,
+   process.env?.GOOGLE_CLIENT_SECRET,
+   process.env?.APP_PATH
 )
 
 const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
