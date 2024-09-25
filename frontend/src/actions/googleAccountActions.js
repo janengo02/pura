@@ -5,7 +5,6 @@ import {
    SHOW_TASK,
    GET_PAGE,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
-   CREATE_GOOGLE_EVENT,
    GOOGLE_CALENDAR_UPDATE_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT
 } from './types'
@@ -66,17 +65,9 @@ export const addGoogleAccount = (reqData) => async (dispatch) => {
 }
 
 // Create Google Calendar Event
-export const createGoogleCalendarEvent = (reqData) => async (dispatch) => {
+export const startSyncEvent = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/create-event', reqData)
-      dispatch({
-         type: CREATE_GOOGLE_EVENT,
-         payload: res.data.event
-      })
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
       dispatch({
          type: SHOW_TASK,
          payload: res.data.task

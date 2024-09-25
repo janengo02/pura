@@ -247,23 +247,6 @@ export const eventListChangeVisibilityFormatter = (
    return events
 }
 
-export const newEventFormatter = (newEvent, currentCalendarList) => {
-   const primaryCalendar = currentCalendarList.find((c) => c.isPrimary)
-   const newStart = Date.parse(newEvent.start.dateTime)
-   const newEnd = Date.parse(newEvent.end.dateTime)
-   return {
-      id: newEvent.id,
-      title: newEvent.summary,
-      start: new Date(newStart),
-      end: new Date(newEnd),
-      calendarId: primaryCalendar.calendarId,
-      calendar: primaryCalendar.title,
-      color: primaryCalendar.color,
-      accessRole: primaryCalendar.accessRole,
-      calendarVisible: primaryCalendar.selected
-   }
-}
-
 export const updateEventFormatter = (currentEventList, updatedEvent) => {
    if (updatedEvent.deleted) {
       return currentEventList.filter((ev) => ev.id !== updatedEvent.id)

@@ -169,9 +169,12 @@ router.post('/add-account', auth, async (req, res) => {
 router.post('/create-event', auth, async (req, res) => {
    try {
       const oath2Client = newOath2Client()
-      const { target_task, slot_index, page_id } = req.body
+      const { target_task, slot_index, page_id, account_id } = req.body
       const user = await User.findById(req.user.id)
-      oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
+      const refreshToken = user.google_accounts.find(
+         (acc) => acc._id.toString() === account_id
+      ).refresh_token
+      oath2Client.setCredentials({ refresh_token: refreshToken })
       const calendar = google.calendar('v3')
       const event = await calendar.events.insert({
          auth: oath2Client,
@@ -188,13 +191,11 @@ router.post('/create-event', auth, async (req, res) => {
          }
       })
       const task = await Task.findById(target_task._id)
-      if (!task) {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
-            ]
-         })
-      }
+      task.schedule[slot_index].sync_info.push({
+         account_id: account_id,
+         event_id: event.data.id
+      })
+      task.update_date = new Date()
       await task.save()
 
       // Data: get new page
@@ -212,7 +213,10 @@ router.post('/create-event', auth, async (req, res) => {
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'schedule'])
 
-      res.json({ event: event.data, page: newPage, task: target_task })
+      res.json({
+         event: event.data,
+         task: { ...target_task, schedule: task.schedule }
+      })
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
       // TODO: Handle Google authentication error

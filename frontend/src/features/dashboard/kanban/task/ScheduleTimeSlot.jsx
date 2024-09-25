@@ -3,11 +3,22 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { updateTask } from '../../../../actions/taskActions'
 import { PiCalendarFill, PiTrash } from 'react-icons/pi'
-import { Flex, IconButton, Input, Tooltip } from '@chakra-ui/react'
+import {
+   Button,
+   Flex,
+   IconButton,
+   Input,
+   Menu,
+   MenuButton,
+   MenuItem,
+   MenuList,
+   Tooltip
+} from '@chakra-ui/react'
 import t from '../../../../lang/i18n'
 import cloneDeep from 'clone-deep'
 import { stringToDateTimeLocal } from '../../../../utils/formatter'
 import useLoading from '../../../../hooks/useLoading'
+import { startSyncEvent } from '../../../../actions/googleAccountActions'
 
 const ScheduleTimeSlot = ({
    slot,
@@ -15,7 +26,9 @@ const ScheduleTimeSlot = ({
    // Redux props
    updateTask,
    task: { task },
-   _id
+   _id,
+   googleAccounts,
+   startSyncEvent
 }) => {
    const startTime = stringToDateTimeLocal(slot.start)
    const endTime = stringToDateTimeLocal(slot.end)
@@ -110,17 +123,58 @@ const ScheduleTimeSlot = ({
             label={t('tooltip-time_slot-view_calendar')}
             placement='bottom'
          >
-            <IconButton
-               icon={<PiCalendarFill size={16} />}
-               variant='ghost'
-               colorScheme='gray'
-               color='gray.500'
-               size='sm'
-               isDisabled={isInvalidTimeSlot}
-               onClick={async (e) => {
-                  e.preventDefault()
-               }}
-            />
+            <Menu isLazy closeOnSelect={false}>
+               <MenuButton
+                  as={IconButton}
+                  icon={<PiCalendarFill size={16} />}
+                  variant='ghost'
+                  colorScheme='gray'
+                  color='gray.500'
+                  size='sm'
+               ></MenuButton>
+               <MenuList zIndex={10}>
+                  {googleAccounts.map((account) => {
+                     const isSynced =
+                        typeof slot.sync_info?.find(
+                           (acc) => acc.account_id === account.accountId
+                        ) !== 'undefined' && account.accountSyncStatus
+                     return (
+                        <MenuItem
+                           key={account._id}
+                           display='flex'
+                           justifyContent='space-between'
+                           alignItems='center'
+                           gap={2}
+                           fontSize='xs'
+                        >
+                           {account.accountEmail}
+                           <Button
+                              colorScheme={isSynced ? 'purple' : 'gray'}
+                              size='xs'
+                              onClick={async (e) => {
+                                 e.preventDefault()
+                                 if (!isSynced) {
+                                    startSyncEvent({
+                                       target_task: task,
+                                       slot_index: index,
+                                       page_id: _id,
+                                       account_id: account.accountId
+                                    })
+                                 } else {
+                                    // TODO: disconnect
+                                 }
+                              }}
+                              isDisabled={
+                                 !account.accountSyncStatus || isInvalidTimeSlot
+                              }
+                           >
+                              {isSynced ? 'disconnect' : 'connect'}
+                           </Button>
+                        </MenuItem>
+                     )
+                  })}
+               </MenuList>
+            </Menu>
          </Tooltip>
       </Flex>
    )
@@ -130,13 +184,16 @@ ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
    _id: PropTypes.string.isRequired,
    updateTask: PropTypes.func.isRequired,
-   createGoogleCalendarEvent: PropTypes.func.isRequired
+   startSyncEvent: PropTypes.func.isRequired,
+   googleAccounts: PropTypes.array.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
-   _id: state.page._id
+   _id: state.page._id,
+   googleAccounts: state.googleAccount.googleAccounts
 })
 
 export default connect(mapStateToProps, {
-   updateTask
+   updateTask,
+   startSyncEvent
 })(ScheduleTimeSlot)
