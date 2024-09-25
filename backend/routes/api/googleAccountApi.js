@@ -10,14 +10,15 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const oath2Client = new google.auth.OAuth2(
-   process.env?.GOOGLE_CLIENT_ID,
-   process.env?.GOOGLE_CLIENT_SECRET,
-   process.env?.APP_PATH
-)
-
+const newOath2Client = () =>
+   new google.auth.OAuth2(
+      process.env?.GOOGLE_CLIENT_ID,
+      process.env?.GOOGLE_CLIENT_SECRET,
+      process.env?.APP_PATH
+   )
 const listEvent = async (refreshToken, minDate, maxDate) => {
    try {
+      const oath2Client = newOath2Client()
       oath2Client.setCredentials({ refresh_token: refreshToken })
       const googleCalendarApi = google.calendar('v3')
       const calendars = await googleCalendarApi.calendarList.list({
@@ -88,6 +89,7 @@ router.get('/list-events', auth, async (req, res) => {
 // @access  Private
 router.post('/add-account', auth, async (req, res) => {
    try {
+      const oath2Client = newOath2Client()
       const { code, range } = req.body
       const { tokens } = await oath2Client.getToken(code)
       const { refresh_token, id_token } = tokens
@@ -138,7 +140,7 @@ router.post('/add-account', auth, async (req, res) => {
 
       res.json({
          _id: existingGoogleAccount._id,
-         email: existingGoogleAccount.account_email,
+         account_email: existingGoogleAccount.account_email,
          sync_status: existingGoogleAccount.sync_status,
          calendars: newAccountCalendars
       })
@@ -157,6 +159,7 @@ router.post('/add-account', auth, async (req, res) => {
 // @access  Private
 router.post('/create-event', auth, async (req, res) => {
    try {
+      const oath2Client = newOath2Client()
       const { target_task, slot_index, page_id } = req.body
       const user = await User.findById(req.user.id)
       oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
@@ -215,6 +218,7 @@ router.post('/create-event', auth, async (req, res) => {
 // @access  Private
 router.post('/delete-event/:eventId', auth, async (req, res) => {
    try {
+      const oath2Client = newOath2Client()
       const user = await User.findById(req.user.id)
       oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
       const calendar = google.calendar('v3')
