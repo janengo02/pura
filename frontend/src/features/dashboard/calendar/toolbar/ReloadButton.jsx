@@ -20,7 +20,7 @@ const ReloadButton = ({
          colorScheme='gray'
          onClick={async (e) => {
             e.preventDefault()
-            // listGoogleEvents()
+            // listGoogleEvents() //TODO: Add ranges
          }}
       />
    )

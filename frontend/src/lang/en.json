@@ -22,6 +22,7 @@
       "btn-add-progress": "Add progress",
       "btn-add-schedule": "Add schedule",
       "btn-connect-google_calendar": "Add Google Calendar",
+      "btn-re_connect-google_calendar": "Reconnect",
       "btn-dashboard-page": "Reload Dashboard",
       "btn-delete": "Delete",
       "btn-delete-column": "Delete column",

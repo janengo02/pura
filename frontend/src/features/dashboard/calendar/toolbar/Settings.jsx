@@ -11,9 +11,15 @@ import {
    Image,
    Flex,
    MenuOptionGroup,
-   MenuItemOption
+   MenuItemOption,
+   Box
 } from '@chakra-ui/react'
-import { PiSlidersHorizontalFill, PiPlus, PiCircleFill } from 'react-icons/pi'
+import {
+   PiSlidersHorizontalFill,
+   PiPlus,
+   PiCircleFill,
+   PiPlugs
+} from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 import { useGoogleLogin } from '@react-oauth/google'
 import {
@@ -64,10 +70,36 @@ const Settings = ({
                   <MenuButton
                      as={IconButton}
                      size='sm'
-                     colorScheme='gray'
+                     variant='outline'
+                     colorScheme={account.accountSyncStatus ? 'purple' : 'gray'}
+                     color={account.accountSyncStatus ? undefined : 'gray.500'}
                      px={4}
                   >
-                     {account.accountEmail}
+                     <Box
+                        display='flex'
+                        flexDirection='row'
+                        gap={2}
+                        justifyContent='center'
+                        alignContent='center'
+                     >
+                        {account.accountSyncStatus ? (
+                           <Image
+                              src={
+                                 'assets/img/logos--google-calendar-synced.svg'
+                              }
+                              size={10}
+                           />
+                        ) : (
+                           <Image
+                              src={
+                                 'assets/img/logos--google-calendar-not-synced.svg'
+                              }
+                              size={10}
+                           />
+                        )}
+
+                        {account.accountEmail}
+                     </Box>
                   </MenuButton>
                   <MenuList zIndex={10}>
                      <MenuOptionGroup
@@ -76,6 +108,16 @@ const Settings = ({
                         type='checkbox'
                         defaultValue={visibleCalendars}
                      >
+                        {!account.accountSyncStatus && (
+                           <MenuItem
+                              icon={<PiPlugs />}
+                              onClick={() => {
+                                 googleLogin()
+                              }}
+                           >
+                              {t('btn-re_connect-google_calendar')}
+                           </MenuItem>
+                        )}
                         {currentCalendars.map((calendar) => (
                            <MenuItemOption
                               key={calendar.calendarId}

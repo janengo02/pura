@@ -46,8 +46,6 @@ const listEvent = async (refreshToken, minDate, maxDate) => {
       )
       return events
    } catch (err) {
-      // TODO: Handle Google authentication error
-      console.log('hihihi', err)
       return []
    }
 }
@@ -58,6 +56,7 @@ router.get('/list-events', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id)
       const { minDate, maxDate } = req.query
+      const notSyncedAccounts = []
       const gAccounts = await Promise.all(
          user.google_accounts.map(async (account) => {
             const accountCalendars = await listEvent(
@@ -65,14 +64,24 @@ router.get('/list-events', auth, async (req, res) => {
                minDate,
                maxDate
             )
+            if (accountCalendars.length === 0) {
+               notSyncedAccounts.push(account._id)
+            }
             return {
                _id: account._id,
                account_email: account.account_email,
-               sync_status: account.sync_status,
+               sync_status: accountCalendars.length > 0,
                calendars: accountCalendars
             }
          })
       )
+      user.google_accounts = user.google_accounts.map((acc) =>
+         notSyncedAccounts.includes(acc._id)
+            ? { ...acc, sync_status: false }
+            : { ...acc, sync_status: true }
+      )
+      user.update_date = new Date()
+      user.save()
       res.json(gAccounts)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
@@ -141,7 +150,7 @@ router.post('/add-account', auth, async (req, res) => {
       res.json({
          _id: existingGoogleAccount._id,
          account_email: existingGoogleAccount.account_email,
-         sync_status: existingGoogleAccount.sync_status,
+         sync_status: true,
          calendars: newAccountCalendars
       })
    } catch (err) {
