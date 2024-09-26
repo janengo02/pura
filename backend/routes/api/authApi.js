@@ -16,7 +16,19 @@ router.get('/', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id).select('-password')
       if (typeof user !== 'undefined' && user) {
-         res.json(user)
+         const { email, name, avatar, google_accounts } = user
+         res.json({
+            email,
+            name,
+            avatar,
+            google_accounts: google_accounts.map((account) => {
+               return {
+                  _id: account._id,
+                  account_email: account.account_email,
+                  sync_status: account.sync_status
+               }
+            })
+         })
       } else {
          res.status(500).json({
             errors: [

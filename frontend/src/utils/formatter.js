@@ -25,42 +25,17 @@ export const eventListFormatter = (
    tasks
 ) => {
    const events = []
-   googleAccounts.forEach((account) => {
-      account.calendars.forEach((calendar) => {
-         calendar?.items?.forEach((event) => {
-            // @todo: Deal with full date events
-            if (
-               event.start?.hasOwnProperty('dateTime') &&
-               event.end?.hasOwnProperty('dateTime')
-            ) {
-               const currentCalendarSelected = currentCalendarList.find(
-                  (c) => c.calendarId === calendar.id
-               )
-               const newStart = Date.parse(event.start.dateTime)
-               const newEnd = Date.parse(event.end.dateTime)
-               events.push({
-                  id: event.id,
-                  title: event.summary,
-                  start: new Date(newStart),
-                  end: new Date(newEnd),
-                  calendarId: calendar.id,
-                  calendar: calendar.summary,
-                  color: calendar.backgroundColor,
-                  accessRole: calendar.accessRole,
-                  calendarVisible: currentCalendarSelected
-                     ? currentCalendarSelected.selected
-                     : calendar.selected || false,
-                  accountId: account._id
-               })
-            }
-         })
-      })
-   })
-
+   let notDisplayedOriginalEvents = []
    tasks.forEach((task) => {
       task.schedule.forEach((slot, slotIndex) => {
          const newStart = Date.parse(slot.start)
          const newEnd = Date.parse(slot.end)
+         if (slot.sync_info.length > 0) {
+            notDisplayedOriginalEvents = [
+               ...notDisplayedOriginalEvents,
+               ...slot.sync_info.map((si) => si.event_id)
+            ]
+         }
          events.push({
             id: task._id,
             pura_schedule_index: slotIndex,
@@ -72,11 +47,46 @@ export const eventListFormatter = (
             color: '#805AD5',
             accessRole: 'owner',
             calendarVisible: true,
-            accountId: null
+            accountId: null,
+            syncInfo: slot.sync_info
          })
       })
    })
-   console.log(events)
+   console.log('events1', events)
+   googleAccounts.forEach((account) => {
+      account.calendars.forEach((calendar) => {
+         calendar?.items?.forEach((event) => {
+            if (!notDisplayedOriginalEvents.includes(event.id)) {
+               // @todo: Deal with full date events
+               if (
+                  event.start?.hasOwnProperty('dateTime') &&
+                  event.end?.hasOwnProperty('dateTime')
+               ) {
+                  const currentCalendarSelected = currentCalendarList.find(
+                     (c) => c.calendarId === calendar.id
+                  )
+                  const newStart = Date.parse(event.start.dateTime)
+                  const newEnd = Date.parse(event.end.dateTime)
+                  events.push({
+                     id: event.id,
+                     title: event.summary,
+                     start: new Date(newStart),
+                     end: new Date(newEnd),
+                     calendarId: calendar.id,
+                     calendar: calendar.summary,
+                     color: calendar.backgroundColor,
+                     accessRole: calendar.accessRole,
+                     calendarVisible: currentCalendarSelected
+                        ? currentCalendarSelected.selected
+                        : calendar.selected || false,
+                     accountId: account._id
+                  })
+               }
+            }
+         })
+      })
+   })
+   console.log('events2', events)
 
    return events
 }

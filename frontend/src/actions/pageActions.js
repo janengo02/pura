@@ -10,6 +10,7 @@ export const getFirstPage = () => async (dispatch) => {
          type: GET_PAGE,
          payload: res.data
       })
+      const res2 = await api.get('/page/check-sync-status')
    } catch (err) {
       const errors = err.response.data.errors
 
