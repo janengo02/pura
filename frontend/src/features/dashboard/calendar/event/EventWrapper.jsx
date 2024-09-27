@@ -10,7 +10,8 @@ import {
    PopoverBody,
    PopoverContent,
    PopoverHeader,
-   PopoverTrigger
+   PopoverTrigger,
+   Text
 } from '@chakra-ui/react'
 import { PiPencilLine, PiTrash } from 'react-icons/pi'
 import { deleteGoogleCalendarEvent } from '../../../../actions/googleAccountActions'
@@ -25,7 +26,8 @@ const EventWrapper = ({
    // Redux props
    deleteGoogleCalendarEvent,
    showTaskModal,
-   _id
+   _id,
+   googleAccounts
 }) => {
    const initRef = useRef()
    const taskId =
@@ -108,6 +110,20 @@ const EventWrapper = ({
                      <EventWrapperTitle text={event.title} />
                      <EventTimeText start={event.start} end={event.end} />
                      {event.calendar}
+                     {event.syncInfo ? 'Synced acc: ' : ''}
+                     {event.syncInfo?.map((si) => (
+                        <Text color='red'>
+                           {
+                              googleAccounts.find(
+                                 (acc) => acc.accountId === si.account_id
+                              )?.accountEmail
+                           }
+                           {si.slotSyncError ? ' (sync error)' : ''}
+                        </Text>
+                     ))}
+                     <Text color='red'>
+                        {event.eventSyncError ? 'Sync error' : ''}
+                     </Text>
                   </PopoverBody>
                </PopoverContent>
             </>
@@ -115,17 +131,20 @@ const EventWrapper = ({
       </Popover>
    )
 }
+
 EventWrapper.propTypes = {
    deleteGoogleCalendarEvent: PropTypes.func.isRequired,
    showTaskModal: PropTypes.func.isRequired,
 
    _id: PropTypes.string.isRequired,
-   tasks: PropTypes.array.isRequired
+   tasks: PropTypes.array.isRequired,
+   googleAccounts: PropTypes.array.isRequired
 }
 
 const mapStateToProps = (state) => ({
    _id: state.page._id,
-   tasks: state.page.tasks
+   tasks: state.page.tasks,
+   googleAccounts: state.googleAccount.googleAccounts
 })
 
 export default connect(mapStateToProps, {

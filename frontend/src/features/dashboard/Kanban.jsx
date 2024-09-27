@@ -177,12 +177,12 @@ Kanban.propTypes = {
    createGroup: PropTypes.func.isRequired,
    createProgress: PropTypes.func.isRequired,
 
-   _id: PropTypes.string.isRequired,
+   _id: PropTypes.string,
    group_order: PropTypes.array.isRequired,
    progress_order: PropTypes.array.isRequired,
    loading: PropTypes.bool.isRequired,
-   errors: PropTypes.array.isRequired,
-   error: PropTypes.bool.isRequired
+   errors: PropTypes.array,
+   error: PropTypes.bool
 }
 
 const mapStateToProps = (state) => ({

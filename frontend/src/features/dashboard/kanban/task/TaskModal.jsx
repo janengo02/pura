@@ -226,7 +226,7 @@ const TaskModal = ({
 
 TaskModal.propTypes = {
    task: PropTypes.object.isRequired,
-   _id: PropTypes.string.isRequired,
+   _id: PropTypes.string,
    updateTask: PropTypes.func.isRequired,
    deleteTask: PropTypes.func.isRequired
 }

@@ -52,15 +52,8 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             isLoggedIn: true,
-            googleEvents: eventListFormatter(
-               state.googleCalendars,
-               payload.data,
-               payload.tasks
-            ),
-            googleCalendars: calendarListFormatter(
-               state.googleCalendars,
-               payload.data
-            ),
+            googleEvents: eventListFormatter(payload.data, payload.tasks),
+            googleCalendars: calendarListFormatter(payload.data),
             googleAccounts: accountListFormatter(payload.data),
             loading: false,
             range: payload.range

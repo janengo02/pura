@@ -20,10 +20,6 @@ const TaskSchema = new mongoose.Schema({
                },
                event_id: {
                   type: String
-               },
-               is_matched: {
-                  type: Boolean,
-                  default: true
                }
             }
          ]

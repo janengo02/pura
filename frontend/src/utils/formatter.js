@@ -19,20 +19,16 @@ export const stringToTime = (dString) => {
    return d
 }
 
-export const eventListFormatter = (
-   currentCalendarList,
-   googleAccounts,
-   tasks
-) => {
+export const eventListFormatter = (googleAccounts, tasks) => {
    const events = []
-   let notDisplayedOriginalEvents = []
+   let syncedGoogleEvents = []
    tasks.forEach((task) => {
       task.schedule.forEach((slot, slotIndex) => {
          const newStart = Date.parse(slot.start)
          const newEnd = Date.parse(slot.end)
          if (slot.sync_info.length > 0) {
-            notDisplayedOriginalEvents = [
-               ...notDisplayedOriginalEvents,
+            syncedGoogleEvents = [
+               ...syncedGoogleEvents,
                ...slot.sync_info.map((si) => si.event_id)
             ]
          }
@@ -52,41 +48,91 @@ export const eventListFormatter = (
          })
       })
    })
-   console.log('events1', events)
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendar?.items?.forEach((event) => {
-            if (!notDisplayedOriginalEvents.includes(event.id)) {
-               // @todo: Deal with full date events
-               if (
-                  event.start?.hasOwnProperty('dateTime') &&
-                  event.end?.hasOwnProperty('dateTime')
-               ) {
-                  const currentCalendarSelected = currentCalendarList.find(
-                     (c) => c.calendarId === calendar.id
-                  )
-                  const newStart = Date.parse(event.start.dateTime)
-                  const newEnd = Date.parse(event.end.dateTime)
+            // @todo: Deal with full date events
+            if (
+               event.start?.hasOwnProperty('dateTime') &&
+               event.end?.hasOwnProperty('dateTime')
+            ) {
+               const newStart = Date.parse(event.start.dateTime)
+               const newEnd = Date.parse(event.end.dateTime)
+               const syncedStart = new Date(newStart)
+               const syncedEnd = new Date(newEnd)
+               const isSyncedGoogleEvent = syncedGoogleEvents.includes(event.id)
+               if (!isSyncedGoogleEvent) {
                   events.push({
                      id: event.id,
                      title: event.summary,
-                     start: new Date(newStart),
-                     end: new Date(newEnd),
+                     start: syncedStart,
+                     end: syncedEnd,
                      calendarId: calendar.id,
                      calendar: calendar.summary,
                      color: calendar.backgroundColor,
                      accessRole: calendar.accessRole,
-                     calendarVisible: currentCalendarSelected
-                        ? currentCalendarSelected.selected
+                     calendarVisible: calendar
+                        ? calendar.selected
                         : calendar.selected || false,
-                     accountId: account._id
+                     accountId: account._id,
+                     hideOriginalEvent: false
                   })
+               } else {
+                  const puraOriginalEventIndex = events.findIndex((ev) =>
+                     ev.syncInfo.find((si) => si.event_id === event.id)
+                  )
+                  const isSyncError =
+                     syncedStart !== events[puraOriginalEventIndex].start ||
+                     syncedEnd !== events[puraOriginalEventIndex].end ||
+                     event.summary !== events[puraOriginalEventIndex].title
+
+                  events.push({
+                     id: event.id,
+                     title: event.summary,
+                     start: syncedStart,
+                     end: syncedEnd,
+                     calendarId: calendar.id,
+                     calendar: calendar.summary,
+                     color: calendar.backgroundColor,
+                     accessRole: calendar.accessRole,
+                     calendarVisible: calendar
+                        ? calendar.selected
+                        : calendar.selected || false,
+                     accountId: account._id,
+                     hideOriginalEvent: !isSyncError,
+                     eventSyncError: isSyncError,
+                     puraEventId: isSyncError
+                        ? events[puraOriginalEventIndex].id
+                        : undefined
+                  })
+
+                  if (isSyncError) {
+                     events[puraOriginalEventIndex].syncInfo = events[
+                        puraOriginalEventIndex
+                     ].syncInfo.map((si) =>
+                        si.event_id === event.id
+                           ? { ...si, slotSyncError: true }
+                           : si
+                     )
+                  }
                }
             }
          })
       })
    })
-   console.log('events2', events)
+   const unFoundEvents = syncedGoogleEvents.filter(
+      (eventId) => !events.find((ev) => ev.id === eventId)
+   )
+   unFoundEvents.forEach((unFoundEventId) => {
+      const puraOriginalEventIndex = events.findIndex((ev) =>
+         ev.syncInfo.find((si) => si.event_id === unFoundEventId)
+      )
+      events[puraOriginalEventIndex].syncInfo = events[
+         puraOriginalEventIndex
+      ].syncInfo.map((si) =>
+         si.event_id === unFoundEventId ? { ...si, slotSyncError: true } : si
+      )
+   })
 
    return events
 }
@@ -98,6 +144,9 @@ export const addNewAccountEventListFormatter = (
    const events = currentCalendarEvents.filter(
       (ev) => ev.accountId !== newGoogleAccountEvents._id
    )
+   const syncedGoogleEvents = events
+      .map((ev) => ev.syncInfo.map((si) => si.event_id))
+      .flat()
    newGoogleAccountEvents.calendars.forEach((calendar) => {
       calendar?.items?.forEach((event) => {
          // @todo: Deal with full date events
@@ -105,38 +154,90 @@ export const addNewAccountEventListFormatter = (
             event.start?.hasOwnProperty('dateTime') &&
             event.end?.hasOwnProperty('dateTime')
          ) {
-            const currentCalendarVisible = currentCalendarEvents.find(
-               (c) => c.calendarId === calendar.id
-            )
             const newStart = Date.parse(event.start.dateTime)
             const newEnd = Date.parse(event.end.dateTime)
-            events.push({
-               id: event.id,
-               title: event.summary,
-               start: new Date(newStart),
-               end: new Date(newEnd),
-               calendarId: calendar.id,
-               calendar: calendar.summary,
-               color: calendar.backgroundColor,
-               accessRole: calendar.accessRole,
-               calendarVisible: currentCalendarVisible
-                  ? currentCalendarVisible.calendarVisible
-                  : calendar.selected || false,
-               accountId: newGoogleAccountEvents._id
-            })
+            const syncedStart = new Date(newStart)
+            const syncedEnd = new Date(newEnd)
+            const isSyncedGoogleEvent = syncedGoogleEvents.includes(event.id)
+            if (!isSyncedGoogleEvent) {
+               events.push({
+                  id: event.id,
+                  title: event.summary,
+                  start: syncedStart,
+                  end: syncedEnd,
+                  calendarId: calendar.id,
+                  calendar: calendar.summary,
+                  color: calendar.backgroundColor,
+                  accessRole: calendar.accessRole,
+                  calendarVisible: calendar
+                     ? calendar.selected
+                     : calendar.selected || false,
+                  accountId: newGoogleAccountEvents._id,
+                  hideOriginalEvent: false
+               })
+            } else {
+               const puraOriginalEventIndex = events.findIndex((ev) =>
+                  ev.syncInfo.find((si) => si.event_id === event.id)
+               )
+               const isSyncError =
+                  syncedStart !== events[puraOriginalEventIndex].start ||
+                  syncedEnd !== events[puraOriginalEventIndex].end ||
+                  event.summary !== events[puraOriginalEventIndex].title
+
+               events.push({
+                  id: event.id,
+                  title: event.summary,
+                  start: syncedStart,
+                  end: syncedEnd,
+                  calendarId: calendar.id,
+                  calendar: calendar.summary,
+                  color: calendar.backgroundColor,
+                  accessRole: calendar.accessRole,
+                  calendarVisible: calendar
+                     ? calendar.selected
+                     : calendar.selected || false,
+                  accountId: newGoogleAccountEvents._id,
+                  hideOriginalEvent: !isSyncError,
+                  eventSyncError: isSyncError,
+                  puraEventId: isSyncError
+                     ? events[puraOriginalEventIndex].id
+                     : undefined
+               })
+
+               if (isSyncError) {
+                  events[puraOriginalEventIndex].syncInfo = events[
+                     puraOriginalEventIndex
+                  ].syncInfo.map((si) =>
+                     si.event_id === event.id
+                        ? { ...si, slotSyncError: true }
+                        : si
+                  )
+               }
+            }
          }
       })
    })
+   const unFoundEvents = syncedGoogleEvents.filter(
+      (eventId) => !events.find((ev) => ev.id === eventId)
+   )
+   unFoundEvents.forEach((unFoundEventId) => {
+      const puraOriginalEventIndex = events.findIndex((ev) =>
+         ev.syncInfo.find((si) => si.event_id === unFoundEventId)
+      )
+      events[puraOriginalEventIndex].syncInfo = events[
+         puraOriginalEventIndex
+      ].syncInfo.map((si) =>
+         si.event_id === unFoundEventId ? { ...si, slotSyncError: true } : si
+      )
+   })
+
    return events
 }
 
-export const calendarListFormatter = (currentCalendarList, googleAccounts) => {
+export const calendarListFormatter = (googleAccounts) => {
    const calendars = []
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
-         const currentCalendarSelected = currentCalendarList.find(
-            (c) => c.calendarId === calendar.id
-         )
          calendars.push({
             accountId: account._id,
             calendarId: calendar.id,
@@ -144,9 +245,7 @@ export const calendarListFormatter = (currentCalendarList, googleAccounts) => {
             color: calendar.backgroundColor,
             accessRole: calendar.accessRole,
             isPrimary: calendar.primary || false,
-            selected: currentCalendarSelected
-               ? currentCalendarSelected.selected
-               : calendar.selected || false
+            selected: calendar ? calendar.selected : calendar.selected || false
          })
       })
    })

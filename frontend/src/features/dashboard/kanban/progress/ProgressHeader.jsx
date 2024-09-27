@@ -220,7 +220,7 @@ ProgressHeader.propTypes = {
 
    deleteProgress: PropTypes.func.isRequired,
    updateProgress: PropTypes.func.isRequired,
-   page: PropTypes.object.isRequired
+   page: PropTypes.object
 }
 
 const mapStateToProps = (state) => ({
