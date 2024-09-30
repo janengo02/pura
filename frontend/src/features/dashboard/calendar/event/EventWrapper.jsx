@@ -112,14 +112,26 @@ const EventWrapper = ({
                      {event.calendar}
                      {event.syncInfo ? 'Synced acc: ' : ''}
                      {event.syncInfo?.map((si) => (
-                        <Text color='red'>
-                           {
-                              googleAccounts.find(
-                                 (acc) => acc.accountId === si.account_id
-                              )?.accountEmail
-                           }
-                           {si.slotSyncError ? ' (sync error)' : ''}
-                        </Text>
+                        <>
+                           {si.slotSyncError ? (
+                              <Text color='red'>
+                                 {
+                                    googleAccounts.find(
+                                       (acc) => acc.accountId === si.account_id
+                                    )?.accountEmail
+                                 }
+                                 {` (sync error)`}
+                              </Text>
+                           ) : (
+                              <Text>
+                                 {
+                                    googleAccounts.find(
+                                       (acc) => acc.accountId === si.account_id
+                                    )?.accountEmail
+                                 }
+                              </Text>
+                           )}
+                        </>
                      ))}
                      <Text color='red'>
                         {event.eventSyncError ? 'Sync error' : ''}

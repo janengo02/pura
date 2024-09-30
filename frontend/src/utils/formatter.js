@@ -1,4 +1,5 @@
 import moment from 'moment'
+import { eqTime } from './dates'
 
 export const stringToDateTimeLocal = (dString) => {
    const d = moment(dString).format('YYYY-MM-DDTkk:mm')
@@ -82,10 +83,12 @@ export const eventListFormatter = (googleAccounts, tasks) => {
                      ev.syncInfo.find((si) => si.event_id === event.id)
                   )
                   const isSyncError =
-                     syncedStart !== events[puraOriginalEventIndex].start ||
-                     syncedEnd !== events[puraOriginalEventIndex].end ||
+                     !eqTime(
+                        syncedStart,
+                        events[puraOriginalEventIndex].start
+                     ) ||
+                     !eqTime(syncedEnd, events[puraOriginalEventIndex].end) ||
                      event.summary !== events[puraOriginalEventIndex].title
-
                   events.push({
                      id: event.id,
                      title: event.summary,
@@ -180,8 +183,8 @@ export const addNewAccountEventListFormatter = (
                   ev.syncInfo.find((si) => si.event_id === event.id)
                )
                const isSyncError =
-                  syncedStart !== events[puraOriginalEventIndex].start ||
-                  syncedEnd !== events[puraOriginalEventIndex].end ||
+                  !eqTime(syncedStart, events[puraOriginalEventIndex].start) ||
+                  !eqTime(syncedEnd, events[puraOriginalEventIndex].end) ||
                   event.summary !== events[puraOriginalEventIndex].title
 
                events.push({

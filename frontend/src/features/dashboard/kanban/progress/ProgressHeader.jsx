@@ -42,7 +42,6 @@ const ProgressHeader = ({
    _id,
    progress_order
 }) => {
-   console.log('rendered')
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)
    const dropdownMenu = useDisclosure()
