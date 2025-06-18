@@ -1,5 +1,4 @@
 import moment from 'moment'
-import { eqTime } from './dates'
 
 export const stringToDateTimeLocal = (dString) => {
    const d = moment(dString).format('YYYY-MM-DDTkk:mm')
@@ -22,17 +21,10 @@ export const stringToTime = (dString) => {
 
 export const eventListFormatter = (googleAccounts, tasks) => {
    const events = []
-   let syncedGoogleEvents = []
    tasks.forEach((task) => {
       task.schedule.forEach((slot, slotIndex) => {
          const newStart = Date.parse(slot.start)
          const newEnd = Date.parse(slot.end)
-         if (slot.sync_info.length > 0) {
-            syncedGoogleEvents = [
-               ...syncedGoogleEvents,
-               ...slot.sync_info.map((si) => si.event_id)
-            ]
-         }
          events.push({
             id: task._id,
             pura_schedule_index: slotIndex,
@@ -44,8 +36,7 @@ export const eventListFormatter = (googleAccounts, tasks) => {
             color: '#805AD5',
             accessRole: 'owner',
             calendarVisible: true,
-            accountId: null,
-            syncInfo: slot.sync_info
+            accountId: null
          })
       })
    })
@@ -59,82 +50,23 @@ export const eventListFormatter = (googleAccounts, tasks) => {
             ) {
                const newStart = Date.parse(event.start.dateTime)
                const newEnd = Date.parse(event.end.dateTime)
-               const syncedStart = new Date(newStart)
-               const syncedEnd = new Date(newEnd)
-               const isSyncedGoogleEvent = syncedGoogleEvents.includes(event.id)
-               if (!isSyncedGoogleEvent) {
-                  events.push({
-                     id: event.id,
-                     title: event.summary,
-                     start: syncedStart,
-                     end: syncedEnd,
-                     calendarId: calendar.id,
-                     calendar: calendar.summary,
-                     color: calendar.backgroundColor,
-                     accessRole: calendar.accessRole,
-                     calendarVisible: calendar
-                        ? calendar.selected
-                        : calendar.selected || false,
-                     accountId: account._id,
-                     hideOriginalEvent: false
-                  })
-               } else {
-                  const puraOriginalEventIndex = events.findIndex((ev) =>
-                     ev.syncInfo.find((si) => si.event_id === event.id)
-                  )
-                  const isSyncError =
-                     !eqTime(
-                        syncedStart,
-                        events[puraOriginalEventIndex].start
-                     ) ||
-                     !eqTime(syncedEnd, events[puraOriginalEventIndex].end) ||
-                     event.summary !== events[puraOriginalEventIndex].title
-                  events.push({
-                     id: event.id,
-                     title: event.summary,
-                     start: syncedStart,
-                     end: syncedEnd,
-                     calendarId: calendar.id,
-                     calendar: calendar.summary,
-                     color: calendar.backgroundColor,
-                     accessRole: calendar.accessRole,
-                     calendarVisible: calendar
-                        ? calendar.selected
-                        : calendar.selected || false,
-                     accountId: account._id,
-                     hideOriginalEvent: !isSyncError,
-                     eventSyncError: isSyncError,
-                     puraEventId: isSyncError
-                        ? events[puraOriginalEventIndex].id
-                        : undefined
-                  })
-
-                  if (isSyncError) {
-                     events[puraOriginalEventIndex].syncInfo = events[
-                        puraOriginalEventIndex
-                     ].syncInfo.map((si) =>
-                        si.event_id === event.id
-                           ? { ...si, slotSyncError: true }
-                           : si
-                     )
-                  }
-               }
+               events.push({
+                  id: event.id,
+                  title: event.summary,
+                  start: new Date(newStart),
+                  end: new Date(newEnd),
+                  calendarId: calendar.id,
+                  calendar: calendar.summary,
+                  color: calendar.backgroundColor,
+                  accessRole: calendar.accessRole,
+                  calendarVisible: calendar
+                     ? calendar.selected
+                     : calendar.selected || false,
+                  accountId: account._id
+               })
             }
          })
       })
-   })
-   const unFoundEvents = syncedGoogleEvents.filter(
-      (eventId) => !events.find((ev) => ev.id === eventId)
-   )
-   unFoundEvents.forEach((unFoundEventId) => {
-      const puraOriginalEventIndex = events.findIndex((ev) =>
-         ev.syncInfo.find((si) => si.event_id === unFoundEventId)
-      )
-      events[puraOriginalEventIndex].syncInfo = events[
-         puraOriginalEventIndex
-      ].syncInfo.map((si) =>
-         si.event_id === unFoundEventId ? { ...si, slotSyncError: true } : si
-      )
    })
 
    return events
@@ -147,9 +79,6 @@ export const addNewAccountEventListFormatter = (
    const events = currentCalendarEvents.filter(
       (ev) => ev.accountId !== newGoogleAccountEvents._id
    )
-   const syncedGoogleEvents = events
-      .map((ev) => ev.syncInfo.map((si) => si.event_id))
-      .flat()
    newGoogleAccountEvents.calendars.forEach((calendar) => {
       calendar?.items?.forEach((event) => {
          // @todo: Deal with full date events
@@ -159,79 +88,22 @@ export const addNewAccountEventListFormatter = (
          ) {
             const newStart = Date.parse(event.start.dateTime)
             const newEnd = Date.parse(event.end.dateTime)
-            const syncedStart = new Date(newStart)
-            const syncedEnd = new Date(newEnd)
-            const isSyncedGoogleEvent = syncedGoogleEvents.includes(event.id)
-            if (!isSyncedGoogleEvent) {
-               events.push({
-                  id: event.id,
-                  title: event.summary,
-                  start: syncedStart,
-                  end: syncedEnd,
-                  calendarId: calendar.id,
-                  calendar: calendar.summary,
-                  color: calendar.backgroundColor,
-                  accessRole: calendar.accessRole,
-                  calendarVisible: calendar
-                     ? calendar.selected
-                     : calendar.selected || false,
-                  accountId: newGoogleAccountEvents._id,
-                  hideOriginalEvent: false
-               })
-            } else {
-               const puraOriginalEventIndex = events.findIndex((ev) =>
-                  ev.syncInfo.find((si) => si.event_id === event.id)
-               )
-               const isSyncError =
-                  !eqTime(syncedStart, events[puraOriginalEventIndex].start) ||
-                  !eqTime(syncedEnd, events[puraOriginalEventIndex].end) ||
-                  event.summary !== events[puraOriginalEventIndex].title
-
-               events.push({
-                  id: event.id,
-                  title: event.summary,
-                  start: syncedStart,
-                  end: syncedEnd,
-                  calendarId: calendar.id,
-                  calendar: calendar.summary,
-                  color: calendar.backgroundColor,
-                  accessRole: calendar.accessRole,
-                  calendarVisible: calendar
-                     ? calendar.selected
-                     : calendar.selected || false,
-                  accountId: newGoogleAccountEvents._id,
-                  hideOriginalEvent: !isSyncError,
-                  eventSyncError: isSyncError,
-                  puraEventId: isSyncError
-                     ? events[puraOriginalEventIndex].id
-                     : undefined
-               })
-
-               if (isSyncError) {
-                  events[puraOriginalEventIndex].syncInfo = events[
-                     puraOriginalEventIndex
-                  ].syncInfo.map((si) =>
-                     si.event_id === event.id
-                        ? { ...si, slotSyncError: true }
-                        : si
-                  )
-               }
-            }
+            events.push({
+               id: event.id,
+               title: event.summary,
+               start: new Date(newStart),
+               end: new Date(newEnd),
+               calendarId: calendar.id,
+               calendar: calendar.summary,
+               color: calendar.backgroundColor,
+               accessRole: calendar.accessRole,
+               calendarVisible: calendar
+                  ? calendar.selected
+                  : calendar.selected || false,
+               accountId: newGoogleAccountEvents._id
+            })
          }
       })
-   })
-   const unFoundEvents = syncedGoogleEvents.filter(
-      (eventId) => !events.find((ev) => ev.id === eventId)
-   )
-   unFoundEvents.forEach((unFoundEventId) => {
-      const puraOriginalEventIndex = events.findIndex((ev) =>
-         ev.syncInfo.find((si) => si.event_id === unFoundEventId)
-      )
-      events[puraOriginalEventIndex].syncInfo = events[
-         puraOriginalEventIndex
-      ].syncInfo.map((si) =>
-         si.event_id === unFoundEventId ? { ...si, slotSyncError: true } : si
-      )
    })
 
    return events
@@ -371,5 +243,41 @@ export const updateEventFormatter = (currentEventList, updatedEvent) => {
    )
    updatedEventList[updatedEventIndex].start = new Date(newStart)
    updatedEventList[updatedEventIndex].end = new Date(newEnd)
+   return updatedEventList
+}
+
+export const addEventFormatter = (
+   googleCalendars,
+   currentEventList,
+   accountId,
+   newEvent
+) => {
+   // Find the primary calendar for the given accountId
+   const calendar = googleCalendars.find(
+      (acc) => acc.accountId === accountId && acc.isPrimary
+   )
+
+   if (!calendar) {
+      // If no primary calendar found, just return the current list
+      return currentEventList
+   }
+
+   const newStart = Date.parse(newEvent.start.dateTime)
+   const newEnd = Date.parse(newEvent.end.dateTime)
+
+   const eventToAdd = {
+      id: newEvent.id,
+      title: newEvent.summary,
+      start: new Date(newStart),
+      end: new Date(newEnd),
+      calendarId: calendar.calendarId,
+      calendar: calendar.title,
+      color: calendar.color,
+      accessRole: calendar.accessRole,
+      calendarVisible: calendar.selected || false,
+      accountId: accountId
+   }
+
+   const updatedEventList = [...currentEventList, eventToAdd]
    return updatedEventList
 }

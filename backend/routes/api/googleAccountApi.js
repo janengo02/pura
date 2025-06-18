@@ -191,10 +191,7 @@ router.post('/create-event', auth, async (req, res) => {
          }
       })
       const task = await Task.findById(target_task._id)
-      task.schedule[slot_index].sync_info.push({
-         account_id: account_id,
-         event_id: event.data.id
-      })
+
       task.update_date = new Date()
       await task.save()
 

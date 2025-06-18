@@ -26,7 +26,7 @@ export const getFirstPage = () => async (dispatch) => {
 // Update a task
 export const optimisticMoveTask = (result, tasks, task_map) => {
    const { destination, source, draggableId } = result
-   if (!destination) {
+   if (!destination || !source || !draggableId) {
       return
    }
    if (

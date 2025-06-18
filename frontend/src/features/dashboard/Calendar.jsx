@@ -53,9 +53,7 @@ const Calendar = ({
       }),
       []
    )
-   const visibleEvents = googleEvents.filter(
-      (ev) => ev.calendarVisible && !ev.hideOriginalEvent
-   )
+   const visibleEvents = googleEvents.filter((ev) => ev.calendarVisible)
    const onRangeChange = useCallback(
       (newRange) => {
          if (!newRange) {

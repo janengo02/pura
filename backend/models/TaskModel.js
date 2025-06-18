@@ -12,17 +12,7 @@ const TaskSchema = new mongoose.Schema({
          },
          end: {
             type: Date
-         },
-         sync_info: [
-            {
-               account_id: {
-                  type: String
-               },
-               event_id: {
-                  type: String
-               }
-            }
-         ]
+         }
       }
    ],
    content: {

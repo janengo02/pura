@@ -164,6 +164,9 @@ router.post('/move-task/:id', [auth], async (req, res) => {
       })
    }
    const { destination, source, draggableId } = req.body.result
+   if (!destination || !source || !draggableId) {
+      return res.json()
+   }
    const startSpace = +source.droppableId
    const endSpace = +destination.droppableId
 

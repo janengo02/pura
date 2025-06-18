@@ -3,6 +3,7 @@ import {
    GOOGLE_CALENDAR_AUTH_ERROR,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
+   GOOGLE_CALENDAR_ADD_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT
 } from '../actions/types'
 import {
@@ -14,7 +15,8 @@ import {
    calendarListFormatter,
    eventListChangeVisibilityFormatter,
    eventListFormatter,
-   updateEventFormatter
+   updateEventFormatter,
+   addEventFormatter
 } from '../utils/formatter'
 
 const initialState = {
@@ -75,14 +77,23 @@ function googleAccountReducer(state = initialState, action) {
             ...state,
             googleEvents: updateEventFormatter(state.googleEvents, payload)
          }
+      case GOOGLE_CALENDAR_ADD_EVENT:
+         return {
+            ...state,
+            googleEvents: addEventFormatter(
+               state.googleCalendars,
+               state.googleEvents,
+               payload.accountId,
+               payload.event
+            )
+         }
       case GOOGLE_CALENDAR_AUTH_ERROR:
          return {
             ...state,
             isLoggedIn: false,
             googleEvents: [],
             googleCalendars: [],
-            loading: false,
-            range: payload.range
+            loading: false
          }
       default:
          return state

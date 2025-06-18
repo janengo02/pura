@@ -20,7 +20,8 @@
       "googleapis": "^137.1.0",
       "gravatar": "^1.8.2",
       "jsonwebtoken": "^9.0.2",
-      "mongoose": "^8.0.0",
+      "mongodb": "^6.17.0",
+      "mongoose": "^8.15.2",
       "request": "^2.88.2"
    },
    "devDependencies": {
