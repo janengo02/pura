@@ -3,7 +3,6 @@ import {
    GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
    SHOW_TASK,
-   GET_PAGE,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
    GOOGLE_CALENDAR_ADD_EVENT,
@@ -102,10 +101,6 @@ export const deleteGoogleCalendarEvent = (reqData) => async (dispatch) => {
       dispatch({
          type: GOOGLE_CALENDAR_UPDATE_EVENT,
          payload: res.data.event
-      })
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
       })
    } catch (err) {
       const errors = err.response.data.errors

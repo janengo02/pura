@@ -125,9 +125,12 @@ const TaskModal = ({
                      boxShadow='xl'
                      w='665px'
                      maxW='80vw'
-                     overflow={'scroll'}
                   >
-                     <CardHeader display='flex' justifyContent='flex-end'>
+                     <CardHeader
+                        padding={0}
+                        display='flex'
+                        justifyContent='flex-end'
+                     >
                         <Menu
                            isLazy
                            isOpen={modalMenu.isOpen}

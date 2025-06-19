@@ -228,34 +228,21 @@ router.post('/create-event', auth, async (req, res) => {
 // @access  Private
 router.post('/delete-event/:eventId', auth, async (req, res) => {
    try {
+      const { accountId, calendarId } = req.body
       const oath2Client = newOath2Client()
       const user = await User.findById(req.user.id)
-      oath2Client.setCredentials({ refresh_token: user.google_refresh_token })
+      const refreshToken = user.google_accounts.find(
+         (acc) => acc._id.toString() === accountId
+      ).refresh_token
+      oath2Client.setCredentials({ refresh_token: refreshToken })
       const calendar = google.calendar('v3')
       await calendar.events.delete({
          auth: oath2Client,
-         calendarId: 'primary', // TODO: Allow to add more calendars
+         calendarId: calendarId,
          eventId: req.params.eventId
       })
-      const { pageId } = req.body
-
-      // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: pageId },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule'])
 
       res.json({
-         page: newPage,
          event: { id: req.params.eventId, deleted: true }
       })
    } catch (err) {

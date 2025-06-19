@@ -35,7 +35,8 @@ const EventWrapper = ({
    const onDelete = async () => {
       const reqData = {
          eventId: event.id,
-         pageId: _id
+         calendarId: event.calendarId,
+         accountId: event.accountId
       }
       await deleteGoogleCalendarEvent(reqData)
    }
@@ -81,15 +82,6 @@ const EventWrapper = ({
                         />
                      ) : (
                         <>
-                           <IconButton
-                              icon={<PiPencilLine />}
-                              variant='ghost'
-                              size='sm'
-                              colorScheme='gray'
-                              onClick={async (e) => {
-                                 e.preventDefault()
-                              }}
-                           />
                            <IconButton
                               icon={<PiTrash />}
                               variant='ghost'
