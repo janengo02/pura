@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import {
@@ -60,8 +60,7 @@ const TaskModal = ({
       }
       deleteTask(formData)
    }
-   // eslint-disable-next-line react-hooks/exhaustive-deps
-   const onUpdateTitle = async () => {
+   const onUpdateTitle = useCallback(async () => {
       const formData = {
          page_id: _id,
          task_id: task._id,
@@ -71,28 +70,29 @@ const TaskModal = ({
          formData.title = 'Untitled'
       }
       await updateTask(formData)
-   }
-   const onUpdateContent = async () => {
+   }, [_id, task?._id, taskTitle, updateTask])
+
+   const onUpdateContent = useCallback(async () => {
       const formData = {
          page_id: _id,
          task_id: task._id,
          content: taskContent
       }
       await updateTask(formData)
-   }
+   }, [_id, task?._id, taskContent, updateTask])
 
    useEffect(() => {
       if (taskTitle && taskTitle !== task.title) {
          const timeOutId = setTimeout(() => onUpdateTitle(), 500)
          return () => clearTimeout(timeOutId)
       }
-   }, [taskTitle])
+   }, [onUpdateTitle, task?.title, taskTitle])
    useEffect(() => {
       if (taskContent && taskContent !== task.content) {
          const timeOutId = setTimeout(() => onUpdateContent(), 500)
          return () => clearTimeout(timeOutId)
       }
-   }, [taskContent])
+   }, [onUpdateContent, task?.content, taskContent])
    return (
       <>
          {modalCard.isOpen ? (
@@ -119,11 +119,13 @@ const TaskModal = ({
                />
                <ScaleFade initialScale={0.9} in={modalCard.isOpen}>
                   <Card
-                     size='2xl'
                      paddingX={6}
                      paddingY={4}
                      borderRadius={8}
                      boxShadow='xl'
+                     w='665px'
+                     maxW='80vw'
+                     overflow={'scroll'}
                   >
                      <CardHeader display='flex' justifyContent='flex-end'>
                         <Menu
