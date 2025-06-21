@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { getFirstPage, moveTaskAction } from '../../actions/pageActions'
 import { createGroup } from '../../actions/groupActions'
 import { createProgress } from '../../actions/progressActions'
-import { DragDropContext } from 'react-beautiful-dnd'
+import { DragDropContext } from '@hello-pangea/dnd'
 import {
    Button,
    Flex,

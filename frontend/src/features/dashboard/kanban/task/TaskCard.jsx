@@ -13,7 +13,7 @@ import {
    Text,
    useDisclosure
 } from '@chakra-ui/react'
-import { Draggable } from 'react-beautiful-dnd'
+import { Draggable } from '@hello-pangea/dnd'
 import { PiDotsThreeBold, PiPencilLine, PiTrash } from 'react-icons/pi'
 import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
