@@ -5,9 +5,7 @@
    "main": "server.js",
    "scripts": {
       "start": "node server",
-      "server": "nodemon",
-      "client": "npm start --prefix frontend",
-      "dev": "concurrently \"npm run server\" \"npm run frontend \""
+      "server": "nodemon"
    },
    "author": "Jane Ngo",
    "license": "MIT",

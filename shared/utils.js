@@ -62,6 +62,63 @@ function moveTask({ tasks, task_map, destination, source, draggableId }) {
    }
 }
 
+function addGroup({ tasks, task_map, group_order, progress_order, newGroup }) {
+   const newTaskMap = [...task_map]
+   const taskCount = tasks.length
+   for (let i = 1; i <= progress_order.length; i++) {
+      newTaskMap.push(taskCount)
+   }
+   const newGroupOrder = [...group_order]
+   newGroupOrder.push(newGroup)
+   return { group_order: newGroupOrder, task_map: newTaskMap }
+}
+
+function deleteGroup({
+   group_id,
+   progress_order,
+   group_order,
+   tasks,
+   task_map
+}) {
+   const originalTaskMap = [...task_map]
+   const newTaskMap = [...task_map]
+   const newTasks = [...tasks]
+   const newGroupOrder = [...group_order]
+
+   const groupIndex = group_order.findIndex((g) =>
+      typeof g === 'object' && g !== null ? g._id === group_id : g === group_id
+   )
+   if (groupIndex === -1) {
+      return {
+         group_order: newGroupOrder,
+         tasks: newTasks,
+         task_map: newTaskMap
+      }
+   }
+   const progressCount = progress_order.length
+   const mapStart = progressCount * groupIndex
+   const mapEnd = mapStart + progressCount - 1
+
+   const taskCount =
+      mapStart === 0
+         ? newTaskMap[mapEnd]
+         : newTaskMap[mapEnd] - newTaskMap[mapStart - 1]
+   for (let i = mapEnd + 1; i < newTaskMap.length; i++) {
+      newTaskMap[i] -= taskCount
+   }
+   newTaskMap.splice(mapStart, mapEnd - mapStart + 1)
+   newGroupOrder.splice(groupIndex, 1)
+
+   const newTaskStart = mapStart === 0 ? 0 : originalTaskMap[mapStart - 1]
+   const newTaskEnd = originalTaskMap[mapEnd] - 1
+   newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
+
+   console.log(newGroupOrder, newTasks, newTaskMap)
+   return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
+}
+
 module.exports = {
-   moveTask
+   moveTask,
+   addGroup,
+   deleteGroup
 }

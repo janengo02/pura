@@ -120,14 +120,6 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       res.json(response)
    } catch (err) {
       console.error('---ERROR---: ' + err.message)
-
-      if (err.kind === 'ObjectId') {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
-            ]
-         })
-      }
       res.status(500).json({
          errors: [
             { code: '500', title: 'alert-oops', msg: 'alert-server_error' }

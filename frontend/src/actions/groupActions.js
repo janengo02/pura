@@ -1,19 +1,35 @@
 import { v4 as uuid } from 'uuid'
 import cloneDeep from 'clone-deep'
 import { api } from '../utils'
-import { CREATE_GROUP, DELETE_GROUP, PAGE_ERROR, UPDATE_GROUP } from './types'
+import {
+   CREATE_GROUP,
+   CONFIRM_CREATE_GROUP,
+   DELETE_GROUP,
+   PAGE_ERROR,
+   UPDATE_GROUP
+} from './types'
 
 // Create new group
 export const createGroup = (reqData) => async (dispatch) => {
+   const tempGroupId = uuid()
+   const optimisticGroup = {
+      _id: tempGroupId,
+      title: '',
+      color: '#4A5568',
+      visibility: true
+   }
    dispatch({
       type: CREATE_GROUP,
-      payload: 'new'
+      payload: optimisticGroup
    })
    try {
       const res = await api.post(`/group/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: CREATE_GROUP,
-         payload: res.data.group_id
+         type: CONFIRM_CREATE_GROUP,
+         payload: {
+            temp_group_id: tempGroupId,
+            group_id: res.data.group_id
+         }
       })
    } catch (err) {
       const errors = err.response.data.errors
@@ -57,7 +73,9 @@ export const updateGroup = (reqData) => async (dispatch) => {
 export const deleteGroup = (reqData) => async (dispatch) => {
    dispatch({
       type: DELETE_GROUP,
-      payload: reqData.group_id
+      payload: {
+         group_id: reqData.group_id
+      }
    })
    try {
       await api.delete(`/group/${reqData.page_id}/${reqData.group_id}`)
@@ -74,43 +92,6 @@ export const deleteGroup = (reqData) => async (dispatch) => {
    }
 }
 
-export const optimisticCreateGroup = (
-   group_id,
-   progress_order,
-   group_order,
-   task_map,
-   tasks
-) => {
-   if (group_id === 'new') {
-      const newGroup = {
-         _id: uuid(),
-         title: '',
-         color: '#4A5568',
-         visibility: true,
-         isNew: true
-      }
-      const newTaskMap = cloneDeep(task_map)
-      const task_count = tasks.length
-      for (let i = 1; i <= progress_order.length; i++) {
-         newTaskMap.push(task_count)
-      }
-      const newGroupOrder = cloneDeep(group_order)
-      newGroupOrder.push(newGroup)
-      return { group_order: newGroupOrder, task_map: newTaskMap }
-   } else {
-      const newGroupOrder = group_order.map((g) =>
-         g.isNew
-            ? {
-                 ...g,
-                 _id: group_id,
-                 isNew: false
-              }
-            : g
-      )
-      return { group_order: newGroupOrder }
-   }
-}
-
 export const optimisticUpdateGroup = (updatedGroup, group_order) => {
    const { title, color, group_id } = updatedGroup
    const newGroupOrder = group_order.map((g) =>
@@ -123,40 +104,4 @@ export const optimisticUpdateGroup = (updatedGroup, group_order) => {
          : g
    )
    return { group_order: newGroupOrder }
-}
-
-export const optimisticDeleteGroup = (
-   group_id,
-   progress_order,
-   group_order,
-   tasks,
-   task_map
-) => {
-   const newTasks = cloneDeep(tasks)
-   const newTaskMap = cloneDeep(task_map)
-   const groupIndex = group_order.findIndex((g) => g._id === group_id)
-   const progressCount = progress_order.length
-   const mapStart = progressCount * groupIndex
-   const mapEnd = mapStart + progressCount - 1
-   let newTaskStart = 0
-   if (mapStart !== 0) {
-      newTaskStart = newTaskMap[mapStart - 1]
-   }
-   const newTaskEnd = newTaskMap[mapEnd] - 1
-
-   //   Prepare: Set up new group_order
-   const newGroupOrder = cloneDeep(group_order)
-   newGroupOrder.splice(groupIndex, 1)
-
-   //   Prepare: Set up new task_map
-   let taskCount = newTaskMap[mapEnd]
-   if (mapStart !== 0) {
-      taskCount = newTaskMap[mapEnd] - newTaskMap[mapStart - 1]
-   }
-   for (let i = mapEnd + 1; i < newTaskMap.length; i++) {
-      newTaskMap[i] -= taskCount
-   }
-   newTaskMap.splice(mapStart, mapEnd - mapStart + 1)
-   newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
-   return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
 }

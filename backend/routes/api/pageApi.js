@@ -29,15 +29,6 @@ router.get('/', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule'])
       res.json(page)
    } catch (err) {
-      if (err.kind === 'ObjectId') {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-page-notfound',
-            err
-         )
-      }
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
@@ -62,15 +53,6 @@ router.get('/:id', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule'])
       res.json(page)
    } catch (err) {
-      if (err.kind === 'ObjectId') {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-page-notfound',
-            err
-         )
-      }
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
@@ -155,15 +137,6 @@ router.post('/move-task/:id', [auth], async (req, res) => {
       await newPage.save()
       res.json()
    } catch (err) {
-      if (err.kind === 'ObjectId') {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-page-notfound',
-            err
-         )
-      }
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })

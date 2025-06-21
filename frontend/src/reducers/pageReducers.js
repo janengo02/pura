@@ -1,8 +1,4 @@
-import {
-   optimisticCreateGroup,
-   optimisticDeleteGroup,
-   optimisticUpdateGroup
-} from '../actions/groupActions'
+import { optimisticUpdateGroup } from '../actions/groupActions'
 import {
    optimisticCreateProgress,
    optimisticDeleteProgress,
@@ -17,12 +13,13 @@ import {
    UPDATE_PROGRESS,
    DELETE_PROGRESS,
    CREATE_GROUP,
+   CONFIRM_CREATE_GROUP,
    UPDATE_GROUP,
    DELETE_GROUP,
    CREATE_TASK,
    DELETE_TASK
 } from '../actions/types'
-import { moveTask } from '@pura/shared'
+import { moveTask, addGroup, deleteGroup } from '@pura/shared'
 
 const initialState = {
    pages: [],
@@ -96,12 +93,23 @@ function pageReducer(state = initialState, action) {
       case CREATE_GROUP:
          return {
             ...state,
-            ...optimisticCreateGroup(
-               payload,
-               state.progress_order,
-               state.group_order,
-               state.task_map,
-               state.tasks
+            ...addGroup({
+               tasks: state.tasks,
+               task_map: state.task_map,
+               group_order: state.group_order,
+               progress_order: state.progress_order,
+               newGroup: payload
+            }),
+            loading: false,
+            error: false
+         }
+      case CONFIRM_CREATE_GROUP:
+         return {
+            ...state,
+            group_order: state.group_order.map((group) =>
+               group._id === payload.temp_group_id
+                  ? { ...group, _id: payload.group_id }
+                  : group
             ),
             loading: false,
             error: false
@@ -116,13 +124,13 @@ function pageReducer(state = initialState, action) {
       case DELETE_GROUP:
          return {
             ...state,
-            ...optimisticDeleteGroup(
-               payload,
-               state.progress_order,
-               state.group_order,
-               state.tasks,
-               state.task_map
-            ),
+            ...deleteGroup({
+               group_id: payload.group_id,
+               progress_order: state.progress_order,
+               group_order: state.group_order,
+               tasks: state.tasks,
+               task_map: state.task_map
+            }),
             loading: false,
             error: false
          }

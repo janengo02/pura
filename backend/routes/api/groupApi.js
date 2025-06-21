@@ -8,13 +8,11 @@ const Page = require('../../models/PageModel')
 const Group = require('../../models/GroupModel')
 const Task = require('../../models/TaskModel')
 
-const {
-   validateGroup,
-   prepareGroupData,
-   updateTaskMapForGroup
-} = require('../../utils/groupHelpers')
+const { validateGroup, prepareGroupData } = require('../../utils/groupHelpers')
 const { validatePage } = require('../../utils/pageHelpers')
 const { sendErrorResponse } = require('../../utils/responseHelper')
+
+const { addGroup, deleteGroup } = require('../../../shared/utils')
 
 // @route   POST api/group/new/:page_id
 // @desc    Create a new group for the specified page.
@@ -39,7 +37,13 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          )
 
       const newGroup = prepareGroupData(req.body)
-      const { newTaskMap } = updateTaskMapForGroup(page)
+      const { task_map: newTaskMap } = addGroup({
+         tasks: page.tasks,
+         task_map: page.task_map,
+         group_order: page.group_order,
+         progress_order: page.progress_order,
+         newGroup
+      })
 
       const group = new Group(newGroup)
       await group.save()
@@ -130,12 +134,23 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
             'alert-group-notfound'
          )
 
-      const { newTasks, newTaskMap, newGroupOrder } = updateTaskMapForGroup(
-         page,
-         req.params.group_id
-      )
+      const {
+         group_order: newGroupOrder,
+         tasks: newTasks,
+         task_map: newTaskMap
+      } = deleteGroup({
+         group_id: req.params.group_id,
+         progress_order: page.progress_order,
+         group_order: page.group_order,
+         tasks: page.tasks,
+         task_map: page.task_map
+      })
 
-      for (let taskId of newTasks) {
+      // Delete tasks from DB if they're not in newTasks
+      const tasksToDelete = page.tasks.filter(
+         (taskId) => !newTasks.some((newTaskId) => taskId.equals(newTaskId))
+      )
+      for (let taskId of tasksToDelete) {
          await Task.deleteOne({ _id: taskId })
       }
 
