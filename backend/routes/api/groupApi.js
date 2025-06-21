@@ -1,134 +1,104 @@
 const express = require('express')
 const router = express.Router()
-const auth = require('../../middleware/auth')
+
 const { validationResult } = require('express-validator')
+const auth = require('../../middleware/auth')
 
 const Page = require('../../models/PageModel')
 const Group = require('../../models/GroupModel')
 const Task = require('../../models/TaskModel')
 
-// @route   POST api/group/new/:page-id
-// @desc    Create a new group
+const {
+   validateGroup,
+   prepareGroupData,
+   updateTaskMapForGroup
+} = require('../../utils/groupHelpers')
+const { validatePage } = require('../../utils/pageHelpers')
+const { sendErrorResponse } = require('../../utils/responseHelper')
+
+// @route   POST api/group/new/:page_id
+// @desc    Create a new group for the specified page.
+// @param   {string} page_id - The ID of the page where the group will be created.
+// @body    {string} title - The title of the new group.
+//          {string} color - The color of the new group.
 // @access  Private
 router.post('/new/:page_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
-   if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
-         ]
-      })
-   }
-
-   //   Validation: Form input
-   const result = validationResult(req)
-   if (!result.isEmpty()) {
-      return res.status(400).json({ errors: result.array() })
-   }
-
-   //   Prepare: Set up new group
-   const { title, color } = req.body
-   const newGroup = {}
-   if (title) newGroup.title = title
-   if (color) newGroup.color = color
-
-   //   Prepare: Set up new task_map
-   const newTaskMap = page.task_map
-   const task_count = page.tasks.length
-   for (let i = 1; i <= page.progress_order.length; i++) {
-      newTaskMap.push(task_count)
-   }
-
    try {
-      // Data: Add new group
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page)
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+
+      const result = validationResult(req)
+      if (!result.isEmpty())
+         return sendErrorResponse(
+            res,
+            400,
+            'alert-oops',
+            'alert-validation-error',
+            result.array()
+         )
+
+      const newGroup = prepareGroupData(req.body)
+      const { newTaskMap } = updateTaskMapForGroup(page)
+
       const group = new Group(newGroup)
       await group.save()
 
-      // Data: Add new group to page
-      const newPage = await Page.findOneAndUpdate(
+      const updatedPage = await Page.findOneAndUpdate(
          { _id: req.params.page_id },
-         {
-            $push: { group_order: group },
-            $set: { update_date: new Date() }
-         },
+         { $push: { group_order: group }, $set: { update_date: new Date() } },
          { new: true }
       )
 
-      // Data: Update page's task_map
-      newPage.task_map = newTaskMap
-      await newPage.save()
+      updatedPage.task_map = newTaskMap
+      await updatedPage.save()
 
       res.json({ group_id: group._id })
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }
 })
 
-// @route   POST api/group/update/:page-id/:group-id
-// @desc    Update group
+// @route   POST api/group/update/:page_id/:group_id
+// @desc    Update the specified group within the specified page.
+// @param   {string} page_id - The ID of the page containing the group.
+//          {string} group_id - The ID of the group to be updated.
+// @body    {string} title - The new title for the group (optional).
+//          {string} color - The new color for the group (optional).
 // @access  Private
 router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
-   if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
-         ]
-      })
-   }
-
-   //   Validation: Check if group exists
-   const group = await Group.findById(req.params.group_id)
-   if (!group) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-group-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Form input
-   const result = validationResult(req)
-   if (!result.isEmpty()) {
-      return res.status(400).json({ errors: result.array() })
-   }
-
-   //   Prepare: Set up new group
-   const { title, color } = req.body
-   group.update_date = new Date()
-   if (title) group.title = title
-   if (color) group.color = color
-
    try {
-      // Data: update group
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page)
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+
+      const group = await validateGroup(req.params.group_id)
+      if (!group)
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-group-notfound'
+         )
+
+      const result = validationResult(req)
+      if (!result.isEmpty())
+         return sendErrorResponse(
+            res,
+            400,
+            'alert-oops',
+            'alert-validation-error',
+            result.array()
+         )
+
+      const { title, color } = req.body
+      group.update_date = new Date()
+      if (title) group.title = title
+      if (color) group.color = color
+
       await group.save()
-      // Data: get new page
-      const newPage = await Page.findOneAndUpdate(
+
+      await Page.findOneAndUpdate(
          { _id: req.params.page_id },
          { $set: { update_date: new Date() } },
          { new: true }
@@ -136,102 +106,50 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
 
       res.json()
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }
 })
 
-// @route   DELETE api/group/:page-id/:group-id
-// @desc    Delete a group
+// @route   DELETE api/group/:page_id/:group_id
+// @desc    Delete the specified group and its associated tasks from the specified page.
+// @param   {string} page_id - The ID of the page containing the group.
+//          {string} group_id - The ID of the group to be deleted.
 // @access  Private
 router.delete('/:page_id/:group_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
-   if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
-         ]
-      })
-   }
-
-   //   Validation: Check if group exists
-   const group = await Group.findById(req.params.group_id)
-   if (!group) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-group-notfound' }
-         ]
-      })
-   }
-
-   //   Prepare: Set up new tasks array
-   var newTasks = page.tasks
-   var newTaskMap = page.task_map
-   const { group_id } = req.params
-   const groupIndex = page.group_order.indexOf(group_id)
-   const progressCount = page.progress_order.length
-   const mapStart = progressCount * groupIndex
-   const mapEnd = mapStart + progressCount - 1
-   let newTaskStart = 0
-   if (mapStart !== 0) {
-      newTaskStart = newTaskMap[mapStart - 1]
-   }
-   const newTaskEnd = newTaskMap[mapEnd] - 1
-
-   //   Prepare: Set up new group_order
-   let newGroupOrder = page.group_order
-   newGroupOrder.splice(groupIndex, 1)
-
-   //   Prepare: Set up new task_map
-   let taskCount = newTaskMap[mapEnd]
-   if (mapStart !== 0) {
-      taskCount = newTaskMap[mapEnd] - newTaskMap[mapStart - 1]
-   }
-   for (let i = mapEnd + 1; i < newTaskMap.length; i++) {
-      newTaskMap[i] -= taskCount
-   }
-   newTaskMap.splice(mapStart, mapEnd - mapStart + 1)
-
    try {
-      // Data: Delete tasks
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page)
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
 
-      for (let i = newTaskStart; i <= newTaskEnd; i++) {
-         deletedTaskId = newTasks[i]
-         await Task.deleteOne({ _id: deletedTaskId })
+      const group = await validateGroup(req.params.group_id)
+      if (!group)
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-group-notfound'
+         )
+
+      const { newTasks, newTaskMap, newGroupOrder } = updateTaskMapForGroup(
+         page,
+         req.params.group_id
+      )
+
+      for (let taskId of newTasks) {
+         await Task.deleteOne({ _id: taskId })
       }
-      newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
 
-      // Data: Delete group
       await group.deleteOne()
 
-      // Data: Update page's arrays
       page.group_order = newGroupOrder
       page.tasks = newTasks
       page.task_map = newTaskMap
       page.update_date = new Date()
       await page.save()
+
       res.json()
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }
 })
 

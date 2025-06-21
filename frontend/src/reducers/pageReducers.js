@@ -3,7 +3,6 @@ import {
    optimisticDeleteGroup,
    optimisticUpdateGroup
 } from '../actions/groupActions'
-import { optimisticMoveTask } from '../actions/pageActions'
 import {
    optimisticCreateProgress,
    optimisticDeleteProgress,
@@ -23,6 +22,7 @@ import {
    CREATE_TASK,
    DELETE_TASK
 } from '../actions/types'
+import { moveTask } from '@pura/shared'
 
 const initialState = {
    pages: [],
@@ -52,7 +52,11 @@ function pageReducer(state = initialState, action) {
       case MOVE_TASK:
          return {
             ...state,
-            ...optimisticMoveTask(payload, state.tasks, state.task_map),
+            ...moveTask({
+               tasks: state.tasks,
+               task_map: state.task_map,
+               ...payload
+            }),
             loading: false,
             error: false
          }

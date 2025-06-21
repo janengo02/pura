@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { getFirstPage, moveTask } from '../../actions/pageActions'
+import { getFirstPage, moveTaskAction } from '../../actions/pageActions'
 import { createGroup } from '../../actions/groupActions'
 import { createProgress } from '../../actions/progressActions'
 import { DragDropContext } from 'react-beautiful-dnd'
@@ -25,7 +25,7 @@ import Column from './kanban/progress/Column'
 const Kanban = ({
    // Redux props
    getFirstPage,
-   moveTask,
+   moveTaskAction,
    createGroup,
    createProgress,
 
@@ -64,7 +64,7 @@ const Kanban = ({
          result: result
       }
 
-      moveTask(reqData)
+      moveTaskAction(reqData)
    }
    return (
       <>
@@ -173,7 +173,7 @@ const Kanban = ({
 
 Kanban.propTypes = {
    getFirstPage: PropTypes.func.isRequired,
-   moveTask: PropTypes.func.isRequired,
+   moveTaskAction: PropTypes.func.isRequired,
    createGroup: PropTypes.func.isRequired,
    createProgress: PropTypes.func.isRequired,
 
@@ -196,7 +196,7 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
    getFirstPage,
-   moveTask,
+   moveTaskAction,
    createGroup,
    createProgress
 })(Kanban)

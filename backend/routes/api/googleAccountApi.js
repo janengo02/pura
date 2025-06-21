@@ -1,56 +1,25 @@
 const express = require('express')
+const dotenv = require('dotenv')
 const router = express.Router()
-const auth = require('../../middleware/auth')
-const { google } = require('googleapis')
 
+const auth = require('../../middleware/auth')
 const User = require('../../models/UserModel')
 const Page = require('../../models/PageModel')
 const Task = require('../../models/TaskModel')
-const dotenv = require('dotenv')
+
+const { sendErrorResponse } = require('../../utils/responseHelper')
+const {
+   setOAuthCredentials,
+   listEvent,
+   updateGoogleAccountSyncStatus
+} = require('../../utils/googleAccountHelper')
 
 dotenv.config()
 
-const newOath2Client = () =>
-   new google.auth.OAuth2(
-      process.env?.GOOGLE_CLIENT_ID,
-      process.env?.GOOGLE_CLIENT_SECRET,
-      process.env?.APP_PATH
-   )
-const listEvent = async (refreshToken, minDate, maxDate) => {
-   try {
-      const oath2Client = newOath2Client()
-      oath2Client.setCredentials({ refresh_token: refreshToken })
-      const googleCalendarApi = google.calendar('v3')
-      const calendars = await googleCalendarApi.calendarList.list({
-         auth: oath2Client,
-         maxResults: 50,
-         showDeleted: false
-      })
-      const events = await Promise.all(
-         calendars.data.items.map(async (calendar) => {
-            const event = await googleCalendarApi.events.list({
-               auth: oath2Client,
-               calendarId: calendar.id,
-               timeMin: minDate,
-               timeMax: maxDate,
-               singleEvents: true,
-               orderBy: 'startTime',
-               showDeleted: false,
-               showHiddenInvitations: true
-            })
-            return {
-               ...event.data,
-               ...calendar
-            }
-         })
-      )
-      return events
-   } catch (err) {
-      return []
-   }
-}
 // @route   GET api/google-account/list-events
-// @desc    Get Google Events
+// @desc    Retrieve Google Calendar events for all linked accounts within a specified date range.
+// @params  minDate (query) - Minimum date for filtering events.
+//          maxDate (query) - Maximum date for filtering events.
 // @access  Private
 router.get('/list-events', auth, async (req, res) => {
    try {
@@ -75,40 +44,29 @@ router.get('/list-events', auth, async (req, res) => {
             }
          })
       )
-      user.google_accounts = user.google_accounts.map((acc) =>
-         notSyncedAccounts.includes(acc._id)
-            ? { ...acc, sync_status: false }
-            : { ...acc, sync_status: true }
-      )
-      user.update_date = new Date()
-      user.save()
+      updateGoogleAccountSyncStatus(user, notSyncedAccounts)
       res.json(gAccounts)
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-      // TODO: Handle Google authentication error
-      res.json(err.code)
-      // res.status(err.code).json({
-      //    errors: [{ code: err.code, title: 'alert-oops', msg: err.message }]
-      // })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 
 // @route   POST api/google-account/add-account
-// @desc    Create Google Account Auth Tokens
+// @desc    Add a new Google account and retrieve its authentication tokens.
+// @params  code (body) - Authorization code from Google OAuth.
+//          range (body) - Date range for initial calendar sync.
 // @access  Private
 router.post('/add-account', auth, async (req, res) => {
    try {
-      const oath2Client = newOath2Client()
       const { code, range } = req.body
+      const oath2Client = setOAuthCredentials()
       const { tokens } = await oath2Client.getToken(code)
       const { refresh_token, id_token } = tokens
-      //get email
       const ticket = await oath2Client.verifyIdToken({
          idToken: id_token,
          audience: process.env?.GOOGLE_CLIENT_ID
       })
-      const payload = ticket.getPayload()
-      const account_email = payload['email']
+      const account_email = ticket.getPayload()['email']
       const user = await User.findById(req.user.id)
       let existingGoogleAccount = user.google_accounts.find(
          (acc) => acc.account_email === account_email
@@ -122,7 +80,7 @@ router.post('/add-account', auth, async (req, res) => {
          user.update_date = new Date()
          user.save()
       } else {
-         const newUSer = await User.findOneAndUpdate(
+         const newUser = await User.findOneAndUpdate(
             { _id: req.user.id },
             {
                $push: {
@@ -136,7 +94,7 @@ router.post('/add-account', auth, async (req, res) => {
             },
             { new: true }
          )
-         existingGoogleAccount = newUSer.google_accounts.find(
+         existingGoogleAccount = newUser.google_accounts.find(
             (acc) => acc.account_email === account_email
          )
       }
@@ -146,7 +104,6 @@ router.post('/add-account', auth, async (req, res) => {
          range[0],
          range[1]
       )
-
       res.json({
          _id: existingGoogleAccount._id,
          account_email: existingGoogleAccount.account_email,
@@ -154,48 +111,42 @@ router.post('/add-account', auth, async (req, res) => {
          calendars: newAccountCalendars
       })
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 
 // @route   POST api/google-account/create-event
-// @desc    Create Google Event
+// @desc    Create a new event in the user's Google Calendar.
+// @params  target_task (body) - Task details for the event.
+//          slot_index (body) - Index of the time slot in the task schedule.
+//          page_id (body) - ID of the page associated with the task.
+//          account_id (body) - ID of the Google account to use.
 // @access  Private
 router.post('/create-event', auth, async (req, res) => {
    try {
-      const oath2Client = newOath2Client()
       const { target_task, slot_index, page_id, account_id } = req.body
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
          (acc) => acc._id.toString() === account_id
       ).refresh_token
-      oath2Client.setCredentials({ refresh_token: refreshToken })
+      const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
       const event = await calendar.events.insert({
          auth: oath2Client,
-         calendarId: 'primary', // TODO: Allow to add more calendars
+         calendarId: 'primary',
          requestBody: {
             summary: target_task.title,
-            colorId: '3', // Purple
+            colorId: '3',
             start: {
                dateTime: new Date(target_task.schedule[slot_index].start)
             },
-            end: {
-               dateTime: new Date(target_task.schedule[slot_index].end)
-            }
+            end: { dateTime: new Date(target_task.schedule[slot_index].end) }
          }
       })
       const task = await Task.findById(target_task._id)
-
       task.update_date = new Date()
       await task.save()
 
-      // Data: get new page
       const newPage = await Page.findOneAndUpdate(
          { _id: page_id },
          { $set: { update_date: new Date() } },
@@ -215,42 +166,46 @@ router.post('/create-event', auth, async (req, res) => {
          task: { ...target_task, schedule: task.schedule }
       })
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-      // TODO: Handle Google authentication error
-      res.status(err.code).json({
-         errors: [{ code: err.code, title: 'alert-oops', msg: err.message }]
-      })
+      sendErrorResponse(
+         res,
+         err.code || 500,
+         'alert-oops',
+         'alert-server_error',
+         err
+      )
    }
 })
 
 // @route   POST api/google-account/delete-event/:eventId
-// @desc    Delete Google Event
+// @desc    Delete an event from the user's Google Calendar.
+// @params  eventId (params) - ID of the event to delete.
+//          accountId (body) - ID of the Google account to use.
+//          calendarId (body) - ID of the calendar containing the event.
 // @access  Private
 router.post('/delete-event/:eventId', auth, async (req, res) => {
    try {
       const { accountId, calendarId } = req.body
-      const oath2Client = newOath2Client()
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
          (acc) => acc._id.toString() === accountId
       ).refresh_token
-      oath2Client.setCredentials({ refresh_token: refreshToken })
+      const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
       await calendar.events.delete({
          auth: oath2Client,
-         calendarId: calendarId,
+         calendarId,
          eventId: req.params.eventId
       })
 
-      res.json({
-         event: { id: req.params.eventId, deleted: true }
-      })
+      res.json({ event: { id: req.params.eventId, deleted: true } })
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-      // TODO: Handle Google authentication error
-      res.status(err.code).json({
-         errors: [{ code: err.code, title: 'alert-oops', msg: err.message }]
-      })
+      sendErrorResponse(
+         res,
+         err.code || 500,
+         'alert-oops',
+         'alert-server_error',
+         err
+      )
    }
 })
 

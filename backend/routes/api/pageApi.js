@@ -1,20 +1,18 @@
 const express = require('express')
 const router = express.Router()
-const auth = require('../../middleware/auth')
-const { validationResult } = require('express-validator')
-const { google } = require('googleapis')
 
-const Page = require('../../models/PageModel')
-const Task = require('../../models/TaskModel')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const newOath2Client = () =>
-   new google.auth.OAuth2(
-      process.env?.GOOGLE_CLIENT_ID,
-      process.env?.GOOGLE_CLIENT_SECRET,
-      process.env?.APP_PATH
-   )
+const { validationResult } = require('express-validator')
+
+const auth = require('../../middleware/auth')
+const { sendErrorResponse } = require('../../utils/responseHelper')
+const { validatePage } = require('../../utils/pageHelpers')
+
+const Page = require('../../models/PageModel')
+const { moveTask } = require('../../../shared/utils')
+
 // @route   GET api/page
 // @desc    Get the first page of the user (temporary)
 // @access  Private
@@ -31,20 +29,16 @@ router.get('/', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule'])
       res.json(page)
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-
       if (err.kind === 'ObjectId') {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-            ]
-         })
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-page-notfound',
+            err
+         )
       }
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 
@@ -53,7 +47,11 @@ router.get('/', auth, async (req, res) => {
 // @access  Private
 router.get('/:id', auth, async (req, res) => {
    try {
-      const page = await Page.findById(req.params.id)
+      const page = await validatePage(req.params.id, req.user.id)
+      if (!page) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      }
+      await page
          .populate('progress_order', [
             'title',
             'title_color',
@@ -62,41 +60,18 @@ router.get('/:id', auth, async (req, res) => {
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
          .populate('tasks', ['title', 'schedule'])
-      if (!page) {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-            ]
-         })
-      }
-      // Check if the user is the owner of the page
-      if (page.user.toString() !== req.user.id) {
-         return res.status(401).json({
-            errors: [
-               {
-                  code: '401',
-                  title: 'alert-oops',
-                  msg: 'alert-user-unauthorize'
-               }
-            ]
-         })
-      }
       res.json(page)
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-
       if (err.kind === 'ObjectId') {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-            ]
-         })
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-page-notfound',
+            err
+         )
       }
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 
@@ -107,7 +82,13 @@ router.post('/', [auth], async (req, res) => {
    //   Validation: Form input
    const result = validationResult(req)
    if (!result.isEmpty()) {
-      return res.status(400).json({ errors: result.array() })
+      return sendErrorResponse(
+         res,
+         400,
+         'alert-oops',
+         'alert-validation-error',
+         result.array()
+      )
    }
 
    //   Prepare: Set up new page
@@ -128,12 +109,7 @@ router.post('/', [auth], async (req, res) => {
 
       res.json(page)
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }
 })
 
@@ -141,62 +117,22 @@ router.post('/', [auth], async (req, res) => {
 // @desc    Update page when move the position of a task
 // @access  Private
 router.post('/move-task/:id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.id)
+   //   Validation: Check if page exists and user is the owner
+   const page = await validatePage(req.params.id, req.user.id)
    if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            {
-               code: '401',
-               title: 'alert-oops',
-               msg: 'alert-user-unauthorize'
-            }
-         ]
-      })
+      return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
    }
    const { destination, source, draggableId } = req.body.result
-   if (!destination || !source || !draggableId) {
-      return res.json()
-   }
-   const startSpace = +source.droppableId
-   const endSpace = +destination.droppableId
-
-   const oldTaskId = +draggableId
-   const targetTask = page.tasks[oldTaskId]
-   var newTaskId = destination.index
-   if (endSpace !== 0) {
-      newTaskId += page.task_map[endSpace - 1]
-   }
-   if (endSpace > startSpace) {
-      newTaskId--
-   }
-
-   const newTaskArray = Array.from(page.tasks)
-   const newTaskMap = Array.from(page.task_map)
-
-   newTaskArray.splice(oldTaskId, 1)
-   newTaskArray.splice(newTaskId, 0, targetTask)
-   // Moving between different columns
-   if (endSpace < startSpace) {
-      for (let i = endSpace; i < startSpace; i++) {
-         newTaskMap[i]++
-      }
-   } else {
-      for (let i = startSpace; i < endSpace; i++) {
-         newTaskMap[i]--
-      }
-   }
 
    try {
+      const { tasks: newTaskArray, task_map: newTaskMap } = moveTask({
+         tasks: page.tasks,
+         task_map: page.task_map,
+         destination,
+         source,
+         draggableId
+      })
+
       // Data: Add new group to page
       const newPage = await Page.findOneAndUpdate(
          { _id: req.params.id },
@@ -219,24 +155,16 @@ router.post('/move-task/:id', [auth], async (req, res) => {
       await newPage.save()
       res.json()
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-
       if (err.kind === 'ObjectId') {
-         return res.status(404).json({
-            errors: [
-               {
-                  code: '404',
-                  title: 'alert-oops',
-                  msg: 'alert-page-notfound'
-               }
-            ]
-         })
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-page-notfound',
+            err
+         )
       }
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 module.exports = router

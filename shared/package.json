@@ -1,0 +1,10 @@
+{
+   "name": "@pura/shared",
+   "version": "1.0.0",
+   "main": "index.js",
+   "private": true,
+   "exports": {
+      ".": "./index.js",
+      "./utils": "./utils.js"
+   }
+}

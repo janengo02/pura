@@ -1,53 +1,45 @@
 const express = require('express')
 const router = express.Router()
-const auth = require('../../middleware/auth')
-const jwt = require('jsonwebtoken')
-const { check, validationResult } = require('express-validator')
-const bcrypt = require('bcryptjs')
 
-const User = require('../../models/UserModel')
 const dotenv = require('dotenv')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
+const { check, validationResult } = require('express-validator')
+
+const auth = require('../../middleware/auth')
+const { sendErrorResponse } = require('../../utils/responseHelper')
+const User = require('../../models/UserModel')
 
 dotenv.config()
+
 // @route   GET api/auth
-// @desc    Authenticate user
-// @access  Public
+// @desc    Retrieve authenticated user details including email, name, avatar, and linked Google accounts.
+// @access  Private
 router.get('/', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id).select('-password')
-      if (typeof user !== 'undefined' && user) {
+      if (user) {
          const { email, name, avatar, google_accounts } = user
          res.json({
             email,
             name,
             avatar,
-            google_accounts: google_accounts.map((account) => {
-               return {
-                  _id: account._id,
-                  account_email: account.account_email,
-                  sync_status: account.sync_status
-               }
-            })
+            google_accounts: google_accounts.map((account) => ({
+               _id: account._id,
+               account_email: account.account_email,
+               sync_status: account.sync_status
+            }))
          })
       } else {
-         res.status(500).json({
-            errors: [
-               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-            ]
-         })
+         sendErrorResponse(res, 'alert-oops', 'alert-server_error')
       }
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 'alert-oops', 'alert-server_error', err)
    }
 })
 
 // @route   POST api/auth
-// @desc    Login & get Token
+// @desc    Authenticate user by email and password, and return a JSON Web Token for session management.
 // @access  Public
 router.post(
    '/',
@@ -64,56 +56,41 @@ router.post(
 
       try {
          // Check if user exists
-         let user = await User.findOne({ email })
+         const user = await User.findOne({ email })
          if (!user) {
-            return res.status(400).json({
-               errors: [
-                  {
-                     code: '400',
-                     title: 'alert-oops',
-                     msg: 'alert-invalid-email'
-                  }
-               ]
-            })
+            return sendErrorResponse(res, 'alert-oops', 'alert-invalid-email')
          }
 
          const isMatch = await bcrypt.compare(password, user.password)
-
          if (!isMatch) {
-            return res.status(400).json({
-               errors: [
-                  {
-                     code: '400',
-                     title: 'alert-oops',
-                     msg: 'alert-invalid-password'
-                  }
-               ]
-            })
+            return sendErrorResponse(
+               res,
+               'alert-oops',
+               'alert-invalid-password'
+            )
          }
 
          // Return json web token
-         const payload = {
-            user: {
-               id: user.id
-            }
-         }
-
+         const payload = { user: { id: user.id } }
          jwt.sign(
             payload,
             process.env?.JWT_SECRET,
             { expiresIn: 360000 },
             (err, token) => {
-               if (err) throw err
-               res.json({ token })
+               if (err) {
+                  sendErrorResponse(
+                     res,
+                     'alert-oops',
+                     'alert-server_error',
+                     err
+                  )
+               } else {
+                  res.json({ token })
+               }
             }
          )
       } catch (err) {
-         console.error('---ERROR---: ' + err.message)
-         res.status(500).json({
-            errors: [
-               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-            ]
-         })
+         sendErrorResponse(res, 'alert-oops', 'alert-server_error', err)
       }
    }
 )
