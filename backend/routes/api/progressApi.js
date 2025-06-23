@@ -1,30 +1,26 @@
 const express = require('express')
 const router = express.Router()
+
 const auth = require('../../middleware/auth')
 const { validationResult } = require('express-validator')
-const PageModel = require('../../models/PageModel')
-const ProgressModel = require('../../models/ProgressModel')
+
+const { sendErrorResponse } = require('../../utils/responseHelper')
+const { validatePage } = require('../../utils/pageHelpers')
+const {
+   validateProgress,
+   prepareProgressData
+} = require('../../utils/progressHelper')
+
+const { addProgress, deleteProgress } = require('../../../shared/utils')
 
 // @route   POST api/progress/new/:page-id
 // @desc    Create a new progress
 // @access  Private
 router.post('/new/:page_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await PageModel.findById(req.params.page_id)
+   //   Validation: Check if page exists and user is the owner
+   const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
-         ]
-      })
+      return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
    }
    //   Validation: Form input
    const result = validationResult(req)
@@ -32,22 +28,15 @@ router.post('/new/:page_id', [auth], async (req, res) => {
       return res.status(400).json({ errors: result.array() })
    }
    //   Prepare: Set up new progress
-   const { title, title_color, color } = req.body
-   const newProgress = {}
-   if (title) newProgress.title = title
-   if (title_color) newProgress.title_color = title_color
-   if (color) newProgress.color = color
+   const newProgress = prepareProgressData(req.body)
 
    //   Prepare: Set up new task_map
-   var newTaskMap = page.task_map
-   if (page.group_order.length > 0) {
-      const n_group = page.group_order.length
-      const m_progress = page.progress_order.length + 1
-      for (let i = 1; i <= n_group; i++) {
-         const task_count = newTaskMap[i * m_progress - 2]
-         newTaskMap.splice(i * m_progress - 1, 0, task_count)
-      }
-   }
+   const { task_map: newTaskMap } = addProgress({
+      progress_order: page.progress_order,
+      group_order: page.group_order,
+      task_map: page.task_map,
+      newProgress
+   })
 
    try {
       // Data: Add new progress
@@ -70,12 +59,13 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 
       res.json({ progress_id: progress._id })
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      return sendErrorResponse(
+         res,
+         500,
+         'alert-oops',
+         'alert-server_error',
+         error
+      )
    }
 })
 
@@ -83,23 +73,10 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 // @desc    Update progress
 // @access  Private
 router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
+   //   Validation: Check if page exists and user is the owner
+   const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
-         ]
-      })
+      return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
    }
 
    //   Validation: Form input
@@ -109,13 +86,14 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    }
 
    //   Validation: Check if progress exists
-   const progress = await ProgressModel.findById(req.params.progress_id)
+   const progress = await validateProgress(req.params.progress_id)
    if (!progress) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-progress-notfound' }
-         ]
-      })
+      return sendErrorResponse(
+         res,
+         404,
+         'alert-oops',
+         'alert-progress-notfound'
+      )
    }
    //   Prepare: Set up new progress
    const { title, title_color, color } = req.body
@@ -137,12 +115,13 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
 
       res.json()
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      return sendErrorResponse(
+         res,
+         500,
+         'alert-oops',
+         'alert-server_error',
+         error
+      )
    }
 })
 
@@ -150,78 +129,44 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
 // @desc    Delete a progress
 // @access  Private
 router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
-   if (!page) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-         ]
-      })
-   }
-
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({
-         errors: [
-            { code: '401', title: 'alert-oops', msg: 'alert-user-unauthorize' }
-         ]
-      })
-   }
-
-   //   Validation: Check if group exists
-   const progress = await Progress.findById(req.params.progress_id)
-   if (!progress) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-group-notfound' }
-         ]
-      })
-   }
-
-   //   Prepare: Set up new tasks array & task_map
-   const oldTasks = page.tasks
-   const newTasks = []
-   const oldTaskMap = page.task_map
-   const newTaskMap = []
-   const { progress_id } = req.params
-   const progressIndex = page.progress_order.indexOf(progress_id)
-   const groupCount = page.group_order.length
-   const progressCount = page.progress_order.length
-
-   let deletedCount = 0
-   for (let i = 0; i < groupCount; i++) {
-      for (let j = 0; j < progressCount; j++) {
-         const currentMap = i * progressCount + j
-         const currentMapCount = oldTaskMap[currentMap]
-         let prevMapCount = 0
-         if (currentMap !== 0) {
-            prevMapCount = oldTaskMap[currentMap - 1]
-         }
-         if (j === progressIndex) {
-            deletedCount += currentMapCount - prevMapCount
-         } else {
-            const newMapCount = currentMapCount - deletedCount
-            newTaskMap.push(newMapCount)
-            for (let t = prevMapCount; t < currentMapCount; t++) {
-               newTasks.push(oldTasks[t])
-            }
-         }
-      }
-   }
-
-   //   Prepare: Set up new progress_order
-   var newProgressOrder = page.progress_order
-   newProgressOrder.splice(progressIndex, 1)
-
    try {
-      // Data: Delete tasks
-      for (let i = 0; i < oldTasks.length; i++) {
-         if (!newTasks.includes(oldTasks[i])) {
-            deletedTaskId = oldTasks[i]
-            await Task.deleteOne({ _id: deletedTaskId })
-         }
+      //   Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
       }
+
+      //   Validation: Check if progress exists
+      const progress = await validateProgress(req.params.progress_id)
+      if (!progress) {
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-progress-notfound'
+         )
+      }
+      //   Prepare: Set up new tasks array & task_map
+      const {
+         progress_order: newProgressOrder,
+         tasks: newTasks,
+         task_map: newTaskMap
+      } = deleteProgress({
+         progressIndex: page.progress_order.indexOf(req.params.progress_id),
+         progress_order: page.progress_order,
+         group_order: page.group_order,
+         tasks: page.tasks,
+         task_map: page.task_map
+      })
+
+      // Delete tasks from DB if they're not in newTasks
+      const tasksToDelete = page.tasks.filter(
+         (taskId) => !newTasks.some((newTaskId) => taskId.equals(newTaskId))
+      )
+      for (let taskId of tasksToDelete) {
+         await Task.deleteOne({ _id: taskId })
+      }
+
       // Data: Delete progress
       await progress.deleteOne()
 
@@ -233,12 +178,13 @@ router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
       await page.save()
       res.json()
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      return sendErrorResponse(
+         res,
+         500,
+         'alert-oops',
+         'alert-server_error',
+         error
+      )
    }
 })
 

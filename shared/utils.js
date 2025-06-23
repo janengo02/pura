@@ -74,7 +74,7 @@ function addGroup({ tasks, task_map, group_order, progress_order, newGroup }) {
 }
 
 function deleteGroup({
-   group_id,
+   groupIndex,
    progress_order,
    group_order,
    tasks,
@@ -85,9 +85,6 @@ function deleteGroup({
    const newTasks = [...tasks]
    const newGroupOrder = [...group_order]
 
-   const groupIndex = group_order.findIndex((g) =>
-      typeof g === 'object' && g !== null ? g._id === group_id : g === group_id
-   )
    if (groupIndex === -1) {
       return {
          group_order: newGroupOrder,
@@ -117,8 +114,72 @@ function deleteGroup({
    return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
 }
 
+function addProgress({ progress_order, group_order, task_map, newProgress }) {
+   var newTaskMap = [...task_map]
+   if (group_order.length > 0) {
+      const n_group = group_order.length
+      const m_progress = progress_order.length + 1
+      for (let i = 1; i <= n_group; i++) {
+         const task_count = newTaskMap[i * m_progress - 2]
+         newTaskMap.splice(i * m_progress - 1, 0, task_count)
+      }
+   }
+   const newProgressOrder = [...progress_order]
+   newProgressOrder.push(newProgress)
+   return { progress_order: newProgressOrder, task_map: newTaskMap }
+}
+
+function deleteProgress({
+   progressIndex,
+   progress_order,
+   group_order,
+   tasks,
+   task_map
+}) {
+   if (progressIndex === -1) {
+      return {
+         progress_order: [...progress_order],
+         tasks: [...tasks],
+         task_map: [...task_map]
+      }
+   }
+
+   const groupCount = group_order.length
+   const progressCount = progress_order.length
+   const newTasks = []
+   const newTaskMap = []
+   let deletedCount = 0
+
+   for (let i = 0; i < groupCount; i++) {
+      for (let j = 0; j < progressCount; j++) {
+         const mapIdx = i * progressCount + j
+         const currMapCount = task_map[mapIdx]
+         const prevMapCount = mapIdx === 0 ? 0 : task_map[mapIdx - 1]
+         if (j === progressIndex) {
+            deletedCount += currMapCount - prevMapCount
+         } else {
+            const newMapCount = currMapCount - deletedCount
+            newTaskMap.push(newMapCount)
+            for (let t = prevMapCount; t < currMapCount; t++) {
+               newTasks.push(tasks[t])
+            }
+         }
+      }
+   }
+
+   const newProgressOrder = [...progress_order]
+   newProgressOrder.splice(progressIndex, 1)
+   return {
+      progress_order: newProgressOrder,
+      tasks: newTasks,
+      task_map: newTaskMap
+   }
+}
+
 module.exports = {
    moveTask,
    addGroup,
-   deleteGroup
+   deleteGroup,
+   addProgress,
+   deleteProgress
 }

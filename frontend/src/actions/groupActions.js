@@ -1,5 +1,4 @@
 import { v4 as uuid } from 'uuid'
-import cloneDeep from 'clone-deep'
 import { api } from '../utils'
 import {
    CREATE_GROUP,

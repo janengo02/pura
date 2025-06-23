@@ -1,6 +1,5 @@
 import { optimisticUpdateGroup } from '../actions/groupActions'
 import {
-   optimisticCreateProgress,
    optimisticDeleteProgress,
    optimisticUpdateProgress
 } from '../actions/progressActions'
@@ -10,6 +9,7 @@ import {
    MOVE_TASK,
    PAGE_ERROR,
    CREATE_PROGRESS,
+   CONFIRM_CREATE_PROGRESS,
    UPDATE_PROGRESS,
    DELETE_PROGRESS,
    CREATE_GROUP,
@@ -19,7 +19,7 @@ import {
    CREATE_TASK,
    DELETE_TASK
 } from '../actions/types'
-import { moveTask, addGroup, deleteGroup } from '@pura/shared'
+import { moveTask, addGroup, deleteGroup, addProgress } from '@pura/shared'
 
 const initialState = {
    pages: [],
@@ -60,11 +60,22 @@ function pageReducer(state = initialState, action) {
       case CREATE_PROGRESS:
          return {
             ...state,
-            ...optimisticCreateProgress(
-               payload,
-               state.progress_order,
-               state.group_order,
-               state.task_map
+            ...addProgress({
+               progress_order: state.progress_order,
+               group_order: state.group_order,
+               task_map: state.task_map,
+               newProgress: payload
+            }),
+            loading: false,
+            error: false
+         }
+      case CONFIRM_CREATE_PROGRESS:
+         return {
+            ...state,
+            progress_order: state.progress_order.map((progress) =>
+               progress._id === payload.temp_progress_id
+                  ? { ...progress, _id: payload.progress_id }
+                  : progress
             ),
             loading: false,
             error: false
@@ -125,7 +136,9 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...deleteGroup({
-               group_id: payload.group_id,
+               groupIndex: state.group_order.findIndex(
+                  (g) => g && g._id === payload.group_id
+               ),
                progress_order: state.progress_order,
                group_order: state.group_order,
                tasks: state.tasks,

@@ -139,7 +139,7 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
          tasks: newTasks,
          task_map: newTaskMap
       } = deleteGroup({
-         group_id: req.params.group_id,
+         groupIndex: page.group_order.indexOf(req.params.group_id),
          progress_order: page.progress_order,
          group_order: page.group_order,
          tasks: page.tasks,
