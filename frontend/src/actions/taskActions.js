@@ -2,27 +2,37 @@ import { v4 as uuid } from 'uuid'
 import { api } from '../utils'
 import {
    CREATE_TASK,
+   CONFIRM_CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
    PAGE_ERROR,
    SHOW_TASK
 } from './types'
-import cloneDeep from 'clone-deep'
 
 // Create new task
 export const createTask = (reqData) => async (dispatch) => {
+   const tempTaskId = uuid()
+   const optimisticTask = {
+      _id: tempTaskId,
+      title: '',
+      schedule: [],
+      content: ''
+   }
    dispatch({
       type: CREATE_TASK,
       payload: {
          ...reqData,
-         task_id: 'new'
+         newTask: optimisticTask
       }
    })
    try {
       const res = await api.post(`/task/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: CREATE_TASK,
-         payload: res.data
+         type: CONFIRM_CREATE_TASK,
+         payload: {
+            temp_task_id: tempTaskId,
+            task_id: res.data.task_id
+         }
       })
    } catch (err) {
       const errors = err.response.data.errors
@@ -71,7 +81,9 @@ export const updateTask = (formData) => async (dispatch) => {
 export const deleteTask = (reqData) => async (dispatch) => {
    dispatch({
       type: DELETE_TASK,
-      payload: reqData.task_id
+      payload: {
+         task_id: reqData.task_id
+      }
    })
    try {
       await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
@@ -111,61 +123,4 @@ export const showTaskModal = (formData) => async (dispatch) => {
       })
       // console.clear()
    }
-}
-export const optimisticAddTask = (
-   new_task_info,
-   group_order,
-   progress_order,
-   task_map,
-   tasks
-) => {
-   const { task_id, group_id, progress_id } = new_task_info
-   if (task_id === 'new') {
-      const newTask = {
-         _id: uuid(),
-         title: '',
-         schedule: [],
-         content: '',
-         isNew: true
-      }
-      const progressIndex = progress_order.findIndex(
-         (p) => p._id === progress_id
-      )
-      const groupIndex = group_order.findIndex((g) => g._id === group_id)
-      const taskMapIndex = groupIndex * progress_order.length + progressIndex
-      const newTaskMap = cloneDeep(task_map)
-      for (let i = taskMapIndex; i < newTaskMap.length; i++) {
-         newTaskMap[i]++
-      }
-      const newTasks = cloneDeep(tasks)
-      newTasks.splice(newTaskMap[taskMapIndex] - 1, 0, newTask)
-      return {
-         tasks: newTasks,
-         task_map: newTaskMap
-      }
-   } else {
-      const newTasks = tasks.map((t) =>
-         t.isNew
-            ? {
-                 ...t,
-                 _id: task_id,
-                 isNew: false
-              }
-            : t
-      )
-      return { tasks: newTasks }
-   }
-}
-
-export const optimisticDeleteTask = (task_id, task_map, tasks) => {
-   const newTasks = cloneDeep(tasks)
-   const taskIndex = newTasks.findIndex((t) => t._id === task_id)
-   newTasks.splice(taskIndex, 1)
-
-   //   Prepare: Set up new task_map
-   var newTaskMap = cloneDeep(task_map)
-   for (let i = 0; i < newTaskMap.length; i++) {
-      if (newTaskMap[i] > taskIndex) newTaskMap[i]--
-   }
-   return { tasks: newTasks, task_map: newTaskMap }
 }

@@ -1,95 +1,35 @@
 const express = require('express')
 const router = express.Router()
-const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator')
-const { google } = require('googleapis')
+const dotenv = require('dotenv')
+
+const auth = require('../../middleware/auth')
+const { sendErrorResponse } = require('../../utils/responseHelper')
+const { validatePage } = require('../../utils/pageHelpers')
+const { getNewMap } = require('../../utils/taskHelpers')
 
 const User = require('../../models/UserModel')
 const Page = require('../../models/PageModel')
 const Task = require('../../models/TaskModel')
 const Progress = require('../../models/ProgressModel')
 const Group = require('../../models/GroupModel')
-const dotenv = require('dotenv')
 
 dotenv.config()
-
-const oath2Client = new google.auth.OAuth2(
-   process.env?.GOOGLE_CLIENT_ID,
-   process.env?.GOOGLE_CLIENT_SECRET,
-   process.env?.APP_PATH
-)
-
-const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
-   const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
-   var taskMapIndex = 0
-   if (page.task_map[0] <= taskIndex) {
-      for (let i = 1; i < page.task_map.length; i++) {
-         if (
-            page.task_map[i - 1] <= taskIndex &&
-            page.task_map[i] > taskIndex
-         ) {
-            taskMapIndex = i
-            break
-         }
-      }
-   }
-   const progressIndex = taskMapIndex % page.progress_order.length
-   const groupIndex = parseInt(
-      (taskMapIndex - progressIndex) / page.group_order.length
-   )
-   var newProgressIndex = progressIndex
-   var newGroupIndex = groupIndex
-   var newTaskMapIndex = taskMapIndex
-   const newTaskArray = Array.from(page.tasks)
-   const newTaskMap = Array.from(page.task_map)
-
-   if (group_id) {
-      newGroupIndex = page.group_order.indexOf(group_id)
-      newTaskMapIndex =
-         newGroupIndex * page.progress_order.length + progressIndex
-   }
-   if (progress_id) {
-      newProgressIndex = page.progress_order.indexOf(progress_id)
-      newTaskMapIndex =
-         groupIndex * page.progress_order.length + newProgressIndex
-   }
-   if (group_id || progress_id) {
-      const targetTask = page.tasks[taskIndex]
-
-      var newTaskIndex = page.task_map[newTaskMapIndex]
-      if (newTaskMapIndex > taskMapIndex) {
-         newTaskIndex--
-      }
-      newTaskArray.splice(taskIndex, 1)
-      newTaskArray.splice(newTaskIndex, 0, targetTask)
-      // Moving between different columns
-      if (newTaskMapIndex < taskMapIndex) {
-         for (let i = newTaskMapIndex; i < taskMapIndex; i++) {
-            newTaskMap[i]++
-         }
-      } else {
-         for (let i = taskMapIndex; i < newTaskMapIndex; i++) {
-            newTaskMap[i]--
-         }
-      }
-   }
-
-   return { newTaskArray, newTaskMap, newGroupIndex, newProgressIndex }
-}
 
 // @route   GET POST api/task/:page-id/:task-id
 // @desc    Get task info
 // @access  Private
 router.get('/:page_id/:task_id', auth, async (req, res) => {
    try {
-      //   Validation: Check if page exists
-      const page = await Page.findById(req.params.page_id)
+      //   Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return res.status(404).json({ msg: 'Page not found' })
-      }
-      //   Validation: Check if user is the owner
-      if (page.user.toString() !== req.user.id) {
-         return res.status(401).json({ msg: 'User not authorized' })
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'Page not found or unauthorized'
+         )
       }
       const user = await User.findById(req.user.id)
 
@@ -119,12 +59,7 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       }
       res.json(response)
    } catch (err) {
-      console.error('---ERROR---: ' + err.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 // @route   POST api/task/new/:page-id
@@ -138,26 +73,15 @@ router.post(
       check('progress_id', 'Progress is required').not().isEmpty()
    ],
    async (req, res) => {
-      //   Validation: Check if page exists
-      const page = await Page.findById(req.params.page_id)
+      //   Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return res.status(404).json({
-            errors: [
-               { code: '404', title: 'alert-oops', msg: 'alert-page-notfound' }
-            ]
-         })
-      }
-      //   Validation: Check if user is the owner
-      if (page.user.toString() !== req.user.id) {
-         return res.status(401).json({
-            errors: [
-               {
-                  code: '401',
-                  title: 'alert-oops',
-                  msg: 'alert-user-unauthorize'
-               }
-            ]
-         })
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-page-notfound or unauthorized'
+         )
       }
       //   Validation: Form input
       const result = validationResult(req)
@@ -176,14 +100,15 @@ router.post(
       const progressId = page.progress_order.indexOf(progress_id)
       //   Validation: Check if group and progress exist
       if (groupId === -1 || progressId === -1) {
-         return res.status(404).json({
-            errors: [
-               { title: 'alert-oops', msg: 'alert-group_progress-notfound' }
-            ]
-         })
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'alert-group_progress-notfound'
+         )
       }
       const taskMapIndex = groupId * page.progress_order.length + progressId
-      var newTaskMap = page.task_map
+      let newTaskMap = page.task_map.slice()
       for (let i = taskMapIndex; i < newTaskMap.length; i++) {
          newTaskMap[i]++
       }
@@ -221,12 +146,7 @@ router.post(
 
          res.json({ task_id: task._id })
       } catch (error) {
-         console.error('---ERROR---: ' + error.message)
-         res.status(500).json({
-            errors: [
-               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-            ]
-         })
+         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
       }
    }
 )
@@ -235,14 +155,15 @@ router.post(
 // @desc    Update a task
 // @access  Private
 router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
+   //   Validation: Check if page exists and user is the owner
+   const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return res.status(404).json({ msg: 'Page not found' })
-   }
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' })
+      return sendErrorResponse(
+         res,
+         404,
+         'alert-oops',
+         'Page not found or unauthorized'
+      )
    }
    //   Validation: Form input
    const result = validationResult(req)
@@ -253,11 +174,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    //   Validation: Check if task exists
    const task = await Task.findById(req.params.task_id)
    if (!task) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
-         ]
-      })
+      return sendErrorResponse(res, 404, 'alert-oops', 'alert-task-notfound')
    }
 
    //   Prepare: Set up new task
@@ -333,12 +250,7 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
          res.json({ page: newPage, task: {} })
       }
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }
 })
 
@@ -346,33 +258,30 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
 // @desc    Delete a task
 // @access  Private
 router.delete('/:page_id/:task_id', [auth], async (req, res) => {
-   //   Validation: Check if page exists
-   const page = await Page.findById(req.params.page_id)
+   //   Validation: Check if page exists and user is the owner
+   const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return res.status(404).json({ msg: 'Page not found' })
-   }
-   //   Validation: Check if user is the owner
-   if (page.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' })
+      return sendErrorResponse(
+         res,
+         404,
+         'alert-oops',
+         'Page not found or unauthorized'
+      )
    }
 
    //   Validation: Check if task exists
    const task = await Task.findById(req.params.task_id)
    if (!task) {
-      return res.status(404).json({
-         errors: [
-            { code: '404', title: 'alert-oops', msg: 'alert-task-notfound' }
-         ]
-      })
+      return sendErrorResponse(res, 404, 'alert-oops', 'alert-task-notfound')
    }
    //   Prepare: Set up new tasks array
    const { task_id } = req.params
-   var newTasks = page.tasks
+   let newTasks = page.tasks.slice()
    const taskIndex = newTasks.indexOf(task_id)
    newTasks.splice(taskIndex, 1)
 
    //   Prepare: Set up new task_map
-   var newTaskMap = page.task_map
+   let newTaskMap = page.task_map.slice()
    for (let i = 0; i < newTaskMap.length; i++) {
       if (newTaskMap[i] > taskIndex) newTaskMap[i]--
    }
@@ -385,14 +294,8 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
       page.update_date = new Date()
       await page.save()
       res.json()
-      // TODO: Delete related google events
    } catch (error) {
-      console.error('---ERROR---: ' + error.message)
-      res.status(500).json({
-         errors: [
-            { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-         ]
-      })
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }
 })
 module.exports = router

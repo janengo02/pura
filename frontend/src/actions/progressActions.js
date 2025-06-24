@@ -1,5 +1,4 @@
 import { v4 as uuid } from 'uuid'
-import cloneDeep from 'clone-deep'
 import { api } from '../utils'
 import {
    CREATE_PROGRESS,
@@ -76,7 +75,9 @@ export const updateProgress = (reqData) => async (dispatch) => {
 export const deleteProgress = (reqData) => async (dispatch) => {
    dispatch({
       type: DELETE_PROGRESS,
-      payload: reqData.progress_id
+      payload: {
+         progress_id: reqData.progress_id
+      }
    })
    try {
       await api.delete(`/progress/${reqData.page_id}/${reqData.progress_id}`)
@@ -105,47 +106,4 @@ export const optimisticUpdateProgress = (updatedProgress, progress_order) => {
          : p
    )
    return { progress_order: newProgressOrder }
-}
-export const optimisticDeleteProgress = (
-   progress_id,
-   progress_order,
-   group_order,
-   tasks,
-   task_map
-) => {
-   const oldTasks = cloneDeep(tasks)
-   const newTasks = []
-   const oldTaskMap = cloneDeep(task_map)
-   const newTaskMap = []
-   const progressIndex = progress_order.findIndex((p) => p._id === progress_id)
-   const groupCount = group_order.length
-   const progressCount = progress_order.length
-
-   let deletedCount = 0
-   for (let i = 0; i < groupCount; i++) {
-      for (let j = 0; j < progressCount; j++) {
-         const currentMap = i * progressCount + j
-         const currentMapCount = oldTaskMap[currentMap]
-         let prevMapCount = 0
-         if (currentMap !== 0) {
-            prevMapCount = oldTaskMap[currentMap - 1]
-         }
-         if (j === progressIndex) {
-            deletedCount += currentMapCount - prevMapCount
-         } else {
-            const newMapCount = currentMapCount - deletedCount
-            newTaskMap.push(newMapCount)
-            for (let t = prevMapCount; t < currentMapCount; t++) {
-               newTasks.push(oldTasks[t])
-            }
-         }
-      }
-   }
-   const newProgressOrder = cloneDeep(progress_order)
-   newProgressOrder.splice(progressIndex, 1)
-   return {
-      progress_order: newProgressOrder,
-      tasks: newTasks,
-      task_map: newTaskMap
-   }
 }

@@ -1,9 +1,5 @@
 import { optimisticUpdateGroup } from '../actions/groupActions'
-import {
-   optimisticDeleteProgress,
-   optimisticUpdateProgress
-} from '../actions/progressActions'
-import { optimisticAddTask, optimisticDeleteTask } from '../actions/taskActions'
+import { optimisticUpdateProgress } from '../actions/progressActions'
 import {
    GET_PAGE,
    MOVE_TASK,
@@ -17,9 +13,18 @@ import {
    UPDATE_GROUP,
    DELETE_GROUP,
    CREATE_TASK,
+   CONFIRM_CREATE_TASK,
    DELETE_TASK
 } from '../actions/types'
-import { moveTask, addGroup, deleteGroup, addProgress } from '@pura/shared'
+import {
+   moveTask,
+   addGroup,
+   deleteGroup,
+   addProgress,
+   deleteProgress,
+   addTask,
+   deleteTask
+} from '@pura/shared'
 
 const initialState = {
    pages: [],
@@ -91,13 +96,15 @@ function pageReducer(state = initialState, action) {
       case DELETE_PROGRESS:
          return {
             ...state,
-            ...optimisticDeleteProgress(
-               payload,
-               state.progress_order,
-               state.group_order,
-               state.tasks,
-               state.task_map
-            ),
+            ...deleteProgress({
+               progressIndex: state.progress_order.findIndex(
+                  (p) => p && p._id === payload.progress_id
+               ),
+               progress_order: state.progress_order,
+               group_order: state.group_order,
+               tasks: state.tasks,
+               task_map: state.task_map
+            }),
             loading: false,
             error: false
          }
@@ -150,12 +157,23 @@ function pageReducer(state = initialState, action) {
       case CREATE_TASK:
          return {
             ...state,
-            ...optimisticAddTask(
-               payload,
-               state.group_order,
-               state.progress_order,
-               state.task_map,
-               state.tasks
+            ...addTask({
+               new_task_info: payload,
+               group_order: state.group_order,
+               progress_order: state.progress_order,
+               task_map: state.task_map,
+               tasks: state.tasks
+            }),
+            loading: false,
+            error: false
+         }
+      case CONFIRM_CREATE_TASK:
+         return {
+            ...state,
+            tasks: state.tasks.map((task) =>
+               task._id === payload.temp_task_id
+                  ? { ...task, _id: payload.task_id }
+                  : task
             ),
             loading: false,
             error: false
@@ -163,7 +181,11 @@ function pageReducer(state = initialState, action) {
       case DELETE_TASK:
          return {
             ...state,
-            ...optimisticDeleteTask(payload, state.task_map, state.tasks),
+            ...deleteTask({
+               task_id: payload.task_id,
+               task_map: state.task_map,
+               tasks: state.tasks
+            }),
             loading: false,
             error: false
          }

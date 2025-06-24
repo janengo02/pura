@@ -176,10 +176,62 @@ function deleteProgress({
    }
 }
 
+function addTask({
+   new_task_info,
+   group_order,
+   progress_order,
+   task_map,
+   tasks
+}) {
+   const { group_id, progress_id, newTask } = new_task_info
+
+   const progressIndex = progress_order.findIndex((p) => p._id === progress_id)
+   const groupIndex = group_order.findIndex((g) => g._id === group_id)
+   if (progressIndex === -1 || groupIndex === -1) {
+      return { tasks: [...tasks], task_map: [...task_map] }
+   }
+
+   const progressCount = progress_order.length
+   const taskMapIndex = groupIndex * progressCount + progressIndex
+
+   const newTaskMap = [...task_map]
+   for (let i = taskMapIndex; i < newTaskMap.length; i++) {
+      newTaskMap[i]++
+   }
+
+   const insertIndex = taskMapIndex === 0 ? 0 : newTaskMap[taskMapIndex - 1]
+   const newTasks = [...tasks]
+   newTasks.splice(insertIndex, 0, newTask)
+
+   return {
+      tasks: newTasks,
+      task_map: newTaskMap
+   }
+}
+
+function deleteTask({ task_id, task_map, tasks }) {
+   const taskIndex = tasks.findIndex((t) => t._id === task_id)
+   if (taskIndex === -1) {
+      return { tasks: [...tasks], task_map: [...task_map] }
+   }
+
+   const newTasks = [...tasks]
+   newTasks.splice(taskIndex, 1)
+
+   const newTaskMap = [...task_map]
+   for (let i = 0; i < newTaskMap.length; i++) {
+      if (newTaskMap[i] > taskIndex) newTaskMap[i]--
+   }
+
+   return { tasks: newTasks, task_map: newTaskMap }
+}
+
 module.exports = {
    moveTask,
    addGroup,
    deleteGroup,
    addProgress,
-   deleteProgress
+   deleteProgress,
+   addTask,
+   deleteTask
 }

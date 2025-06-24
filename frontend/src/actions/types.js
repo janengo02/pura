@@ -33,6 +33,7 @@ export const UPDATE_GROUP = 'UPDATE_GROUP'
 export const DELETE_GROUP = 'DELETE_GROUP'
 
 export const CREATE_TASK = 'CREATE_TASK'
+export const CONFIRM_CREATE_TASK = 'CONFIRM_CREATE_TASK'
 export const UPDATE_TASK = 'UPDATE_TASK'
 export const DELETE_TASK = 'DELETE_TASK'
 
