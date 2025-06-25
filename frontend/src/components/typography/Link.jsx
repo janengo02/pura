@@ -3,22 +3,22 @@ import { connect } from 'react-redux'
 import { Link as ChakraLink } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { removeAllAlert } from '../../actions/alertActions'
+import { removeAllAlertAction } from '../../actions/alertActions'
 
-const Link = ({ removeAllAlert, to, text, ...props }) => {
+const Link = ({ removeAllAlertAction, to, text, ...props }) => {
    return (
       <ChakraLink
          as={ReactRouterLink}
          color={props.color ? props.color : 'purple.500'}
          to={to}
          {...props}
-         onClick={removeAllAlert}
+         onClick={removeAllAlertAction}
       >
          {text}
       </ChakraLink>
    )
 }
 Link.propTypes = {
-   removeAllAlert: PropTypes.func.isRequired
+   removeAllAlertAction: PropTypes.func.isRequired
 }
-export default connect(null, { removeAllAlert })(Link)
+export default connect(null, { removeAllAlertAction })(Link)

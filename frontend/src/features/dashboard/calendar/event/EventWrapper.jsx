@@ -14,18 +14,18 @@ import {
    Text
 } from '@chakra-ui/react'
 import { PiPencilLine, PiTrash } from 'react-icons/pi'
-import { deleteGoogleCalendarEvent } from '../../../../actions/googleAccountActions'
+import { deleteEventAction } from '../../../../actions/googleAccountActions'
 import useLoading from '../../../../hooks/useLoading'
 import EventWrapperTitle from '../../../../components/typography/EventWrapperTitle'
 import EventTimeText from './EventTimeText'
-import { showTaskModal } from '../../../../actions/taskActions'
+import { showTaskModalAction } from '../../../../actions/taskActions'
 
 const EventWrapper = ({
    children,
    event,
    // Redux props
-   deleteGoogleCalendarEvent,
-   showTaskModal,
+   deleteEventAction,
+   showTaskModalAction,
    _id,
    googleAccounts
 }) => {
@@ -38,7 +38,7 @@ const EventWrapper = ({
          calendarId: event.calendarId,
          accountId: event.accountId
       }
-      await deleteGoogleCalendarEvent(reqData)
+      await deleteEventAction(reqData)
    }
    const [deleteEvent, deleteLoading] = useLoading(onDelete)
 
@@ -48,7 +48,7 @@ const EventWrapper = ({
          task_id: taskId,
          target_event_index: event.pura_schedule_index
       }
-      await showTaskModal(formData)
+      await showTaskModalAction(formData)
    }
    return (
       <Popover placement='auto' isLazy initialFocusRef={initRef}>
@@ -111,8 +111,8 @@ const EventWrapper = ({
 }
 
 EventWrapper.propTypes = {
-   deleteGoogleCalendarEvent: PropTypes.func.isRequired,
-   showTaskModal: PropTypes.func.isRequired,
+   deleteEventAction: PropTypes.func.isRequired,
+   showTaskModalAction: PropTypes.func.isRequired,
 
    _id: PropTypes.string.isRequired,
    tasks: PropTypes.array.isRequired,
@@ -126,6 +126,6 @@ const mapStateToProps = (state) => ({
 })
 
 export default connect(mapStateToProps, {
-   deleteGoogleCalendarEvent,
-   showTaskModal
+   deleteEventAction,
+   showTaskModalAction
 })(EventWrapper)

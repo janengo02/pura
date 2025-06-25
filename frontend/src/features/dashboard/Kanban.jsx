@@ -2,9 +2,9 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { getFirstPage, moveTaskAction } from '../../actions/pageActions'
-import { createGroup } from '../../actions/groupActions'
-import { createProgress } from '../../actions/progressActions'
+import { getFirstPageAction, moveTaskAction } from '../../actions/pageActions'
+import { createGroupAction } from '../../actions/groupActions'
+import { createProgressAction } from '../../actions/progressActions'
 import { DragDropContext } from '@hello-pangea/dnd'
 import {
    Button,
@@ -24,10 +24,10 @@ import Column from './kanban/progress/Column'
 
 const Kanban = ({
    // Redux props
-   getFirstPage,
+   getFirstPageAction,
    moveTaskAction,
-   createGroup,
-   createProgress,
+   createGroupAction,
+   createProgressAction,
 
    _id,
    group_order,
@@ -39,8 +39,8 @@ const Kanban = ({
    const navigate = useNavigate()
 
    useEffect(() => {
-      getFirstPage()
-   }, [getFirstPage, error])
+      getFirstPageAction()
+   }, [getFirstPageAction, error])
 
    useEffect(() => {
       if (_id && error) {
@@ -114,7 +114,7 @@ const Kanban = ({
                                     size='sm'
                                     onClick={async (e) => {
                                        e.preventDefault()
-                                       createProgress({ page_id: _id })
+                                       createProgressAction({ page_id: _id })
                                     }}
                                  />
                               </Flex>
@@ -141,7 +141,7 @@ const Kanban = ({
                                  leftIcon={<PiPlus />}
                                  onClick={async (e) => {
                                     e.preventDefault()
-                                    createGroup({ page_id: _id })
+                                    createGroupAction({ page_id: _id })
                                  }}
                               >
                                  {t('btn-add-group')}
@@ -172,10 +172,10 @@ const Kanban = ({
 }
 
 Kanban.propTypes = {
-   getFirstPage: PropTypes.func.isRequired,
+   getFirstPageAction: PropTypes.func.isRequired,
    moveTaskAction: PropTypes.func.isRequired,
-   createGroup: PropTypes.func.isRequired,
-   createProgress: PropTypes.func.isRequired,
+   createGroupAction: PropTypes.func.isRequired,
+   createProgressAction: PropTypes.func.isRequired,
 
    _id: PropTypes.string,
    group_order: PropTypes.array.isRequired,
@@ -195,8 +195,8 @@ const mapStateToProps = (state) => ({
 })
 
 export default connect(mapStateToProps, {
-   getFirstPage,
+   getFirstPageAction,
    moveTaskAction,
-   createGroup,
-   createProgress
+   createGroupAction,
+   createProgressAction
 })(Kanban)

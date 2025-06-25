@@ -10,11 +10,11 @@ import {
 } from '@chakra-ui/react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { removeAlert } from '../../actions/alertActions'
+import { removeAlertAction } from '../../actions/alertActions'
 import Link from '../typography/Link'
 import t from '../../lang/i18n'
 
-const FormAlert = ({ alerts, removeAlert, ...props }) => {
+const FormAlert = ({ alerts, removeAlertAction, ...props }) => {
    return (
       alerts.length > 0 &&
       alerts.map((alert, index) =>
@@ -54,7 +54,7 @@ const FormAlert = ({ alerts, removeAlert, ...props }) => {
                   <CloseButton
                      onClick={async (e) => {
                         e.preventDefault()
-                        removeAlert(alert.id)
+                        removeAlertAction(alert.id)
                      }}
                   />
                </Alert>
@@ -66,11 +66,11 @@ const FormAlert = ({ alerts, removeAlert, ...props }) => {
 
 FormAlert.propTypes = {
    alerts: PropTypes.array.isRequired,
-   removeAlert: PropTypes.func.isRequired
+   removeAlertAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
    alerts: state.alert
 })
 
-export default connect(mapStateToProps, { removeAlert })(FormAlert)
+export default connect(mapStateToProps, { removeAlertAction })(FormAlert)

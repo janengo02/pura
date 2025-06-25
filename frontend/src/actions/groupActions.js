@@ -4,12 +4,13 @@ import {
    CREATE_GROUP,
    CONFIRM_CREATE_GROUP,
    DELETE_GROUP,
-   PAGE_ERROR,
    UPDATE_GROUP
 } from './types'
 
+import { pageActionErrorHandler } from './pageActions'
+
 // Create new group
-export const createGroup = (reqData) => async (dispatch) => {
+export const createGroupAction = (reqData) => async (dispatch) => {
    const tempGroupId = uuid()
    const optimisticGroup = {
       _id: tempGroupId,
@@ -31,21 +32,12 @@ export const createGroup = (reqData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      const errors = err.response.data.errors
-
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }
 
 // Update a group
-export const updateGroup = (reqData) => async (dispatch) => {
+export const updateGroupAction = (reqData) => async (dispatch) => {
    dispatch({
       type: UPDATE_GROUP,
       payload: reqData
@@ -56,20 +48,12 @@ export const updateGroup = (reqData) => async (dispatch) => {
          reqData
       )
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }
 
 // Delete a group
-export const deleteGroup = (reqData) => async (dispatch) => {
+export const deleteGroupAction = (reqData) => async (dispatch) => {
    dispatch({
       type: DELETE_GROUP,
       payload: {
@@ -79,28 +63,6 @@ export const deleteGroup = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/group/${reqData.page_id}/${reqData.group_id}`)
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
-}
-
-export const optimisticUpdateGroup = (updatedGroup, group_order) => {
-   const { title, color, group_id } = updatedGroup
-   const newGroupOrder = group_order.map((g) =>
-      g._id === group_id
-         ? {
-              ...g,
-              ...(title && { title }),
-              ...(color && { color })
-           }
-         : g
-   )
-   return { group_order: newGroupOrder }
 }

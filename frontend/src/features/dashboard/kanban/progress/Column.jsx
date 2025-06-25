@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { createTask } from '../../../../actions/taskActions'
+import { createTaskAction } from '../../../../actions/taskActions'
 import { Droppable } from '@hello-pangea/dnd'
 import { Button, Card, Flex } from '@chakra-ui/react'
 import { PiPlus } from 'react-icons/pi'
@@ -18,7 +18,7 @@ const Column = ({
    task_map,
    tasks,
 
-   createTask
+   createTaskAction
 }) => {
    const newTaskInfo = {
       page_id: _id,
@@ -79,7 +79,7 @@ const Column = ({
                         onClick={async (e) => {
                            e.preventDefault()
                            if (!progress.isNew && !group.isNew) {
-                              createTask(newTaskInfo)
+                              createTaskAction(newTaskInfo)
                            }
                         }}
                      >
@@ -98,7 +98,7 @@ Column.propTypes = {
    progress_order: PropTypes.array.isRequired,
    task_map: PropTypes.array.isRequired,
    tasks: PropTypes.array.isRequired,
-   createTask: PropTypes.func.isRequired
+   createTaskAction: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    _id: state.page._id,
@@ -107,4 +107,4 @@ const mapStateToProps = (state) => ({
    task_map: state.page.task_map,
    tasks: state.page.tasks
 })
-export default connect(mapStateToProps, { createTask })(Column)
+export default connect(mapStateToProps, { createTaskAction })(Column)

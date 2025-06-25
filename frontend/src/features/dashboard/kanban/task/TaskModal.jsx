@@ -16,7 +16,10 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
-import { deleteTask, updateTask } from '../../../../actions/taskActions'
+import {
+   deleteTaskAction,
+   updateTaskAction
+} from '../../../../actions/taskActions'
 import t from '../../../../lang/i18n'
 import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -32,8 +35,8 @@ const TaskModal = ({
    // Redux props
    task: { task },
    _id,
-   deleteTask,
-   updateTask
+   deleteTaskAction,
+   updateTaskAction
 }) => {
    const [taskTitle, setTaskTitle] = useState()
    const [taskContent, setTaskContent] = useState()
@@ -58,7 +61,7 @@ const TaskModal = ({
          page_id: _id,
          task_id: task._id
       }
-      deleteTask(formData)
+      deleteTaskAction(formData)
    }
    const onUpdateTitle = useCallback(async () => {
       const formData = {
@@ -69,8 +72,8 @@ const TaskModal = ({
       if (formData.title === '') {
          formData.title = 'Untitled'
       }
-      await updateTask(formData)
-   }, [_id, task?._id, taskTitle, updateTask])
+      await updateTaskAction(formData)
+   }, [_id, task?._id, taskTitle, updateTaskAction])
 
    const onUpdateContent = useCallback(async () => {
       const formData = {
@@ -78,8 +81,8 @@ const TaskModal = ({
          task_id: task._id,
          content: taskContent
       }
-      await updateTask(formData)
-   }, [_id, task?._id, taskContent, updateTask])
+      await updateTaskAction(formData)
+   }, [_id, task?._id, taskContent, updateTaskAction])
 
    useEffect(() => {
       if (taskTitle && taskTitle !== task.title) {
@@ -232,11 +235,13 @@ const TaskModal = ({
 TaskModal.propTypes = {
    task: PropTypes.object.isRequired,
    _id: PropTypes.string,
-   updateTask: PropTypes.func.isRequired,
-   deleteTask: PropTypes.func.isRequired
+   updateTaskAction: PropTypes.func.isRequired,
+   deleteTaskAction: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
    _id: state.page._id
 })
-export default connect(mapStateToProps, { updateTask, deleteTask })(TaskModal)
+export default connect(mapStateToProps, { updateTaskAction, deleteTaskAction })(
+   TaskModal
+)

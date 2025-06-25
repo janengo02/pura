@@ -4,12 +4,12 @@ import {
    CREATE_PROGRESS,
    CONFIRM_CREATE_PROGRESS,
    DELETE_PROGRESS,
-   PAGE_ERROR,
    UPDATE_PROGRESS
 } from './types'
+import { pageActionErrorHandler } from './pageActions'
 
 // Create new progress
-export const createProgress = (reqData) => async (dispatch) => {
+export const createProgressAction = (reqData) => async (dispatch) => {
    const tempProgressId = uuid()
    const optimisticProgress = {
       _id: tempProgressId,
@@ -33,21 +33,12 @@ export const createProgress = (reqData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      const errors = err.response.data.errors
-
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }
 
 // Update a group
-export const updateProgress = (reqData) => async (dispatch) => {
+export const updateProgressAction = (reqData) => async (dispatch) => {
    dispatch({
       type: UPDATE_PROGRESS,
       payload: reqData
@@ -58,21 +49,12 @@ export const updateProgress = (reqData) => async (dispatch) => {
          reqData
       )
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // Todo: revert action
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }
 
 // Delete a progress
-export const deleteProgress = (reqData) => async (dispatch) => {
+export const deleteProgressAction = (reqData) => async (dispatch) => {
    dispatch({
       type: DELETE_PROGRESS,
       payload: {
@@ -82,28 +64,6 @@ export const deleteProgress = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/progress/${reqData.page_id}/${reqData.progress_id}`)
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
-}
-export const optimisticUpdateProgress = (updatedProgress, progress_order) => {
-   const { title, title_color, color, progress_id } = updatedProgress
-   const newProgressOrder = progress_order.map((p) =>
-      p._id === progress_id
-         ? {
-              ...p,
-              ...(title && { title }),
-              ...(title_color && { title_color }),
-              ...(color && { color })
-           }
-         : p
-   )
-   return { progress_order: newProgressOrder }
 }

@@ -23,8 +23,8 @@ import {
 import t from '../../../../lang/i18n'
 import { useGoogleLogin } from '@react-oauth/google'
 import {
-   addGoogleAccount,
-   setVisibleCalendar
+   addGoogleAccountAction,
+   changeCalendarVisibilityAction
 } from '../../../../actions/googleAccountActions'
 
 const GoogleCalendarGroupTitle = () => (
@@ -35,14 +35,14 @@ const GoogleCalendarGroupTitle = () => (
 )
 const Settings = ({
    // Redux props
-   addGoogleAccount,
-   setVisibleCalendar,
+   addGoogleAccountAction,
+   changeCalendarVisibilityAction,
    googleAccount: { range, googleCalendars, googleAccounts }
 }) => {
    const googleLogin = useGoogleLogin({
       onSuccess: (tokenResponse) => {
          const { code } = tokenResponse
-         addGoogleAccount({ code, range }).then(() => {})
+         addGoogleAccountAction({ code, range }).then(() => {})
       },
       // TODO Error Handling
       onError: (responseError) => {
@@ -125,7 +125,9 @@ const Settings = ({
                               fontSize='sm'
                               onClick={async (e) => {
                                  e.preventDefault()
-                                 setVisibleCalendar(calendar.calendarId)
+                                 changeCalendarVisibilityAction(
+                                    calendar.calendarId
+                                 )
                               }}
                               isChecked={calendar.selected}
                            >
@@ -169,8 +171,8 @@ const Settings = ({
 }
 
 Settings.propTypes = {
-   addGoogleAccount: PropTypes.func.isRequired,
-   setVisibleCalendar: PropTypes.func.isRequired,
+   addGoogleAccountAction: PropTypes.func.isRequired,
+   changeCalendarVisibilityAction: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired
 }
 
@@ -179,6 +181,6 @@ const mapStateToProps = (state) => ({
 })
 
 export default connect(mapStateToProps, {
-   addGoogleAccount,
-   setVisibleCalendar
+   addGoogleAccountAction,
+   changeCalendarVisibilityAction
 })(Settings)

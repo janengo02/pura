@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { updateTask } from '../../../../actions/taskActions'
+import { updateTaskAction } from '../../../../actions/taskActions'
 import { PiCalendarPlusFill, PiTrash } from 'react-icons/pi'
 import {
    Flex,
@@ -17,17 +17,17 @@ import t from '../../../../lang/i18n'
 import cloneDeep from 'clone-deep'
 import { stringToDateTimeLocal } from '../../../../utils/dates'
 import useLoading from '../../../../hooks/useLoading'
-import { createGoogleEvent } from '../../../../actions/googleAccountActions'
+import { createGoogleEventAction } from '../../../../actions/googleAccountActions'
 
 const ScheduleTimeSlot = ({
    slot,
    index,
    // Redux props
-   updateTask,
+   updateTaskAction,
    task: { task },
    _id,
    googleAccounts,
-   createGoogleEvent
+   createGoogleEventAction
 }) => {
    const startTime = stringToDateTimeLocal(slot.start)
    const endTime = stringToDateTimeLocal(slot.end)
@@ -47,7 +47,7 @@ const ScheduleTimeSlot = ({
          schedule: newSchedule,
          task_detail_flg: true
       }
-      await updateTask(formData)
+      await updateTaskAction(formData)
    }
    const onUpdateTo = async (newTo) => {
       var newSchedule = cloneDeep(task.schedule)
@@ -59,7 +59,7 @@ const ScheduleTimeSlot = ({
          schedule: newSchedule,
          task_detail_flg: true
       }
-      await updateTask(formData)
+      await updateTaskAction(formData)
    }
    const onDelete = async () => {
       var newSchedule = cloneDeep(task.schedule)
@@ -70,7 +70,7 @@ const ScheduleTimeSlot = ({
          schedule: newSchedule,
          task_detail_flg: true
       }
-      await updateTask(formData)
+      await updateTaskAction(formData)
    }
 
    const [deleteEvent, deleteEventLoading] = useLoading(onDelete)
@@ -143,7 +143,7 @@ const ScheduleTimeSlot = ({
                            fontSize='xs'
                            onClick={async (e) => {
                               e.preventDefault()
-                              createGoogleEvent({
+                              createGoogleEventAction({
                                  target_task: task,
                                  slot_index: index,
                                  page_id: _id,
@@ -165,8 +165,8 @@ const ScheduleTimeSlot = ({
 ScheduleTimeSlot.propTypes = {
    task: PropTypes.object.isRequired,
    _id: PropTypes.string.isRequired,
-   updateTask: PropTypes.func.isRequired,
-   createGoogleEvent: PropTypes.func.isRequired,
+   updateTaskAction: PropTypes.func.isRequired,
+   createGoogleEventAction: PropTypes.func.isRequired,
    googleAccounts: PropTypes.array.isRequired
 }
 const mapStateToProps = (state) => ({
@@ -176,6 +176,6 @@ const mapStateToProps = (state) => ({
 })
 
 export default connect(mapStateToProps, {
-   updateTask,
-   createGoogleEvent
+   updateTaskAction,
+   createGoogleEventAction
 })(ScheduleTimeSlot)

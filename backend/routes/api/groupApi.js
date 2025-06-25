@@ -12,7 +12,7 @@ const { validateGroup, prepareGroupData } = require('../../utils/groupHelpers')
 const { validatePage } = require('../../utils/pageHelpers')
 const { sendErrorResponse } = require('../../utils/responseHelper')
 
-const { addGroup, deleteGroup } = require('../../../shared/utils')
+const { createGroup, deleteGroup } = require('../../../shared/utils')
 
 // @route   POST api/group/new/:page_id
 // @desc    Create a new group for the specified page.
@@ -37,7 +37,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          )
 
       const newGroup = prepareGroupData(req.body)
-      const { task_map: newTaskMap } = addGroup({
+      const { task_map: newTaskMap } = createGroup({
          tasks: page.tasks,
          task_map: page.task_map,
          group_order: page.group_order,

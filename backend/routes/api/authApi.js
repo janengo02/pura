@@ -31,10 +31,10 @@ router.get('/', auth, async (req, res) => {
             }))
          })
       } else {
-         sendErrorResponse(res, 'alert-oops', 'alert-server_error')
+         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error')
       }
    } catch (err) {
-      sendErrorResponse(res, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 
@@ -58,13 +58,19 @@ router.post(
          // Check if user exists
          const user = await User.findOne({ email })
          if (!user) {
-            return sendErrorResponse(res, 'alert-oops', 'alert-invalid-email')
+            return sendErrorResponse(
+               res,
+               401,
+               'alert-oops',
+               'alert-invalid-email'
+            )
          }
 
          const isMatch = await bcrypt.compare(password, user.password)
          if (!isMatch) {
             return sendErrorResponse(
                res,
+               401,
                'alert-oops',
                'alert-invalid-password'
             )
@@ -80,6 +86,7 @@ router.post(
                if (err) {
                   sendErrorResponse(
                      res,
+                     500,
                      'alert-oops',
                      'alert-server_error',
                      err
@@ -90,7 +97,7 @@ router.post(
             }
          )
       } catch (err) {
-         sendErrorResponse(res, 'alert-oops', 'alert-server_error', err)
+         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
       }
    }
 )

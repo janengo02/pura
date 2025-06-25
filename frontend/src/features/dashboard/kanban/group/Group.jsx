@@ -1,7 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { deleteGroup, updateGroup } from '../../../../actions/groupActions'
+import {
+   deleteGroupAction,
+   updateGroupAction
+} from '../../../../actions/groupActions'
 import {
    Flex,
    IconButton,
@@ -39,8 +42,8 @@ const Group = ({
    _id,
    group_order,
 
-   updateGroup,
-   deleteGroup
+   updateGroupAction,
+   deleteGroupAction
 }) => {
    const groupHover = useHover()
    const titleEditing = useEditing()
@@ -50,7 +53,7 @@ const Group = ({
          page_id: _id,
          group_id: group._id
       }
-      deleteGroup(formData)
+      deleteGroupAction(formData)
    }
    const methods = useForm({
       resolver: yupResolver(s)
@@ -65,7 +68,7 @@ const Group = ({
       if (formData.title === '') {
          formData.title = 'Untitled'
       }
-      await updateGroup(formData)
+      await updateGroupAction(formData)
       titleEditing.end()
    })
    const changeColor = (color) => {
@@ -74,7 +77,7 @@ const Group = ({
          group_id: group._id,
          color: color
       }
-      updateGroup(formData)
+      updateGroupAction(formData)
    }
    return (
       <VStack
@@ -210,8 +213,8 @@ Group.propTypes = {
    _id: PropTypes.string.isRequired,
    group_order: PropTypes.array.isRequired,
 
-   deleteGroup: PropTypes.func.isRequired,
-   updateGroup: PropTypes.func.isRequired
+   deleteGroupAction: PropTypes.func.isRequired,
+   updateGroupAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -219,4 +222,7 @@ const mapStateToProps = (state) => ({
    group_order: state.page.group_order
 })
 
-export default connect(mapStateToProps, { deleteGroup, updateGroup })(Group)
+export default connect(mapStateToProps, {
+   deleteGroupAction,
+   updateGroupAction
+})(Group)

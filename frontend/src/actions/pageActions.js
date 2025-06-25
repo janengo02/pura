@@ -1,8 +1,19 @@
 import { api } from '../utils'
 import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from './types'
 
+// Helper for error dispatch
+export const pageActionErrorHandler = (dispatch, pageId, err) => {
+   const errors = err?.response?.data?.errors || ['Unknown error']
+   dispatch({
+      type: PAGE_ERROR,
+      payload: {
+         _id: pageId,
+         errors
+      }
+   })
+}
 // Get the first page of a user
-export const getFirstPage = () => async (dispatch) => {
+export const getFirstPageAction = () => async (dispatch) => {
    try {
       const res = await api.get('/page')
       dispatch({
@@ -10,16 +21,7 @@ export const getFirstPage = () => async (dispatch) => {
          payload: res.data
       })
    } catch (err) {
-      const errors = err.response.data.errors
-
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: null,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, null, err)
    }
 }
 
@@ -31,15 +33,6 @@ export const moveTaskAction = (reqData) => async (dispatch) => {
    try {
       api.post(`/page/move-task/${reqData.page_id}`, reqData)
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // TODO: Revert state
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }

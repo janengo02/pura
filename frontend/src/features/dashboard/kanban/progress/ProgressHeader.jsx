@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import {
-   deleteProgress,
-   updateProgress
+   deleteProgressAction,
+   updateProgressAction
 } from '../../../../actions/progressActions'
 import {
    Card,
@@ -37,8 +37,8 @@ const ProgressHeader = ({
    progress,
    isNew,
    // Redux props
-   updateProgress,
-   deleteProgress,
+   updateProgressAction,
+   deleteProgressAction,
    _id,
    progress_order
 }) => {
@@ -50,7 +50,7 @@ const ProgressHeader = ({
          page_id: _id,
          progress_id: progress._id
       }
-      deleteProgress(formData)
+      deleteProgressAction(formData)
    }
    const methods = useForm({
       resolver: yupResolver(s)
@@ -65,7 +65,7 @@ const ProgressHeader = ({
       if (formData.title === '') {
          formData.title = 'Untitled'
       }
-      await updateProgress(formData)
+      await updateProgressAction(formData)
       setEditing(false)
    })
 
@@ -76,7 +76,7 @@ const ProgressHeader = ({
          color: color,
          title_color: title_color
       }
-      updateProgress(formData)
+      updateProgressAction(formData)
    }
    return (
       <Card
@@ -217,8 +217,8 @@ ProgressHeader.propTypes = {
    _id: PropTypes.string.isRequired,
    progress_order: PropTypes.array.isRequired,
 
-   deleteProgress: PropTypes.func.isRequired,
-   updateProgress: PropTypes.func.isRequired,
+   deleteProgressAction: PropTypes.func.isRequired,
+   updateProgressAction: PropTypes.func.isRequired,
    page: PropTypes.object
 }
 
@@ -226,6 +226,7 @@ const mapStateToProps = (state) => ({
    _id: state.page._id,
    progress_order: state.page.progress_order
 })
-export default connect(mapStateToProps, { deleteProgress, updateProgress })(
-   ProgressHeader
-)
+export default connect(mapStateToProps, {
+   deleteProgressAction,
+   updateProgressAction
+})(ProgressHeader)

@@ -9,7 +9,14 @@ import {
    GOOGLE_CALENDAR_ADD_ACCOUNT
 } from './types'
 
-export const listGoogleEvents =
+// Helper for dispatching auth error
+const googleAccountErrorHandler = (dispatch) => {
+   dispatch({
+      type: GOOGLE_CALENDAR_AUTH_ERROR
+   })
+}
+
+export const loadCalendarAction =
    (visibleRange, tasksArray) => async (dispatch) => {
       try {
          const res = await api.get('/google-account/list-events', {
@@ -25,21 +32,17 @@ export const listGoogleEvents =
                }
             })
          } else {
-            dispatch({
-               type: GOOGLE_CALENDAR_AUTH_ERROR,
-               payload: { range: visibleRange }
-            })
+            throw new Error(
+               'Unexpected response format from /google-account/list-events'
+            )
          }
       } catch (err) {
-         dispatch({
-            type: GOOGLE_CALENDAR_AUTH_ERROR,
-            payload: { range: visibleRange }
-         })
+         googleAccountErrorHandler(dispatch)
       }
    }
 
 // Create Google Account Tokens
-export const addGoogleAccount = (reqData) => async (dispatch) => {
+export const addGoogleAccountAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/add-account', reqData)
       if (res.data) {
@@ -51,28 +54,23 @@ export const addGoogleAccount = (reqData) => async (dispatch) => {
             }
          })
       } else {
-         dispatch({
-            type: GOOGLE_CALENDAR_AUTH_ERROR,
-            payload: { range: reqData.range }
-         })
+         throw new Error(
+            'Unexpected response format from /google-account/list-events'
+         )
       }
    } catch (err) {
-      dispatch({
-         type: GOOGLE_CALENDAR_AUTH_ERROR,
-         payload: { range: reqData.range }
-      })
+      googleAccountErrorHandler(dispatch)
    }
 }
 
 // Create Google Calendar Event
-export const createGoogleEvent = (reqData) => async (dispatch) => {
+export const createGoogleEventAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/create-event', reqData)
       dispatch({
          type: SHOW_TASK,
          payload: res.data.task
       })
-      console.log(res.data.event)
       dispatch({
          type: GOOGLE_CALENDAR_ADD_EVENT,
          payload: {
@@ -81,18 +79,12 @@ export const createGoogleEvent = (reqData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      const errors = err?.response?.data?.errors || err?.response?.data || {}
-      console.log(errors)
-      dispatch({
-         type: GOOGLE_CALENDAR_AUTH_ERROR
-      })
-      //  @Todo Handle error
-      // console.clear()
+      googleAccountErrorHandler(dispatch)
    }
 }
 
 // Delete Google Calendar Event
-export const deleteGoogleCalendarEvent = (reqData) => async (dispatch) => {
+export const deleteEventAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post(
          `/google-account/delete-event/${reqData.eventId}`,
@@ -103,19 +95,14 @@ export const deleteGoogleCalendarEvent = (reqData) => async (dispatch) => {
          payload: res.data.event
       })
    } catch (err) {
-      const errors = err.response.data.errors
-      console.log(errors)
-      dispatch({
-         type: GOOGLE_CALENDAR_AUTH_ERROR
-      })
-      //  @Todo Handle error
-      // console.clear()
+      googleAccountErrorHandler(dispatch)
    }
 }
 
-export const setVisibleCalendar = (calendarId) => async (dispatch) => {
-   dispatch({
-      type: GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
-      payload: { calendarId }
-   })
-}
+export const changeCalendarVisibilityAction =
+   (calendarId) => async (dispatch) => {
+      dispatch({
+         type: GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
+         payload: { calendarId }
+      })
+   }

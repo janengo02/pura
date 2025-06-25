@@ -271,7 +271,7 @@ export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
 // =============================================
 // Add Google Event State Transform Functions
 // =============================================
-export const addGoogleEvent = ({
+export const createGoogleEvent = ({
    googleCalendars,
    googleEvents,
    accountId,

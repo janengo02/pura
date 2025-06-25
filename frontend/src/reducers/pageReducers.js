@@ -1,5 +1,3 @@
-import { optimisticUpdateGroup } from '../actions/groupActions'
-import { optimisticUpdateProgress } from '../actions/progressActions'
 import {
    GET_PAGE,
    MOVE_TASK,
@@ -18,13 +16,21 @@ import {
 } from '../actions/types'
 import {
    moveTask,
-   addGroup,
+   createGroup,
    deleteGroup,
-   addProgress,
+   createProgress,
    deleteProgress,
-   addTask,
+   createTask,
    deleteTask
 } from '@pura/shared'
+
+import {
+   confirmCreateProgress,
+   updateProgress,
+   updateGroup,
+   confirmCreateGroup,
+   confirmCreateTask
+} from './pageReducersHelpers'
 
 const initialState = {
    pages: [],
@@ -65,7 +71,7 @@ function pageReducer(state = initialState, action) {
       case CREATE_PROGRESS:
          return {
             ...state,
-            ...addProgress({
+            ...createProgress({
                progress_order: state.progress_order,
                group_order: state.group_order,
                task_map: state.task_map,
@@ -77,18 +83,21 @@ function pageReducer(state = initialState, action) {
       case CONFIRM_CREATE_PROGRESS:
          return {
             ...state,
-            progress_order: state.progress_order.map((progress) =>
-               progress._id === payload.temp_progress_id
-                  ? { ...progress, _id: payload.progress_id }
-                  : progress
-            ),
+            ...confirmCreateProgress({
+               progress_order: state.progress_order,
+               tempProgressId: payload.temp_progress_id,
+               progressId: payload.progress_id
+            }),
             loading: false,
             error: false
          }
       case UPDATE_PROGRESS:
          return {
             ...state,
-            ...optimisticUpdateProgress(payload, state.progress_order),
+            ...updateProgress({
+               progress_order: state.progress_order,
+               updatedProgress: payload
+            }),
             loading: false,
             error: false
          }
@@ -111,7 +120,7 @@ function pageReducer(state = initialState, action) {
       case CREATE_GROUP:
          return {
             ...state,
-            ...addGroup({
+            ...createGroup({
                tasks: state.tasks,
                task_map: state.task_map,
                group_order: state.group_order,
@@ -124,18 +133,21 @@ function pageReducer(state = initialState, action) {
       case CONFIRM_CREATE_GROUP:
          return {
             ...state,
-            group_order: state.group_order.map((group) =>
-               group._id === payload.temp_group_id
-                  ? { ...group, _id: payload.group_id }
-                  : group
-            ),
+            ...confirmCreateGroup({
+               group_order: state.group_order,
+               tempGroupId: payload.temp_group_id,
+               groupId: payload.group_id
+            }),
             loading: false,
             error: false
          }
       case UPDATE_GROUP:
          return {
             ...state,
-            ...optimisticUpdateGroup(payload, state.group_order),
+            ...updateGroup({
+               group_order: state.group_order,
+               updatedGroup: payload
+            }),
             loading: false,
             error: false
          }
@@ -157,7 +169,7 @@ function pageReducer(state = initialState, action) {
       case CREATE_TASK:
          return {
             ...state,
-            ...addTask({
+            ...createTask({
                new_task_info: payload,
                group_order: state.group_order,
                progress_order: state.progress_order,
@@ -170,11 +182,11 @@ function pageReducer(state = initialState, action) {
       case CONFIRM_CREATE_TASK:
          return {
             ...state,
-            tasks: state.tasks.map((task) =>
-               task._id === payload.temp_task_id
-                  ? { ...task, _id: payload.task_id }
-                  : task
-            ),
+            ...confirmCreateTask({
+               tasks: state.tasks,
+               tempTaskId: payload.temp_task_id,
+               taskId: payload.task_id
+            }),
             loading: false,
             error: false
          }

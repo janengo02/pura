@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { updateTask } from '../../../../actions/taskActions'
+import { updateTaskAction } from '../../../../actions/taskActions'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCirclesFour, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -17,7 +17,7 @@ import {
 
 const GroupSelect = ({
    // Redux props
-   updateTask,
+   updateTaskAction,
    task: { task },
    _id,
    group_order
@@ -63,7 +63,7 @@ const GroupSelect = ({
                      onClick={async (e) => {
                         e.preventDefault()
                         if (group_item._id !== task.group._id) {
-                           updateTask({
+                           updateTaskAction({
                               page_id: _id,
                               task_id: task._id,
                               group_id: group_item._id,
@@ -102,11 +102,11 @@ GroupSelect.propTypes = {
    task: PropTypes.object.isRequired,
    _id: PropTypes.string.isRequired,
    group_order: PropTypes.array.isRequired,
-   updateTask: PropTypes.func.isRequired
+   updateTaskAction: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
    _id: state.page._id,
    group_order: state.page.group_order
 })
-export default connect(mapStateToProps, { updateTask })(GroupSelect)
+export default connect(mapStateToProps, { updateTaskAction })(GroupSelect)

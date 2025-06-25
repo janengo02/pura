@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { updateTask } from '../../../../actions/taskActions'
+import { updateTaskAction } from '../../../../actions/taskActions'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiCalendar, PiPlus } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
@@ -11,7 +11,7 @@ import ScheduleTimeSlot from './ScheduleTimeSlot'
 
 const ScheduleSelect = ({
    // Redux props
-   updateTask,
+   updateTaskAction,
    task: { task },
    _id
 }) => {
@@ -28,7 +28,7 @@ const ScheduleSelect = ({
          schedule: newSchedule,
          task_detail_flg: true
       }
-      await updateTask(formData)
+      await updateTaskAction(formData)
    }
 
    return (
@@ -62,12 +62,12 @@ ScheduleSelect.propTypes = {
    _id: PropTypes.string.isRequired,
    task: PropTypes.object.isRequired,
    page: PropTypes.object.isRequired,
-   updateTask: PropTypes.func.isRequired
+   updateTaskAction: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    task: state.task,
    _id: state.page._id
 })
 export default connect(mapStateToProps, {
-   updateTask
+   updateTaskAction
 })(ScheduleSelect)

@@ -2,7 +2,7 @@ import React from 'react'
 
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { logout } from '../../../actions/authActions'
+import { logoutAction } from '../../../actions/authActions'
 
 import {
    Avatar,
@@ -19,7 +19,7 @@ import t from '../../../lang/i18n'
 
 const ProfileMenu = ({
    // Redux props
-   logout,
+   logoutAction,
    user
 }) => {
    const profileMenu = useDisclosure()
@@ -50,7 +50,7 @@ const ProfileMenu = ({
             </MenuGroup>
 
             <MenuDivider />
-            <MenuItem icon={<PiSignOut size={20} />} onClick={logout}>
+            <MenuItem icon={<PiSignOut size={20} />} onClick={logoutAction}>
                {t('btn-logout')}
             </MenuItem>
          </MenuList>
@@ -59,7 +59,7 @@ const ProfileMenu = ({
 }
 
 ProfileMenu.propTypes = {
-   logout: PropTypes.func.isRequired,
+   logoutAction: PropTypes.func.isRequired,
    user: PropTypes.object
 }
 
@@ -67,4 +67,4 @@ const mapStateToProps = (state) => ({
    user: state.auth.user
 })
 
-export default connect(mapStateToProps, { logout })(ProfileMenu)
+export default connect(mapStateToProps, { logoutAction })(ProfileMenu)

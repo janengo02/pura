@@ -22,9 +22,9 @@ import t from '../../../../lang/i18n'
 import { MultiInput } from '../../../../components/MultiInput'
 import { dashboardSchema as s } from '../../DashboardSchema'
 import {
-   deleteTask,
-   updateTask,
-   showTaskModal
+   deleteTaskAction,
+   updateTaskAction,
+   showTaskModalAction
 } from '../../../../actions/taskActions'
 
 const TaskCard = ({
@@ -34,9 +34,9 @@ const TaskCard = ({
    taskIndex,
    // Redux props
    _id,
-   deleteTask,
-   updateTask,
-   showTaskModal
+   deleteTaskAction,
+   updateTaskAction,
+   showTaskModalAction
 }) => {
    const [hovered, setHovered] = useState(false)
    const [editing, setEditing] = useState(false)
@@ -46,7 +46,7 @@ const TaskCard = ({
          page_id: _id,
          task_id: task._id
       }
-      deleteTask(formData)
+      deleteTaskAction(formData)
    }
    const methods = useForm({
       resolver: yupResolver(s)
@@ -61,7 +61,7 @@ const TaskCard = ({
       if (formData.title === '') {
          formData.title = 'Untitled'
       }
-      await updateTask(formData)
+      await updateTaskAction(formData)
       setEditing(false)
    })
    const showTask = async () => {
@@ -69,7 +69,7 @@ const TaskCard = ({
          page_id: _id,
          task_id: task._id
       }
-      await showTaskModal(formData)
+      await showTaskModalAction(formData)
    }
 
    return (
@@ -218,16 +218,16 @@ const TaskCard = ({
 
 TaskCard.propTypes = {
    _id: PropTypes.string.isRequired,
-   updateTask: PropTypes.func.isRequired,
-   deleteTask: PropTypes.func.isRequired,
-   showTaskModal: PropTypes.func.isRequired
+   updateTaskAction: PropTypes.func.isRequired,
+   deleteTaskAction: PropTypes.func.isRequired,
+   showTaskModalAction: PropTypes.func.isRequired
 }
 const mapStateToProps = (state) => ({
    _id: state.page._id
 })
 
 export default connect(mapStateToProps, {
-   updateTask,
-   deleteTask,
-   showTaskModal
+   updateTaskAction,
+   deleteTaskAction,
+   showTaskModalAction
 })(TaskCard)

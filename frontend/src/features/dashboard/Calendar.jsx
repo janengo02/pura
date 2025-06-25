@@ -12,7 +12,7 @@ import { DateLocalizer } from 'react-big-calendar'
 import { Skeleton, VStack } from '@chakra-ui/react'
 import Toolbar from './calendar/toolbar/Toolbar'
 import EventWrapper from './calendar/event/EventWrapper'
-import { listGoogleEvents } from '../../actions/googleAccountActions'
+import { loadCalendarAction } from '../../actions/googleAccountActions'
 import {
    firstVisibleDay,
    neq,
@@ -36,7 +36,7 @@ const ColoredDateCellWrapper = ({ children }) => {
 }
 const Calendar = ({
    // Redux props
-   listGoogleEvents,
+   loadCalendarAction,
    localizer = mLocalizer,
    googleAccount: { googleEvents, loading, range },
    tasks
@@ -65,11 +65,11 @@ const Calendar = ({
                neq(newRange.start, range[0], 'day') ||
                neq(newRange.end, range[1], 'day')
             )
-               listGoogleEvents([newRange.start, newRange.end], tasks)
+               loadCalendarAction([newRange.start, newRange.end], tasks)
             return
          }
          if (!inRange(newRange[0], range[0], range[1], 'day')) {
-            listGoogleEvents(
+            loadCalendarAction(
                [
                   firstVisibleDay(newRange[0], localizer),
                   lastVisibleDay(newRange[0], localizer)
@@ -78,7 +78,7 @@ const Calendar = ({
             )
          }
       },
-      [listGoogleEvents, localizer, range, tasks]
+      [loadCalendarAction, localizer, range, tasks]
    )
    const eventPropGetter = useCallback((event, start, end, isSelected) => {
       const eventOpacity = 1
@@ -102,8 +102,8 @@ const Calendar = ({
          firstVisibleDay(defaultDate, localizer),
          lastVisibleDay(defaultDate, localizer)
       ]
-      listGoogleEvents(initialRange, tasks)
-   }, [defaultDate, listGoogleEvents, localizer, tasks])
+      loadCalendarAction(initialRange, tasks)
+   }, [defaultDate, loadCalendarAction, localizer, tasks])
 
    return (
       <Skeleton isLoaded={!loading}>
@@ -136,7 +136,7 @@ const Calendar = ({
 }
 
 Calendar.propTypes = {
-   listGoogleEvents: PropTypes.func.isRequired,
+   loadCalendarAction: PropTypes.func.isRequired,
    localizer: PropTypes.instanceOf(DateLocalizer),
    googleAccount: PropTypes.object.isRequired,
    tasks: PropTypes.array.isRequired
@@ -147,4 +147,4 @@ const mapStateToProps = (state) => ({
    tasks: state.page.tasks
 })
 
-export default connect(mapStateToProps, { listGoogleEvents })(Calendar)
+export default connect(mapStateToProps, { loadCalendarAction })(Calendar)

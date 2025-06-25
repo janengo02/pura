@@ -4,11 +4,11 @@ import { connect } from 'react-redux'
 
 import { IconButton } from '@chakra-ui/react'
 import { PiArrowClockwise } from 'react-icons/pi'
-import { listGoogleEvents } from '../../../../actions/googleAccountActions'
+import { loadCalendarAction } from '../../../../actions/googleAccountActions'
 
 const ReloadButton = ({
    // Redux props
-   listGoogleEvents,
+   loadCalendarAction,
    tasks
 }) => {
    return (
@@ -20,19 +20,19 @@ const ReloadButton = ({
          colorScheme='gray'
          onClick={async (e) => {
             e.preventDefault()
-            // listGoogleEvents() //TODO: Add ranges
+            // loadCalendarAction() //TODO: Add ranges
          }}
       />
    )
 }
 
 ReloadButton.propTypes = {
-   listGoogleEvents: PropTypes.func.isRequired,
+   loadCalendarAction: PropTypes.func.isRequired,
    tasks: PropTypes.array.isRequired
 }
 const mapStateToProps = (state) => ({
    tasks: state.page.tasks
 })
 export default connect(mapStateToProps, {
-   listGoogleEvents
+   loadCalendarAction
 })(ReloadButton)

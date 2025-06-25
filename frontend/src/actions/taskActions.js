@@ -5,12 +5,12 @@ import {
    CONFIRM_CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
-   PAGE_ERROR,
    SHOW_TASK
 } from './types'
+import { pageActionErrorHandler } from './pageActions'
 
 // Create new task
-export const createTask = (reqData) => async (dispatch) => {
+export const createTaskAction = (reqData) => async (dispatch) => {
    const tempTaskId = uuid()
    const optimisticTask = {
       _id: tempTaskId,
@@ -35,21 +35,12 @@ export const createTask = (reqData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      const errors = err.response.data.errors
-
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }
 
 // Update a task
-export const updateTask = (formData) => async (dispatch) => {
+export const updateTaskAction = (formData) => async (dispatch) => {
    try {
       const res = await api.post(
          `/task/update/${formData.page_id}/${formData.task_id}`,
@@ -66,19 +57,11 @@ export const updateTask = (formData) => async (dispatch) => {
          })
       }
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: formData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, formData.page_id, err)
    }
 }
 // Delete a task
-export const deleteTask = (reqData) => async (dispatch) => {
+export const deleteTaskAction = (reqData) => async (dispatch) => {
    dispatch({
       type: DELETE_TASK,
       payload: {
@@ -88,19 +71,11 @@ export const deleteTask = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: reqData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
 }
 // Show target task modal
-export const showTaskModal = (formData) => async (dispatch) => {
+export const showTaskModalAction = (formData) => async (dispatch) => {
    try {
       const res = await api.get(`/task/${formData.page_id}/${formData.task_id}`)
       dispatch({
@@ -113,14 +88,6 @@ export const showTaskModal = (formData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      const errors = err.response.data.errors
-      dispatch({
-         type: PAGE_ERROR,
-         payload: {
-            _id: formData.page_id,
-            errors: errors
-         }
-      })
-      // console.clear()
+      pageActionErrorHandler(dispatch, formData.page_id, err)
    }
 }

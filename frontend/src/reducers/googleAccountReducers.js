@@ -11,7 +11,7 @@ import {
    loadGoogleCalendar,
    changeGoogleCalendarVisibility,
    updateGoogleEvent,
-   addGoogleEvent
+   createGoogleEvent
 } from './googleAccountReducersHelpers'
 
 const initialState = {
@@ -70,7 +70,7 @@ function googleAccountReducer(state = initialState, action) {
       case GOOGLE_CALENDAR_ADD_EVENT:
          return {
             ...state,
-            ...addGoogleEvent({
+            ...createGoogleEvent({
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
                accountId: payload.accountId,

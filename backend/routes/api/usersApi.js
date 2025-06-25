@@ -11,6 +11,7 @@ const Group = require('../../models/GroupModel')
 const Progress = require('../../models/ProgressModel')
 const Task = require('../../models/TaskModel')
 const dotenv = require('dotenv')
+const { sendErrorResponse } = require('../../utils/responseHelper')
 
 dotenv.config()
 
@@ -31,18 +32,14 @@ router.post(
       //   Validation: Form input
       const result = validationResult(req)
       if (!result.isEmpty()) {
-         return res.status(400).json({ errors: result.array() })
+         return sendErrorResponse(res, 400, 'alert-oops', result.array()[0].msg)
       }
 
       //   Validation: Check if user exists
       const { name, email, password } = req.body
       let user = await User.findOne({ email })
       if (user) {
-         return res.status(400).json({
-            errors: [
-               { code: '400', title: 'alert-oops', msg: 'alert-user-exists' }
-            ]
-         })
+         return sendErrorResponse(res, 400, 'alert-oops', 'alert-user-exists')
       }
       // Prepare: Set up avatar
       const avatar = gravatar.url(email, {
@@ -126,11 +123,7 @@ router.post(
          )
       } catch (err) {
          console.error(err.message)
-         res.status(500).json({
-            errors: [
-               { code: '500', title: 'alert-oops', msg: 'alert-server_error' }
-            ]
-         })
+         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
       }
    }
 )

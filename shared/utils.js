@@ -62,7 +62,13 @@ function moveTask({ tasks, task_map, destination, source, draggableId }) {
    }
 }
 
-function addGroup({ tasks, task_map, group_order, progress_order, newGroup }) {
+function createGroup({
+   tasks,
+   task_map,
+   group_order,
+   progress_order,
+   newGroup
+}) {
    const newTaskMap = [...task_map]
    const taskCount = tasks.length
    for (let i = 1; i <= progress_order.length; i++) {
@@ -114,7 +120,12 @@ function deleteGroup({
    return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
 }
 
-function addProgress({ progress_order, group_order, task_map, newProgress }) {
+function createProgress({
+   progress_order,
+   group_order,
+   task_map,
+   newProgress
+}) {
    var newTaskMap = [...task_map]
    if (group_order.length > 0) {
       const n_group = group_order.length
@@ -176,7 +187,7 @@ function deleteProgress({
    }
 }
 
-function addTask({
+function createTask({
    new_task_info,
    group_order,
    progress_order,
@@ -228,10 +239,10 @@ function deleteTask({ task_id, task_map, tasks }) {
 
 module.exports = {
    moveTask,
-   addGroup,
+   createGroup,
    deleteGroup,
-   addProgress,
+   createProgress,
    deleteProgress,
-   addTask,
+   createTask,
    deleteTask
 }

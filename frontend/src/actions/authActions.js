@@ -8,82 +8,70 @@ import {
    LOGIN_FAIL,
    LOGOUT
 } from './types'
-import { setAlert, removeAllAlert } from './alertActions'
-import { setLoading } from './loadingActions'
+import { setAlertAction, removeAllAlertAction } from './alertActions'
+import { setLoadingAction } from './loadingActions'
+
+// Helper for error handling
+const authActionErrorHandler = (err, dispatch, failType) => {
+   const errors = err?.response?.data?.errors
+   if (errors) {
+      errors.forEach((error) =>
+         dispatch(setAlertAction(error.title, error.msg, 'error'))
+      )
+   }
+   dispatch({ type: failType })
+}
 
 // Load User
-export const loadUser = () => async (dispatch) => {
-   dispatch(setLoading.start)
+export const loadUserAction = () => async (dispatch) => {
+   dispatch(setLoadingAction.start)
    try {
       const res = await api.get('/auth')
       dispatch({
          type: USER_LOADED,
          payload: res.data
       })
-      dispatch(setLoading.end)
    } catch (err) {
-      dispatch({
-         type: AUTH_ERROR
-      })
-      dispatch(setLoading.end)
+      authActionErrorHandler(err, dispatch, AUTH_ERROR)
    }
+   dispatch(setLoadingAction.end)
 }
+
 // Register User
-export const register = (formData) => async (dispatch) => {
-   dispatch(setLoading.start)
+export const registerAction = (formData) => async (dispatch) => {
+   dispatch(setLoadingAction.start)
    try {
       const res = await api.post('/users', formData)
       dispatch({
          type: REGISTER_SUCCESS,
          payload: res.data
       })
-      dispatch(loadUser())
-      dispatch(removeAllAlert())
-      dispatch(setLoading.end)
+      dispatch(loadUserAction())
+      dispatch(removeAllAlertAction())
    } catch (err) {
-      const errors = err.response.data.errors
-      if (errors) {
-         errors.forEach((error) =>
-            dispatch(setAlert(error.title, error.msg, 'error'))
-         )
-      }
-      dispatch({
-         type: REGISTER_FAIL
-      })
-      dispatch(setLoading.end)
-      // console.clear()
+      authActionErrorHandler(err, dispatch, REGISTER_FAIL)
    }
+   dispatch(setLoadingAction.end)
 }
 
 // Login User
-export const login = (formData) => async (dispatch) => {
-   dispatch(setLoading.start)
+export const loginAction = (formData) => async (dispatch) => {
+   dispatch(setLoadingAction.start)
    try {
       const res = await api.post('/auth', formData)
-      dispatch(removeAllAlert())
+      dispatch(removeAllAlertAction())
       dispatch({
          type: LOGIN_SUCCESS,
          payload: res.data
       })
-
-      dispatch(loadUser())
-      dispatch(setLoading.end)
+      dispatch(loadUserAction())
    } catch (err) {
-      const errors = err.response.data.errors
-      if (errors) {
-         errors.forEach((error) =>
-            dispatch(setAlert(error.title, error.msg, 'error'))
-         )
-      }
-      dispatch({
-         type: LOGIN_FAIL
-      })
-      dispatch(setLoading.end)
-      // console.clear()
+      authActionErrorHandler(err, dispatch, LOGIN_FAIL)
    }
+   dispatch(setLoadingAction.end)
 }
 
 // Logout
-export const logout = () => async (dispatch) => {
+export const logoutAction = () => async (dispatch) => {
    dispatch({ type: LOGOUT })
 }

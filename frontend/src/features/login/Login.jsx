@@ -17,18 +17,18 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { loginSchema as s } from './LoginSchema'
 import { yupResolver } from '@hookform/resolvers/yup'
 import t from '../../lang/i18n'
-import { login } from '../../actions/authActions'
+import { loginAction } from '../../actions/authActions'
 import PropTypes from 'prop-types'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
-const Login = ({ isLoading, login, isAuthenticated }) => {
+const Login = ({ isLoading, loginAction, isAuthenticated }) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })
 
    const onSubmit = methods.handleSubmit((data) => {
       const { email, password } = data
-      login({ email, password })
+      loginAction({ email, password })
    })
 
    if (isAuthenticated) {
@@ -124,7 +124,7 @@ const Login = ({ isLoading, login, isAuthenticated }) => {
 
 Login.propTypes = {
    isLoading: PropTypes.bool.isRequired,
-   login: PropTypes.func.isRequired,
+   loginAction: PropTypes.func.isRequired,
    isAuthenticated: PropTypes.bool
 }
 
@@ -133,4 +133,4 @@ const mapStateToProps = (state) => ({
    isAuthenticated: state.auth.isAuthenticated
 })
 
-export default connect(mapStateToProps, { login })(Login)
+export default connect(mapStateToProps, { loginAction })(Login)

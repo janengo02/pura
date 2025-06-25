@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid'
 import { SET_ALERT, REMOVE_ALERT, REMOVE_ALL_ALERTS } from './types'
 
 // Remove all alerts and set a new alert
-export const setAlert = (title, msg, alertType) => (dispatch) => {
+export const setAlertAction = (title, msg, alertType) => (dispatch) => {
    dispatch({ type: REMOVE_ALL_ALERTS })
    const id = uuid()
    dispatch({
@@ -12,7 +12,7 @@ export const setAlert = (title, msg, alertType) => (dispatch) => {
 }
 
 // Add a new alert to existing alerts
-export const addAlert = (title, msg, alertType) => (dispatch) => {
+export const addAlertAction = (title, msg, alertType) => (dispatch) => {
    const id = uuid()
    dispatch({
       type: SET_ALERT,
@@ -21,11 +21,11 @@ export const addAlert = (title, msg, alertType) => (dispatch) => {
 }
 
 // Remove an alert with a specific id
-export const removeAlert = (id) => (dispatch) => {
+export const removeAlertAction = (id) => (dispatch) => {
    dispatch({ type: REMOVE_ALERT, payload: id })
 }
 
 // Remove an alert with a specific id
-export const removeAllAlert = () => (dispatch) => {
+export const removeAllAlertAction = () => (dispatch) => {
    dispatch({ type: REMOVE_ALL_ALERTS })
 }

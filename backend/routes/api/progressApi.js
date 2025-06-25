@@ -11,7 +11,7 @@ const {
    prepareProgressData
 } = require('../../utils/progressHelper')
 
-const { addProgress, deleteProgress } = require('../../../shared/utils')
+const { createProgress, deleteProgress } = require('../../../shared/utils')
 
 // @route   POST api/progress/new/:page-id
 // @desc    Create a new progress
@@ -31,7 +31,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    const newProgress = prepareProgressData(req.body)
 
    //   Prepare: Set up new task_map
-   const { task_map: newTaskMap } = addProgress({
+   const { task_map: newTaskMap } = createProgress({
       progress_order: page.progress_order,
       group_order: page.group_order,
       task_map: page.task_map,

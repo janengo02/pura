@@ -17,11 +17,11 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { registerSchema as s } from './RegisterSchema'
 import { yupResolver } from '@hookform/resolvers/yup'
 import t from '../../lang/i18n'
-import { register } from '../../actions/authActions'
+import { registerAction } from '../../actions/authActions'
 import PropTypes from 'prop-types'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
-const Register = ({ isLoading, register, isAuthenticated }) => {
+const Register = ({ isLoading, registerAction, isAuthenticated }) => {
    const methods = useForm({
       resolver: yupResolver(s)
    })
@@ -29,7 +29,7 @@ const Register = ({ isLoading, register, isAuthenticated }) => {
    const onSubmit = methods.handleSubmit((data) => {
       const { name, email, password } = data
       // TODO: Send email confirmation email
-      register({ name, email, password })
+      registerAction({ name, email, password })
    })
 
    if (isAuthenticated) {
@@ -146,7 +146,7 @@ const Register = ({ isLoading, register, isAuthenticated }) => {
 
 Register.propTypes = {
    isLoading: PropTypes.bool.isRequired,
-   register: PropTypes.func.isRequired,
+   registerAction: PropTypes.func.isRequired,
    isAuthenticated: PropTypes.bool
 }
 
@@ -155,4 +155,4 @@ const mapStateToProps = (state) => ({
    isAuthenticated: state.auth.isAuthenticated
 })
 
-export default connect(mapStateToProps, { register })(Register)
+export default connect(mapStateToProps, { registerAction })(Register)
