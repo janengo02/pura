@@ -1,105 +1,73 @@
-import React, {
-   useState,
-   useRef,
-   createRef,
-   useEffect,
-   useContext
-} from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { Flex } from '@chakra-ui/react'
 
+// *** Context & hooks ***
 import SplitPaneContext from '../../context/SplitPaneContext'
 import useWindowDimensions from '../../hooks/useWindowDimensions'
 
-import { Box, Flex } from '@chakra-ui/react'
-
+// *** Components ***
 import Navbar from './Navbar'
 import PageDivider from './PageDivider'
-import Kanban from './Kanban'
-import Calendar from './Calendar'
-import TaskModal from './kanban/task/TaskModal'
+import SplitPaneLeft from './SplitPaneLeft'
+import SplitPaneRight from './SplitPaneRight'
 
-const leftRef = createRef()
-const rightRef = createRef()
+// ===================================================================================
 
-const SplitPaneLeft = () => {
-   const { leftWidth, setLeftWidth, setViewCalendar } =
-      useContext(SplitPaneContext)
-   const { width } = useWindowDimensions()
-
-   useEffect(() => {
-      if (!leftWidth && leftRef.current) {
-         setLeftWidth((leftRef.current.clientWidth * 100) / width)
-         leftRef.current.style.flex = 'none'
-         return
-      }
-      if (leftWidth > 95) {
-         setLeftWidth(100)
-         setViewCalendar(false)
-      }
-      if (leftRef.current) {
-         leftRef.current.style.width = `${leftWidth}%`
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [leftWidth])
-
-   return (
-      <Box ref={leftRef} w='full' h='full' overflow='auto'>
-         <Kanban />
-         <TaskModal leftWidth={`${leftWidth}%`} />
-      </Box>
-   )
-}
-const SplitPaneRight = () => (
-   <Box ref={rightRef} w='full' h='full' overflow='auto'>
-      <Calendar />
-   </Box>
-)
+const leftRef = React.createRef()
+const rightRef = React.createRef()
 
 const Dashboard = () => {
+   // ==== States ====
    const [leftWidth, setLeftWidth] = useState(null)
-   const [viewCalendar, setViewCalendar] = useState(true)
+   const [viewCalendar, setViewCalendar] = useState(() => {
+      const stored = localStorage.getItem('dashboard.viewCalendar')
+      return stored !== null ? stored === 'true' : true
+   })
    const [focusDivider, setFocusDivider] = useState(false)
    const separatorXPosition = useRef(null)
    const { width } = useWindowDimensions()
 
-   const onMouseDown = (e) => {
-      separatorXPosition.current = e.clientX
-      setFocusDivider(true)
-      // Prevent text selection while resizing
-      if (leftRef.current) {
-         leftRef.current.style.userSelect = 'none'
-      }
-      if (viewCalendar && rightRef.current) {
-         rightRef.current.style.userSelect = 'none'
-      }
-   }
+   // ==== Handlers ====
+   const onMouseDown = useCallback(
+      (e) => {
+         separatorXPosition.current = e.clientX
+         setFocusDivider(true)
+         document.body.style.userSelect = 'none'
+         if (leftRef.current) leftRef.current.style.userSelect = 'none'
+         if (viewCalendar && rightRef.current)
+            rightRef.current.style.userSelect = 'none'
+      },
+      [viewCalendar]
+   )
 
-   const onMouseMove = (e) => {
-      if (!separatorXPosition.current) {
-         return
-      }
-      const newLeftWidth =
-         (((leftWidth * width) / 100 + e.clientX - separatorXPosition.current) *
-            100) /
-         width
-      separatorXPosition.current = e.clientX
+   const onMouseMove = useCallback(
+      (e) => {
+         if (!separatorXPosition.current) return
+         setLeftWidth((prevLeftWidth) => {
+            const newLeftWidth =
+               (((prevLeftWidth * width) / 100 +
+                  e.clientX -
+                  separatorXPosition.current) *
+                  100) /
+               width
+            separatorXPosition.current = e.clientX
+            return newLeftWidth
+         })
+         setFocusDivider(true)
+      },
+      [width]
+   )
 
-      setLeftWidth(newLeftWidth)
-      setFocusDivider(true)
-   }
-
-   const onMouseUp = () => {
+   const onMouseUp = useCallback(() => {
       separatorXPosition.current = null
-      // Enable text selection after resizing
-      if (leftRef.current) {
-         leftRef.current.style.userSelect = 'auto'
-      }
-      if (viewCalendar && rightRef.current) {
+      document.body.style.userSelect = 'auto'
+      if (leftRef.current) leftRef.current.style.userSelect = 'auto'
+      if (viewCalendar && rightRef.current)
          rightRef.current.style.userSelect = 'auto'
-      }
-
       setFocusDivider(false)
-   }
+   }, [viewCalendar])
 
+   // ==== Effects ====
    useEffect(() => {
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
@@ -107,7 +75,11 @@ const Dashboard = () => {
          document.removeEventListener('mousemove', onMouseMove)
          document.removeEventListener('mouseup', onMouseUp)
       }
-   })
+   }, [onMouseMove, onMouseUp])
+
+   useEffect(() => {
+      localStorage.setItem('dashboard.viewCalendar', viewCalendar)
+   }, [viewCalendar])
 
    useEffect(() => {
       if (!viewCalendar) {
@@ -117,19 +89,34 @@ const Dashboard = () => {
       }
    }, [viewCalendar])
 
+   // ==== Context value ====
+   const contextValue = useMemo(
+      () => ({
+         leftWidth,
+         setLeftWidth,
+         viewCalendar,
+         setViewCalendar,
+         onMouseDown,
+         focusDivider,
+         setFocusDivider,
+         leftRef,
+         rightRef
+      }),
+      [
+         leftWidth,
+         setLeftWidth,
+         viewCalendar,
+         setViewCalendar,
+         onMouseDown,
+         focusDivider,
+         setFocusDivider
+      ]
+   )
+
+   // ==== Render ====
    return (
       <Flex flexDirection='column' w='100vw' h='100vh' overflow='hidden'>
-         <SplitPaneContext.Provider
-            value={{
-               leftWidth,
-               setLeftWidth,
-               viewCalendar,
-               setViewCalendar,
-               onMouseDown,
-               focusDivider,
-               setFocusDivider
-            }}
-         >
+         <SplitPaneContext.Provider value={contextValue}>
             <Navbar />
             <Flex bg='white' w='full' h='calc(100vh - 81px);'>
                <SplitPaneLeft />

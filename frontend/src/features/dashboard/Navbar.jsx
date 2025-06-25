@@ -1,7 +1,10 @@
+// =======================
+// Imports
+// =======================
 import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import SplitPaneContext from '../../context/SplitPaneContext'
+
 import {
    Flex,
    Heading,
@@ -14,10 +17,17 @@ import {
    useDisclosure,
    Drawer
 } from '@chakra-ui/react'
+
 import { PiCalendarFill, PiDotsNine, PiFilePlus } from 'react-icons/pi'
+
+import SplitPaneContext from '../../context/SplitPaneContext'
 import t from '../../lang/i18n'
 import ProfileMenu from './navbar/ProfileMenu'
 import Sidebar from './navbar/Sidebar'
+
+// =======================
+// Utility Components
+// =======================
 
 const NavbarWrapper = ({ children }) => (
    <Flex
@@ -32,6 +42,7 @@ const NavbarWrapper = ({ children }) => (
       {children}
    </Flex>
 )
+
 const NavbarLeft = ({ dropdownMenu, sidebar, title }) => (
    <Flex gap={5}>
       <Menu isOpen={dropdownMenu.isOpen} onClose={dropdownMenu.onClose} isLazy>
@@ -45,7 +56,7 @@ const NavbarLeft = ({ dropdownMenu, sidebar, title }) => (
             icon={<PiDotsNine size={28} />}
             variant='ghost'
             colorScheme='gray'
-         ></MenuButton>
+         />
          <MenuList
             onMouseEnter={dropdownMenu.onOpen}
             onMouseLeave={dropdownMenu.onClose}
@@ -60,27 +71,28 @@ const NavbarLeft = ({ dropdownMenu, sidebar, title }) => (
       </Heading>
    </Flex>
 )
+
 const NavbarRight = () => {
    const { viewCalendar, setViewCalendar } = useContext(SplitPaneContext)
    return (
       <Flex gap={8}>
          <IconButton
-            isRound={true}
+            isRound
             variant={viewCalendar ? 'solid' : 'outline'}
             colorScheme='purple'
             icon={<PiCalendarFill size={22} />}
-            onClick={() => {
-               setViewCalendar((prev) => !prev)
-            }}
+            onClick={() => setViewCalendar((prev) => !prev)}
          />
          <ProfileMenu />
       </Flex>
    )
 }
-const Navbar = ({
-   // Redux props
-   title
-}) => {
+
+// =======================
+// Main Component
+// =======================
+
+const Navbar = ({ title }) => {
    const sidebar = useDisclosure()
    const dropdownMenu = useDisclosure()
    return (
@@ -104,12 +116,25 @@ const Navbar = ({
       </>
    )
 }
+
+// =======================
+// PropTypes
+// =======================
+
 Navbar.propTypes = {
    title: PropTypes.string
 }
 
+// =======================
+// Redux
+// =======================
+
 const mapStateToProps = (state) => ({
    title: state.page.title
 })
+
+// =======================
+// Export
+// =======================
 
 export default connect(mapStateToProps)(Navbar)

@@ -116,7 +116,6 @@ function deleteGroup({
    const newTaskEnd = originalTaskMap[mapEnd] - 1
    newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
 
-   console.log(newGroupOrder, newTasks, newTaskMap)
    return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
 }
 

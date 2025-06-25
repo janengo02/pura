@@ -1,11 +1,25 @@
-import React, { useEffect } from 'react'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
+
+// Redux
 import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Actions
 import { getFirstPageAction, moveTaskAction } from '../../actions/pageActions'
 import { createGroupAction } from '../../actions/groupActions'
 import { createProgressAction } from '../../actions/progressActions'
+
+// External Libraries
 import { DragDropContext } from '@hello-pangea/dnd'
+
+// UI Components
 import {
    Button,
    Flex,
@@ -14,189 +28,272 @@ import {
    Text,
    VStack
 } from '@chakra-ui/react'
-import t from '../../lang/i18n'
+
+// Internal Components
 import Toolbar from './kanban/toolbar/Toolbar'
 import Group from './kanban/group/Group'
 import ProgressHeader from './kanban/progress/ProgressHeader'
 import FormAlert from '../../components/errorHandler/FormAlert'
-import { PiPlus, PiPlusBold } from 'react-icons/pi'
 import Column from './kanban/progress/Column'
 
-const Kanban = ({
-   // Redux props
-   getFirstPageAction,
-   moveTaskAction,
-   createGroupAction,
-   createProgressAction,
+// Utils & Icons
+import t from '../../lang/i18n'
+import { PiPlus, PiPlusBold } from 'react-icons/pi'
 
-   _id,
-   group_order,
-   progress_order,
-   errors,
-   error,
-   loading
-}) => {
-   const navigate = useNavigate()
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
 
-   useEffect(() => {
-      getFirstPageAction()
-   }, [getFirstPageAction, error])
+// Memoized selectors for better Redux performance
+const selectPageData = createSelector(
+   [
+      (state) => state.page._id,
+      (state) => state.page.group_order,
+      (state) => state.page.progress_order,
+      (state) => state.page.loading,
+      (state) => state.page.error,
+      (state) => state.page.errors
+   ],
+   (_id, group_order, progress_order, loading, error, errors) => ({
+      _id,
+      group_order,
+      progress_order,
+      loading,
+      error,
+      errors
+   })
+)
 
-   useEffect(() => {
-      if (_id && error) {
-         var code = 400
-         var msg = 'alert-bad-request'
-         if (errors && errors[0].code) {
-            code = errors[0].code
-            msg = errors[0].msg
-         }
-         const errorState = {
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Kanban = React.memo(
+   ({
+      // Redux props
+      getFirstPageAction,
+      moveTaskAction,
+      createGroupAction,
+      createProgressAction,
+      pageData: { _id, group_order, progress_order, errors, error, loading }
+   }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+
+      const navigate = useNavigate()
+
+      const errorState = useMemo(() => {
+         if (!(_id && error)) return null
+
+         const code = errors?.[0]?.code || 400
+         const msg = errors?.[0]?.msg || 'alert-bad-request'
+
+         return {
             code: `${code}`,
             msg: `${msg}`
          }
-         navigate('/error', { state: errorState })
-      }
-   }, [error, navigate, _id, errors])
+      }, [_id, error, errors])
 
-   const onDragEnd = (result) => {
-      const reqData = {
-         page_id: _id,
-         result: result
+      // -------------------------------------------------------------------------
+      // UTIL COMPONENTS
+      // -------------------------------------------------------------------------
+      // Memoize progress headers to prevent unnecessary re-renders
+      const progressHeaders = useMemo(
+         () =>
+            progress_order?.map((progress) => (
+               <ProgressHeader
+                  key={progress._id}
+                  progress={progress}
+                  isNew={progress.title === ''}
+               />
+            )) || [],
+         [progress_order]
+      )
+
+      // Memoize groups to prevent unnecessary re-renders
+      const groupComponents = useMemo(
+         () =>
+            group_order?.map((group) => (
+               <Group key={group._id} group={group} isNew={group.title === ''}>
+                  {progress_order?.map((progress) => (
+                     <Column
+                        key={`${group._id}-${progress._id}`} // More specific key
+                        progress={progress}
+                        group={group}
+                     />
+                  ))}
+               </Group>
+            )) || [],
+         [group_order, progress_order]
+      )
+
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const onDragEnd = useCallback(
+         (result) => {
+            const reqData = {
+               page_id: _id,
+               result: result
+            }
+            moveTaskAction(reqData)
+         },
+         [_id, moveTaskAction]
+      )
+
+      const handleCreateProgress = useCallback(
+         async (e) => {
+            e.preventDefault()
+            createProgressAction({ page_id: _id })
+         },
+         [_id, createProgressAction]
+      )
+
+      const handleCreateGroup = useCallback(
+         async (e) => {
+            e.preventDefault()
+            createGroupAction({ page_id: _id })
+         },
+         [_id, createGroupAction]
+      )
+
+      // -------------------------------------------------------------------------
+      // EFFECTS
+      // -------------------------------------------------------------------------
+
+      useEffect(() => {
+         getFirstPageAction()
+      }, [getFirstPageAction])
+
+      useEffect(() => {
+         if (errorState) {
+            navigate('/error', { state: errorState })
+         }
+      }, [errorState, navigate])
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      if (error && !_id) {
+         return <></>
       }
 
-      moveTaskAction(reqData)
-   }
-   return (
-      <>
-         {error ? (
-            <></>
-         ) : (
-            <Skeleton isLoaded={!loading}>
-               <FormAlert />
-               <VStack
-                  w='fit-content'
-                  h='fit-content'
-                  minH='full'
-                  minW='full'
-                  alignItems='center'
-                  gap={0}
-                  paddingBottom={10}
-               >
-                  {_id && (
-                     <VStack
-                        w='fit-content'
-                        h='fit-content'
-                        alignItems='flex-start'
-                        gap={3}
-                     >
-                        <Toolbar />
-                        <DragDropContext onDragEnd={onDragEnd}>
-                           <VStack
-                              w='fit-content'
-                              h='fit-content'
-                              alignItems='flex-start'
-                              gap={3}
-                           >
-                              <Flex gap={3} paddingX={3} alignItems='center'>
-                                 {progress_order?.map((progress) => (
-                                    <ProgressHeader
-                                       key={progress._id}
-                                       progress={progress}
-                                       isNew={progress.title === ''}
-                                    />
-                                 ))}
-                                 <IconButton
-                                    aria-label='Options'
-                                    icon={<PiPlusBold />}
-                                    variant='ghost'
-                                    colorScheme='gray'
-                                    color='gray.500'
-                                    size='sm'
-                                    onClick={async (e) => {
-                                       e.preventDefault()
-                                       createProgressAction({ page_id: _id })
-                                    }}
-                                 />
-                              </Flex>
-                              {group_order?.map((group) => (
-                                 <Group
-                                    key={group._id}
-                                    group={group}
-                                    isNew={group.title === ''}
-                                 >
-                                    {progress_order?.map((progress) => (
-                                       <Column
-                                          key={progress._id} //has to match droppableId
-                                          progress={progress}
-                                          group={group}
-                                       />
-                                    ))}
-                                 </Group>
-                              ))}
-                              <Button
-                                 size='sm'
+      return (
+         <Skeleton isLoaded={!loading}>
+            <FormAlert />
+            <VStack
+               w='fit-content'
+               h='fit-content'
+               minH='full'
+               minW='full'
+               alignItems='center'
+               gap={0}
+               paddingBottom={10}
+            >
+               {_id ? (
+                  <VStack
+                     w='fit-content'
+                     h='fit-content'
+                     alignItems='flex-start'
+                     gap={3}
+                  >
+                     <Toolbar />
+                     <DragDropContext onDragEnd={onDragEnd}>
+                        <VStack
+                           w='fit-content'
+                           h='fit-content'
+                           alignItems='flex-start'
+                           gap={3}
+                        >
+                           <Flex gap={3} paddingX={3} alignItems='center'>
+                              {progressHeaders}
+                              <IconButton
+                                 aria-label='Options'
+                                 icon={<PiPlusBold />}
+                                 variant='ghost'
                                  colorScheme='gray'
                                  color='gray.500'
-                                 variant='ghost'
-                                 leftIcon={<PiPlus />}
-                                 onClick={async (e) => {
-                                    e.preventDefault()
-                                    createGroupAction({ page_id: _id })
-                                 }}
-                              >
-                                 {t('btn-add-group')}
-                              </Button>
-                           </VStack>
-                        </DragDropContext>
-                     </VStack>
-                  )}
-                  {!_id && (
-                     <Text color='gray.500'>
-                        {t('guide-no_page')}
-                        <Button
-                           size='sm'
-                           colorScheme='gray'
-                           opacity={0.3}
-                           variant='ghost'
-                           leftIcon={<PiPlus />}
-                        >
-                           {t('btn-new_page')}
-                        </Button>
-                     </Text>
-                  )}
-               </VStack>
-            </Skeleton>
-         )}
-      </>
-   )
-}
+                                 size='sm'
+                                 onClick={handleCreateProgress}
+                              />
+                           </Flex>
+                           {groupComponents}
+                           <Button
+                              size='sm'
+                              colorScheme='gray'
+                              color='gray.500'
+                              variant='ghost'
+                              leftIcon={<PiPlus />}
+                              onClick={handleCreateGroup}
+                           >
+                              {t('btn-add-group')}
+                           </Button>
+                        </VStack>
+                     </DragDropContext>
+                  </VStack>
+               ) : (
+                  <Text color='gray.500'>
+                     {t('guide-no_page')}
+                     <Button
+                        size='sm'
+                        colorScheme='gray'
+                        opacity={0.3}
+                        variant='ghost'
+                        leftIcon={<PiPlus />}
+                     >
+                        {t('btn-new_page')}
+                     </Button>
+                  </Text>
+               )}
+            </VStack>
+         </Skeleton>
+      )
+   }
+)
 
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+Kanban.displayName = 'Kanban'
+
+// PropTypes validation
 Kanban.propTypes = {
    getFirstPageAction: PropTypes.func.isRequired,
    moveTaskAction: PropTypes.func.isRequired,
    createGroupAction: PropTypes.func.isRequired,
    createProgressAction: PropTypes.func.isRequired,
-
-   _id: PropTypes.string,
-   group_order: PropTypes.array.isRequired,
-   progress_order: PropTypes.array.isRequired,
-   loading: PropTypes.bool.isRequired,
-   errors: PropTypes.array,
-   error: PropTypes.bool
+   pageData: PropTypes.shape({
+      _id: PropTypes.string,
+      group_order: PropTypes.array.isRequired,
+      progress_order: PropTypes.array.isRequired,
+      loading: PropTypes.bool.isRequired,
+      errors: PropTypes.array,
+      error: PropTypes.bool
+   }).isRequired
 }
 
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
-   _id: state.page._id,
-   group_order: state.page.group_order,
-   progress_order: state.page.progress_order,
-   loading: state.page.loading,
-   errors: state.page.errors,
-   error: state.page.error
+   pageData: selectPageData(state)
 })
 
-export default connect(mapStateToProps, {
+const mapDispatchToProps = {
    getFirstPageAction,
    moveTaskAction,
    createGroupAction,
    createProgressAction
-})(Kanban)
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(Kanban)
