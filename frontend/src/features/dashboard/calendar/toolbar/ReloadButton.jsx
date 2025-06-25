@@ -1,38 +1,121 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
 
+// React
+import React, { useCallback } from 'react'
+import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// UI Components
 import { IconButton } from '@chakra-ui/react'
+
+// Icons & Actions
 import { PiArrowClockwise } from 'react-icons/pi'
 import { loadCalendarAction } from '../../../../actions/googleAccountActions'
 
-const ReloadButton = ({
-   // Redux props
-   loadCalendarAction,
-   tasks
-}) => {
-   return (
-      <IconButton
-         aria-label='Options'
-         icon={<PiArrowClockwise size={22} />}
-         variant='ghost'
-         size='sm'
-         colorScheme='gray'
-         onClick={async (e) => {
-            e.preventDefault()
-            // loadCalendarAction() //TODO: Add ranges
-         }}
-      />
-   )
+// Utils
+import { firstVisibleDay, lastVisibleDay } from '../../../../utils/dates'
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const BUTTON_STYLES = {
+   'aria-label': 'Reload Calendar',
+   variant: 'ghost',
+   size: 'sm',
+   colorScheme: 'gray'
 }
 
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectReloadButtonData = createSelector(
+   [(state) => state.page.tasks, (state) => state.googleAccount.range],
+   (tasks, range) => ({
+      tasks: tasks || [],
+      range: range || []
+   })
+)
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const ReloadButton = React.memo(
+   ({
+      // Redux props
+      loadCalendarAction,
+      reloadData: { tasks, range }
+   }) => {
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleReload = useCallback(
+         async (e) => {
+            e.preventDefault()
+
+            // Use current range or default range if not available
+            const reloadRange =
+               range.length > 0
+                  ? range
+                  : [firstVisibleDay(new Date()), lastVisibleDay(new Date())]
+
+            await loadCalendarAction(reloadRange, tasks)
+         },
+         [loadCalendarAction, range, tasks]
+      )
+
+      // -------------------------------------------------------------------------
+      // RENDER
+      // -------------------------------------------------------------------------
+
+      return (
+         <IconButton
+            {...BUTTON_STYLES}
+            icon={<PiArrowClockwise size={22} />}
+            onClick={handleReload}
+         />
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+ReloadButton.displayName = 'CalendarReloadButton'
+
+// PropTypes validation
 ReloadButton.propTypes = {
    loadCalendarAction: PropTypes.func.isRequired,
-   tasks: PropTypes.array.isRequired
+   reloadData: PropTypes.shape({
+      tasks: PropTypes.array.isRequired,
+      range: PropTypes.array.isRequired
+   }).isRequired
 }
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
-   tasks: state.page.tasks
+   reloadData: selectReloadButtonData(state)
 })
-export default connect(mapStateToProps, {
+
+const mapDispatchToProps = {
    loadCalendarAction
-})(ReloadButton)
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(ReloadButton)

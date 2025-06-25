@@ -1,12 +1,33 @@
-import React from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+
+// Actions
 import { createTaskAction } from '../../../../actions/taskActions'
+
+// External Libraries
 import { Droppable } from '@hello-pangea/dnd'
+
+// UI Components
 import { Button, Card, Flex } from '@chakra-ui/react'
-import { PiPlus } from 'react-icons/pi'
+
+// Internal Components
 import TaskCard from '../task/TaskCard'
+
+// Utils & Icons
 import t from '../../../../lang/i18n'
+import { PiPlus } from 'react-icons/pi'
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
 
 const Column = ({
    progress,
@@ -17,82 +38,149 @@ const Column = ({
    progress_order,
    task_map,
    tasks,
-
    createTaskAction
 }) => {
-   const newTaskInfo = {
-      page_id: _id,
-      group_id: group._id,
-      progress_id: progress._id
-   }
-   const groupIndex = group_order.findIndex((g) => g._id === group._id)
-   const progressIndex = progress_order.findIndex((p) => p._id === progress._id)
+   // -------------------------------------------------------------------------
+   // MEMOIZED VALUES
+   // -------------------------------------------------------------------------
 
-   const taskMapIndex = groupIndex * progress_order.length + progressIndex
-   var taskArray = []
-   if (taskMapIndex === 0) {
-      taskArray = tasks.slice(0, task_map[0])
-   } else {
-      taskArray = tasks.slice(
-         task_map[taskMapIndex - 1],
-         task_map[taskMapIndex]
+   const newTaskInfo = useMemo(
+      () => ({
+         page_id: _id,
+         group_id: group._id,
+         progress_id: progress._id
+      }),
+      [_id, group._id, progress._id]
+   )
+
+   const taskData = useMemo(() => {
+      const groupIndex = group_order.findIndex((g) => g._id === group._id)
+      const progressIndex = progress_order.findIndex(
+         (p) => p._id === progress._id
       )
-   }
-   const droppableId = taskMapIndex.toString()
-   const taskPointer = task_map[taskMapIndex] - taskArray?.length
-   return (
-      <Droppable droppableId={droppableId}>
-         {(provided, snapshot) => (
-            <Card
-               variant='filled'
-               bg={progress.color}
-               p={2}
-               w={250}
-               minH='48px'
-               gap={2}
-               boxShadow={snapshot.isDraggingOver ? 'outline' : undefined}
+      const taskMapIndex = groupIndex * progress_order.length + progressIndex
+
+      let taskArray = []
+      if (taskMapIndex === 0) {
+         taskArray = tasks.slice(0, task_map[0])
+      } else {
+         taskArray = tasks.slice(
+            task_map[taskMapIndex - 1],
+            task_map[taskMapIndex]
+         )
+      }
+
+      const droppableId = taskMapIndex.toString()
+      const taskPointer = task_map[taskMapIndex] - taskArray?.length
+
+      return {
+         taskArray,
+         droppableId,
+         taskPointer
+      }
+   }, [group_order, progress_order, task_map, tasks, group._id, progress._id])
+
+   const taskCards = useMemo(
+      () =>
+         taskData.taskArray?.map((task, taskIndex) => (
+            <TaskCard
+               key={taskData.taskPointer + taskIndex} // Must match draggableId
+               task={task}
+               isNew={task.title === ''}
+               draggableId={(taskData.taskPointer + taskIndex).toString()}
+               taskIndex={taskIndex}
+            />
+         )) || [],
+      [taskData.taskArray, taskData.taskPointer]
+   )
+
+   // -------------------------------------------------------------------------
+   // EVENT HANDLERS
+   // -------------------------------------------------------------------------
+
+   const handleCreateTask = useCallback(
+      async (e) => {
+         e.preventDefault()
+         if (!progress.isNew && !group.isNew) {
+            createTaskAction(newTaskInfo)
+         }
+      },
+      [progress.isNew, group.isNew, createTaskAction, newTaskInfo]
+   )
+
+   // -------------------------------------------------------------------------
+   // RENDER COMPONENTS
+   // -------------------------------------------------------------------------
+
+   // Render droppable content
+   const renderDroppableContent = useCallback(
+      (provided, snapshot) => (
+         <Card
+            variant='filled'
+            bg={progress.color}
+            p={2}
+            w={250}
+            minH='48px'
+            gap={2}
+            boxShadow={snapshot.isDraggingOver ? 'outline' : undefined}
+         >
+            <Flex
+               ref={provided.innerRef}
+               {...provided.droppableProps}
+               flexDirection='column'
+               flexGrow={1}
             >
-               <Flex
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  flexDirection='column'
-                  flexGrow={1}
-               >
-                  {taskArray?.map((task, taskIndex) => (
-                     <TaskCard
-                        key={taskPointer + taskIndex} //has to match draggableId
-                        task={task}
-                        isNew={task.title === ''}
-                        draggableId={(taskPointer + taskIndex).toString()}
-                        taskIndex={taskIndex}
-                     />
-                  ))}
-                  {provided.placeholder}
-                  {newTaskInfo && (
-                     <Button
-                        size='sm'
-                        variant='ghost'
-                        colorScheme='blackAlpha'
-                        color='blackAlpha.400'
-                        justifyContent='flex-start'
-                        leftIcon={<PiPlus />}
-                        onClick={async (e) => {
-                           e.preventDefault()
-                           if (!progress.isNew && !group.isNew) {
-                              createTaskAction(newTaskInfo)
-                           }
-                        }}
-                     >
-                        {t('btn-new')}
-                     </Button>
-                  )}
-               </Flex>
-            </Card>
-         )}
+               {taskCards}
+               {provided.placeholder}
+               {newTaskInfo && (
+                  <Button
+                     size='sm'
+                     variant='ghost'
+                     colorScheme='blackAlpha'
+                     color='blackAlpha.400'
+                     justifyContent='flex-start'
+                     leftIcon={<PiPlus />}
+                     onClick={handleCreateTask}
+                  >
+                     {t('btn-new')}
+                  </Button>
+               )}
+            </Flex>
+         </Card>
+      ),
+      [progress.color, taskCards, newTaskInfo, handleCreateTask]
+   )
+
+   // -------------------------------------------------------------------------
+   // MAIN RENDER
+   // -------------------------------------------------------------------------
+
+   return (
+      <Droppable droppableId={taskData.droppableId}>
+         {renderDroppableContent}
       </Droppable>
    )
 }
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+Column.displayName = 'Column'
+
+// PropTypes validation
 Column.propTypes = {
+   progress: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      color: PropTypes.string.isRequired,
+      isNew: PropTypes.bool
+   }).isRequired,
+   group: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      isNew: PropTypes.bool
+   }).isRequired,
+   // Redux props
    _id: PropTypes.string.isRequired,
    group_order: PropTypes.array.isRequired,
    progress_order: PropTypes.array.isRequired,
@@ -100,6 +188,11 @@ Column.propTypes = {
    tasks: PropTypes.array.isRequired,
    createTaskAction: PropTypes.func.isRequired
 }
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
    _id: state.page._id,
    group_order: state.page.group_order,
@@ -107,4 +200,13 @@ const mapStateToProps = (state) => ({
    task_map: state.page.task_map,
    tasks: state.page.tasks
 })
-export default connect(mapStateToProps, { createTaskAction })(Column)
+
+const mapDispatchToProps = {
+   createTaskAction
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(Column)

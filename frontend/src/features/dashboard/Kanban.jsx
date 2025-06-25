@@ -41,30 +41,6 @@ import t from '../../lang/i18n'
 import { PiPlus, PiPlusBold } from 'react-icons/pi'
 
 // =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectPageData = createSelector(
-   [
-      (state) => state.page._id,
-      (state) => state.page.group_order,
-      (state) => state.page.progress_order,
-      (state) => state.page.loading,
-      (state) => state.page.error,
-      (state) => state.page.errors
-   ],
-   (_id, group_order, progress_order, loading, error, errors) => ({
-      _id,
-      group_order,
-      progress_order,
-      loading,
-      error,
-      errors
-   })
-)
-
-// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -98,7 +74,6 @@ const Kanban = React.memo(
       // -------------------------------------------------------------------------
       // UTIL COMPONENTS
       // -------------------------------------------------------------------------
-      // Memoize progress headers to prevent unnecessary re-renders
       const progressHeaders = useMemo(
          () =>
             progress_order?.map((progress) => (
@@ -111,7 +86,6 @@ const Kanban = React.memo(
          [progress_order]
       )
 
-      // Memoize groups to prevent unnecessary re-renders
       const groupComponents = useMemo(
          () =>
             group_order?.map((group) => (
@@ -276,6 +250,29 @@ Kanban.propTypes = {
       error: PropTypes.bool
    }).isRequired
 }
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectPageData = createSelector(
+   [
+      (state) => state.page._id,
+      (state) => state.page.group_order,
+      (state) => state.page.progress_order,
+      (state) => state.page.loading,
+      (state) => state.page.error,
+      (state) => state.page.errors
+   ],
+   (_id, group_order, progress_order, loading, error, errors) => ({
+      _id,
+      group_order,
+      progress_order,
+      loading,
+      error,
+      errors
+   })
+)
 
 // =============================================================================
 // REDUX CONNECTION

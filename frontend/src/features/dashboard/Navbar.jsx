@@ -1,10 +1,15 @@
-// =======================
-// Imports
-// =======================
-import React, { useContext } from 'react'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useContext, useMemo } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
 import { connect } from 'react-redux'
 
+// UI Components
 import {
    Flex,
    Heading,
@@ -18,17 +23,24 @@ import {
    Drawer
 } from '@chakra-ui/react'
 
+// Icons
 import { PiCalendarFill, PiDotsNine, PiFilePlus } from 'react-icons/pi'
 
-import SplitPaneContext from '../../context/SplitPaneContext'
-import t from '../../lang/i18n'
+// Internal Components
 import ProfileMenu from './navbar/ProfileMenu'
 import Sidebar from './navbar/Sidebar'
 
-// =======================
-// Utility Components
-// =======================
+// Context & Utils
+import SplitPaneContext from '../../context/SplitPaneContext'
+import t from '../../lang/i18n'
 
+// =============================================================================
+// UTILITY COMPONENTS
+// =============================================================================
+
+/**
+ * Main wrapper component for the navbar layout
+ */
 const NavbarWrapper = ({ children }) => (
    <Flex
       h={20}
@@ -43,7 +55,14 @@ const NavbarWrapper = ({ children }) => (
    </Flex>
 )
 
-const NavbarLeft = ({ dropdownMenu, sidebar, title }) => (
+NavbarWrapper.propTypes = {
+   children: PropTypes.node.isRequired
+}
+
+/**
+ * Left section of navbar containing menu and title
+ */
+const NavbarLeft = React.memo(({ dropdownMenu, sidebar, title }) => (
    <Flex gap={5}>
       <Menu isOpen={dropdownMenu.isOpen} onClose={dropdownMenu.onClose} isLazy>
          <MenuButton
@@ -70,10 +89,28 @@ const NavbarLeft = ({ dropdownMenu, sidebar, title }) => (
          {title}
       </Heading>
    </Flex>
-)
+))
 
-const NavbarRight = () => {
+NavbarLeft.displayName = 'NavbarLeft'
+
+NavbarLeft.propTypes = {
+   dropdownMenu: PropTypes.shape({
+      isOpen: PropTypes.bool.isRequired,
+      onClose: PropTypes.func.isRequired,
+      onOpen: PropTypes.func.isRequired
+   }).isRequired,
+   sidebar: PropTypes.shape({
+      onOpen: PropTypes.func.isRequired
+   }).isRequired,
+   title: PropTypes.string.isRequired
+}
+
+/**
+ * Right section of navbar containing calendar toggle and profile menu
+ */
+const NavbarRight = React.memo(() => {
    const { viewCalendar, setViewCalendar } = useContext(SplitPaneContext)
+
    return (
       <Flex gap={8}>
          <IconButton
@@ -86,15 +123,34 @@ const NavbarRight = () => {
          <ProfileMenu />
       </Flex>
    )
-}
+})
 
-// =======================
-// Main Component
-// =======================
+NavbarRight.displayName = 'NavbarRight'
 
-const Navbar = ({ title }) => {
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Navbar = React.memo(({ title = '' }) => {
+   // -------------------------------------------------------------------------
+   // HOOKS & STATE
+   // -------------------------------------------------------------------------
+
    const sidebar = useDisclosure()
    const dropdownMenu = useDisclosure()
+
+   // -------------------------------------------------------------------------
+   // MEMOIZED VALUES
+   // -------------------------------------------------------------------------
+
+   const processedTitle = useMemo(() => {
+      return typeof title === 'string' ? title : ''
+   }, [title])
+
+   // -------------------------------------------------------------------------
+   // RENDER LOGIC
+   // -------------------------------------------------------------------------
+
    return (
       <>
          <Drawer
@@ -108,33 +164,37 @@ const Navbar = ({ title }) => {
             <NavbarLeft
                dropdownMenu={dropdownMenu}
                sidebar={sidebar}
-               title={typeof title === 'string' ? title : ''}
+               title={processedTitle}
             />
             <Spacer />
             <NavbarRight />
          </NavbarWrapper>
       </>
    )
-}
+})
 
-// =======================
-// PropTypes
-// =======================
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
 
+// Display name for debugging
+Navbar.displayName = 'Navbar'
+
+// PropTypes validation
 Navbar.propTypes = {
    title: PropTypes.string
 }
 
-// =======================
-// Redux
-// =======================
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
 
 const mapStateToProps = (state) => ({
    title: state.page.title
 })
 
-// =======================
-// Export
-// =======================
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default connect(mapStateToProps)(Navbar)

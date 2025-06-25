@@ -1,22 +1,50 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
 import React, { useContext } from 'react'
+
+// UI Components
 import { Box } from '@chakra-ui/react'
 
-// *** Context & hooks ***
+// Context
 import SplitPaneContext from '../../context/SplitPaneContext'
 
-// *** Components ***
+// Internal Components
 import Calendar from './Calendar'
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 const SplitPaneRight = React.memo(() => {
-   // ==== Context & hooks ====
+   // -------------------------------------------------------------------------
+   // HOOKS & CONTEXT
+   // -------------------------------------------------------------------------
+
    const { rightRef } = useContext(SplitPaneContext)
 
-   // ==== Render ====
+   // -------------------------------------------------------------------------
+   // RENDER LOGIC
+   // -------------------------------------------------------------------------
+
    return (
       <Box ref={rightRef} w='full' h='full' overflow='auto'>
          <Calendar />
       </Box>
    )
 })
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+SplitPaneRight.displayName = 'SplitPaneRight'
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default SplitPaneRight

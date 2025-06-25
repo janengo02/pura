@@ -1,6 +1,21 @@
-import { connect } from 'react-redux'
-import { Navigate } from 'react-router-dom'
+// =============================================================================
+// IMPORTS
+// =============================================================================
 
+// React & Hooks
+import React, { useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Form Handling
+import { FormProvider, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+// UI Components
 import {
    Container,
    Flex,
@@ -11,126 +26,207 @@ import {
    VStack,
    Button
 } from '@chakra-ui/react'
+
+// Internal Components
 import { MultiInput } from '../../components/MultiInput'
 import Link from '../../components/typography/Link'
-import { FormProvider, useForm } from 'react-hook-form'
-import { loginSchema as s } from './LoginSchema'
-import { yupResolver } from '@hookform/resolvers/yup'
-import t from '../../lang/i18n'
-import { loginAction } from '../../actions/authActions'
-import PropTypes from 'prop-types'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
-const Login = ({ isLoading, loginAction, isAuthenticated }) => {
-   const methods = useForm({
-      resolver: yupResolver(s)
-   })
+// Actions & Schema
+import { loginAction } from '../../actions/authActions'
+import { loginSchema as s } from './LoginSchema'
 
-   const onSubmit = methods.handleSubmit((data) => {
-      const { email, password } = data
-      loginAction({ email, password })
-   })
+// Utils
+import t from '../../lang/i18n'
 
-   if (isAuthenticated) {
-      return <Navigate to='/dashboard' />
-   }
-   return (
-      <Container maxW='container.xl' p={0}>
-         <Flex minH='100vh' alignItems='center'>
-            <VStack
-               w='full'
-               h='full'
-               p={10}
-               spacing={10}
-               alignItems='flex-start'
-               bg='gray.50'
-               justifyContent='center'
-            ></VStack>
-            <VStack
-               w='full'
-               h='full'
-               p={10}
-               spacing={8}
-               alignItems='flex-start'
-               justifyContent='center'
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Login = React.memo(
+   ({ loginAction, authData: { isLoading, isAuthenticated } }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+
+      const methods = useForm({
+         resolver: yupResolver(s)
+      })
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      const formConfig = useMemo(
+         () => ({
+            onSubmit: methods.handleSubmit((data) => {
+               const { email, password } = data
+               loginAction({ email, password })
+            })
+         }),
+         [methods, loginAction]
+      )
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      // Early return for authenticated users
+      if (isAuthenticated) {
+         return <Navigate to='/dashboard' />
+      }
+
+      // -------------------------------------------------------------------------
+      // UTIL COMPONENTS
+      // -------------------------------------------------------------------------
+
+      const LoginForm = () => (
+         <FormProvider {...methods}>
+            <form
+               onSubmit={async (e) => {
+                  e.preventDefault()
+                  formConfig.onSubmit()
+               }}
+               noValidate
+               autoComplete='on'
+               style={{ width: '100%' }}
             >
-               <VStack spacing={5} alignItems='flex-start'>
-                  <Heading size='2xl'>{t('title-login')}</Heading>
-                  <Text>{t('desc-login')}</Text>
+               <SimpleGrid columns={1} rowGap={6} w='full'>
+                  <GridItem colSpan={1}>
+                     <FormAlert />
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <MultiInput
+                        name='email'
+                        type='text'
+                        label={t('label-email')}
+                        placeholder={t('placeholder-email')}
+                        validation={s.email}
+                        size='lg'
+                        required
+                     />
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <MultiInput
+                        name='password'
+                        type='password'
+                        label={t('label-password')}
+                        helpertext={t('helpertext-password')}
+                        validation={s.password}
+                        size='lg'
+                        required
+                     />
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <Button
+                        size='lg'
+                        w='full'
+                        colorScheme='purple'
+                        isLoading={isLoading}
+                        loadingText={t('btn-submitting')}
+                        type='submit'
+                     >
+                        {t('btn-login')}
+                     </Button>
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <Text color='gray.500'>
+                        {t('guide-create_account')}
+                        <Link to='/register' text={t('guide-register')} />
+                     </Text>
+                  </GridItem>
+               </SimpleGrid>
+            </form>
+         </FormProvider>
+      )
+
+      const LoginHeader = () => (
+         <VStack spacing={5} alignItems='flex-start'>
+            <Heading size='2xl'>{t('title-login')}</Heading>
+            <Text>{t('desc-login')}</Text>
+         </VStack>
+      )
+
+      // -------------------------------------------------------------------------
+      // MAIN RENDER
+      // -------------------------------------------------------------------------
+
+      return (
+         <Container maxW='container.xl' p={0}>
+            <Flex minH='100vh' alignItems='center'>
+               <VStack
+                  w='full'
+                  h='full'
+                  p={10}
+                  spacing={10}
+                  alignItems='flex-start'
+                  bg='gray.50'
+                  justifyContent='center'
+               />
+
+               <VStack
+                  w='full'
+                  h='full'
+                  p={10}
+                  spacing={8}
+                  alignItems='flex-start'
+                  justifyContent='center'
+               >
+                  <LoginHeader />
+                  <LoginForm />
                </VStack>
-               <FormProvider {...methods}>
-                  <form
-                     onSubmit={async (e) => {
-                        e.preventDefault()
-                        onSubmit()
-                     }}
-                     noValidate
-                     autoComplete='on'
-                     style={{ width: '100%' }}
-                  >
-                     <SimpleGrid columns={1} rowGap={6} w='full'>
-                        <GridItem colSpan={1}>
-                           <FormAlert />
-                        </GridItem>
-                        <GridItem colSpan={1}>
-                           <MultiInput
-                              name='email'
-                              type='text'
-                              label={t('label-email')}
-                              placeholder={t('placeholder-email')}
-                              validation={s.email}
-                              size='lg'
-                              required
-                           />
-                        </GridItem>
-                        <GridItem colSpan={1}>
-                           <MultiInput
-                              name='password'
-                              type='password'
-                              label={t('label-password')}
-                              helpertext={t('helpertext-password')}
-                              validation={s.password}
-                              size='lg'
-                              required
-                           />
-                        </GridItem>
-                        {/* TODO: "Remember me" */}
-                        <GridItem colSpan={1}>
-                           <Button
-                              size='lg'
-                              w='full'
-                              colorScheme='purple'
-                              isLoading={isLoading}
-                              loadingText={t('btn-submitting')}
-                              type='submit'
-                           >
-                              {t('btn-login')}
-                           </Button>
-                        </GridItem>
-                        <GridItem colSpan={1}>
-                           <Text color='gray.500'>
-                              {t('guide-create_account')}
-                              <Link to='/register' text={t('guide-register')} />
-                           </Text>
-                        </GridItem>
-                     </SimpleGrid>
-                  </form>
-               </FormProvider>
-            </VStack>
-         </Flex>
-      </Container>
-   )
+            </Flex>
+         </Container>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+Login.displayName = 'Login'
+
+// PropTypes validation
+Login.propTypes = {
+   loginAction: PropTypes.func.isRequired,
+   authData: PropTypes.shape({
+      isLoading: PropTypes.bool.isRequired,
+      isAuthenticated: PropTypes.bool
+   }).isRequired
 }
 
-Login.propTypes = {
-   isLoading: PropTypes.bool.isRequired,
-   loginAction: PropTypes.func.isRequired,
-   isAuthenticated: PropTypes.bool
-}
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectAuthData = createSelector(
+   [(state) => state.loading, (state) => state.auth.isAuthenticated],
+   (isLoading, isAuthenticated) => ({
+      isLoading,
+      isAuthenticated
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
 
 const mapStateToProps = (state) => ({
-   isLoading: state.loading,
-   isAuthenticated: state.auth.isAuthenticated
+   authData: selectAuthData(state)
 })
 
-export default connect(mapStateToProps, { loginAction })(Login)
+const mapDispatchToProps = {
+   loginAction
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login)

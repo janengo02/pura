@@ -1,3 +1,7 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Flex } from '@chakra-ui/react'
 
@@ -11,27 +15,44 @@ import PageDivider from './PageDivider'
 import SplitPaneLeft from './SplitPaneLeft'
 import SplitPaneRight from './SplitPaneRight'
 
-// ===================================================================================
+// =============================================================================
+// CONSTANTS
+// =============================================================================
 
-const leftRef = React.createRef()
-const rightRef = React.createRef()
+const NAVBAR_HEIGHT = '81px'
+const STORAGE_KEY = 'dashboard.viewCalendar'
 
-const Dashboard = () => {
-   // ==== States ====
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Dashboard = React.memo(() => {
+   // -------------------------------------------------------------------------
+   // STATE & REFS
+   // -------------------------------------------------------------------------
+
    const [leftWidth, setLeftWidth] = useState(null)
    const [viewCalendar, setViewCalendar] = useState(() => {
-      const stored = localStorage.getItem('dashboard.viewCalendar')
+      const stored = localStorage.getItem(STORAGE_KEY)
       return stored !== null ? stored === 'true' : true
    })
    const [focusDivider, setFocusDivider] = useState(false)
+
    const separatorXPosition = useRef(null)
+   const leftRef = useRef(null)
+   const rightRef = useRef(null)
    const { width } = useWindowDimensions()
 
-   // ==== Handlers ====
+   // -------------------------------------------------------------------------
+   // EVENT HANDLERS
+   // -------------------------------------------------------------------------
+
    const onMouseDown = useCallback(
       (e) => {
          separatorXPosition.current = e.clientX
          setFocusDivider(true)
+
+         // Disable text selection during drag
          document.body.style.userSelect = 'none'
          if (leftRef.current) leftRef.current.style.userSelect = 'none'
          if (viewCalendar && rightRef.current)
@@ -43,13 +64,13 @@ const Dashboard = () => {
    const onMouseMove = useCallback(
       (e) => {
          if (!separatorXPosition.current) return
+
          setLeftWidth((prevLeftWidth) => {
-            const newLeftWidth =
-               (((prevLeftWidth * width) / 100 +
-                  e.clientX -
-                  separatorXPosition.current) *
-                  100) /
-               width
+            const deltaX = e.clientX - separatorXPosition.current
+            const currentWidthPx = (prevLeftWidth * width) / 100
+            const newWidthPx = currentWidthPx + deltaX
+            const newLeftWidth = (newWidthPx * 100) / width
+
             separatorXPosition.current = e.clientX
             return newLeftWidth
          })
@@ -60,36 +81,44 @@ const Dashboard = () => {
 
    const onMouseUp = useCallback(() => {
       separatorXPosition.current = null
+      setFocusDivider(false)
+
+      // Re-enable text selection
       document.body.style.userSelect = 'auto'
       if (leftRef.current) leftRef.current.style.userSelect = 'auto'
       if (viewCalendar && rightRef.current)
          rightRef.current.style.userSelect = 'auto'
-      setFocusDivider(false)
    }, [viewCalendar])
 
-   // ==== Effects ====
+   // -------------------------------------------------------------------------
+   // EFFECTS
+   // -------------------------------------------------------------------------
+
+   // Setup drag event listeners
    useEffect(() => {
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
+
       return () => {
          document.removeEventListener('mousemove', onMouseMove)
          document.removeEventListener('mouseup', onMouseUp)
       }
    }, [onMouseMove, onMouseUp])
 
+   // Persist calendar view preference
    useEffect(() => {
-      localStorage.setItem('dashboard.viewCalendar', viewCalendar)
+      localStorage.setItem(STORAGE_KEY, viewCalendar.toString())
    }, [viewCalendar])
 
+   // Update left width based on calendar view
    useEffect(() => {
-      if (!viewCalendar) {
-         setLeftWidth(100)
-      } else {
-         setLeftWidth(50)
-      }
+      setLeftWidth(viewCalendar ? 50 : 100)
    }, [viewCalendar])
 
-   // ==== Context value ====
+   // -------------------------------------------------------------------------
+   // MEMOIZED VALUES
+   // -------------------------------------------------------------------------
+
    const contextValue = useMemo(
       () => ({
          leftWidth,
@@ -102,34 +131,45 @@ const Dashboard = () => {
          leftRef,
          rightRef
       }),
-      [
-         leftWidth,
-         setLeftWidth,
-         viewCalendar,
-         setViewCalendar,
-         onMouseDown,
-         focusDivider,
-         setFocusDivider
-      ]
+      [leftWidth, viewCalendar, onMouseDown, focusDivider]
    )
 
-   // ==== Render ====
+   const layoutContent = useMemo(
+      () => (
+         <Flex bg='white' w='full' h={`calc(100vh - ${NAVBAR_HEIGHT})`}>
+            <SplitPaneLeft ref={leftRef} />
+            {viewCalendar && (
+               <>
+                  <PageDivider />
+                  <SplitPaneRight ref={rightRef} />
+               </>
+            )}
+         </Flex>
+      ),
+      [viewCalendar]
+   )
+
+   // -------------------------------------------------------------------------
+   // RENDER
+   // -------------------------------------------------------------------------
+
    return (
-      <Flex flexDirection='column' w='100vw' h='100vh' overflow='hidden'>
+      <Flex
+         flexDirection='column'
+         w='100vw'
+         h='100vh'
+         overflow='hidden'
+         role='main'
+         aria-label='Dashboard'
+      >
          <SplitPaneContext.Provider value={contextValue}>
             <Navbar />
-            <Flex bg='white' w='full' h='calc(100vh - 81px);'>
-               <SplitPaneLeft />
-               {viewCalendar && (
-                  <>
-                     <PageDivider />
-                     <SplitPaneRight />
-                  </>
-               )}
-            </Flex>
+            {layoutContent}
          </SplitPaneContext.Provider>
       </Flex>
    )
-}
+})
+
+Dashboard.displayName = 'Dashboard'
 
 export default Dashboard

@@ -1,10 +1,19 @@
-import React, { useState } from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Actions
 import { updateTaskAction } from '../../../../actions/taskActions'
-import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
-import { PiCirclesFour, PiPlus } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
+
+// UI Components
 import {
    Flex,
    Menu,
@@ -15,98 +24,176 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 
-const GroupSelect = ({
-   // Redux props
-   updateTaskAction,
-   task: { task },
-   _id,
-   group_order
-}) => {
-   const [hovered, setHovered] = useState(false)
-   const tagSelect = useDisclosure()
-   return (
-      <Flex w='full' gap={3}>
-         <TaskCardLabel icon={<PiCirclesFour />} text={t('label-group')} />
-         <Menu isLazy isOpen={tagSelect.isOpen} onClose={tagSelect.onClose}>
-            <MenuButton
-               w='full'
-               onMouseEnter={(e) => {
-                  e.preventDefault()
-                  setHovered(true)
-               }}
-               onMouseLeave={(e) => {
-                  e.preventDefault()
-                  setHovered(false)
-               }}
-               onClick={tagSelect.onOpen}
-            >
-               <Flex
-                  w='full'
-                  p={1}
-                  borderRadius='md'
-                  bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
+// Internal Components
+import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
+
+// Utils & Icons
+import { PiCirclesFour, PiPlus } from 'react-icons/pi'
+import t from '../../../../lang/i18n'
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const GroupSelect = React.memo(
+   ({ updateTaskAction, groupData: { task, _id, group_order } }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+
+      const [hovered, setHovered] = useState(false)
+      const tagSelect = useDisclosure()
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      // Memoize group menu items to prevent unnecessary re-renders
+      const groupMenuItems = useMemo(() => {
+         return (
+            group_order?.map((group_item) => (
+               <MenuItem
+                  key={group_item._id}
+                  onClick={async (e) => {
+                     e.preventDefault()
+                     if (group_item._id !== task.group._id) {
+                        updateTaskAction({
+                           page_id: _id,
+                           task_id: task._id,
+                           group_id: group_item._id,
+                           task_detail_flg: true
+                        })
+                     }
+                  }}
                >
                   <Tag
                      borderColor='gray.100'
                      borderWidth={1}
                      bg='white'
-                     color={task.group.color}
+                     color={group_item.color}
                   >
-                     {task.group.title}
+                     {group_item.title}
                   </Tag>
-               </Flex>
-            </MenuButton>
-            <MenuList w='488px'>
-               {group_order?.map((group_item) => (
-                  <MenuItem
-                     key={group_item._id}
-                     onClick={async (e) => {
-                        e.preventDefault()
-                        if (group_item._id !== task.group._id) {
-                           updateTaskAction({
-                              page_id: _id,
-                              task_id: task._id,
-                              group_id: group_item._id,
-                              task_detail_flg: true
-                           })
-                        }
-                     }}
+               </MenuItem>
+            )) || []
+         )
+      }, [group_order, task.group._id, task._id, _id, updateTaskAction])
+
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleMouseEnter = useCallback((e) => {
+         e.preventDefault()
+         setHovered(true)
+      }, [])
+
+      const handleMouseLeave = useCallback((e) => {
+         e.preventDefault()
+         setHovered(false)
+      }, [])
+
+      const handleAddGroupClick = useCallback(async (e) => {
+         e.preventDefault()
+         // TODO: Implement add group functionality
+      }, [])
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      return (
+         <Flex w='full' gap={3}>
+            <TaskCardLabel icon={<PiCirclesFour />} text={t('label-group')} />
+
+            <Menu isLazy isOpen={tagSelect.isOpen} onClose={tagSelect.onClose}>
+               <MenuButton
+                  w='full'
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={tagSelect.onOpen}
+               >
+                  <Flex
+                     w='full'
+                     p={1}
+                     borderRadius='md'
+                     bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
                   >
                      <Tag
                         borderColor='gray.100'
                         borderWidth={1}
                         bg='white'
-                        color={group_item.color}
+                        color={task.group.color}
                      >
-                        {group_item.title}
+                        {task.group.title}
                      </Tag>
+                  </Flex>
+               </MenuButton>
+
+               <MenuList w='488px'>
+                  {groupMenuItems}
+                  <MenuItem
+                     icon={<PiPlus size={14} />}
+                     fontSize='sm'
+                     color='gray.400'
+                     onClick={handleAddGroupClick}
+                  >
+                     {t('btn-add-group')}
                   </MenuItem>
-               ))}
-               <MenuItem
-                  icon={<PiPlus size={14} />}
-                  fontSize='sm'
-                  color='gray.400'
-                  onClick={async (e) => {
-                     e.preventDefault()
-                  }}
-               >
-                  {t('btn-add-group')}
-               </MenuItem>
-            </MenuList>
-         </Menu>
-      </Flex>
-   )
+               </MenuList>
+            </Menu>
+         </Flex>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+GroupSelect.displayName = 'GroupSelect'
+
+// PropTypes validation
+GroupSelect.propTypes = {
+   updateTaskAction: PropTypes.func.isRequired,
+   groupData: PropTypes.shape({
+      task: PropTypes.object.isRequired,
+      _id: PropTypes.string.isRequired,
+      group_order: PropTypes.array.isRequired
+   }).isRequired
+}
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectGroupSelectData = createSelector(
+   [
+      (state) => state.task.task,
+      (state) => state.page._id,
+      (state) => state.page.group_order
+   ],
+   (task, _id, group_order) => ({
+      task,
+      _id,
+      group_order
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
+const mapStateToProps = (state) => ({
+   groupData: selectGroupSelectData(state)
+})
+
+const mapDispatchToProps = {
+   updateTaskAction
 }
 
-GroupSelect.propTypes = {
-   task: PropTypes.object.isRequired,
-   _id: PropTypes.string.isRequired,
-   group_order: PropTypes.array.isRequired,
-   updateTaskAction: PropTypes.func.isRequired
-}
-const mapStateToProps = (state) => ({
-   task: state.task,
-   _id: state.page._id,
-   group_order: state.page.group_order
-})
-export default connect(mapStateToProps, { updateTaskAction })(GroupSelect)
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(GroupSelect)

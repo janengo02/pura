@@ -1,29 +1,94 @@
-import React from 'react'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React
+import React, { useMemo } from 'react'
+import PropTypes from 'prop-types'
+
+// UI Components
 import { Text } from '@chakra-ui/react'
+
+// Utils
 import {
    stringToDateTime,
    stringToWeekDateTime,
    stringToTime
 } from '../../../../utils/dates'
 
-const EventTimeText = ({ start, end }) => {
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const TEXT_STYLES = {
+   fontSize: 'sm'
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Formats event time display based on start and end dates
+ * @param {string|Date} start - Event start time
+ * @param {string|Date} end - Event end time
+ * @returns {string} Formatted time string
+ */
+const formatEventTime = (start, end) => {
    const startDate = stringToDateTime(start)
    const endDate = stringToDateTime(end)
-   var eventTime = ''
+
    if (startDate === endDate) {
-      eventTime = `${stringToWeekDateTime(start)} ${stringToTime(
+      // Same day event
+      return `${stringToWeekDateTime(start)} ${stringToTime(
          start
       )} - ${stringToTime(end)}`
-   } else {
-      eventTime = `${startDate} ${stringToTime(
-         start
-      )} - ${endDate} ${stringToTime(end)}`
    }
-   return (
-      <>
-         <Text fontSize='sm'>{eventTime}</Text>
-      </>
-   )
+
+   // Multi-day event
+   return `${startDate} ${stringToTime(start)} - ${endDate} ${stringToTime(
+      end
+   )}`
 }
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const EventTimeText = React.memo(({ start, end }) => {
+   // -------------------------------------------------------------------------
+   // MEMOIZED VALUES
+   // -------------------------------------------------------------------------
+
+   const eventTimeString = useMemo(
+      () => formatEventTime(start, end),
+      [start, end]
+   )
+
+   // -------------------------------------------------------------------------
+   // RENDER
+   // -------------------------------------------------------------------------
+
+   return <Text {...TEXT_STYLES}>{eventTimeString}</Text>
+})
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+EventTimeText.displayName = 'EventTimeText'
+
+// PropTypes validation
+EventTimeText.propTypes = {
+   start: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
+      .isRequired,
+   end: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
+      .isRequired
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default EventTimeText

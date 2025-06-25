@@ -1,24 +1,50 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
 import { useRef, useContext, useEffect, useCallback } from 'react'
+
+// UI Components
 import { Box } from '@chakra-ui/react'
 
-// *** Context & hooks ***
+// Context
 import SplitPaneContext from '../../context/SplitPaneContext'
 
-// ===================================================================================
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const FOCUS_DELAY = 200
+const DIVIDER_WIDTH = 1.5
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 const PageDivider = () => {
-   // ===== Context & Refs =====
+   // -------------------------------------------------------------------------
+   // HOOKS & CONTEXT
+   // -------------------------------------------------------------------------
+
    const { onMouseDown, focusDivider, setFocusDivider } =
       useContext(SplitPaneContext)
    const dividerRef = useRef()
    const timeoutRef = useRef(null)
 
-   // ===== Event Handlers =====
-   const startFocusDivider = useCallback(
+   // -------------------------------------------------------------------------
+   // EVENT HANDLERS
+   // -------------------------------------------------------------------------
+
+   const handleMouseEnter = useCallback(
       (event) => {
          const dividerNode = dividerRef.current
          if (dividerNode && dividerNode.contains(event.target)) {
             if (!focusDivider) {
-               timeoutRef.current = setTimeout(() => setFocusDivider(true), 200)
+               timeoutRef.current = setTimeout(
+                  () => setFocusDivider(true),
+                  FOCUS_DELAY
+               )
             }
          } else {
             if (focusDivider) setFocusDivider(false)
@@ -27,29 +53,39 @@ const PageDivider = () => {
       [focusDivider, setFocusDivider]
    )
 
-   const removeFocusDivider = useCallback(() => {
+   const handleMouseLeave = useCallback(() => {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
       if (focusDivider) setFocusDivider(false)
    }, [focusDivider, setFocusDivider])
 
-   // ===== Effects =====
+   // -------------------------------------------------------------------------
+   // EFFECTS
+   // -------------------------------------------------------------------------
+
    useEffect(() => {
       const dividerNode = dividerRef.current
       if (!dividerNode) return
-      dividerNode.addEventListener('mouseover', startFocusDivider)
-      dividerNode.addEventListener('mouseout', removeFocusDivider)
+
+      // Attach event listeners
+      dividerNode.addEventListener('mouseover', handleMouseEnter)
+      dividerNode.addEventListener('mouseout', handleMouseLeave)
+
+      // Cleanup function
       return () => {
-         dividerNode.removeEventListener('mouseover', startFocusDivider)
-         dividerNode.removeEventListener('mouseout', removeFocusDivider)
+         dividerNode.removeEventListener('mouseover', handleMouseEnter)
+         dividerNode.removeEventListener('mouseout', handleMouseLeave)
          clearTimeout(timeoutRef.current)
       }
-   }, [startFocusDivider, removeFocusDivider])
+   }, [handleMouseEnter, handleMouseLeave])
 
-   // ===== Render =====
+   // -------------------------------------------------------------------------
+   // RENDER LOGIC
+   // -------------------------------------------------------------------------
+
    return (
       <Box
-         w={1.5}
+         w={DIVIDER_WIDTH}
          h='full'
          flexShrink={0}
          cursor='col-resize'
@@ -61,5 +97,9 @@ const PageDivider = () => {
       />
    )
 }
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default PageDivider

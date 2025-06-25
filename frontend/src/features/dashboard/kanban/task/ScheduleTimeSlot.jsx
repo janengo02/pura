@@ -1,8 +1,20 @@
-import React from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Actions
 import { updateTaskAction } from '../../../../actions/taskActions'
-import { PiCalendarPlusFill, PiTrash } from 'react-icons/pi'
+import { createGoogleEventAction } from '../../../../actions/googleAccountActions'
+
+// UI Components
 import {
    Flex,
    IconButton,
@@ -13,127 +25,241 @@ import {
    MenuList,
    Tooltip
 } from '@chakra-ui/react'
-import t from '../../../../lang/i18n'
+
+// External Libraries
 import cloneDeep from 'clone-deep'
+
+// Utils & Icons
+import t from '../../../../lang/i18n'
+import { PiCalendarPlusFill, PiTrash } from 'react-icons/pi'
 import { stringToDateTimeLocal } from '../../../../utils/dates'
+
+// Hooks
 import useLoading from '../../../../hooks/useLoading'
-import { createGoogleEventAction } from '../../../../actions/googleAccountActions'
 
-const ScheduleTimeSlot = ({
-   slot,
-   index,
-   // Redux props
-   updateTaskAction,
-   task: { task },
-   _id,
-   googleAccounts,
-   createGoogleEventAction
-}) => {
-   const startTime = stringToDateTimeLocal(slot.start)
-   const endTime = stringToDateTimeLocal(slot.end)
-   const isViewingCalendarEvent = task.target_event_index === index
-   const isInvalidTimeSlot =
-      startTime === 'Invalid date' ||
-      endTime === 'Invalid date' ||
-      startTime >= endTime
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
 
-   const onUpdateFrom = async (newFrom) => {
-      var newSchedule = cloneDeep(task.schedule)
-      newSchedule[index].start = newFrom
+const ScheduleTimeSlot = React.memo(
+   ({
+      slot,
+      index,
+      // Redux props
+      updateTaskAction,
+      createGoogleEventAction,
+      scheduleData: { task, pageId, googleAccounts }
+   }) => {
+      // -------------------------------------------------------------------------
+      // SCHEDULE UPDATE HANDLERS
+      // -------------------------------------------------------------------------
 
-      const formData = {
-         page_id: _id,
-         task_id: task._id,
-         schedule: newSchedule,
-         task_detail_flg: true
-      }
-      await updateTaskAction(formData)
-   }
-   const onUpdateTo = async (newTo) => {
-      var newSchedule = cloneDeep(task.schedule)
-      newSchedule[index].end = newTo
+      const updateScheduleSlot = useCallback(
+         async (updateCallback) => {
+            const newSchedule = cloneDeep(task.schedule)
+            updateCallback(newSchedule)
 
-      const formData = {
-         page_id: _id,
-         task_id: task._id,
-         schedule: newSchedule,
-         task_detail_flg: true
-      }
-      await updateTaskAction(formData)
-   }
-   const onDelete = async () => {
-      var newSchedule = cloneDeep(task.schedule)
-      newSchedule.splice(index, 1)
-      const formData = {
-         page_id: _id,
-         task_id: task._id,
-         schedule: newSchedule,
-         task_detail_flg: true
-      }
-      await updateTaskAction(formData)
-   }
+            const formData = {
+               page_id: pageId,
+               task_id: task._id,
+               schedule: newSchedule,
+               task_detail_flg: true
+            }
+            await updateTaskAction(formData)
+         },
+         [task.schedule, task._id, pageId, updateTaskAction]
+      )
 
-   const [deleteEvent, deleteEventLoading] = useLoading(onDelete)
-   return (
-      <Flex w='full' gap={2} color={isInvalidTimeSlot ? 'red.600' : undefined}>
-         <Input
-            size='sm'
-            type='datetime-local'
-            variant='filled'
-            bg={isViewingCalendarEvent ? 'purple.100' : 'gray.50'}
-            width='auto'
-            fontSize='xs'
-            value={startTime}
-            borderRadius={5}
-            onChange={async (e) => {
-               e.preventDefault()
-               onUpdateFrom(e.target.value)
-            }}
-         />
-         -
-         <Input
-            size='sm'
-            type='datetime-local'
-            variant='filled'
-            bg={isViewingCalendarEvent ? 'purple.100' : 'gray.50'}
-            width='auto'
-            fontSize='xs'
-            value={endTime}
-            borderRadius={5}
-            onChange={async (e) => {
-               e.preventDefault()
-               onUpdateTo(e.target.value)
-            }}
-         />
-         <IconButton
-            icon={<PiTrash size={16} />}
-            variant='ghost'
-            colorScheme='gray'
-            color='gray.500'
-            size='sm'
-            isLoading={deleteEventLoading}
-            onClick={async (e) => {
-               e.preventDefault()
-               deleteEvent()
-            }}
-         />
-         <Tooltip
-            hasArrow
-            label={t('tooltip-time_slot-view_calendar')}
-            placement='bottom'
-         >
-            <Menu isLazy closeOnSelect={false}>
-               <MenuButton
-                  as={IconButton}
-                  icon={<PiCalendarPlusFill size={16} />}
-                  variant='ghost'
-                  colorScheme='gray'
-                  color='gray.500'
-                  size='sm'
-               ></MenuButton>
-               <MenuList zIndex={10}>
-                  {googleAccounts.map((account) => {
-                     return (
+      const handleUpdateStartTime = useCallback(
+         async (newStartTime) => {
+            await updateScheduleSlot((schedule) => {
+               schedule[index].start = newStartTime
+            })
+         },
+         [updateScheduleSlot, index]
+      )
+
+      const handleUpdateEndTime = useCallback(
+         async (newEndTime) => {
+            await updateScheduleSlot((schedule) => {
+               schedule[index].end = newEndTime
+            })
+         },
+         [updateScheduleSlot, index]
+      )
+
+      const handleDeleteSlot = useCallback(async () => {
+         await updateScheduleSlot((schedule) => {
+            schedule.splice(index, 1)
+         })
+      }, [updateScheduleSlot, index])
+
+      // -------------------------------------------------------------------------
+      // LOADING STATES
+      // -------------------------------------------------------------------------
+
+      const [deleteSlot, deleteSlotLoading] = useLoading(handleDeleteSlot)
+
+      // -------------------------------------------------------------------------
+      // GOOGLE CALENDAR HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleCreateGoogleEvent = useCallback(
+         async (accountId) => {
+            await createGoogleEventAction({
+               target_task: task,
+               slot_index: index,
+               page_id: pageId,
+               account_id: accountId
+            })
+         },
+         [createGoogleEventAction, task, index, pageId]
+      )
+
+      // -------------------------------------------------------------------------
+      // UI EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleStartTimeChange = useCallback(
+         async (e) => {
+            e.preventDefault()
+            await handleUpdateStartTime(e.target.value)
+         },
+         [handleUpdateStartTime]
+      )
+
+      const handleEndTimeChange = useCallback(
+         async (e) => {
+            e.preventDefault()
+            await handleUpdateEndTime(e.target.value)
+         },
+         [handleUpdateEndTime]
+      )
+
+      const handleDeleteClick = useCallback(
+         async (e) => {
+            e.preventDefault()
+            await deleteSlot()
+         },
+         [deleteSlot]
+      )
+
+      const handleGoogleAccountClick = useCallback(
+         (accountId) => async (e) => {
+            e.preventDefault()
+            await handleCreateGoogleEvent(accountId)
+         },
+         [handleCreateGoogleEvent]
+      )
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      const timeSlotState = useMemo(() => {
+         const startTime = stringToDateTimeLocal(slot.start)
+         const endTime = stringToDateTimeLocal(slot.end)
+         const isViewingCalendarEvent = task.target_event_index === index
+         const isInvalidTimeSlot =
+            startTime === 'Invalid date' ||
+            endTime === 'Invalid date' ||
+            startTime >= endTime
+
+         return {
+            startTime,
+            endTime,
+            isViewingCalendarEvent,
+            isInvalidTimeSlot
+         }
+      }, [slot.start, slot.end, task.target_event_index, index])
+
+      const timeInputProps = useMemo(
+         () => ({
+            size: 'sm',
+            type: 'datetime-local',
+            variant: 'filled',
+            width: 'auto',
+            fontSize: 'xs',
+            borderRadius: 5
+         }),
+         []
+      )
+
+      const startTimeInput = useMemo(
+         () => (
+            <Input
+               {...timeInputProps}
+               bg={
+                  timeSlotState.isViewingCalendarEvent
+                     ? 'purple.100'
+                     : 'gray.50'
+               }
+               value={timeSlotState.startTime}
+               onChange={handleStartTimeChange}
+            />
+         ),
+         [
+            timeInputProps,
+            timeSlotState.isViewingCalendarEvent,
+            timeSlotState.startTime,
+            handleStartTimeChange
+         ]
+      )
+
+      const endTimeInput = useMemo(
+         () => (
+            <Input
+               {...timeInputProps}
+               bg={
+                  timeSlotState.isViewingCalendarEvent
+                     ? 'purple.100'
+                     : 'gray.50'
+               }
+               value={timeSlotState.endTime}
+               onChange={handleEndTimeChange}
+            />
+         ),
+         [
+            timeInputProps,
+            timeSlotState.isViewingCalendarEvent,
+            timeSlotState.endTime,
+            handleEndTimeChange
+         ]
+      )
+
+      const deleteButton = useMemo(
+         () => (
+            <IconButton
+               icon={<PiTrash size={16} />}
+               variant='ghost'
+               colorScheme='gray'
+               color='gray.500'
+               size='sm'
+               isLoading={deleteSlotLoading}
+               onClick={handleDeleteClick}
+            />
+         ),
+         [deleteSlotLoading, handleDeleteClick]
+      )
+
+      const googleCalendarMenu = useMemo(
+         () => (
+            <Tooltip
+               hasArrow
+               label={t('tooltip-time_slot-view_calendar')}
+               placement='bottom'
+            >
+               <Menu isLazy closeOnSelect={false}>
+                  <MenuButton
+                     as={IconButton}
+                     icon={<PiCalendarPlusFill size={16} />}
+                     variant='ghost'
+                     colorScheme='gray'
+                     color='gray.500'
+                     size='sm'
+                  />
+                  <MenuList zIndex={10}>
+                     {googleAccounts.map((account) => (
                         <MenuItem
                            key={account._id}
                            display='flex'
@@ -141,41 +267,91 @@ const ScheduleTimeSlot = ({
                            alignItems='center'
                            gap={1}
                            fontSize='xs'
-                           onClick={async (e) => {
-                              e.preventDefault()
-                              createGoogleEventAction({
-                                 target_task: task,
-                                 slot_index: index,
-                                 page_id: _id,
-                                 account_id: account.accountId
-                              })
-                           }}
+                           onClick={handleGoogleAccountClick(account.accountId)}
                         >
                            {account.accountEmail}
                         </MenuItem>
-                     )
-                  })}
-               </MenuList>
-            </Menu>
-         </Tooltip>
-      </Flex>
-   )
-}
+                     ))}
+                  </MenuList>
+               </Menu>
+            </Tooltip>
+         ),
+         [googleAccounts, handleGoogleAccountClick]
+      )
 
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      return (
+         <Flex
+            w='full'
+            gap={2}
+            color={timeSlotState.isInvalidTimeSlot ? 'red.600' : undefined}
+         >
+            {startTimeInput}-{endTimeInput}
+            {deleteButton}
+            {googleCalendarMenu}
+         </Flex>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+ScheduleTimeSlot.displayName = 'ScheduleTimeSlot'
+
+// PropTypes validation
 ScheduleTimeSlot.propTypes = {
-   task: PropTypes.object.isRequired,
-   _id: PropTypes.string.isRequired,
+   slot: PropTypes.shape({
+      start: PropTypes.string.isRequired,
+      end: PropTypes.string.isRequired
+   }).isRequired,
+   index: PropTypes.number.isRequired,
    updateTaskAction: PropTypes.func.isRequired,
    createGoogleEventAction: PropTypes.func.isRequired,
-   googleAccounts: PropTypes.array.isRequired
+   scheduleData: PropTypes.shape({
+      task: PropTypes.object.isRequired,
+      pageId: PropTypes.string.isRequired,
+      googleAccounts: PropTypes.array.isRequired
+   }).isRequired
 }
+
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectScheduleData = createSelector(
+   [
+      (state) => state.task.task,
+      (state) => state.page._id,
+      (state) => state.googleAccount.googleAccounts
+   ],
+   (task, pageId, googleAccounts) => ({
+      task,
+      pageId,
+      googleAccounts
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
-   task: state.task,
-   _id: state.page._id,
-   googleAccounts: state.googleAccount.googleAccounts
+   scheduleData: selectScheduleData(state)
 })
 
-export default connect(mapStateToProps, {
+const mapDispatchToProps = {
    updateTaskAction,
    createGoogleEventAction
-})(ScheduleTimeSlot)
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(ScheduleTimeSlot)

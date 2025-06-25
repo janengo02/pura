@@ -1,10 +1,19 @@
-import React, { useState } from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Actions
 import { updateTaskAction } from '../../../../actions/taskActions'
-import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
-import { PiFlagBanner, PiPlus } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
+
+// UI Components
 import {
    Flex,
    Menu,
@@ -15,94 +24,173 @@ import {
    useDisclosure
 } from '@chakra-ui/react'
 
-const ProgressSelect = ({
-   // Redux props
-   updateTaskAction,
-   task: { task },
-   _id,
-   progress_order
-}) => {
-   const [hovered, setHovered] = useState(false)
-   const tagSelect = useDisclosure()
-   return (
-      <Flex w='full' gap={3}>
-         <TaskCardLabel icon={<PiFlagBanner />} text={t('label-progress')} />
-         <Menu isLazy isOpen={tagSelect.isOpen} onClose={tagSelect.onClose}>
-            <MenuButton
-               w='full'
-               onMouseEnter={(e) => {
-                  e.preventDefault()
-                  setHovered(true)
-               }}
-               onMouseLeave={(e) => {
-                  e.preventDefault()
-                  setHovered(false)
-               }}
-               onClick={tagSelect.onOpen}
-            >
-               <Flex
-                  w='full'
-                  p={1}
-                  borderRadius='md'
-                  bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
-               >
-                  <Tag
-                     bg={task.progress.color}
-                     color={task.progress.title_color}
-                  >
-                     {task.progress.title}
-                  </Tag>
-               </Flex>
-            </MenuButton>
-            <MenuList w='488px'>
-               {progress_order?.map((progress_item) => (
-                  <MenuItem
-                     key={progress_item._id}
-                     onClick={async (e) => {
-                        e.preventDefault()
-                        if (progress_item._id !== task.progress._id) {
-                           updateTaskAction({
-                              page_id: _id,
-                              task_id: task._id,
-                              progress_id: progress_item._id,
-                              task_detail_flg: true
-                           })
-                        }
-                     }}
-                  >
-                     <Tag
-                        bg={progress_item.color}
-                        color={progress_item.title_color}
-                     >
-                        {progress_item.title}
-                     </Tag>
-                  </MenuItem>
-               ))}
+// Internal Components
+import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
+
+// Utils & Icons
+import { PiFlagBanner, PiPlus } from 'react-icons/pi'
+import t from '../../../../lang/i18n'
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const ProgressSelect = React.memo(
+   ({ updateTaskAction, progressData: { task, _id, progress_order } }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+
+      const [hovered, setHovered] = useState(false)
+      const tagSelect = useDisclosure()
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      // Memoize progress menu items to prevent unnecessary re-renders
+      const progressMenuItems = useMemo(() => {
+         return (
+            progress_order?.map((progress_item) => (
                <MenuItem
-                  icon={<PiPlus size={14} />}
-                  fontSize='sm'
-                  color='gray.400'
+                  key={progress_item._id}
                   onClick={async (e) => {
                      e.preventDefault()
+                     if (progress_item._id !== task.progress._id) {
+                        updateTaskAction({
+                           page_id: _id,
+                           task_id: task._id,
+                           progress_id: progress_item._id,
+                           task_detail_flg: true
+                        })
+                     }
                   }}
                >
-                  {t('btn-add-progress')}
+                  <Tag
+                     bg={progress_item.color}
+                     color={progress_item.title_color}
+                  >
+                     {progress_item.title}
+                  </Tag>
                </MenuItem>
-            </MenuList>
-         </Menu>
-      </Flex>
-   )
+            )) || []
+         )
+      }, [progress_order, task.progress._id, task._id, _id, updateTaskAction])
+
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleMouseEnter = useCallback((e) => {
+         e.preventDefault()
+         setHovered(true)
+      }, [])
+
+      const handleMouseLeave = useCallback((e) => {
+         e.preventDefault()
+         setHovered(false)
+      }, [])
+
+      const handleAddProgressClick = useCallback(async (e) => {
+         e.preventDefault()
+         // TODO: Implement add progress functionality
+      }, [])
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      return (
+         <Flex w='full' gap={3}>
+            <TaskCardLabel icon={<PiFlagBanner />} text={t('label-progress')} />
+
+            <Menu isLazy isOpen={tagSelect.isOpen} onClose={tagSelect.onClose}>
+               <MenuButton
+                  w='full'
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={tagSelect.onOpen}
+               >
+                  <Flex
+                     w='full'
+                     p={1}
+                     borderRadius='md'
+                     bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
+                  >
+                     <Tag
+                        bg={task.progress.color}
+                        color={task.progress.title_color}
+                     >
+                        {task.progress.title}
+                     </Tag>
+                  </Flex>
+               </MenuButton>
+
+               <MenuList w='488px'>
+                  {progressMenuItems}
+                  <MenuItem
+                     icon={<PiPlus size={14} />}
+                     fontSize='sm'
+                     color='gray.400'
+                     onClick={handleAddProgressClick}
+                  >
+                     {t('btn-add-progress')}
+                  </MenuItem>
+               </MenuList>
+            </Menu>
+         </Flex>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+ProgressSelect.displayName = 'ProgressSelect'
+
+// PropTypes validation
+ProgressSelect.propTypes = {
+   updateTaskAction: PropTypes.func.isRequired,
+   progressData: PropTypes.shape({
+      task: PropTypes.object.isRequired,
+      _id: PropTypes.string.isRequired,
+      progress_order: PropTypes.array.isRequired
+   }).isRequired
 }
 
-ProgressSelect.propTypes = {
-   task: PropTypes.object.isRequired,
-   _id: PropTypes.string.isRequired,
-   progress_order: PropTypes.array.isRequired,
-   updateTaskAction: PropTypes.func.isRequired
-}
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectProgressSelectData = createSelector(
+   [
+      (state) => state.task.task,
+      (state) => state.page._id,
+      (state) => state.page.progress_order
+   ],
+   (task, _id, progress_order) => ({
+      task,
+      _id,
+      progress_order
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
-   task: state.task,
-   _id: state.page._id,
-   progress_order: state.page.progress_order
+   progressData: selectProgressSelectData(state)
 })
-export default connect(mapStateToProps, { updateTaskAction })(ProgressSelect)
+
+const mapDispatchToProps = {
+   updateTaskAction
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProgressSelect)

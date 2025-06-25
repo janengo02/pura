@@ -1,4 +1,11 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
 import React from 'react'
+
+// UI Components
 import {
    IconButton,
    Menu,
@@ -6,10 +13,22 @@ import {
    MenuList,
    MenuItem
 } from '@chakra-ui/react'
+
+// Icons
 import { PiSlidersHorizontalFill, PiLayout } from 'react-icons/pi'
+
+// Utils
 import t from '../../../../lang/i18n'
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 const Settings = () => {
+   // -------------------------------------------------------------------------
+   // RENDER
+   // -------------------------------------------------------------------------
+
    return (
       <Menu isLazy>
          <MenuButton
@@ -18,12 +37,17 @@ const Settings = () => {
             variant='ghost'
             size='sm'
             colorScheme='gray'
-         ></MenuButton>
+         />
+
          <MenuList>
             <MenuItem icon={<PiLayout size={20} />}>{t('btn-layout')}</MenuItem>
          </MenuList>
       </Menu>
    )
 }
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default Settings

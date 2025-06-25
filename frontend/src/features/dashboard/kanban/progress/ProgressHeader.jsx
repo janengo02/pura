@@ -1,10 +1,21 @@
-import React, { useState } from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+
+// Actions
 import {
    deleteProgressAction,
    updateProgressAction
 } from '../../../../actions/progressActions'
+
+// UI Components
 import {
    Card,
    Flex,
@@ -20,213 +31,323 @@ import {
    Text,
    useDisclosure
 } from '@chakra-ui/react'
+
+// Internal Components
+import { MultiInput } from '../../../../components/MultiInput'
+
+// External Libraries
+import { FormProvider, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+// Utils & Icons
+import t from '../../../../lang/i18n'
 import {
    PiCircleDuotone,
    PiDotsThreeBold,
    PiPencilLine,
    PiTrash
 } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
-import { FormProvider, useForm } from 'react-hook-form'
-import { MultiInput } from '../../../../components/MultiInput'
-import { yupResolver } from '@hookform/resolvers/yup'
+
+// Schema & Data
 import { dashboardSchema as s } from '../../DashboardSchema'
 import { progressColors } from '../../../../components/data/defaultColor'
 
-const ProgressHeader = ({
-   progress,
-   isNew,
-   // Redux props
-   updateProgressAction,
-   deleteProgressAction,
-   _id,
-   progress_order
-}) => {
-   const [hovered, setHovered] = useState(false)
-   const [editing, setEditing] = useState(false)
-   const dropdownMenu = useDisclosure()
-   const delProgress = () => {
-      const formData = {
-         page_id: _id,
-         progress_id: progress._id
-      }
-      deleteProgressAction(formData)
-   }
-   const methods = useForm({
-      resolver: yupResolver(s)
-   })
+// Custom Hooks
+import { useHover } from '../../../../hooks/useHover'
+import { useEditing } from '../../../../hooks/useEditing'
 
-   const onBlur = methods.handleSubmit(async (data) => {
-      const formData = {
-         page_id: _id,
-         progress_id: progress._id,
-         title: data.title
-      }
-      if (formData.title === '') {
-         formData.title = 'Untitled'
-      }
-      await updateProgressAction(formData)
-      setEditing(false)
-   })
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
 
-   const changeColor = (color, title_color) => {
-      const formData = {
-         page_id: _id,
-         progress_id: progress._id,
-         color: color,
-         title_color: title_color
-      }
-      updateProgressAction(formData)
-   }
-   return (
-      <Card
-         variant='filled'
-         bg={progress.color}
-         paddingLeft={3}
-         paddingRight={2}
-         w={250}
-         h={8}
-         justifyContent='center'
-         onMouseEnter={(e) => {
-            e.preventDefault()
-            setHovered(true)
-         }}
-         onMouseLeave={(e) => {
-            e.preventDefault()
-            setHovered(false)
-         }}
-      >
-         <Flex marginBottom={editing || isNew ? -2 : undefined}>
-            {editing || isNew ? (
-               <FormProvider {...methods} h='fit-content'>
-                  <form noValidate autoComplete='on'>
-                     <MultiInput
-                        name='title'
-                        type='text'
-                        variant='unstyled'
-                        placeholder={t('placeholder-untitled')}
-                        validation={s.title}
-                        defaultValue={progress.title}
-                        color={progress.title_color}
-                        fontWeight={600}
-                        borderRadius={0}
-                        autoFocus
-                        onFocus={async (e) => {
-                           e.preventDefault()
-                           e.currentTarget.select()
-                        }}
-                        onBlur={async (e) => {
-                           e.preventDefault()
-                           if (!progress.isNew) {
-                              onBlur()
-                           } else {
-                              e.currentTarget.select()
-                           }
-                        }}
+const ProgressHeader = React.memo(
+   ({
+      progress,
+      isNew = false,
+      // Redux props
+      _id,
+      progress_order,
+      updateProgressAction,
+      deleteProgressAction
+   }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+
+      const progressHover = useHover()
+      const titleEditing = useEditing()
+      const dropdownMenu = useDisclosure()
+
+      const methods = useForm({
+         resolver: yupResolver(s)
+      })
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      // Memoize margin bottom calculation for performance
+      const flexMarginBottom = useMemo(
+         () => (titleEditing.isEditing || isNew ? -2 : undefined),
+         [titleEditing.isEditing, isNew]
+      )
+
+      // Memoize menu button opacity
+      const menuButtonOpacity = useMemo(
+         () => (progressHover.isHovered || dropdownMenu.isOpen ? 1 : 0),
+         [progressHover.isHovered, dropdownMenu.isOpen]
+      )
+
+      // Memoize delete button visibility
+      const showDeleteButton = useMemo(
+         () => progress_order.length > 1,
+         [progress_order.length]
+      )
+
+      // Memoize color options rendering
+      const colorOptions = useMemo(
+         () =>
+            progressColors.map((colorOption) => (
+               <MenuItemOption
+                  key={colorOption.title_color}
+                  value={colorOption.title_color}
+                  fontSize='sm'
+                  onClick={(e) => handleColorOptionClick(e, colorOption)}
+               >
+                  <Flex alignItems='center' gap={2}>
+                     <PiCircleDuotone
+                        size={18}
+                        color={colorOption.title_color}
                      />
-                  </form>
-               </FormProvider>
-            ) : (
-               <>
-                  <Text color={progress.title_color} fontWeight={500}>
-                     {progress.title}
-                  </Text>
-                  <Spacer />
-                  <Menu
-                     isOpen={dropdownMenu.isOpen}
-                     onClose={dropdownMenu.onClose}
-                     isLazy
+                     {colorOption.title}
+                  </Flex>
+               </MenuItemOption>
+            )),
+         [progress.title_color]
+      )
+
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleDeleteProgress = useCallback(() => {
+         const formData = {
+            page_id: _id,
+            progress_id: progress._id
+         }
+         deleteProgressAction(formData)
+      }, [_id, progress._id, deleteProgressAction])
+
+      const handleSubmitTitle = useCallback(
+         methods.handleSubmit(async (data) => {
+            const formData = {
+               page_id: _id,
+               progress_id: progress._id,
+               title: data.title || 'Untitled'
+            }
+            await updateProgressAction(formData)
+            titleEditing.end()
+         }),
+         [_id, progress._id, updateProgressAction, titleEditing, methods]
+      )
+
+      const handleColorChange = useCallback(
+         (color, title_color) => {
+            const formData = {
+               page_id: _id,
+               progress_id: progress._id,
+               color: color,
+               title_color: title_color
+            }
+            updateProgressAction(formData)
+         },
+         [_id, progress._id, updateProgressAction]
+      )
+
+      const handleColorOptionClick = useCallback(
+         (e, colorOption) => {
+            e.preventDefault()
+            if (colorOption.title_color !== progress.title_color) {
+               handleColorChange(colorOption.color, colorOption.title_color)
+            }
+         },
+         [progress.title_color, handleColorChange]
+      )
+
+      const handleMouseEnter = useCallback(
+         (e) => {
+            e.preventDefault()
+            progressHover.start()
+         },
+         [progressHover]
+      )
+
+      const handleMouseLeave = useCallback(
+         (e) => {
+            e.preventDefault()
+            progressHover.end()
+         },
+         [progressHover]
+      )
+
+      const handleInputFocus = useCallback((e) => {
+         e.preventDefault()
+         e.currentTarget.select()
+      }, [])
+
+      const handleInputBlur = useCallback(
+         (e) => {
+            e.preventDefault()
+            if (!progress.isNew) {
+               handleSubmitTitle()
+            } else {
+               e.currentTarget.select()
+            }
+         },
+         [progress.isNew, handleSubmitTitle]
+      )
+
+      const handleEditClick = useCallback(
+         (e) => {
+            e.preventDefault()
+            titleEditing.start()
+         },
+         [titleEditing]
+      )
+
+      const handleDeleteClick = useCallback(
+         (e) => {
+            e.preventDefault()
+            handleDeleteProgress()
+         },
+         [handleDeleteProgress]
+      )
+
+      // -------------------------------------------------------------------------
+      // RENDER COMPONENTS
+      // -------------------------------------------------------------------------
+
+      const renderTitleInput = () => (
+         <FormProvider {...methods}>
+            <form noValidate autoComplete='on'>
+               <MultiInput
+                  name='title'
+                  type='text'
+                  variant='unstyled'
+                  placeholder={t('placeholder-untitled')}
+                  validation={s.title}
+                  defaultValue={progress.title}
+                  color={progress.title_color}
+                  fontWeight={600}
+                  borderRadius={0}
+                  autoFocus
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+               />
+            </form>
+         </FormProvider>
+      )
+
+      const renderTitleDisplay = () => (
+         <>
+            <Text color={progress.title_color} fontWeight={500}>
+               {progress.title}
+            </Text>
+            <Spacer />
+            <Menu
+               isOpen={dropdownMenu.isOpen}
+               onClose={dropdownMenu.onClose}
+               isLazy
+            >
+               <MenuButton
+                  as={IconButton}
+                  icon={<PiDotsThreeBold />}
+                  variant='ghost'
+                  size='xs'
+                  colorScheme='blackAlpha'
+                  opacity={menuButtonOpacity}
+                  onClick={dropdownMenu.onOpen}
+               />
+               <MenuList>
+                  <MenuItem
+                     icon={<PiPencilLine size={18} />}
+                     fontSize='sm'
+                     onClick={handleEditClick}
                   >
-                     <MenuButton
-                        as={IconButton}
-                        icon={<PiDotsThreeBold />}
-                        variant='ghost'
-                        size='xs'
-                        colorScheme='blackAlpha'
-                        opacity={hovered || dropdownMenu.isOpen ? 1 : 0}
-                        onClick={dropdownMenu.onOpen}
-                     ></MenuButton>
-                     <MenuList>
-                        <MenuItem
-                           icon={<PiPencilLine size={18} />}
-                           fontSize='sm'
-                           onClick={async (e) => {
-                              e.preventDefault()
-                              setEditing(true)
-                           }}
-                        >
-                           {t('btn-edit-name')}
-                        </MenuItem>
-                        {progress_order.length > 1 && (
-                           <MenuItem
-                              icon={<PiTrash size={18} />}
-                              fontSize='sm'
-                              onClick={async (e) => {
-                                 e.preventDefault()
-                                 delProgress()
-                              }}
-                           >
-                              {t('btn-delete-column')}
-                           </MenuItem>
-                        )}
-                        <MenuDivider />
-                        <MenuOptionGroup
-                           defaultValue={progress.title_color}
-                           title={t('label-color')}
-                           fontSize='sm'
-                           type='radio'
-                        >
-                           {progressColors.map((colorOption) => (
-                              <MenuItemOption
-                                 key={colorOption.title_color}
-                                 value={colorOption.title_color}
-                                 fontSize='sm'
-                                 onClick={async (e) => {
-                                    e.preventDefault()
-                                    if (
-                                       colorOption.title_color !==
-                                       progress.title_color
-                                    ) {
-                                       changeColor(
-                                          colorOption.color,
-                                          colorOption.title_color
-                                       )
-                                    }
-                                 }}
-                              >
-                                 <Flex alignItems='center' gap={2}>
-                                    <PiCircleDuotone
-                                       size={18}
-                                       color={colorOption.title_color}
-                                    />
-                                    {colorOption.title}
-                                 </Flex>
-                              </MenuItemOption>
-                           ))}
-                        </MenuOptionGroup>
-                     </MenuList>
-                  </Menu>
-               </>
-            )}
-         </Flex>
-      </Card>
-   )
-}
+                     {t('btn-edit-name')}
+                  </MenuItem>
+                  {showDeleteButton && (
+                     <MenuItem
+                        icon={<PiTrash size={18} />}
+                        fontSize='sm'
+                        color='red.400'
+                        onClick={handleDeleteClick}
+                     >
+                        {t('btn-delete-column')}
+                     </MenuItem>
+                  )}
+                  <MenuDivider />
+                  <MenuOptionGroup
+                     defaultValue={progress.title_color}
+                     title={t('label-color')}
+                     fontSize='sm'
+                     type='radio'
+                  >
+                     {colorOptions}
+                  </MenuOptionGroup>
+               </MenuList>
+            </Menu>
+         </>
+      )
+
+      // -------------------------------------------------------------------------
+      // MAIN RENDER
+      // -------------------------------------------------------------------------
+
+      return (
+         <Card
+            variant='filled'
+            bg={progress.color}
+            paddingLeft={3}
+            paddingRight={2}
+            w={250}
+            h={8}
+            justifyContent='center'
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+         >
+            <Flex marginBottom={flexMarginBottom}>
+               {titleEditing.isEditing || isNew
+                  ? renderTitleInput()
+                  : renderTitleDisplay()}
+            </Flex>
+         </Card>
+      )
+   }
+)
+
+// =============================================================================
+// PROPTYPES & REDUX CONNECTION
+// =============================================================================
 
 ProgressHeader.propTypes = {
+   progress: PropTypes.object.isRequired,
+   isNew: PropTypes.bool,
+   // Redux props
    _id: PropTypes.string.isRequired,
    progress_order: PropTypes.array.isRequired,
-
-   deleteProgressAction: PropTypes.func.isRequired,
    updateProgressAction: PropTypes.func.isRequired,
-   page: PropTypes.object
+   deleteProgressAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
    _id: state.page._id,
    progress_order: state.page.progress_order
 })
-export default connect(mapStateToProps, {
+
+const mapDispatchToProps = {
    deleteProgressAction,
    updateProgressAction
-})(ProgressHeader)
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProgressHeader)

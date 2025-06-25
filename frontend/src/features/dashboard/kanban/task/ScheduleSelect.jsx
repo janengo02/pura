@@ -1,73 +1,147 @@
-import React from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Actions
 import { updateTaskAction } from '../../../../actions/taskActions'
-import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
-import { PiCalendar, PiPlus } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
-import { Button, Flex, VStack } from '@chakra-ui/react'
+
+// External Libraries
 import cloneDeep from 'lodash/cloneDeep'
+
+// UI Components
+import { Button, Flex, VStack } from '@chakra-ui/react'
+
+// Internal Components
+import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import ScheduleTimeSlot from './ScheduleTimeSlot'
 
-const ScheduleSelect = ({
-   // Redux props
-   updateTaskAction,
-   task: { task },
-   _id
-}) => {
-   const addSlot = async () => {
-      const newSlot = {
-         start: '',
-         end: ''
-      }
-      var newSchedule = cloneDeep(task.schedule)
-      newSchedule.push(newSlot)
-      const formData = {
-         page_id: _id,
-         task_id: task._id,
-         schedule: newSchedule,
-         task_detail_flg: true
-      }
-      await updateTaskAction(formData)
-   }
+// Utils & Icons
+import { PiCalendar, PiPlus } from 'react-icons/pi'
+import t from '../../../../lang/i18n'
 
-   return (
-      <Flex w='full' gap={3} alignItems='flex-start' paddingTop={1}>
-         <TaskCardLabel
-            icon={<PiCalendar />}
-            paddingTop={1}
-            text={t('label-schedule')}
-         />
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
 
-         <VStack w='full' alignItems='flex-start' gap={3}>
-            {task?.schedule?.map((slot, index) => (
+const ScheduleSelect = React.memo(
+   ({ updateTaskAction, scheduleData: { task, _id } }) => {
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      // Memoize schedule time slots to prevent unnecessary re-renders
+      const scheduleTimeSlots = useMemo(() => {
+         return (
+            task?.schedule?.map((slot, index) => (
                <ScheduleTimeSlot key={index} slot={slot} index={index} />
-            ))}
-            <Button
-               size='xs'
-               colorScheme='gray'
-               onClick={addSlot}
-               opacity={0.3}
-               variant='ghost'
-               leftIcon={<PiPlus />}
-            >
-               {t('btn-add-schedule')}
-            </Button>
-         </VStack>
-      </Flex>
-   )
+            )) || []
+         )
+      }, [task?.schedule])
+
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleAddSlot = useCallback(async () => {
+         const newSlot = {
+            start: '',
+            end: ''
+         }
+
+         const newSchedule = cloneDeep(task.schedule)
+         newSchedule.push(newSlot)
+
+         const formData = {
+            page_id: _id,
+            task_id: task._id,
+            schedule: newSchedule,
+            task_detail_flg: true
+         }
+
+         await updateTaskAction(formData)
+      }, [task.schedule, task._id, _id, updateTaskAction])
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      return (
+         <Flex w='full' gap={3} alignItems='flex-start' paddingTop={1}>
+            <TaskCardLabel
+               icon={<PiCalendar />}
+               paddingTop={1}
+               text={t('label-schedule')}
+            />
+
+            <VStack w='full' alignItems='flex-start' gap={3}>
+               {scheduleTimeSlots}
+
+               <Button
+                  size='xs'
+                  colorScheme='gray'
+                  onClick={handleAddSlot}
+                  opacity={0.3}
+                  variant='ghost'
+                  leftIcon={<PiPlus />}
+               >
+                  {t('btn-add-schedule')}
+               </Button>
+            </VStack>
+         </Flex>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+ScheduleSelect.displayName = 'ScheduleSelect'
+
+// PropTypes validation
+ScheduleSelect.propTypes = {
+   updateTaskAction: PropTypes.func.isRequired,
+   scheduleData: PropTypes.shape({
+      task: PropTypes.object.isRequired,
+      _id: PropTypes.string.isRequired
+   }).isRequired
 }
 
-ScheduleSelect.propTypes = {
-   _id: PropTypes.string.isRequired,
-   task: PropTypes.object.isRequired,
-   page: PropTypes.object.isRequired,
-   updateTaskAction: PropTypes.func.isRequired
-}
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectScheduleSelectData = createSelector(
+   [(state) => state.task.task, (state) => state.page._id],
+   (task, _id) => ({
+      task,
+      _id
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
-   task: state.task,
-   _id: state.page._id
+   scheduleData: selectScheduleSelectData(state)
 })
-export default connect(mapStateToProps, {
+
+const mapDispatchToProps = {
    updateTaskAction
-})(ScheduleSelect)
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(ScheduleSelect)

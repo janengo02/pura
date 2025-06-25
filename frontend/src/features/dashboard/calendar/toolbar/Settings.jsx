@@ -1,186 +1,287 @@
-import React from 'react'
-import { connect } from 'react-redux'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// UI Components
 import {
+   Box,
+   Button,
+   Flex,
    IconButton,
+   Image,
    Menu,
    MenuButton,
    MenuList,
    MenuItem,
-   MenuGroup,
-   Image,
-   Flex,
    MenuOptionGroup,
-   MenuItemOption,
-   Box
+   MenuItemOption
 } from '@chakra-ui/react'
+
+// Icons & Utils
 import {
    PiSlidersHorizontalFill,
-   PiPlus,
-   PiCircleFill,
-   PiPlugs
+   PiLayout,
+   PiPlugs,
+   PiCircleFill
 } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
-import { useGoogleLogin } from '@react-oauth/google'
+
+// Actions
 import {
-   addGoogleAccountAction,
-   changeCalendarVisibilityAction
+   changeCalendarVisibilityAction,
+   addGoogleAccountAction
 } from '../../../../actions/googleAccountActions'
 
-const GoogleCalendarGroupTitle = () => (
-   <Flex w='full' gap={3}>
-      <Image src='assets/img/logos--google-calendar.svg' />
-      {t('label-google_calendar')}
-   </Flex>
-)
-const Settings = ({
-   // Redux props
-   addGoogleAccountAction,
-   changeCalendarVisibilityAction,
-   googleAccount: { range, googleCalendars, googleAccounts }
-}) => {
-   const googleLogin = useGoogleLogin({
-      onSuccess: (tokenResponse) => {
-         const { code } = tokenResponse
-         addGoogleAccountAction({ code, range }).then(() => {})
-      },
-      // TODO Error Handling
-      onError: (responseError) => {
-         console.log('onError', responseError)
-      },
-      onNonOAuthError: (responseError) => {
-         console.log('onNonOAuthError', responseError)
-      },
-      scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-      flow: 'auth-code',
-      auto_select: true
-   })
+// Hooks
+import { useGoogleLogin } from '@react-oauth/google'
 
-   return (
-      <>
-         {googleAccounts.map((account) => {
-            const currentCalendars = googleCalendars.filter(
-               (c) => c.accountId === account.accountId
-            )
-            const visibleCalendars = currentCalendars.map(
-               (c) => c.selected && c.calendarId
-            )
-            return (
-               <Menu isLazy closeOnSelect={false}>
-                  <MenuButton
-                     as={IconButton}
-                     size='sm'
-                     variant='outline'
-                     colorScheme={account.accountSyncStatus ? 'purple' : 'gray'}
-                     color={account.accountSyncStatus ? undefined : 'gray.500'}
-                     px={4}
-                  >
-                     <Box
-                        display='flex'
-                        flexDirection='row'
-                        gap={2}
-                        justifyContent='center'
-                        alignContent='center'
-                     >
-                        {account.accountSyncStatus ? (
-                           <Image
-                              src={
-                                 'assets/img/logos--google-calendar-synced.svg'
-                              }
-                              size={10}
-                           />
-                        ) : (
-                           <Image
-                              src={
-                                 'assets/img/logos--google-calendar-not-synced.svg'
-                              }
-                              size={10}
-                           />
-                        )}
+// =============================================================================
+// CONSTANTS
+// =============================================================================
 
-                        {account.accountEmail}
-                     </Box>
-                  </MenuButton>
-                  <MenuList zIndex={10}>
-                     <MenuOptionGroup
-                        title='My calendars'
-                        fontSize='sm'
-                        type='checkbox'
-                        defaultValue={visibleCalendars}
-                     >
-                        {!account.accountSyncStatus && (
-                           <MenuItem
-                              icon={<PiPlugs />}
-                              onClick={() => {
-                                 googleLogin()
-                              }}
-                           >
-                              {t('btn-re_connect-google_calendar')}
-                           </MenuItem>
-                        )}
-                        {currentCalendars.map((calendar) => (
-                           <MenuItemOption
-                              key={calendar.calendarId}
-                              value={calendar.calendarId}
-                              fontSize='sm'
-                              onClick={async (e) => {
-                                 e.preventDefault()
-                                 changeCalendarVisibilityAction(
-                                    calendar.calendarId
-                                 )
-                              }}
-                              isChecked={calendar.selected}
-                           >
-                              <Flex alignItems='center' gap={2}>
-                                 <PiCircleFill
-                                    size={18}
-                                    color={calendar.color}
-                                 />
-                                 {calendar.title}
-                              </Flex>
-                           </MenuItemOption>
-                        ))}
-                     </MenuOptionGroup>
-                  </MenuList>
-               </Menu>
-            )
-         })}
-         <Menu isLazy closeOnSelect={false}>
-            <MenuButton
-               as={IconButton}
-               icon={<PiSlidersHorizontalFill size={22} />}
-               variant='ghost'
-               size='sm'
-               colorScheme='gray'
-            ></MenuButton>
-            <MenuList zIndex={10}>
-               <MenuGroup title={<GoogleCalendarGroupTitle />}>
-                  <MenuItem
-                     icon={<PiPlus />}
-                     onClick={() => {
-                        googleLogin()
-                     }}
-                  >
-                     {t('btn-connect-google_calendar')}
-                  </MenuItem>
-               </MenuGroup>
-            </MenuList>
-         </Menu>
-      </>
-   )
+const MENU_BUTTON_STYLES = {
+   variant: 'ghost',
+   size: 'sm',
+   colorScheme: 'gray'
 }
 
-Settings.propTypes = {
-   addGoogleAccountAction: PropTypes.func.isRequired,
-   changeCalendarVisibilityAction: PropTypes.func.isRequired,
-   googleAccount: PropTypes.object.isRequired
+const ACCOUNT_BUTTON_BASE_STYLES = {
+   size: 'sm',
+   px: 4,
+   variant: 'outline'
 }
 
-const mapStateToProps = (state) => ({
-   googleAccount: state.googleAccount
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+const getAccountButtonStyles = (accountSyncStatus) => ({
+   ...ACCOUNT_BUTTON_BASE_STYLES,
+   colorScheme: accountSyncStatus ? 'purple' : 'gray',
+   color: accountSyncStatus ? undefined : 'gray.500'
 })
 
-export default connect(mapStateToProps, {
-   addGoogleAccountAction,
-   changeCalendarVisibilityAction
-})(Settings)
+const getAccountImage = (accountSyncStatus) =>
+   accountSyncStatus
+      ? 'assets/img/logos--google-calendar-synced.svg'
+      : 'assets/img/logos--google-calendar-not-synced.svg'
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Settings = React.memo(
+   ({
+      // Redux props
+      changeCalendarVisibilityAction,
+      addGoogleAccountAction,
+      settingsData: { googleAccounts, googleCalendars, range }
+   }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS
+      // -------------------------------------------------------------------------
+
+      const googleLogin = useGoogleLogin({
+         onSuccess: async (response) => {
+            const reqData = {
+               code: response.access_token,
+               range
+            }
+            await addGoogleAccountAction(reqData)
+         },
+         onError: (error) => {
+            console.error('Google login error:', error)
+         }
+      })
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      const visibleCalendars = useMemo(
+         () =>
+            googleCalendars
+               .filter((calendar) => calendar.selected)
+               .map((calendar) => calendar.calendarId),
+         [googleCalendars]
+      )
+
+      // -------------------------------------------------------------------------
+      // EVENT HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleCalendarVisibilityChange = useCallback(
+         async (calendarId) => {
+            await changeCalendarVisibilityAction(calendarId)
+         },
+         [changeCalendarVisibilityAction]
+      )
+
+      const handleGoogleReconnect = useCallback(() => {
+         googleLogin()
+      }, [googleLogin])
+
+      // -------------------------------------------------------------------------
+      // RENDER HELPERS
+      // -------------------------------------------------------------------------
+
+      const renderAccountButton = (account) => (
+         <MenuButton
+            key={account._id}
+            as={Button}
+            {...getAccountButtonStyles(account.accountSyncStatus)}
+         >
+            <Box
+               display='flex'
+               flexDirection='row'
+               gap={2}
+               justifyContent='center'
+               alignContent='center'
+            >
+               <Image
+                  src={getAccountImage(account.accountSyncStatus)}
+                  size={10}
+                  alt='Google Calendar Status'
+               />
+               {account.accountEmail}
+            </Box>
+         </MenuButton>
+      )
+
+      const renderCalendarOptions = (account) => {
+         const currentCalendars = googleCalendars.filter(
+            (calendar) => calendar.accountId === account._id
+         )
+
+         return (
+            <MenuList zIndex={10}>
+               <MenuOptionGroup
+                  title='My calendars'
+                  fontSize='sm'
+                  type='checkbox'
+                  defaultValue={visibleCalendars}
+               >
+                  {!account.accountSyncStatus && (
+                     <MenuItem
+                        icon={<PiPlugs />}
+                        onClick={handleGoogleReconnect}
+                     >
+                        {t('btn-re_connect-google_calendar')}
+                     </MenuItem>
+                  )}
+
+                  {currentCalendars.map((calendar) => (
+                     <MenuItemOption
+                        key={calendar.calendarId}
+                        value={calendar.calendarId}
+                        fontSize='sm'
+                        onClick={(e) => {
+                           e.preventDefault()
+                           handleCalendarVisibilityChange(calendar.calendarId)
+                        }}
+                        isChecked={calendar.selected}
+                     >
+                        <Flex alignItems='center' gap={2}>
+                           <PiCircleFill size={18} color={calendar.color} />
+                           {calendar.title}
+                        </Flex>
+                     </MenuItemOption>
+                  ))}
+               </MenuOptionGroup>
+            </MenuList>
+         )
+      }
+
+      // -------------------------------------------------------------------------
+      // RENDER
+      // -------------------------------------------------------------------------
+
+      return (
+         <>
+            {/* Main Settings Menu */}
+            <Menu isLazy>
+               <MenuButton
+                  as={IconButton}
+                  icon={<PiSlidersHorizontalFill size={22} />}
+                  {...MENU_BUTTON_STYLES}
+               />
+               <MenuList>
+                  <MenuItem icon={<PiLayout size={20} />}>
+                     {t('btn-layout')}
+                  </MenuItem>
+               </MenuList>
+            </Menu>
+
+            {/* Google Account Menus */}
+            {googleAccounts.map((account) => (
+               <Menu key={account._id} isLazy>
+                  {renderAccountButton(account)}
+                  {renderCalendarOptions(account)}
+               </Menu>
+            ))}
+         </>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+Settings.displayName = 'CalendarSettings'
+
+// PropTypes validation
+Settings.propTypes = {
+   changeCalendarVisibilityAction: PropTypes.func.isRequired,
+   addGoogleAccountAction: PropTypes.func.isRequired,
+   settingsData: PropTypes.shape({
+      googleAccounts: PropTypes.array.isRequired,
+      googleCalendars: PropTypes.array.isRequired,
+      range: PropTypes.array.isRequired
+   }).isRequired
+}
+
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectSettingsData = createSelector(
+   [
+      (state) => state.googleAccount.googleAccounts,
+      (state) => state.googleAccount.googleCalendars,
+      (state) => state.googleAccount.range
+   ],
+   (googleAccounts, googleCalendars, range) => ({
+      googleAccounts: googleAccounts || [],
+      googleCalendars: googleCalendars || [],
+      range: range || []
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
+const mapStateToProps = (state) => ({
+   settingsData: selectSettingsData(state)
+})
+
+const mapDispatchToProps = {
+   changeCalendarVisibilityAction,
+   addGoogleAccountAction
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(Settings)
