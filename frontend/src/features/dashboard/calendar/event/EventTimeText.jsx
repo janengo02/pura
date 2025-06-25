@@ -4,7 +4,7 @@ import {
    stringToDateTime,
    stringToWeekDateTime,
    stringToTime
-} from '../../../../utils/formatter'
+} from '../../../../utils/dates'
 
 const EventTimeText = ({ start, end }) => {
    const startDate = stringToDateTime(start)

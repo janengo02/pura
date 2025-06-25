@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import t from '../../../../lang/i18n'
 import cloneDeep from 'clone-deep'
-import { stringToDateTimeLocal } from '../../../../utils/formatter'
+import { stringToDateTimeLocal } from '../../../../utils/dates'
 import useLoading from '../../../../hooks/useLoading'
 import { createGoogleEvent } from '../../../../actions/googleAccountActions'
 
