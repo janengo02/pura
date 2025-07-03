@@ -14,8 +14,9 @@ const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    }
    const progressIndex = taskMapIndex % page.progress_order.length
    const groupIndex = parseInt(
-      (taskMapIndex - progressIndex) / page.group_order.length
+      (taskMapIndex - progressIndex) / page.progress_order.length
    )
+
    let newProgressIndex = progressIndex
    let newGroupIndex = groupIndex
    let newTaskMapIndex = taskMapIndex
