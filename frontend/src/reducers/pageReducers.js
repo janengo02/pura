@@ -21,11 +21,7 @@ import {
    deleteTask
 } from '@pura/shared'
 
-import {
-   confirmCreateProgress,
-   updateProgress,
-   updateGroup
-} from './pageReducersHelpers'
+import { updateProgress, updateGroup } from './pageReducersHelpers'
 
 const initialState = {
    pages: [],

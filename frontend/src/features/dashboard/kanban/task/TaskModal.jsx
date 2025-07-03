@@ -143,6 +143,7 @@ const TaskModal = React.memo(
          async (e) => {
             e.preventDefault()
             handleDeleteTask()
+            modalCard.onClose()
          },
          [handleDeleteTask]
       )

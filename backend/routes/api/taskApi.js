@@ -112,7 +112,6 @@ router.post(
       for (let i = taskMapIndex; i < newTaskMap.length; i++) {
          newTaskMap[i]++
       }
-
       try {
          // Data: Add new task
          const task = new Task(newTask)
@@ -277,9 +276,8 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
    //   Prepare: Set up new tasks array
    const { task_id } = req.params
    let newTasks = page.tasks.slice()
-   const taskIndex = newTasks.indexOf(task_id)
+   const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
    newTasks.splice(taskIndex, 1)
-
    //   Prepare: Set up new task_map
    let newTaskMap = page.task_map.slice()
    for (let i = 0; i < newTaskMap.length; i++) {
