@@ -79,8 +79,6 @@ const TaskModal = React.memo(
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
 
-      const isTaskLoaded = useMemo(() => Boolean(task), [task])
-
       const hasTaskTitleChanged = useMemo(
          () => taskTitle && taskTitle !== task?.title,
          [taskTitle, task?.title]

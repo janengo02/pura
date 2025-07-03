@@ -1,36 +1,14 @@
-import { v4 as uuid } from 'uuid'
 import { api } from '../utils'
-import {
-   CREATE_PROGRESS,
-   CONFIRM_CREATE_PROGRESS,
-   DELETE_PROGRESS,
-   UPDATE_PROGRESS
-} from './types'
+import { CREATE_PROGRESS, DELETE_PROGRESS, UPDATE_PROGRESS } from './types'
 import { pageActionErrorHandler } from './pageActions'
 
 // Create new progress
 export const createProgressAction = (reqData) => async (dispatch) => {
-   const tempProgressId = uuid()
-   const optimisticProgress = {
-      _id: tempProgressId,
-      title: '',
-      title_color: '#4A5568',
-      color: '#EDF2F7',
-      visibility: true
-   }
-   dispatch({
-      type: CREATE_PROGRESS,
-      payload: optimisticProgress
-   })
-
    try {
       const res = await api.post(`/progress/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: CONFIRM_CREATE_PROGRESS,
-         payload: {
-            temp_progress_id: tempProgressId,
-            progress_id: res.data.progress_id
-         }
+         type: CREATE_PROGRESS,
+         payload: res.data.progress
       })
    } catch (err) {
       pageActionErrorHandler(dispatch, reqData.page_id, err)

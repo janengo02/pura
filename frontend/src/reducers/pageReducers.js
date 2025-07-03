@@ -3,15 +3,12 @@ import {
    MOVE_TASK,
    PAGE_ERROR,
    CREATE_PROGRESS,
-   CONFIRM_CREATE_PROGRESS,
    UPDATE_PROGRESS,
    DELETE_PROGRESS,
    CREATE_GROUP,
-   CONFIRM_CREATE_GROUP,
    UPDATE_GROUP,
    DELETE_GROUP,
    CREATE_TASK,
-   CONFIRM_CREATE_TASK,
    DELETE_TASK
 } from '../actions/types'
 import {
@@ -27,9 +24,7 @@ import {
 import {
    confirmCreateProgress,
    updateProgress,
-   updateGroup,
-   confirmCreateGroup,
-   confirmCreateTask
+   updateGroup
 } from './pageReducersHelpers'
 
 const initialState = {
@@ -80,17 +75,6 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case CONFIRM_CREATE_PROGRESS:
-         return {
-            ...state,
-            ...confirmCreateProgress({
-               progress_order: state.progress_order,
-               tempProgressId: payload.temp_progress_id,
-               progressId: payload.progress_id
-            }),
-            loading: false,
-            error: false
-         }
       case UPDATE_PROGRESS:
          return {
             ...state,
@@ -130,17 +114,6 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case CONFIRM_CREATE_GROUP:
-         return {
-            ...state,
-            ...confirmCreateGroup({
-               group_order: state.group_order,
-               tempGroupId: payload.temp_group_id,
-               groupId: payload.group_id
-            }),
-            loading: false,
-            error: false
-         }
       case UPDATE_GROUP:
          return {
             ...state,
@@ -175,17 +148,6 @@ function pageReducer(state = initialState, action) {
                progress_order: state.progress_order,
                task_map: state.task_map,
                tasks: state.tasks
-            }),
-            loading: false,
-            error: false
-         }
-      case CONFIRM_CREATE_TASK:
-         return {
-            ...state,
-            ...confirmCreateTask({
-               tasks: state.tasks,
-               tempTaskId: payload.temp_task_id,
-               taskId: payload.task_id
             }),
             loading: false,
             error: false

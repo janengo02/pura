@@ -57,7 +57,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
       updatedPage.task_map = newTaskMap
       await updatedPage.save()
 
-      res.json({ group_id: group._id })
+      res.json({ group: group })
    } catch (error) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
    }

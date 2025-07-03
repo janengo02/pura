@@ -144,7 +144,7 @@ router.post(
          newPage.task_map = newTaskMap
          await newPage.save()
 
-         res.json({ task_id: task._id })
+         res.json({ task: task })
       } catch (error) {
          sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
       }

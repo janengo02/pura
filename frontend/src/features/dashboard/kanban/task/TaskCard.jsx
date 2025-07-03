@@ -130,18 +130,15 @@ const TaskCard = React.memo(
          deleteTaskAction(formData)
       }, [_id, task._id, deleteTaskAction])
 
-      const handleSubmitTitle = useCallback(
-         methods.handleSubmit(async (data) => {
-            const formData = {
-               page_id: _id,
-               task_id: task._id,
-               title: data.title || 'Untitled'
-            }
-            await updateTaskAction(formData)
-            titleEditing.end()
-         }),
-         [_id, task._id, updateTaskAction, titleEditing, methods]
-      )
+      const handleSubmitTitle = methods.handleSubmit(async (data) => {
+         const formData = {
+            page_id: _id,
+            task_id: task._id,
+            title: data.title || 'Untitled'
+         }
+         await updateTaskAction(formData)
+         titleEditing.end()
+      })
 
       const handleShowTask = useCallback(async () => {
          const formData = {

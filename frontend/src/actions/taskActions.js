@@ -1,37 +1,16 @@
-import { v4 as uuid } from 'uuid'
 import { api } from '../utils'
-import {
-   CREATE_TASK,
-   CONFIRM_CREATE_TASK,
-   DELETE_TASK,
-   GET_PAGE,
-   SHOW_TASK
-} from './types'
+import { CREATE_TASK, DELETE_TASK, GET_PAGE, SHOW_TASK } from './types'
 import { pageActionErrorHandler } from './pageActions'
 
 // Create new task
 export const createTaskAction = (reqData) => async (dispatch) => {
-   const tempTaskId = uuid()
-   const optimisticTask = {
-      _id: tempTaskId,
-      title: '',
-      schedule: [],
-      content: ''
-   }
-   dispatch({
-      type: CREATE_TASK,
-      payload: {
-         ...reqData,
-         newTask: optimisticTask
-      }
-   })
    try {
       const res = await api.post(`/task/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: CONFIRM_CREATE_TASK,
+         type: CREATE_TASK,
          payload: {
-            temp_task_id: tempTaskId,
-            task_id: res.data.task_id
+            ...reqData,
+            newTask: res.data.task
          }
       })
    } catch (err) {

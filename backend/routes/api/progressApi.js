@@ -57,7 +57,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
       newPage.task_map = newTaskMap
       await newPage.save()
 
-      res.json({ progress_id: progress._id })
+      res.json({ progress: progress })
    } catch (error) {
       return sendErrorResponse(
          res,

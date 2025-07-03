@@ -1,16 +1,3 @@
-export const confirmCreateProgress = ({
-   progress_order,
-   tempProgressId,
-   progressId
-}) => {
-   const newProgressOrder = progress_order.map((progress) =>
-      progress._id === tempProgressId
-         ? { ...progress, _id: progressId }
-         : progress
-   )
-   return { progress_order: newProgressOrder }
-}
-
 export const updateProgress = ({ progress_order, updatedProgress }) => {
    const { title, title_color, color, progress_id } = updatedProgress
    const newProgressOrder = progress_order.map((p) =>
@@ -38,18 +25,4 @@ export const updateGroup = ({ group_order, updatedGroup }) => {
          : g
    )
    return { group_order: newGroupOrder }
-}
-
-export const confirmCreateGroup = ({ group_order, tempGroupId, groupId }) => {
-   const newGroupOrder = group_order.map((group) =>
-      group._id === tempGroupId ? { ...group, _id: groupId } : group
-   )
-   return { group_order: newGroupOrder }
-}
-
-export const confirmCreateTask = ({ tasks, tempTaskId, taskId }) => {
-   const newTasks = tasks.map((task) =>
-      task._id === tempTaskId ? { ...task, _id: taskId } : task
-   )
-   return { tasks: newTasks }
 }

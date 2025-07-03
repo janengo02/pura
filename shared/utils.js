@@ -209,7 +209,7 @@ function createTask({
       newTaskMap[i]++
    }
 
-   const insertIndex = taskMapIndex === 0 ? 0 : newTaskMap[taskMapIndex - 1]
+   const insertIndex = newTaskMap[taskMapIndex] - 1
    const newTasks = [...tasks]
    newTasks.splice(insertIndex, 0, newTask)
 

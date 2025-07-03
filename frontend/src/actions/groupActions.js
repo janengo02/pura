@@ -1,35 +1,15 @@
-import { v4 as uuid } from 'uuid'
 import { api } from '../utils'
-import {
-   CREATE_GROUP,
-   CONFIRM_CREATE_GROUP,
-   DELETE_GROUP,
-   UPDATE_GROUP
-} from './types'
+import { CREATE_GROUP, DELETE_GROUP, UPDATE_GROUP } from './types'
 
 import { pageActionErrorHandler } from './pageActions'
 
 // Create new group
 export const createGroupAction = (reqData) => async (dispatch) => {
-   const tempGroupId = uuid()
-   const optimisticGroup = {
-      _id: tempGroupId,
-      title: '',
-      color: '#4A5568',
-      visibility: true
-   }
-   dispatch({
-      type: CREATE_GROUP,
-      payload: optimisticGroup
-   })
    try {
       const res = await api.post(`/group/new/${reqData.page_id}`, reqData)
       dispatch({
-         type: CONFIRM_CREATE_GROUP,
-         payload: {
-            temp_group_id: tempGroupId,
-            group_id: res.data.group_id
-         }
+         type: CREATE_GROUP,
+         payload: res.data.group
       })
    } catch (err) {
       pageActionErrorHandler(dispatch, reqData.page_id, err)
