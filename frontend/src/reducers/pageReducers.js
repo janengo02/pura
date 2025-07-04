@@ -9,7 +9,8 @@ import {
    UPDATE_GROUP,
    DELETE_GROUP,
    CREATE_TASK,
-   DELETE_TASK
+   DELETE_TASK,
+   FILTER_SCHEDULE
 } from '../actions/types'
 import {
    moveTask,
@@ -21,7 +22,11 @@ import {
    deleteTask
 } from '@pura/shared'
 
-import { updateProgress, updateGroup } from './pageReducersHelpers'
+import {
+   updateProgress,
+   updateGroup,
+   getDefaultSchedule
+} from './pageReducersHelpers'
 
 const initialState = {
    pages: [],
@@ -31,6 +36,10 @@ const initialState = {
    tasks: [],
    title: null,
    user: null,
+   filter: {
+      schedule: getDefaultSchedule(),
+      name: {}
+   },
    errors: null,
    _id: null,
    loading: true,
@@ -156,6 +165,16 @@ function pageReducer(state = initialState, action) {
                task_map: state.task_map,
                tasks: state.tasks
             }),
+            loading: false,
+            error: false
+         }
+      case FILTER_SCHEDULE:
+         return {
+            ...state,
+            filter: {
+               ...state.filter,
+               schedule: payload.schedule
+            },
             loading: false,
             error: false
          }

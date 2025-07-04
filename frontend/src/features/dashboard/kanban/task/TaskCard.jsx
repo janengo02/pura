@@ -61,6 +61,7 @@ const TaskCard = React.memo(
       taskIndex,
       // Redux props
       _id,
+      filter,
       deleteTaskAction,
       updateTaskAction,
       showTaskModalAction
@@ -68,7 +69,6 @@ const TaskCard = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
-
       const taskHover = useHover()
       const titleEditing = useEditing()
       const dropdownMenu = useDisclosure()
@@ -117,6 +117,17 @@ const TaskCard = React.memo(
          (isDragging) => (isDragging ? 'md' : undefined),
          []
       )
+
+      // Memoize filtered tasks based on the current filter
+      const hiddenTask = useMemo(() => {
+         if (filter.schedule.includes('1') && task.schedule.length > 0) {
+            return false
+         }
+         if (filter.schedule.includes('2') && task.schedule.length == 0) {
+            return false
+         }
+         return true
+      }, [filter.schedule, task.schedule])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -320,6 +331,7 @@ const TaskCard = React.memo(
                   paddingBottom={cardPaddingBottom}
                   w='full'
                   marginBottom={1}
+                  className={hiddenTask ? 'hidden-card' : undefined}
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
                >
@@ -349,13 +361,15 @@ TaskCard.propTypes = {
    taskIndex: PropTypes.number.isRequired,
    // Redux props
    _id: PropTypes.string.isRequired,
+   filter: PropTypes.object.isRequired,
    updateTaskAction: PropTypes.func.isRequired,
    deleteTaskAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   _id: state.page._id
+   _id: state.page._id,
+   filter: state.page.filter
 })
 
 const mapDispatchToProps = {

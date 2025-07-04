@@ -26,3 +26,11 @@ export const updateGroup = ({ group_order, updatedGroup }) => {
    )
    return { group_order: newGroupOrder }
 }
+export const getDefaultSchedule = () => {
+   try {
+      const stored = localStorage.getItem('filteredSchedule')
+      return stored ? JSON.parse(stored) : ['1', '2']
+   } catch {
+      return ['1', '2']
+   }
+}

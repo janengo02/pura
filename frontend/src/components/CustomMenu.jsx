@@ -9,12 +9,12 @@ import {
 } from '@chakra-ui/react'
 import { PiCaretDown } from 'react-icons/pi'
 
-export const ControlMenuButton = ({ children, ...props }) => (
+export const ControlMenuButton = ({ isActive, children, ...props }) => (
    <MenuButton
       as={Button}
       size='sm'
-      colorScheme='gray'
-      color='gray.600'
+      colorScheme={isActive ? 'purple' : 'gray'}
+      color={isActive ? 'purple.600' : 'gray.600'}
       variant='outline'
       borderRadius='full'
       rightIcon={<PiCaretDown size={8} />}

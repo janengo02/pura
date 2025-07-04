@@ -32,8 +32,6 @@ const Toolbar = () => {
       <Flex w='full' maxW={802} paddingY={5} paddingX={3} alignItems='center'>
          {/* Left Section - Controls */}
          <Flex gap={2} alignItems='center'>
-            <Sort />
-            <Divider orientation='vertical' h={8} />
             <Filter />
          </Flex>
 

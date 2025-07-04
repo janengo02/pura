@@ -1,5 +1,5 @@
 import { api } from '../utils'
-import { GET_PAGE, MOVE_TASK, PAGE_ERROR } from './types'
+import { FILTER_SCHEDULE, GET_PAGE, MOVE_TASK, PAGE_ERROR } from './types'
 
 // Helper for error dispatch
 export const pageActionErrorHandler = (dispatch, pageId, err) => {
@@ -35,4 +35,14 @@ export const moveTaskAction = (reqData) => async (dispatch) => {
    } catch (err) {
       pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
+}
+export const filterSchedule = (reqData) => async (dispatch) => {
+   // Save reqData to cache (localStorage as an example)
+   localStorage.setItem('filteredSchedule', JSON.stringify(reqData))
+   dispatch({
+      type: FILTER_SCHEDULE,
+      payload: {
+         schedule: reqData
+      }
+   })
 }
