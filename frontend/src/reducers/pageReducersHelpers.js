@@ -34,3 +34,11 @@ export const getDefaultSchedule = () => {
       return ['1', '2']
    }
 }
+export const getDefaultName = () => {
+   try {
+      const stored = localStorage.getItem('filteredName')
+      return stored ? JSON.parse(stored) : ''
+   } catch {
+      return ''
+   }
+}

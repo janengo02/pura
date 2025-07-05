@@ -6,13 +6,12 @@
 import React from 'react'
 
 // UI Components
-import { Flex, Spacer, Button, Divider } from '@chakra-ui/react'
+import { Flex, Spacer, Button } from '@chakra-ui/react'
 
 // Icons
 import { PiPlusCircleFill } from 'react-icons/pi'
 
 // Internal Components
-import Sort from './Sort'
 import Settings from './Settings'
 import Filter from './Filter'
 

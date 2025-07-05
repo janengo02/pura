@@ -120,14 +120,22 @@ const TaskCard = React.memo(
 
       // Memoize filtered tasks based on the current filter
       const hiddenTask = useMemo(() => {
+         console.log('filter.name', filter.name)
+         if (
+            filter.name &&
+            filter.name.trim() !== '' &&
+            !task.title.toLowerCase().includes(filter.name.trim().toLowerCase())
+         ) {
+            return true
+         }
          if (filter.schedule.includes('1') && task.schedule.length > 0) {
             return false
          }
-         if (filter.schedule.includes('2') && task.schedule.length == 0) {
+         if (filter.schedule.includes('2') && task.schedule.length === 0) {
             return false
          }
          return true
-      }, [filter.schedule, task.schedule])
+      }, [filter.schedule, filter.name, task.schedule, task.title])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS

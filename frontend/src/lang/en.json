@@ -62,6 +62,7 @@
       "label-email": "Email",
       "label-group": "Group",
       "label-name": "Name",
+      "label-name-filter": "Name contains",
       "label-note": "Note",
       "label-password": "Password",
       "label-progress": "Progress",

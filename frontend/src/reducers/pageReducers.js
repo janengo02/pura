@@ -10,7 +10,8 @@ import {
    DELETE_GROUP,
    CREATE_TASK,
    DELETE_TASK,
-   FILTER_SCHEDULE
+   FILTER_SCHEDULE,
+   FILTER_NAME
 } from '../actions/types'
 import {
    moveTask,
@@ -25,7 +26,8 @@ import {
 import {
    updateProgress,
    updateGroup,
-   getDefaultSchedule
+   getDefaultSchedule,
+   getDefaultName
 } from './pageReducersHelpers'
 
 const initialState = {
@@ -38,7 +40,7 @@ const initialState = {
    user: null,
    filter: {
       schedule: getDefaultSchedule(),
-      name: {}
+      name: getDefaultName()
    },
    errors: null,
    _id: null,
@@ -174,6 +176,16 @@ function pageReducer(state = initialState, action) {
             filter: {
                ...state.filter,
                schedule: payload.schedule
+            },
+            loading: false,
+            error: false
+         }
+      case FILTER_NAME:
+         return {
+            ...state,
+            filter: {
+               ...state.filter,
+               name: payload.name
             },
             loading: false,
             error: false
