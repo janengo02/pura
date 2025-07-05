@@ -91,11 +91,6 @@ const ProgressSelect = React.memo(
          setHovered(false)
       }, [])
 
-      const handleAddProgressClick = useCallback(async (e) => {
-         e.preventDefault()
-         // TODO: Implement add progress functionality
-      }, [])
-
       // -------------------------------------------------------------------------
       // RENDER LOGIC
       // -------------------------------------------------------------------------
@@ -126,17 +121,7 @@ const ProgressSelect = React.memo(
                   </Flex>
                </MenuButton>
 
-               <MenuList w='488px'>
-                  {progressMenuItems}
-                  <MenuItem
-                     icon={<PiPlus size={14} />}
-                     fontSize='sm'
-                     color='gray.400'
-                     onClick={handleAddProgressClick}
-                  >
-                     {t('btn-add-progress')}
-                  </MenuItem>
-               </MenuList>
+               <MenuList w='488px'>{progressMenuItems}</MenuList>
             </Menu>
          </Flex>
       )

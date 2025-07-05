@@ -14,25 +14,18 @@ import {
    Flex,
    Heading,
    IconButton,
-   Menu,
-   MenuButton,
-   MenuItem,
-   MenuList,
    Spacer,
-   useDisclosure,
-   Drawer
+   useDisclosure
 } from '@chakra-ui/react'
 
 // Icons
-import { PiCalendarFill, PiDotsNine, PiFilePlus } from 'react-icons/pi'
+import { PiCalendarFill } from 'react-icons/pi'
 
 // Internal Components
 import ProfileMenu from './navbar/ProfileMenu'
-import Sidebar from './navbar/Sidebar'
 
 // Context & Utils
 import SplitPaneContext from '../../context/SplitPaneContext'
-import t from '../../lang/i18n'
 
 // =============================================================================
 // UTILITY COMPONENTS
@@ -62,46 +55,15 @@ NavbarWrapper.propTypes = {
 /**
  * Left section of navbar containing menu and title
  */
-const NavbarLeft = React.memo(({ dropdownMenu, sidebar, title }) => (
-   <Flex gap={5}>
-      <Menu isOpen={dropdownMenu.isOpen} onClose={dropdownMenu.onClose} isLazy>
-         <MenuButton
-            as={IconButton}
-            onClick={() => {
-               dropdownMenu.onClose()
-               sidebar.onOpen()
-            }}
-            onMouseEnter={dropdownMenu.onOpen}
-            icon={<PiDotsNine size={28} />}
-            variant='ghost'
-            colorScheme='gray'
-         />
-         <MenuList
-            onMouseEnter={dropdownMenu.onOpen}
-            onMouseLeave={dropdownMenu.onClose}
-         >
-            <MenuItem icon={<PiFilePlus size={20} />}>
-               {t('btn-new_page')}
-            </MenuItem>
-         </MenuList>
-      </Menu>
-      <Heading as='h3' size='lg' color='gray.600'>
-         {title}
-      </Heading>
-   </Flex>
+const NavbarLeft = React.memo(({ title }) => (
+   <Heading as='h3' size='lg' color='gray.600'>
+      {title}
+   </Heading>
 ))
 
 NavbarLeft.displayName = 'NavbarLeft'
 
 NavbarLeft.propTypes = {
-   dropdownMenu: PropTypes.shape({
-      isOpen: PropTypes.bool.isRequired,
-      onClose: PropTypes.func.isRequired,
-      onOpen: PropTypes.func.isRequired
-   }).isRequired,
-   sidebar: PropTypes.shape({
-      onOpen: PropTypes.func.isRequired
-   }).isRequired,
    title: PropTypes.string.isRequired
 }
 
@@ -136,9 +98,6 @@ const Navbar = React.memo(({ title = '' }) => {
    // HOOKS & STATE
    // -------------------------------------------------------------------------
 
-   const sidebar = useDisclosure()
-   const dropdownMenu = useDisclosure()
-
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
@@ -153,19 +112,8 @@ const Navbar = React.memo(({ title = '' }) => {
 
    return (
       <>
-         <Drawer
-            isOpen={sidebar.isOpen}
-            placement='left'
-            onClose={sidebar.onClose}
-         >
-            <Sidebar />
-         </Drawer>
          <NavbarWrapper>
-            <NavbarLeft
-               dropdownMenu={dropdownMenu}
-               sidebar={sidebar}
-               title={processedTitle}
-            />
+            <NavbarLeft title={processedTitle} />
             <Spacer />
             <NavbarRight />
          </NavbarWrapper>

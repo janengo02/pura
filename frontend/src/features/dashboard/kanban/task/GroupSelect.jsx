@@ -93,11 +93,6 @@ const GroupSelect = React.memo(
          setHovered(false)
       }, [])
 
-      const handleAddGroupClick = useCallback(async (e) => {
-         e.preventDefault()
-         // TODO: Implement add group functionality
-      }, [])
-
       // -------------------------------------------------------------------------
       // RENDER LOGIC
       // -------------------------------------------------------------------------
@@ -130,17 +125,7 @@ const GroupSelect = React.memo(
                   </Flex>
                </MenuButton>
 
-               <MenuList w='488px'>
-                  {groupMenuItems}
-                  <MenuItem
-                     icon={<PiPlus size={14} />}
-                     fontSize='sm'
-                     color='gray.400'
-                     onClick={handleAddGroupClick}
-                  >
-                     {t('btn-add-group')}
-                  </MenuItem>
-               </MenuList>
+               <MenuList w='488px'>{groupMenuItems}</MenuList>
             </Menu>
          </Flex>
       )

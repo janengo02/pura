@@ -20,6 +20,9 @@ import { loadCalendarAction } from '../../../../actions/googleAccountActions'
 // Utils
 import { firstVisibleDay, lastVisibleDay } from '../../../../utils/dates'
 
+// Hooks
+import useLoading from '../../../../hooks/useLoading'
+
 // =============================================================================
 // CONSTANTS
 // =============================================================================
@@ -57,10 +60,8 @@ const ReloadButton = React.memo(
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
-      const handleReload = useCallback(
-         async (e) => {
-            e.preventDefault()
-
+      const [handleReload, isLoading] = useLoading(
+         useCallback(async () => {
             // Use current range or default range if not available
             const reloadRange =
                range.length > 0
@@ -68,8 +69,15 @@ const ReloadButton = React.memo(
                   : [firstVisibleDay(new Date()), lastVisibleDay(new Date())]
 
             await loadCalendarAction(reloadRange, tasks)
+         }, [loadCalendarAction, range, tasks])
+      )
+
+      const handleReloadClick = useCallback(
+         async (e) => {
+            e.preventDefault()
+            await handleReload()
          },
-         [loadCalendarAction, range, tasks]
+         [handleReload]
       )
 
       // -------------------------------------------------------------------------
@@ -80,7 +88,8 @@ const ReloadButton = React.memo(
          <IconButton
             {...BUTTON_STYLES}
             icon={<PiArrowClockwise size={22} />}
-            onClick={handleReload}
+            onClick={handleReloadClick}
+            isLoading={isLoading}
          />
       )
    }

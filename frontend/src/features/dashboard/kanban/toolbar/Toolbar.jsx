@@ -80,7 +80,7 @@ const Toolbar = React.memo(
                <Filter />
             </Flex>
 
-            <Spacer />
+            <Spacer w={5} />
 
             {/* Right Section - Actions */}
             <Flex gap={5} alignItems='center'>

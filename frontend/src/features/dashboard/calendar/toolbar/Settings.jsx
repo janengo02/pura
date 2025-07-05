@@ -22,7 +22,8 @@ import {
    MenuList,
    MenuItem,
    MenuOptionGroup,
-   MenuItemOption
+   MenuItemOption,
+   MenuGroup
 } from '@chakra-ui/react'
 
 // Icons & Utils
@@ -30,7 +31,8 @@ import {
    PiSlidersHorizontalFill,
    PiLayout,
    PiPlugs,
-   PiCircleFill
+   PiCircleFill,
+   PiPlus
 } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 
@@ -90,16 +92,20 @@ const Settings = React.memo(
       // -------------------------------------------------------------------------
 
       const googleLogin = useGoogleLogin({
-         onSuccess: async (response) => {
-            const reqData = {
-               code: response.access_token,
-               range
-            }
-            await addGoogleAccountAction(reqData)
+         onSuccess: (tokenResponse) => {
+            const { code } = tokenResponse
+            addGoogleAccountAction({ code, range }).then(() => {})
          },
-         onError: (error) => {
-            console.error('Google login error:', error)
-         }
+         // TODO Error Handling
+         onError: (responseError) => {
+            console.log('onError', responseError)
+         },
+         onNonOAuthError: (responseError) => {
+            console.log('onNonOAuthError', responseError)
+         },
+         scope: 'openid email profile https://www.googleapis.com/auth/calendar',
+         flow: 'auth-code',
+         auto_select: true
       })
 
       // -------------------------------------------------------------------------
@@ -135,7 +141,7 @@ const Settings = React.memo(
 
       const renderAccountButton = (account) => (
          <MenuButton
-            key={account._id}
+            key={account.accountId}
             as={Button}
             {...getAccountButtonStyles(account.accountSyncStatus)}
          >
@@ -158,9 +164,8 @@ const Settings = React.memo(
 
       const renderCalendarOptions = (account) => {
          const currentCalendars = googleCalendars.filter(
-            (calendar) => calendar.accountId === account._id
+            (calendar) => calendar.accountId === account.accountId
          )
-
          return (
             <MenuList zIndex={10}>
                <MenuOptionGroup
@@ -200,33 +205,29 @@ const Settings = React.memo(
          )
       }
 
+      const GoogleCalendarGroupTitle = () => (
+         <Flex w='full' gap={3}>
+            <Image src='assets/img/logos--google-calendar.svg' />
+            {t('label-google_calendar')}
+         </Flex>
+      )
+
       // -------------------------------------------------------------------------
       // RENDER
       // -------------------------------------------------------------------------
 
       return (
          <>
-            {/* Main Settings Menu */}
-            <Menu isLazy>
-               <MenuButton
-                  as={IconButton}
-                  icon={<PiSlidersHorizontalFill size={22} />}
-                  {...MENU_BUTTON_STYLES}
-               />
-               <MenuList>
-                  <MenuItem icon={<PiLayout size={20} />}>
-                     {t('btn-layout')}
-                  </MenuItem>
-               </MenuList>
-            </Menu>
-
             {/* Google Account Menus */}
             {googleAccounts.map((account) => (
-               <Menu key={account._id} isLazy>
+               <Menu key={account.accountId} isLazy>
                   {renderAccountButton(account)}
                   {renderCalendarOptions(account)}
                </Menu>
             ))}
+            <Button size='sm' colorScheme='gray' onClick={googleLogin}>
+               <GoogleCalendarGroupTitle />
+            </Button>
          </>
       )
    }

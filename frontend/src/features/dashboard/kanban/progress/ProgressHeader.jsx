@@ -276,16 +276,7 @@ const ProgressHeader = React.memo(
                   >
                      {t('btn-edit-name')}
                   </MenuItem>
-                  {showDeleteButton && (
-                     <MenuItem
-                        icon={<PiTrash size={18} />}
-                        fontSize='sm'
-                        color='red.400'
-                        onClick={handleDeleteClick}
-                     >
-                        {t('btn-delete-column')}
-                     </MenuItem>
-                  )}
+
                   <MenuDivider />
                   <MenuOptionGroup
                      defaultValue={progress.title_color}
@@ -295,6 +286,19 @@ const ProgressHeader = React.memo(
                   >
                      {colorOptions}
                   </MenuOptionGroup>
+                  {showDeleteButton && (
+                     <>
+                        <MenuDivider />
+                        <MenuItem
+                           icon={<PiTrash size={18} />}
+                           fontSize='sm'
+                           color='red.400'
+                           onClick={handleDeleteClick}
+                        >
+                           {t('btn-delete-column')}
+                        </MenuItem>
+                     </>
+                  )}
                </MenuList>
             </Menu>
          </>

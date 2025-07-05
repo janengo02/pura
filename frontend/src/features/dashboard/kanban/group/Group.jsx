@@ -115,6 +115,11 @@ const Group = React.memo(
             )),
          []
       )
+      // Memoize delete button visibility
+      const showDeleteButton = useMemo(
+         () => group_order.length > 1,
+         [group_order.length]
+      )
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -238,18 +243,22 @@ const Group = React.memo(
                      {t('btn-edit-name')}
                   </MenuItem>
                   <MenuDivider />
-                  <MenuItem
-                     icon={<PiTrash size={14} />}
-                     fontSize='sm'
-                     color='red.400'
-                     onClick={handleDeleteGroup}
-                  >
-                     {t('btn-delete')}
-                  </MenuItem>
-                  <MenuDivider />
                   <MenuOptionGroup title={t('label-color')} type='radio'>
                      {colorOptions}
                   </MenuOptionGroup>
+                  {showDeleteButton && (
+                     <>
+                        <MenuDivider />
+                        <MenuItem
+                           icon={<PiTrash size={14} />}
+                           fontSize='sm'
+                           color='red.400'
+                           onClick={handleDeleteGroup}
+                        >
+                           {t('btn-delete')}
+                        </MenuItem>
+                     </>
+                  )}
                </MenuList>
             </Menu>
          </>
