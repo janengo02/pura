@@ -255,7 +255,9 @@ export const changeGoogleCalendarVisibility = ({
 // =============================================
 export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
    if (updatedEvent.deleted) {
-      return googleEvents.filter((ev) => ev.id !== updatedEvent.id)
+      return {
+         googleEvents: googleEvents.filter((ev) => ev.id !== updatedEvent.id)
+      }
    }
    const updatedEventList = googleEvents
    const newStart = Date.parse(updatedEvent.start.dateTime)
