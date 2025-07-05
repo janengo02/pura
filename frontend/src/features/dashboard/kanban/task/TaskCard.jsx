@@ -120,7 +120,6 @@ const TaskCard = React.memo(
 
       // Memoize filtered tasks based on the current filter
       const hiddenTask = useMemo(() => {
-         console.log('filter.name', filter.name)
          if (
             filter.name &&
             filter.name.trim() !== '' &&

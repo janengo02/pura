@@ -70,3 +70,27 @@ export const showTaskModalAction = (formData) => async (dispatch) => {
       pageActionErrorHandler(dispatch, formData.page_id, err)
    }
 }
+// Create new task
+export const createTaskModalAction = (reqData) => async (dispatch) => {
+   try {
+      const res = await api.post(`/task/new/${reqData.page_id}`, reqData)
+      const res_task = await api.get(
+         `/task/${reqData.page_id}/${res.data.task._id}`
+      )
+      dispatch({
+         type: SHOW_TASK,
+         payload: {
+            ...res_task.data
+         }
+      })
+      dispatch({
+         type: CREATE_TASK,
+         payload: {
+            ...reqData,
+            newTask: res.data.task
+         }
+      })
+   } catch (err) {
+      pageActionErrorHandler(dispatch, reqData.page_id, err)
+   }
+}
