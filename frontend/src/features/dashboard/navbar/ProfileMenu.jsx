@@ -20,9 +20,10 @@ import {
    MenuButton,
    MenuItem,
    MenuList,
-   useDisclosure,
    MenuDivider,
-   MenuGroup
+   MenuGroup,
+   MenuOptionGroup,
+   MenuItemOption
 } from '@chakra-ui/react'
 
 // Utils & Icons
@@ -38,23 +39,9 @@ const ProfileMenu = React.memo(({ logoutAction, userData: { user } }) => {
    // HOOKS & STATE
    // -------------------------------------------------------------------------
 
-   const profileMenu = useDisclosure()
-
    // -------------------------------------------------------------------------
    // EVENT HANDLERS
    // -------------------------------------------------------------------------
-
-   const handleMenuOpen = useCallback(() => {
-      profileMenu.onOpen()
-   }, [profileMenu])
-
-   const handleMouseEnter = useCallback(() => {
-      profileMenu.onOpen()
-   }, [profileMenu])
-
-   const handleMouseLeave = useCallback(() => {
-      profileMenu.onClose()
-   }, [profileMenu])
 
    const handleLogout = useCallback(() => {
       logoutAction()
@@ -65,8 +52,8 @@ const ProfileMenu = React.memo(({ logoutAction, userData: { user } }) => {
    // -------------------------------------------------------------------------
 
    return (
-      <Menu isOpen={profileMenu.isOpen} onClose={profileMenu.onClose}>
-         <MenuButton onClick={handleMenuOpen} onMouseEnter={handleMouseEnter}>
+      <Menu>
+         <MenuButton>
             <Avatar
                name={user?.name || ''}
                w={10}
@@ -75,15 +62,30 @@ const ProfileMenu = React.memo(({ logoutAction, userData: { user } }) => {
                src={user?.avatar || 'assets/img/no-avatar.svg'}
             />
          </MenuButton>
-         <MenuList
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-         >
-            <MenuGroup title={user ? `Welcome ${user.name}` : 'Welcome'}>
-               <MenuItem icon={<PiGearSix size={20} />}>
-                  {t('btn-account_settings')}
-               </MenuItem>
-            </MenuGroup>
+         <MenuList>
+            <MenuOptionGroup
+               title={t('label-settings-language')}
+               defaultValue='en'
+               fontSize='sm'
+               type='radio'
+            >
+               <MenuItemOption
+                  key='en'
+                  value='en'
+                  fontSize='sm'
+                  onClick={() => {}}
+               >
+                  {t('label-settings-language-english')}
+               </MenuItemOption>
+               <MenuItemOption
+                  key='jp'
+                  value='jp'
+                  fontSize='sm'
+                  onClick={() => {}}
+               >
+                  {t('label-settings-language-japanese')}
+               </MenuItemOption>
+            </MenuOptionGroup>
             <MenuDivider />
             <MenuItem icon={<PiSignOut size={20} />} onClick={handleLogout}>
                {t('btn-logout')}
