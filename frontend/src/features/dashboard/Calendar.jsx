@@ -24,6 +24,7 @@ import { Skeleton, VStack } from '@chakra-ui/react'
 
 // Internal Components
 import Toolbar from './calendar/toolbar/Toolbar'
+import CalendarNavigationToolbar from './calendar/toolbar/CalendarNavigationToolbar'
 import EventWrapper from './calendar/event/EventWrapper'
 
 // Actions
@@ -86,7 +87,8 @@ const Calendar = ({
       () => ({
          components: {
             timeSlotWrapper: ColoredDateCellWrapper,
-            eventWrapper: EventWrapper
+            eventWrapper: EventWrapper,
+            toolbar: CalendarNavigationToolbar
          },
          defaultDate: new Date(),
          views: Object.keys(Views).map((k) => Views[k]),
@@ -172,7 +174,7 @@ const Calendar = ({
 
    return (
       <Skeleton isLoaded={!loading}>
-         <VStack h='800px' alignItems='center' gap={0} paddingBottom={10}>
+         <VStack h='800px' alignItems='center' gap={2} paddingBottom={10}>
             <Toolbar />
             <BigCalendar
                components={calendarConfig.components}

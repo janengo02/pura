@@ -5,11 +5,11 @@
    background: #fff;
 }
 ::-webkit-scrollbar-thumb {
-   background-color: #edf2f7;
+   background-color: #dde3e6;
    border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-   background-color: #cbd5e0;
+   background-color: #dde3e6;
 }
 /* Styling the scrollbar in Firefox */
 ::-moz-scrollbar {
@@ -18,12 +18,16 @@
    background: #fff;
 }
 ::-moz-scrollbar-thumb {
-   background-color: #edf2f7;
+   background-color: #dde3e6;
    border-radius: 10px;
 }
 ::-moz-scrollbar-thumb:hover {
-   background-color: #cbd5e0;
+   background-color: #dde3e6;
 }
+
+/* =============================================================================
+   REACT-BIG-CALENDAR GRID LINE CUSTOMIZATION
+   ============================================================================= */
 
 .hidden-card {
    height: 0 !important;
@@ -39,6 +43,134 @@
    width: 80%;
    min-width: 45vw;
 }
+
+.rbc-time-view,
+.rbc-month-view,
+.rbc-agenda-view {
+   border: 2px solid #edf2f7 !important;
+   border-radius: 8px !important;
+}
+.rbc-time-content {
+   overflow-x: hidden !important;
+}
+
+/* -------------------------------------------------------------------------
+   MONTH VIEW GRID LINES
+   ------------------------------------------------------------------------- */
+
+/* Month view cell borders */
+.rbc-month-view .rbc-date-cell {
+   border-right: 1px solid #dde3e6 !important; /* Light gray - customize this color */
+}
+
+/* Month view header borders */
+.rbc-month-view .rbc-header {
+   border-bottom: 1px solid #dde3e6 !important; /* Slightly darker for headers */
+   border-right: 1px solid #dde3e6 !important;
+}
+
+/* Month view row borders */
+.rbc-month-row {
+   border-left: 1px solid #dde3e6 !important;
+   border-top: 1px solid #dde3e6 !important;
+}
+
+/* -------------------------------------------------------------------------
+   WEEK VIEW GRID LINES
+   ------------------------------------------------------------------------- */
+
+/* Week view day columns (vertical lines) */
+.rbc-day-slot .rbc-time-column,
+.rbc-time-view .rbc-time-column {
+   border-right: 1px solid #dde3e6 !important;
+}
+
+/* Week view header borders */
+.rbc-time-header-cell {
+   border-right: 1px solid #dde3e6 !important;
+   border-bottom: 1px solid #dde3e6 !important;
+}
+
+/* Week view all-day section */
+.rbc-allday-cell {
+   border-right: 1px solid #dde3e6 !important;
+}
+
+/* -------------------------------------------------------------------------
+   DAY VIEW GRID LINES
+   ------------------------------------------------------------------------- */
+
+/* Day view time slots */
+.rbc-day-slot .rbc-time-slot {
+   border-bottom: 1px solid #edf2f7 !important;
+}
+
+/* Day view time column border */
+.rbc-time-column {
+   border-right: 1px solid #dde3e6 !important;
+}
+.rbc-day-bg + .rbc-day-bg {
+   border-left: 1px solid #dde3e6 !important;
+}
+
+/* -------------------------------------------------------------------------
+   TIME GUTTER (Left time column)
+   ------------------------------------------------------------------------- */
+
+/* Time labels column border */
+.rbc-time-gutter,
+.rbc-time-header-gutter {
+   border-right: 1px solid #dde3e6 !important; /* Darker border for time column */
+}
+
+/* Individual time slot in gutter */
+.rbc-time-gutter .rbc-timeslot-group {
+   border-bottom: 1px solid #dde3e6 !important;
+}
+
+/* -------------------------------------------------------------------------
+   AGENDA VIEW GRID LINES
+   ------------------------------------------------------------------------- */
+
+/* Agenda view table borders */
+.rbc-agenda-view table {
+   border: 1px solid #dde3e6 !important;
+}
+
+.rbc-agenda-view td {
+   border-bottom: 1px solid #dde3e6 !important;
+   border-right: 1px solid #dde3e6 !important;
+}
+
+.rbc-agenda-view th {
+   border-bottom: 1px solid #dde3e6 !important;
+   border-right: 1px solid #dde3e6 !important;
+}
+
+/* -------------------------------------------------------------------------
+   CURRENT TIME INDICATOR
+   ------------------------------------------------------------------------- */
+
+/* Current time purple line */
+.rbc-current-time-indicator {
+   background-color: #805ad5 !important; /* Red line for current time */
+   height: 2px !important;
+}
+
+/* Current time indicator in time gutter */
+.rbc-current-time-indicator::before {
+   background-color: #805ad5 !important;
+}
+
+/* -------------------------------------------------------------------------
+   TODAY HIGHLIGHTING
+   ------------------------------------------------------------------------- */
+
+/* Today's date in week/day view */
+.rbc-time-view .rbc-today {
+   background-color: #faf5ff !important; /* Very light purple */
+}
+
 .rbc-off-range-bg {
    background-color: #edf2f6 !important;
 }
@@ -55,13 +187,51 @@
    background: #805ad5;
    color: #fff;
    border-radius: 100%;
-   padding: 0px 3px 0px;
+   padding: 1px 4px;
 }
-.rbc-toolbar button:active,
-.rbc-toolbar button:focus,
-.rbc-toolbar button.rbc-active,
-.rbc-toolbar button:hover {
-   box-shadow: none !important;
-   background-color: #edf2f6 !important;
-   /* border-color: #edf2f6; */
+
+/* -------------------------------------------------------------------------
+   RESPONSIVE ADJUSTMENTS
+   ------------------------------------------------------------------------- */
+
+/* Hide some grid lines on mobile for cleaner look */
+@media (max-width: 768px) {
+   .rbc-time-slot {
+      border-bottom: 1px solid #edf2f7 !important;
+   }
+
+   .rbc-date-cell {
+      border-right: 1px solid #f1f5f9 !important;
+   }
+}
+
+/* -------------------------------------------------------------------------
+   UTILITY CLASSES FOR DYNAMIC THEMING
+   ------------------------------------------------------------------------- */
+
+/* Hide all grid lines */
+.calendar-no-grid .rbc-time-slot,
+.calendar-no-grid .rbc-date-cell,
+.calendar-no-grid .rbc-header,
+.calendar-no-grid .rbc-time-column {
+   border: none !important;
+}
+
+/* Extra bold grid lines */
+.calendar-bold-grid .rbc-time-slot,
+.calendar-bold-grid .rbc-date-cell,
+.calendar-bold-grid .rbc-header {
+   border-width: 2px !important;
+}
+
+/* Dotted grid lines */
+.calendar-dotted-grid .rbc-time-slot,
+.calendar-dotted-grid .rbc-date-cell {
+   border-style: dotted !important;
+}
+
+/* Dashed grid lines */
+.calendar-dashed-grid .rbc-time-slot,
+.calendar-dashed-grid .rbc-date-cell {
+   border-style: dashed !important;
 }

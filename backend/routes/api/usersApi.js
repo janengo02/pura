@@ -97,7 +97,7 @@ router.post(
          // Data: Add default page
          page = new Page({
             user: user,
-            title: 'My Page',
+            title: 'MY PURA',
             progress_order: [progress1, progress2, progress3],
             group_order: [group],
             task_map: [1, 1, 1],

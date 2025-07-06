@@ -15,25 +15,17 @@ import {
    Box,
    Button,
    Flex,
-   IconButton,
    Image,
    Menu,
    MenuButton,
    MenuList,
    MenuItem,
    MenuOptionGroup,
-   MenuItemOption,
-   MenuGroup
+   MenuItemOption
 } from '@chakra-ui/react'
 
 // Icons & Utils
-import {
-   PiSlidersHorizontalFill,
-   PiLayout,
-   PiPlugs,
-   PiCircleFill,
-   PiPlus
-} from 'react-icons/pi'
+import { PiPlugs, PiCircleFill } from 'react-icons/pi'
 import t from '../../../../lang/i18n'
 
 // Actions

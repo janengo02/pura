@@ -6,7 +6,7 @@
 import React from 'react'
 
 // UI Components
-import { Flex, Spacer } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 
 // Internal Components
 import Settings from './Settings'
