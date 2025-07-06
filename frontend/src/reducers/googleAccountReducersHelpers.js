@@ -158,7 +158,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
             end: new Date(newEnd),
             calendarId: null,
             calendar: null,
-            color: '#805AD5',
+            color: '#d2c2f2',
             accessRole: 'owner',
             calendarVisible: true,
             accountId: null

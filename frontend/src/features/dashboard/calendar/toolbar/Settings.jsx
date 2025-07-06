@@ -206,7 +206,7 @@ const Settings = React.memo(
       }
 
       const GoogleCalendarGroupTitle = () => (
-         <Flex w='full' gap={3}>
+         <Flex w='max-content' gap={3}>
             <Image src='assets/img/logos--google-calendar.svg' />
             {t('label-google_calendar')}
          </Flex>

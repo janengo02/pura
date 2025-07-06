@@ -22,13 +22,13 @@ const Toolbar = React.memo(() => {
    // -------------------------------------------------------------------------
 
    return (
-      <Flex w='full' maxW={802} paddingY={5} paddingX={3} alignItems='center'>
-         <Flex gap={2} alignItems='center'>
-            {/* Left side actions - currently empty */}
-         </Flex>
-
-         <Spacer w={5} />
-
+      <Flex
+         w='80%'
+         minW='45vw'
+         paddingY={5}
+         paddingLeft={3}
+         justifyContent='end'
+      >
          <Flex gap={5} alignItems='center'>
             <ReloadButton />
             <Settings />
