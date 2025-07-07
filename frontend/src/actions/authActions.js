@@ -1,3 +1,7 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
 import { api } from '../utils'
 import {
    REGISTER_SUCCESS,
@@ -11,7 +15,16 @@ import {
 import { setAlertAction, removeAllAlertAction } from './alertActions'
 import { setLoadingAction } from './loadingActions'
 
-// Helper for error handling
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Helper for error handling in auth actions
+ * @param {Object} err - Error object
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {string} failType - Action type for failure
+ */
 const authActionErrorHandler = (err, dispatch, failType) => {
    const errors = err?.response?.data?.errors
    if (errors) {
@@ -22,7 +35,14 @@ const authActionErrorHandler = (err, dispatch, failType) => {
    dispatch({ type: failType })
 }
 
-// Load User
+// =============================================================================
+// ACTION CREATORS
+// =============================================================================
+
+/**
+ * Load User Action
+ * Fetches the authenticated user's data
+ */
 export const loadUserAction = () => async (dispatch) => {
    dispatch(setLoadingAction.start)
    try {
@@ -37,16 +57,30 @@ export const loadUserAction = () => async (dispatch) => {
    dispatch(setLoadingAction.end)
 }
 
-// Register User
+/**
+ * Register User Action
+ * Registers a new user with language support for default content
+ * @param {Object} formData - Registration form data
+ * @param {string} formData.name - User's name
+ * @param {string} formData.email - User's email
+ * @param {string} formData.password - User's password
+ * @param {string} formData.language - User's preferred language ('en' or 'ja')
+ */
 export const registerAction = (formData) => async (dispatch) => {
    dispatch(setLoadingAction.start)
    try {
+      // Send registration data including language preference
       const res = await api.post('/users', formData)
+
       dispatch({
          type: REGISTER_SUCCESS,
          payload: res.data
       })
+
+      // Load user data after successful registration
       dispatch(loadUserAction())
+
+      // Clear any existing alerts
       dispatch(removeAllAlertAction())
    } catch (err) {
       authActionErrorHandler(err, dispatch, REGISTER_FAIL)
@@ -54,16 +88,24 @@ export const registerAction = (formData) => async (dispatch) => {
    dispatch(setLoadingAction.end)
 }
 
-// Login User
+/**
+ * Login User Action
+ * Authenticates an existing user
+ * @param {Object} formData - Login form data
+ * @param {string} formData.email - User's email
+ * @param {string} formData.password - User's password
+ */
 export const loginAction = (formData) => async (dispatch) => {
    dispatch(setLoadingAction.start)
    try {
       const res = await api.post('/auth', formData)
+
       dispatch(removeAllAlertAction())
       dispatch({
          type: LOGIN_SUCCESS,
          payload: res.data
       })
+
       dispatch(loadUserAction())
    } catch (err) {
       authActionErrorHandler(err, dispatch, LOGIN_FAIL)
@@ -71,7 +113,10 @@ export const loginAction = (formData) => async (dispatch) => {
    dispatch(setLoadingAction.end)
 }
 
-// Logout
+/**
+ * Logout Action
+ * Logs out the current user
+ */
 export const logoutAction = () => async (dispatch) => {
    dispatch({ type: LOGOUT })
 }

@@ -248,7 +248,7 @@ const ProgressHeader = React.memo(
 
       const renderTitleDisplay = () => (
          <>
-            <Text color={progress.title_color} fontWeight={500}>
+            <Text color={progress.title_color} fontWeight={600}>
                {progress.title}
             </Text>
             <Spacer />

@@ -190,7 +190,7 @@ const Kanban = React.memo(
                                  icon={<PiPlusBold />}
                                  variant='ghost'
                                  colorScheme='gray'
-                                 color='gray.500'
+                                 color='gray.600'
                                  size='sm'
                                  onClick={handleCreateProgress}
                               />
@@ -199,7 +199,7 @@ const Kanban = React.memo(
                            <Button
                               size='sm'
                               colorScheme='gray'
-                              color='gray.500'
+                              color='gray.600'
                               variant='ghost'
                               leftIcon={<PiPlus />}
                               onClick={handleCreateGroup}
@@ -210,7 +210,7 @@ const Kanban = React.memo(
                      </DragDropContext>
                   </VStack>
                ) : (
-                  <Text color='gray.500'>
+                  <Text color='gray.600'>
                      {t('guide-no_page')}
                      <Button
                         size='sm'

@@ -1,3 +1,7 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
 const express = require('express')
 const router = express.Router()
 const gravatar = require('gravatar')
@@ -5,19 +9,154 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { check, validationResult } = require('express-validator')
 
+// Models
 const Page = require('../../models/PageModel')
 const User = require('../../models/UserModel')
 const Group = require('../../models/GroupModel')
 const Progress = require('../../models/ProgressModel')
 const Task = require('../../models/TaskModel')
+
+// Utils
 const dotenv = require('dotenv')
 const { sendErrorResponse } = require('../../utils/responseHelper')
 
 dotenv.config()
 
-// @route   POST api/users
-// @desc    Register user route
-// @access  Public
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Get default titles based on language
+ * @param {string} language - Language code ('en' or 'ja')
+ * @returns {Object} Object containing default titles for different entities
+ */
+const getDefaultTitles = (language = 'en') => {
+   const translations = {
+      en: {
+         page: 'MY PURA',
+         group: 'MY GROUP',
+         progress: {
+            todo: 'To do',
+            inProgress: 'In Progress',
+            done: 'Done'
+         },
+         task: 'My task'
+      },
+      ja: {
+         page: 'マイプラ',
+         group: 'マイグループ',
+         progress: {
+            todo: 'やること',
+            inProgress: '進行中',
+            done: '完了'
+         },
+         task: 'マイタスク'
+      }
+   }
+
+   // Return English as fallback if language not supported
+   return translations[language] || translations.en
+}
+
+/**
+ * Create default progress entities with localized titles
+ * @param {string} language - Language code
+ * @returns {Promise<Array>} Array of created progress objects
+ */
+const createDefaultProgresses = async (language) => {
+   const titles = getDefaultTitles(language)
+
+   const progress1 = new Progress({
+      title: titles.progress.todo,
+      title_color: '#B75151',
+      color: '#FFE5E5'
+   })
+   await progress1.save()
+
+   const progress2 = new Progress({
+      title: titles.progress.inProgress,
+      title_color: '#E95F11',
+      color: '#FFF0E4'
+   })
+   await progress2.save()
+
+   const progress3 = new Progress({
+      title: titles.progress.done,
+      title_color: '#3E9C75',
+      color: '#CDF4E4'
+   })
+   await progress3.save()
+
+   return [progress1, progress2, progress3]
+}
+
+/**
+ * Create default group with localized title
+ * @param {string} language - Language code
+ * @returns {Promise<Object>} Created group object
+ */
+const createDefaultGroup = async (language) => {
+   const titles = getDefaultTitles(language)
+
+   const group = new Group({
+      title: titles.group
+   })
+   await group.save()
+
+   return group
+}
+
+/**
+ * Create default task with localized title
+ * @param {string} language - Language code
+ * @returns {Promise<Object>} Created task object
+ */
+const createDefaultTask = async (language) => {
+   const titles = getDefaultTitles(language)
+
+   const task = new Task({
+      title: titles.task
+   })
+   await task.save()
+
+   return task
+}
+
+/**
+ * Create default page with localized title
+ * @param {Object} user - User object
+ * @param {Array} progresses - Array of progress objects
+ * @param {Object} group - Group object
+ * @param {Object} task - Task object
+ * @param {string} language - Language code
+ * @returns {Promise<Object>} Created page object
+ */
+const createDefaultPage = async (user, progresses, group, task, language) => {
+   const titles = getDefaultTitles(language)
+
+   const page = new Page({
+      user: user,
+      title: titles.page,
+      progress_order: progresses,
+      group_order: [group],
+      task_map: [1, 1, 1], // One task across three progress columns
+      tasks: [task]
+   })
+   await page.save()
+
+   return page
+}
+
+// =============================================================================
+// ROUTES
+// =============================================================================
+
+/**
+ * @route   POST api/users
+ * @desc    Register user route with language support
+ * @access  Public
+ */
 router.post(
    '/',
    [
@@ -26,86 +165,77 @@ router.post(
       check(
          'password',
          'Please enter a password with 6 or more characters'
-      ).isLength({ min: 6 })
+      ).isLength({ min: 6 }),
+      check('language', 'Language must be a valid language code')
+         .optional()
+         .isIn(['en', 'ja'])
    ],
    async (req, res) => {
-      //   Validation: Form input
+      // -------------------------------------------------------------------------
+      // VALIDATION
+      // -------------------------------------------------------------------------
+
+      // Validate form input
       const result = validationResult(req)
       if (!result.isEmpty()) {
          return sendErrorResponse(res, 400, 'alert-oops', result.array()[0].msg)
       }
 
-      //   Validation: Check if user exists
-      const { name, email, password } = req.body
+      // Extract data with language defaulting to English
+      const { name, email, password, language = 'en' } = req.body
+
+      // Check if user already exists
       let user = await User.findOne({ email })
       if (user) {
          return sendErrorResponse(res, 400, 'alert-oops', 'alert-user-exists')
       }
-      // Prepare: Set up avatar
-      const avatar = gravatar.url(email, {
-         s: '200',
-         r: 'pg',
-         d: 'mm'
-      })
+
+      // -------------------------------------------------------------------------
+      // USER CREATION
+      // -------------------------------------------------------------------------
+
       try {
-         // Data: Add new user
+         // Set up avatar
+         const avatar = gravatar.url(email, {
+            s: '200',
+            r: 'pg',
+            d: 'mm'
+         })
+
+         // Create new user
          user = new User({
             name,
             email,
             avatar,
             password
          })
+
          // Encrypt password
          const salt = await bcrypt.genSalt(10)
          user.password = await bcrypt.hash(password, salt)
          await user.save()
 
-         // Data: Add default group
-         group = new Group({
-            title: 'MY GROUP'
-         })
-         await group.save()
+         // -------------------------------------------------------------------------
+         // DEFAULT CONTENT CREATION
+         // -------------------------------------------------------------------------
 
-         // Data: Add default progresses
-         progress1 = new Progress({
-            title: 'To do',
-            title_color: '#B75151',
-            color: '#FFE5E5'
-         })
-         await progress1.save()
+         // Create default content with localized titles
+         const progresses = await createDefaultProgresses(language)
+         const group = await createDefaultGroup(language)
+         const task = await createDefaultTask(language)
+         const page = await createDefaultPage(
+            user,
+            progresses,
+            group,
+            task,
+            language
+         )
 
-         progress2 = new Progress({
-            title: 'In Progress',
-            title_color: '#E95F11',
-            color: '#FFF0E4'
-         })
-         await progress2.save()
+         // -------------------------------------------------------------------------
+         // RESPONSE
+         // -------------------------------------------------------------------------
 
-         progress3 = new Progress({
-            title: 'Done',
-            title_color: '#3E9C75',
-            color: '#CDF4E4'
-         })
-         await progress3.save()
-
-         // Data: Add default task
-         task = new Task({
-            title: 'My task'
-         })
-         await task.save()
-
-         // Data: Add default page
-         page = new Page({
-            user: user,
-            title: 'MY PURA',
-            progress_order: [progress1, progress2, progress3],
-            group_order: [group],
-            task_map: [1, 1, 1],
-            tasks: [task]
-         })
-         await page.save()
-
-         // Return: json web token
+         // Generate JWT token
          const payload = {
             user: {
                id: user.id
@@ -117,15 +247,32 @@ router.post(
             process.env?.JWT_SECRET,
             { expiresIn: 36000 },
             (err, token) => {
-               if (err) throw err
-               res.json({ token })
+               if (err) {
+                  console.error('JWT signing error:', err)
+                  return sendErrorResponse(
+                     res,
+                     500,
+                     'alert-oops',
+                     'alert-server_error',
+                     err
+                  )
+               }
+
+               res.json({
+                  token,
+                  message: 'User registered successfully with localized content'
+               })
             }
          )
       } catch (err) {
-         console.error(err.message)
+         console.error('Registration error:', err.message)
          sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
       }
    }
 )
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 module.exports = router

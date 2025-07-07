@@ -167,7 +167,7 @@ const TaskModal = React.memo(
       // Auto-save title changes with debounce
       useEffect(() => {
          if (hasTaskTitleChanged) {
-            const timeoutId = setTimeout(() => handleUpdateTitle(), 500)
+            const timeoutId = setTimeout(() => handleUpdateTitle(), 600)
             return () => clearTimeout(timeoutId)
          }
       }, [hasTaskTitleChanged, handleUpdateTitle])
@@ -175,7 +175,7 @@ const TaskModal = React.memo(
       // Auto-save content changes with debounce
       useEffect(() => {
          if (hasTaskContentChanged) {
-            const timeoutId = setTimeout(() => handleUpdateContent(), 500)
+            const timeoutId = setTimeout(() => handleUpdateContent(), 600)
             return () => clearTimeout(timeoutId)
          }
       }, [hasTaskContentChanged, handleUpdateContent])
@@ -191,7 +191,7 @@ const TaskModal = React.memo(
             h='95%'
             top={20}
             left={0}
-            bg='gray.500'
+            bg='gray.600'
             opacity={0.3}
             onClick={modalCard.onClose}
          />

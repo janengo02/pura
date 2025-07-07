@@ -234,7 +234,7 @@ const ScheduleTimeSlot = React.memo(
                icon={<PiTrash size={16} />}
                variant='ghost'
                colorScheme='gray'
-               color='gray.500'
+               color='gray.600'
                size='sm'
                isLoading={deleteSlotLoading}
                onClick={handleDeleteClick}
@@ -256,7 +256,7 @@ const ScheduleTimeSlot = React.memo(
                      icon={<PiCalendarPlusFill size={16} />}
                      variant='ghost'
                      colorScheme='gray'
-                     color='gray.500'
+                     color='gray.600'
                      size='sm'
                   />
                   <MenuList zIndex={10}>

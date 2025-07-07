@@ -154,7 +154,7 @@ const Login = React.memo(
                   </GridItem>
 
                   <GridItem colSpan={1}>
-                     <Text color='gray.500'>
+                     <Text color='gray.600'>
                         {t('guide-create_account')}
                         <Link to='/register' text={t('guide-register')} />
                      </Text>

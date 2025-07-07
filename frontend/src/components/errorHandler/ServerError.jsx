@@ -19,8 +19,8 @@ const ServerError = ({ auth: { isAuthenticated } }) => {
             alignItems='center'
             justifyContent='center'
          >
-            <Text color='gray.500'>{code}</Text>
-            <Text color='gray.500'>{t(msg)}</Text>
+            <Text color='gray.600'>{code}</Text>
+            <Text color='gray.600'>{t(msg)}</Text>
 
             {isAuthenticated ? (
                <Link as={ReactRouterLink} to='/dashboard'>

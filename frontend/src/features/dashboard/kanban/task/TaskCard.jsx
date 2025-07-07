@@ -108,7 +108,7 @@ const TaskCard = React.memo(
                task.schedule.length > 0
                   ? t('schedule_status-true')
                   : t('schedule_status-false'),
-            statusColor: task.schedule.length > 0 ? 'gray.500' : 'red.500'
+            statusColor: task.schedule.length > 0 ? 'gray.600' : 'red.600'
          }),
          [task.schedule.length, t]
       )

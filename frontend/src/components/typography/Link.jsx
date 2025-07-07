@@ -9,7 +9,7 @@ const Link = ({ removeAllAlertAction, to, text, ...props }) => {
    return (
       <ChakraLink
          as={ReactRouterLink}
-         color={props.color ? props.color : 'purple.500'}
+         color={props.color ? props.color : 'purple.600'}
          to={to}
          {...props}
          onClick={removeAllAlertAction}

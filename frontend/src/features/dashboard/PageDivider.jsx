@@ -90,9 +90,9 @@ const PageDivider = () => {
          flexShrink={0}
          cursor='col-resize'
          ref={dividerRef}
-         bg={focusDivider ? 'purple.500' : 'gray.100'}
+         bg={focusDivider ? 'purple.600' : 'gray.100'}
          borderWidth={1}
-         borderColor={focusDivider ? 'purple.500' : 'white'}
+         borderColor={focusDivider ? 'purple.600' : 'white'}
          onMouseDown={onMouseDown}
       />
    )

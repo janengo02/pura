@@ -55,8 +55,6 @@ const RegisterPageHeader = React.memo(() => (
    </Flex>
 ))
 
-RegisterPageHeader.displayName = 'RegisterPageHeader'
-
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -66,7 +64,7 @@ const Register = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
-      const { t } = useReactiveTranslation()
+      const { t, i18n } = useReactiveTranslation()
 
       const methods = useForm({
          resolver: yupResolver(s(t))
@@ -80,11 +78,19 @@ const Register = React.memo(
          () => ({
             onSubmit: methods.handleSubmit((data) => {
                const { name, email, password } = data
-               // TODO: Send email confirmation email
-               registerAction({ name, email, password })
+
+               // Include language in registration data
+               const registrationData = {
+                  name,
+                  email,
+                  password,
+                  language: i18n.language || 'en'
+               }
+
+               registerAction(registrationData)
             })
          }),
-         [methods, registerAction]
+         [methods, registerAction, i18n.language]
       )
 
       // -------------------------------------------------------------------------
@@ -177,7 +183,7 @@ const Register = React.memo(
                   </GridItem>
 
                   <GridItem colSpan={1}>
-                     <Text color='gray.500'>
+                     <Text color='gray.600'>
                         {t('guide-already_have_account')}
                         <Link to='/login' text={t('guide-login')} />
                      </Text>

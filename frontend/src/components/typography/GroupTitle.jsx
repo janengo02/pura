@@ -3,7 +3,7 @@ import { Text } from '@chakra-ui/react'
 
 const GroupTitle = ({ children, color }) => {
    return (
-      <Text color={color} fontWeight={500}>
+      <Text color={color} fontWeight={600}>
          {children}
       </Text>
    )
