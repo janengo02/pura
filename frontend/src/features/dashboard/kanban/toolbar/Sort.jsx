@@ -75,7 +75,7 @@ const Sort = () => {
                {/* Clear Sort Button */}
                <IconButton
                   variant='ghost'
-                  color='gray.600'
+                  color='gray.500'
                   size='sm'
                   icon={<PiTrash />}
                />

@@ -167,7 +167,7 @@ const TaskModal = React.memo(
       // Auto-save title changes with debounce
       useEffect(() => {
          if (hasTaskTitleChanged) {
-            const timeoutId = setTimeout(() => handleUpdateTitle(), 600)
+            const timeoutId = setTimeout(() => handleUpdateTitle(), 500)
             return () => clearTimeout(timeoutId)
          }
       }, [hasTaskTitleChanged, handleUpdateTitle])
@@ -175,7 +175,7 @@ const TaskModal = React.memo(
       // Auto-save content changes with debounce
       useEffect(() => {
          if (hasTaskContentChanged) {
-            const timeoutId = setTimeout(() => handleUpdateContent(), 600)
+            const timeoutId = setTimeout(() => handleUpdateContent(), 500)
             return () => clearTimeout(timeoutId)
          }
       }, [hasTaskContentChanged, handleUpdateContent])

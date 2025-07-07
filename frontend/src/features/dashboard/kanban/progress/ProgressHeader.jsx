@@ -236,7 +236,7 @@ const ProgressHeader = React.memo(
                   validation={s.title}
                   defaultValue={progress.title}
                   color={progress.title_color}
-                  fontWeight={600}
+                  fontWeight={500}
                   borderRadius={0}
                   autoFocus
                   onFocus={handleInputFocus}
@@ -248,7 +248,7 @@ const ProgressHeader = React.memo(
 
       const renderTitleDisplay = () => (
          <>
-            <Text color={progress.title_color} fontWeight={600}>
+            <Text color={progress.title_color} fontWeight={500}>
                {progress.title}
             </Text>
             <Spacer />

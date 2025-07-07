@@ -54,7 +54,7 @@ const ACCOUNT_BUTTON_BASE_STYLES = {
 const getAccountButtonStyles = (accountSyncStatus) => ({
    ...ACCOUNT_BUTTON_BASE_STYLES,
    colorScheme: accountSyncStatus ? 'purple' : 'gray',
-   color: accountSyncStatus ? undefined : 'gray.600'
+   color: accountSyncStatus ? undefined : 'gray.500'
 })
 
 const getAccountImage = (accountSyncStatus) =>

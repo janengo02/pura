@@ -38,8 +38,6 @@
    opacity: 0 !important;
 }
 .rbc-calendar {
-   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
-      sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
    width: 80%;
    min-width: 45vw;
 }
@@ -52,6 +50,10 @@
 }
 .rbc-time-content {
    overflow-x: hidden !important;
+}
+.rbc-event-content {
+   font-size: 0.875rem !important; /* Adjust font size for better readability */
+   line-height: 1.25 !important; /* Adjust line height for better spacing */
 }
 
 /* -------------------------------------------------------------------------

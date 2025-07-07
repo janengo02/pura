@@ -1,5 +1,12 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Router
 import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+
+// Components
 import Register from './features/register/Register'
 import Login from './features/login/Login'
 import PasswordRecover from './features/login/PasswordRecover'
@@ -9,6 +16,7 @@ import PrivateRoute from './components/PrivateRoute'
 import NotFound from './components/errorHandler/NotFound'
 import ServerError from './components/errorHandler/ServerError'
 
+// External Libraries
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
 // Redux
@@ -19,35 +27,54 @@ import { loadUserAction } from './actions/authActions'
 import { initializeLanguageAction } from './actions/languageActions'
 import { LOGOUT } from './actions/types'
 
-// Style
-import './App.css'
+// UI & Theme
 import { ChakraProvider } from '@chakra-ui/react'
+import customTheme from './theme/customTheme'
+
+// Styles
+import './App.css'
+
+// Config
 import { googleAuthClientId } from './config/env'
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 const App = () => {
+   // -------------------------------------------------------------------------
+   // EFFECTS
+   // -------------------------------------------------------------------------
+
    useEffect(() => {
       // Initialize language first
       store.dispatch(initializeLanguageAction())
 
-      // check for token in LS when app first runs
+      // Check for token in localStorage when app first runs
       if (localStorage.token) {
-         // if there is a token set axios headers for all requests
+         // If there is a token set axios headers for all requests
          setAuthToken(localStorage.token)
       }
-      // try to fetch a user, if no token or invalid token we
+
+      // Try to fetch a user, if no token or invalid token we
       // will get a 401 response from our API
       store.dispatch(loadUserAction())
 
-      // log user out from all tabs if they log out in one tab
+      // Log user out from all tabs if they log out in one tab
       window.addEventListener('storage', () => {
          if (!localStorage.token) store.dispatch({ type: LOGOUT })
       })
    }, [])
 
+   // -------------------------------------------------------------------------
+   // RENDER
+   // -------------------------------------------------------------------------
+
    return (
       <GoogleOAuthProvider clientId={googleAuthClientId}>
          <Provider store={store}>
             <ChakraProvider
+               theme={customTheme}
                toastOptions={{
                   defaultOptions: {
                      position: 'top',
@@ -76,4 +103,9 @@ const App = () => {
       </GoogleOAuthProvider>
    )
 }
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
 export default App
