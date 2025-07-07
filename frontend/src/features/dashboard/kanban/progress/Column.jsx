@@ -22,7 +22,7 @@ import { Button, Card, Flex } from '@chakra-ui/react'
 import TaskCard from '../task/TaskCard'
 
 // Utils & Icons
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import { PiPlus } from 'react-icons/pi'
 
 // =============================================================================
@@ -40,6 +40,7 @@ const Column = ({
    tasks,
    createTaskAction
 }) => {
+   const { t } = useReactiveTranslation()
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
@@ -148,7 +149,7 @@ const Column = ({
             </Flex>
          </Card>
       ),
-      [progress.color, taskCards, newTaskInfo, handleCreateTask]
+      [progress.color, taskCards, newTaskInfo, handleCreateTask, t]
    )
 
    // -------------------------------------------------------------------------

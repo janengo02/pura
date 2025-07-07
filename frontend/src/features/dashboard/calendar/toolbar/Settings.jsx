@@ -26,7 +26,7 @@ import {
 
 // Icons & Utils
 import { PiPlugs, PiCircleFill } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Actions
 import {
@@ -40,12 +40,6 @@ import { useGoogleLogin } from '@react-oauth/google'
 // =============================================================================
 // CONSTANTS
 // =============================================================================
-
-const MENU_BUTTON_STYLES = {
-   variant: 'ghost',
-   size: 'sm',
-   colorScheme: 'gray'
-}
 
 const ACCOUNT_BUTTON_BASE_STYLES = {
    size: 'sm',
@@ -82,6 +76,7 @@ const Settings = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const googleLogin = useGoogleLogin({
          onSuccess: (tokenResponse) => {
@@ -161,7 +156,7 @@ const Settings = React.memo(
          return (
             <MenuList zIndex={10}>
                <MenuOptionGroup
-                  title='My calendars'
+                  title={t('label-my-calendars')}
                   fontSize='sm'
                   type='checkbox'
                   defaultValue={visibleCalendars}

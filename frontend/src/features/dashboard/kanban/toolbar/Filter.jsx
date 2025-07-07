@@ -32,7 +32,7 @@ import { PiCalendar, PiTextTFill } from 'react-icons/pi'
 import { ControlMenuButton } from '../../../../components/CustomMenu'
 
 // Utils
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Schema
 
@@ -45,6 +45,7 @@ const Filter = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const [nameFilter, setNameFilter] = useState('')
       // -------------------------------------------------------------------------

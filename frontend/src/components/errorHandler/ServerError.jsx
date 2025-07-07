@@ -1,11 +1,12 @@
 import React from 'react'
 import { Button, Container, Link, Text, VStack } from '@chakra-ui/react'
 import { Link as ReactRouterLink, useLocation } from 'react-router-dom'
-import t from '../../lang/i18n'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 const ServerError = ({ auth: { isAuthenticated } }) => {
+   const { t } = useReactiveTranslation()
    const location = useLocation()
    const { code, msg } = location.state
    return (

@@ -30,7 +30,7 @@ import {
 import cloneDeep from 'clone-deep'
 
 // Utils & Icons
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import { PiCalendarPlusFill, PiTrash } from 'react-icons/pi'
 import { stringToDateTimeLocal } from '../../../../utils/dates'
 
@@ -53,6 +53,7 @@ const ScheduleTimeSlot = React.memo(
       // -------------------------------------------------------------------------
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const updateScheduleSlot = useCallback(
          async (updateCallback) => {
@@ -276,7 +277,7 @@ const ScheduleTimeSlot = React.memo(
                </Menu>
             </Tooltip>
          ),
-         [googleAccounts, handleGoogleAccountClick]
+         [googleAccounts, handleGoogleAccountClick, t]
       )
 
       // -------------------------------------------------------------------------

@@ -39,7 +39,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 // Utils & Icons
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import {
    PiCircleFill,
    PiDotsThreeBold,
@@ -73,6 +73,7 @@ const Group = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const groupHover = useHover()
       const titleEditing = useEditing()
@@ -81,45 +82,6 @@ const Group = React.memo(
       const methods = useForm({
          resolver: yupResolver(s)
       })
-
-      // -------------------------------------------------------------------------
-      // MEMOIZED VALUES
-      // -------------------------------------------------------------------------
-
-      // Memoize gap calculation for performance
-      const containerGap = useMemo(
-         () => (titleEditing.isEditing || isNew ? 0 : 2),
-         [titleEditing.isEditing, isNew]
-      )
-
-      // Memoize menu button opacity
-      const menuButtonOpacity = useMemo(
-         () => (groupHover.isHovered || dropdownMenu.isOpen ? 1 : 0),
-         [groupHover.isHovered, dropdownMenu.isOpen]
-      )
-
-      // Memoize color options rendering
-      const colorOptions = useMemo(
-         () =>
-            groupColors.map((colorOption) => (
-               <MenuItemOption
-                  key={colorOption.color}
-                  value={colorOption.color}
-                  onClick={() => handleColorChange(colorOption.color)}
-               >
-                  <Flex alignItems='center' gap={2}>
-                     <PiCircleFill size={18} color={colorOption.color} />
-                     {colorOption.title}
-                  </Flex>
-               </MenuItemOption>
-            )),
-         []
-      )
-      // Memoize delete button visibility
-      const showDeleteButton = useMemo(
-         () => group_order.length > 1,
-         [group_order.length]
-      )
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -133,18 +95,15 @@ const Group = React.memo(
          deleteGroupAction(formData)
       }, [_id, group._id, deleteGroupAction])
 
-      const handleSubmitTitle = useCallback(
-         methods.handleSubmit(async (data) => {
-            const formData = {
-               page_id: _id,
-               group_id: group._id,
-               title: data.title || 'Untitled'
-            }
-            await updateGroupAction(formData)
-            titleEditing.end()
-         }),
-         [_id, group._id, updateGroupAction, titleEditing, methods]
-      )
+      const handleSubmitTitle = methods.handleSubmit(async (data) => {
+         const formData = {
+            page_id: _id,
+            group_id: group._id,
+            title: data.title || t('placeholder-untitled')
+         }
+         await updateGroupAction(formData)
+         titleEditing.end()
+      })
 
       const handleColorChange = useCallback(
          (color) => {
@@ -191,6 +150,44 @@ const Group = React.memo(
          [group.isNew, handleSubmitTitle]
       )
 
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      // Memoize gap calculation for performance
+      const containerGap = useMemo(
+         () => (titleEditing.isEditing || isNew ? 0 : 2),
+         [titleEditing.isEditing, isNew]
+      )
+
+      // Memoize menu button opacity
+      const menuButtonOpacity = useMemo(
+         () => (groupHover.isHovered || dropdownMenu.isOpen ? 1 : 0),
+         [groupHover.isHovered, dropdownMenu.isOpen]
+      )
+
+      // Memoize color options rendering
+      const colorOptions = useMemo(
+         () =>
+            groupColors.map((colorOption) => (
+               <MenuItemOption
+                  key={colorOption.color}
+                  value={colorOption.color}
+                  onClick={() => handleColorChange(colorOption.color)}
+               >
+                  <Flex alignItems='center' gap={2}>
+                     <PiCircleFill size={18} color={colorOption.color} />
+                     {colorOption.title}
+                  </Flex>
+               </MenuItemOption>
+            )),
+         [handleColorChange]
+      )
+      // Memoize delete button visibility
+      const showDeleteButton = useMemo(
+         () => group_order.length > 1,
+         [group_order.length]
+      )
       // -------------------------------------------------------------------------
       // RENDER COMPONENTS
       // -------------------------------------------------------------------------

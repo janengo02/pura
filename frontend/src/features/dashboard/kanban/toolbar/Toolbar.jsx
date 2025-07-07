@@ -24,7 +24,7 @@ import Settings from './Settings'
 import Filter from './Filter'
 
 // Utils
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -36,6 +36,7 @@ const Toolbar = React.memo(
       createTaskModalAction,
       pageData: { _id, group_order, progress_order }
    }) => {
+      const { t } = useReactiveTranslation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------

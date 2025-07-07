@@ -11,35 +11,27 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { logoutAction } from '../../../actions/authActions'
-import { changeLanguageAction } from '../../../actions/languageActions'
+import { changeLanguageAction } from '../actions/languageActions'
 
 // UI Components
 import {
-   Avatar,
    Menu,
    MenuButton,
-   MenuItem,
    MenuList,
-   MenuDivider,
    MenuOptionGroup,
    MenuItemOption,
-   HStack,
-   Text
+   Button,
+   Text,
+   HStack
 } from '@chakra-ui/react'
 
 // Utils & Icons
-import { PiSignOut } from 'react-icons/pi'
-import { useReactiveTranslation } from '../../../hooks/useReactiveTranslation'
+import { PiCaretDown } from 'react-icons/pi'
+import { useReactiveTranslation } from '../hooks/useReactiveTranslation'
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
-
-const AVATAR_SIZE = {
-   w: 10,
-   h: 10
-}
 
 const LANGUAGE_OPTIONS = [
    {
@@ -55,49 +47,68 @@ const LANGUAGE_OPTIONS = [
       flag: '🇯🇵'
    }
 ]
+
+const BUTTON_STYLES = {
+   variant: 'ghost',
+   size: 'sm',
+   colorScheme: 'gray'
+}
+
 const MENU_ITEM_STYLES = {
    fontSize: 'sm'
 }
 
-const DEFAULT_AVATAR = 'assets/img/no-avatar.svg'
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Get current language display info
+ */
+const getCurrentLanguageInfo = (currentLanguage) => {
+   return (
+      LANGUAGE_OPTIONS.find((lang) => lang.value === currentLanguage) ||
+      LANGUAGE_OPTIONS[0]
+   )
+}
 
 // =============================================================================
 // COMPONENT SECTIONS
 // =============================================================================
 
 /**
- * Avatar button component for the menu trigger
+ * Language menu button
  */
-const ProfileAvatar = React.memo(({ user }) => {
-   const avatarProps = useMemo(
-      () => ({
-         name: user?.name || '',
-         ...AVATAR_SIZE,
-         bg: 'gray.300',
-         src: user?.avatar || DEFAULT_AVATAR
-      }),
-      [user]
-   )
+const LanguageMenuButton = React.memo(({ currentLanguage }) => {
+   const { t } = useReactiveTranslation()
+   const currentLangInfo = getCurrentLanguageInfo(currentLanguage)
 
    return (
-      <MenuButton>
-         <Avatar {...avatarProps} />
+      <MenuButton
+         as={Button}
+         {...BUTTON_STYLES}
+         rightIcon={<PiCaretDown size={12} />}
+      >
+         <HStack spacing={2}>
+            <Text fontSize='sm'>{currentLangInfo.flag}</Text>
+            <Text fontSize='sm'>{t(currentLangInfo.labelKey)}</Text>
+         </HStack>
       </MenuButton>
    )
 })
 
-ProfileAvatar.displayName = 'ProfileAvatar'
+LanguageMenuButton.displayName = 'LanguageMenuButton'
 
-ProfileAvatar.propTypes = {
-   user: PropTypes.object
+LanguageMenuButton.propTypes = {
+   currentLanguage: PropTypes.string.isRequired
 }
 
 /**
- * Language selection section with Redux state management
+ * Language menu options
  */
-const LanguageSelection = React.memo(
+const LanguageMenuOptions = React.memo(
    ({ currentLanguage, onLanguageChange }) => {
-      const { t } = useReactiveTranslation() // Reactive translations
+      const { t } = useReactiveTranslation()
 
       const languageMenuItems = useMemo(
          () =>
@@ -109,7 +120,7 @@ const LanguageSelection = React.memo(
                   onClick={() => onLanguageChange(value)}
                >
                   <HStack spacing={3}>
-                     <Text>{flag}</Text>
+                     <Text fontSize='sm'>{flag}</Text>
                      <Text>{t(labelKey)}</Text>
                   </HStack>
                </MenuItemOption>
@@ -118,77 +129,29 @@ const LanguageSelection = React.memo(
       )
 
       return (
-         <MenuOptionGroup
-            title={t('label-settings-language')}
-            value={currentLanguage}
-            fontSize='sm'
-            type='radio'
-         >
+         <MenuOptionGroup value={currentLanguage} type='radio'>
             {languageMenuItems}
          </MenuOptionGroup>
       )
    }
 )
 
-LanguageSelection.displayName = 'LanguageSelection'
+LanguageMenuOptions.displayName = 'LanguageMenuOptions'
 
-LanguageSelection.propTypes = {
+LanguageMenuOptions.propTypes = {
    currentLanguage: PropTypes.string.isRequired,
    onLanguageChange: PropTypes.func.isRequired
-}
-
-/**
- * Profile actions section (logout)
- */
-const ProfileActions = React.memo(({ onLogout }) => {
-   const { t } = useReactiveTranslation() // Reactive translations
-
-   const actionItems = useMemo(
-      () => [
-         {
-            icon: <PiSignOut size={20} />,
-            label: t('btn-logout'),
-            onClick: onLogout,
-            key: 'logout'
-         }
-      ],
-      [onLogout, t]
-   )
-
-   return (
-      <>
-         {actionItems.map(({ icon, label, onClick, key }) => (
-            <MenuItem key={key} icon={icon} onClick={onClick}>
-               {label}
-            </MenuItem>
-         ))}
-      </>
-   )
-})
-
-ProfileActions.displayName = 'ProfileActions'
-
-ProfileActions.propTypes = {
-   onLogout: PropTypes.func.isRequired
 }
 
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const ProfileMenu = React.memo(
-   ({
-      logoutAction,
-      changeLanguageAction,
-      profileData: { user, currentLanguage }
-   }) => {
+const LanguageSwitcher = React.memo(
+   ({ changeLanguageAction, languageData: { currentLanguage } }) => {
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
-
-      const handleLogout = useCallback(() => {
-         logoutAction()
-      }, [logoutAction])
 
       const handleLanguageChange = useCallback(
          (language) => {
@@ -203,14 +166,12 @@ const ProfileMenu = React.memo(
 
       return (
          <Menu>
-            <ProfileAvatar user={user} />
-            <MenuList>
-               <LanguageSelection
+            <LanguageMenuButton currentLanguage={currentLanguage} />
+            <MenuList minW='fit-content'>
+               <LanguageMenuOptions
                   currentLanguage={currentLanguage}
                   onLanguageChange={handleLanguageChange}
                />
-               <MenuDivider />
-               <ProfileActions onLogout={handleLogout} />
             </MenuList>
          </Menu>
       )
@@ -222,14 +183,12 @@ const ProfileMenu = React.memo(
 // =============================================================================
 
 // Display name for debugging
-ProfileMenu.displayName = 'ProfileMenu'
+LanguageSwitcher.displayName = 'LanguageSwitcher'
 
 // PropTypes validation
-ProfileMenu.propTypes = {
-   logoutAction: PropTypes.func.isRequired,
+LanguageSwitcher.propTypes = {
    changeLanguageAction: PropTypes.func.isRequired,
-   profileData: PropTypes.shape({
-      user: PropTypes.object,
+   languageData: PropTypes.shape({
       currentLanguage: PropTypes.string.isRequired
    }).isRequired
 }
@@ -239,12 +198,9 @@ ProfileMenu.propTypes = {
 // =============================================================================
 
 // Memoized selectors for better Redux performance
-const selectProfileData = createSelector(
-   [(state) => state.auth.user, (state) => state.language.current],
-   (user, currentLanguage) => ({
-      user,
-      currentLanguage
-   })
+const selectLanguageData = createSelector(
+   [(state) => state.language?.current || 'en'],
+   (currentLanguage) => ({ currentLanguage })
 )
 
 // =============================================================================
@@ -252,11 +208,10 @@ const selectProfileData = createSelector(
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   profileData: selectProfileData(state)
+   languageData: selectLanguageData(state)
 })
 
 const mapDispatchToProps = {
-   logoutAction,
    changeLanguageAction
 }
 
@@ -264,4 +219,4 @@ const mapDispatchToProps = {
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProfileMenu)
+export default connect(mapStateToProps, mapDispatchToProps)(LanguageSwitcher)

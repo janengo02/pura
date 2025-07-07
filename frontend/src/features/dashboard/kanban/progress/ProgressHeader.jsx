@@ -40,7 +40,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 // Utils & Icons
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import {
    PiCircleDuotone,
    PiDotsThreeBold,
@@ -73,6 +73,7 @@ const ProgressHeader = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const progressHover = useHover()
       const titleEditing = useEditing()
@@ -81,50 +82,6 @@ const ProgressHeader = React.memo(
       const methods = useForm({
          resolver: yupResolver(s)
       })
-
-      // -------------------------------------------------------------------------
-      // MEMOIZED VALUES
-      // -------------------------------------------------------------------------
-
-      // Memoize margin bottom calculation for performance
-      const flexMarginBottom = useMemo(
-         () => (titleEditing.isEditing || isNew ? -2 : undefined),
-         [titleEditing.isEditing, isNew]
-      )
-
-      // Memoize menu button opacity
-      const menuButtonOpacity = useMemo(
-         () => (progressHover.isHovered || dropdownMenu.isOpen ? 1 : 0),
-         [progressHover.isHovered, dropdownMenu.isOpen]
-      )
-
-      // Memoize delete button visibility
-      const showDeleteButton = useMemo(
-         () => progress_order.length > 1,
-         [progress_order.length]
-      )
-
-      // Memoize color options rendering
-      const colorOptions = useMemo(
-         () =>
-            progressColors.map((colorOption) => (
-               <MenuItemOption
-                  key={colorOption.title_color}
-                  value={colorOption.title_color}
-                  fontSize='sm'
-                  onClick={(e) => handleColorOptionClick(e, colorOption)}
-               >
-                  <Flex alignItems='center' gap={2}>
-                     <PiCircleDuotone
-                        size={18}
-                        color={colorOption.title_color}
-                     />
-                     {colorOption.title}
-                  </Flex>
-               </MenuItemOption>
-            )),
-         [progress.title_color]
-      )
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -138,18 +95,15 @@ const ProgressHeader = React.memo(
          deleteProgressAction(formData)
       }, [_id, progress._id, deleteProgressAction])
 
-      const handleSubmitTitle = useCallback(
-         methods.handleSubmit(async (data) => {
-            const formData = {
-               page_id: _id,
-               progress_id: progress._id,
-               title: data.title || 'Untitled'
-            }
-            await updateProgressAction(formData)
-            titleEditing.end()
-         }),
-         [_id, progress._id, updateProgressAction, titleEditing, methods]
-      )
+      const handleSubmitTitle = methods.handleSubmit(async (data) => {
+         const formData = {
+            page_id: _id,
+            progress_id: progress._id,
+            title: data.title || t('placeholder-untitled')
+         }
+         await updateProgressAction(formData)
+         titleEditing.end()
+      })
 
       const handleColorChange = useCallback(
          (color, title_color) => {
@@ -221,6 +175,50 @@ const ProgressHeader = React.memo(
             handleDeleteProgress()
          },
          [handleDeleteProgress]
+      )
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      // Memoize margin bottom calculation for performance
+      const flexMarginBottom = useMemo(
+         () => (titleEditing.isEditing || isNew ? -2 : undefined),
+         [titleEditing.isEditing, isNew]
+      )
+
+      // Memoize menu button opacity
+      const menuButtonOpacity = useMemo(
+         () => (progressHover.isHovered || dropdownMenu.isOpen ? 1 : 0),
+         [progressHover.isHovered, dropdownMenu.isOpen]
+      )
+
+      // Memoize delete button visibility
+      const showDeleteButton = useMemo(
+         () => progress_order.length > 1,
+         [progress_order.length]
+      )
+
+      // Memoize color options rendering
+      const colorOptions = useMemo(
+         () =>
+            progressColors.map((colorOption) => (
+               <MenuItemOption
+                  key={colorOption.title_color}
+                  value={colorOption.title_color}
+                  fontSize='sm'
+                  onClick={(e) => handleColorOptionClick(e, colorOption)}
+               >
+                  <Flex alignItems='center' gap={2}>
+                     <PiCircleDuotone
+                        size={18}
+                        color={colorOption.title_color}
+                     />
+                     {colorOption.title}
+                  </Flex>
+               </MenuItemOption>
+            )),
+         [handleColorOptionClick]
       )
 
       // -------------------------------------------------------------------------

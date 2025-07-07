@@ -39,7 +39,7 @@ import {
 import { MultiInput } from '../../../../components/MultiInput'
 
 // Utils & Icons
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import { PiDotsThreeBold, PiPencilLine, PiTrash } from 'react-icons/pi'
 
 // Schema
@@ -69,6 +69,7 @@ const TaskCard = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
       const taskHover = useHover()
       const titleEditing = useEditing()
       const dropdownMenu = useDisclosure()
@@ -109,7 +110,7 @@ const TaskCard = React.memo(
                   : t('schedule_status-false'),
             statusColor: task.schedule.length > 0 ? 'gray.500' : 'red.500'
          }),
-         [task.schedule.length]
+         [task.schedule.length, t]
       )
 
       // Memoize box shadow for dragging state
@@ -152,7 +153,7 @@ const TaskCard = React.memo(
          const formData = {
             page_id: _id,
             task_id: task._id,
-            title: data.title || 'Untitled'
+            title: data.title || t('placeholder-untitled')
          }
          await updateTaskAction(formData)
          titleEditing.end()

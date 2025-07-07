@@ -18,13 +18,14 @@ import {
 import { PiSlidersHorizontalFill, PiLayout } from 'react-icons/pi'
 
 // Utils
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
 const Settings = () => {
+   const { t } = useReactiveTranslation()
    // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------

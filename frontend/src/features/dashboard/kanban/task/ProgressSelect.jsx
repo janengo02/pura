@@ -28,8 +28,8 @@ import {
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 
 // Utils & Icons
-import { PiFlagBanner, PiPlus } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
+import { PiFlagBanner } from 'react-icons/pi'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -40,6 +40,7 @@ const ProgressSelect = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const [hovered, setHovered] = useState(false)
       const tagSelect = useDisclosure()

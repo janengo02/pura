@@ -45,7 +45,7 @@ import ScheduleSelect from './ScheduleSelect'
 
 // Utils & Icons
 import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import { dashboardSchema as s } from '../../DashboardSchema'
 
 // =============================================================================
@@ -64,6 +64,7 @@ const TaskModal = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const [taskTitle, setTaskTitle] = useState('')
       const [taskContent, setTaskContent] = useState('')
@@ -105,10 +106,10 @@ const TaskModal = React.memo(
          const formData = {
             page_id: _id,
             task_id: task._id,
-            title: taskTitle || 'Untitled'
+            title: taskTitle || t('placeholder-untitled')
          }
          await updateTaskAction(formData)
-      }, [_id, task?._id, taskTitle, updateTaskAction])
+      }, [_id, task?._id, taskTitle, updateTaskAction, t])
 
       const handleUpdateContent = useCallback(async () => {
          const formData = {
@@ -279,7 +280,7 @@ const TaskModal = React.memo(
                paddingY={4}
                borderRadius={8}
                boxShadow='xl'
-               w='665px'
+               w='680px'
                maxW='80vw'
             >
                {renderModalHeader()}

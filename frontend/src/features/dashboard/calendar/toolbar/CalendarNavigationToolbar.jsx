@@ -23,7 +23,7 @@ import {
 import { PiCaretLeft, PiCaretRight, PiCaretDown } from 'react-icons/pi'
 
 // Utils
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // CONSTANTS
@@ -88,23 +88,26 @@ const formatDateRange = (date, view, localizer) => {
 /**
  * Navigation controls section (left, right, today buttons)
  */
-const NavigationControls = React.memo(({ onNavigate, onToday }) => (
-   <ButtonGroup size='sm' variant='ghost' colorScheme='gray'>
-      <IconButton
-         {...NAVIGATION_BUTTON_STYLES}
-         icon={<PiCaretLeft />}
-         onClick={() => onNavigate('PREV')}
-      />
-      <Button {...TODAY_BUTTON_STYLES} onClick={onToday}>
-         {t('btn-today')}
-      </Button>
-      <IconButton
-         {...NAVIGATION_BUTTON_STYLES}
-         icon={<PiCaretRight />}
-         onClick={() => onNavigate('NEXT')}
-      />
-   </ButtonGroup>
-))
+const NavigationControls = React.memo(({ onNavigate, onToday }) => {
+   const { t } = useReactiveTranslation()
+   return (
+      <ButtonGroup size='sm' variant='ghost' colorScheme='gray'>
+         <IconButton
+            {...NAVIGATION_BUTTON_STYLES}
+            icon={<PiCaretLeft />}
+            onClick={() => onNavigate('PREV')}
+         />
+         <Button {...TODAY_BUTTON_STYLES} onClick={onToday}>
+            {t('btn-today')}
+         </Button>
+         <IconButton
+            {...NAVIGATION_BUTTON_STYLES}
+            icon={<PiCaretRight />}
+            onClick={() => onNavigate('NEXT')}
+         />
+      </ButtonGroup>
+   )
+})
 
 NavigationControls.displayName = 'NavigationControls'
 
@@ -147,7 +150,8 @@ DateRangeDisplay.propTypes = {
  * View selector section
  */
 const ViewSelector = React.memo(({ view, views, onView }) => {
-   const currentViewLabel = useMemo(() => t(VIEW_LABELS[view]), [view])
+   const { t } = useReactiveTranslation()
+   const currentViewLabel = useMemo(() => t(VIEW_LABELS[view]), [view, t])
 
    return (
       <Menu>

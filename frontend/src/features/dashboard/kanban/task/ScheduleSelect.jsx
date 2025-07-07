@@ -25,7 +25,7 @@ import ScheduleTimeSlot from './ScheduleTimeSlot'
 
 // Utils & Icons
 import { PiCalendar, PiPlus } from 'react-icons/pi'
-import t from '../../../../lang/i18n'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -33,6 +33,7 @@ import t from '../../../../lang/i18n'
 
 const ScheduleSelect = React.memo(
    ({ updateTaskAction, scheduleData: { task, _id } }) => {
+      const { t } = useReactiveTranslation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------

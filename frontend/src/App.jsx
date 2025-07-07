@@ -16,6 +16,7 @@ import { Provider } from 'react-redux'
 import store from './store'
 import { setAuthToken } from './utils'
 import { loadUserAction } from './actions/authActions'
+import { initializeLanguageAction } from './actions/languageActions'
 import { LOGOUT } from './actions/types'
 
 // Style
@@ -25,6 +26,9 @@ import { googleAuthClientId } from './config/env'
 
 const App = () => {
    useEffect(() => {
+      // Initialize language first
+      store.dispatch(initializeLanguageAction())
+
       // check for token in LS when app first runs
       if (localStorage.token) {
          // if there is a token set axios headers for all requests

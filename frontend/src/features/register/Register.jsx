@@ -24,20 +24,38 @@ import {
    SimpleGrid,
    Text,
    VStack,
-   Button
+   Button,
+   Box
 } from '@chakra-ui/react'
 
 // Internal Components
 import { MultiInput } from '../../components/MultiInput'
 import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
+import LanguageSwitcher from '../../components/LanguageSwitcher'
 
 // Actions & Schema
 import { registerAction } from '../../actions/authActions'
 import { registerSchema as s } from './RegisterSchema'
 
 // Utils
-import t from '../../lang/i18n'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
+
+// =============================================================================
+// COMPONENT SECTIONS
+// =============================================================================
+
+/**
+ * Register page header with language switcher
+ */
+const RegisterPageHeader = React.memo(() => (
+   <Flex w='full' justifyContent='space-between' alignItems='flex-start' mb={4}>
+      <Box flex={1} /> {/* Spacer for center alignment */}
+      <LanguageSwitcher />
+   </Flex>
+))
+
+RegisterPageHeader.displayName = 'RegisterPageHeader'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -48,9 +66,10 @@ const Register = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const methods = useForm({
-         resolver: yupResolver(s)
+         resolver: yupResolver(s(t))
       })
 
       // -------------------------------------------------------------------------
@@ -190,6 +209,7 @@ const Register = React.memo(
                   alignItems='flex-start'
                   justifyContent='center'
                >
+                  <RegisterPageHeader />
                   <RegisterHeader />
                   <RegisterForm />
                </VStack>

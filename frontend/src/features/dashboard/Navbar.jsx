@@ -3,20 +3,14 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useContext, useMemo } from 'react'
+import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
 import { connect } from 'react-redux'
 
 // UI Components
-import {
-   Flex,
-   Heading,
-   IconButton,
-   Spacer,
-   useDisclosure
-} from '@chakra-ui/react'
+import { Flex, Heading, IconButton, Spacer } from '@chakra-ui/react'
 
 // Icons
 import { PiCalendarFill } from 'react-icons/pi'
@@ -26,6 +20,7 @@ import ProfileMenu from './navbar/ProfileMenu'
 
 // Context & Utils
 import SplitPaneContext from '../../context/SplitPaneContext'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // UTILITY COMPONENTS
@@ -97,14 +92,7 @@ const Navbar = React.memo(({ title = '' }) => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
-
-   // -------------------------------------------------------------------------
-   // MEMOIZED VALUES
-   // -------------------------------------------------------------------------
-
-   const processedTitle = useMemo(() => {
-      return typeof title === 'string' ? title : ''
-   }, [title])
+   const { t } = useReactiveTranslation()
 
    // -------------------------------------------------------------------------
    // RENDER LOGIC
@@ -113,7 +101,7 @@ const Navbar = React.memo(({ title = '' }) => {
    return (
       <>
          <NavbarWrapper>
-            <NavbarLeft title={processedTitle} />
+            <NavbarLeft title={t('label-page-title')} />
             <Spacer />
             <NavbarRight />
          </NavbarWrapper>

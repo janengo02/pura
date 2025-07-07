@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { InputGroup, InputRightElement, Button, Input } from '@chakra-ui/react'
-import t from '../../lang/i18n'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 export const PasswordInput = ({
    register,
@@ -10,9 +10,9 @@ export const PasswordInput = ({
    validation,
    ...props
 }) => {
+   const { t } = useReactiveTranslation()
    const [show, setShow] = useState(false)
    const handleClick = () => setShow(!show)
-   // TODO: Passwird strength metor
    return (
       <InputGroup size={size && size}>
          <Input

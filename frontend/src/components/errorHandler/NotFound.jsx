@@ -1,11 +1,12 @@
 import React from 'react'
 import { Button, Container, Link, Text, VStack } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'
-import t from '../../lang/i18n'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 const NotFound = ({ auth: { isAuthenticated } }) => {
+   const { t } = useReactiveTranslation()
    return (
       <Container maxW='container.xl' p={0}>
          <VStack

@@ -37,7 +37,7 @@ import FormAlert from '../../components/errorHandler/FormAlert'
 import Column from './kanban/progress/Column'
 
 // Utils & Icons
-import t from '../../lang/i18n'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 import { PiPlus, PiPlusBold } from 'react-icons/pi'
 
 // =============================================================================
@@ -56,6 +56,7 @@ const Kanban = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+      const { t } = useReactiveTranslation()
 
       const navigate = useNavigate()
 
