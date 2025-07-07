@@ -6,6 +6,7 @@ import page from './pageReducers'
 import task from './taskReducers'
 import googleAccount from './googleAccountReducers'
 import languageReducer from './languageReducer'
+import themeReducer from '../reducers/themeReducer'
 
 export default combineReducers({
    loading,
@@ -14,5 +15,6 @@ export default combineReducers({
    page,
    task,
    googleAccount,
-   language: languageReducer
+   language: languageReducer,
+   theme: themeReducer
 })

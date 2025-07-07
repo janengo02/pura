@@ -27,6 +27,7 @@ import {
    MenuList,
    MenuOptionGroup,
    VStack,
+   useColorMode,
    useDisclosure
 } from '@chakra-ui/react'
 
@@ -74,6 +75,7 @@ const Group = React.memo(
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+      const { colorMode } = useColorMode()
 
       const groupHover = useHover()
       const titleEditing = useEditing()
@@ -226,8 +228,7 @@ const Group = React.memo(
                   icon={<PiDotsThreeBold />}
                   variant='ghost'
                   size='xs'
-                  colorScheme='gray'
-                  color='gray.600'
+                  colorScheme={colorMode === 'dark' ? 'white' : 'blackAlpha'}
                   opacity={menuButtonOpacity}
                   onClick={dropdownMenu.onOpen}
                />
@@ -249,7 +250,7 @@ const Group = React.memo(
                         <MenuItem
                            icon={<PiTrash size={14} />}
                            fontSize='sm'
-                           color='red.400'
+                           color='danger.primary'
                            onClick={handleDeleteGroup}
                         >
                            {t('btn-delete')}
@@ -271,7 +272,7 @@ const Group = React.memo(
             paddingTop={2}
             gap={containerGap}
             borderWidth={2}
-            borderColor='gray.100'
+            borderColor='border.muted'
             borderRadius={8}
             alignItems='flex-start'
             onMouseEnter={handleMouseEnter}

@@ -1,17 +1,41 @@
 export const groupColors = [
-   { color: '#4A5568', title: 'Gray' },
-   { color: '#e7905e', title: 'Orange' },
-   { color: '#3E9C75', title: 'Green' },
-   { color: '#ed6363', title: 'Red' },
-   { color: '#63b3ed', title: 'Blue' },
-   { color: '#805ad5', title: 'Purple' }
+   { color: 'kanban.group.default', title: 'Default' },
+   { color: 'kanban.group.orange', title: 'Orange' },
+   { color: 'kanban.group.green', title: 'Green' },
+   { color: 'kanban.group.red', title: 'Red' },
+   { color: 'kanban.group.blue', title: 'Blue' },
+   { color: 'kanban.group.purple', title: 'Purple' }
 ]
 
 export const progressColors = [
-   { color: '#EDF2F7', title_color: '#4A5568', title: 'Gray' },
-   { color: '#FFF0E4', title_color: '#E95F11', title: 'Orange' },
-   { color: '#CDF4E4', title_color: '#3E9C75', title: 'Green' },
-   { color: '#FFE5E5', title_color: '#DD3E3E', title: 'Red' },
-   { color: '#DAF2FF', title_color: '#3E80CF', title: 'Blue' },
-   { color: '#FAF5FF', title_color: '#805AD5', title: 'Purple' }
+   {
+      color: 'kanban.progress.default',
+      title_color: 'kanban.progress.title.default',
+      title: 'Default'
+   },
+   {
+      color: 'kanban.progress.orange',
+      title_color: 'kanban.progress.title.orange',
+      title: 'Orange'
+   },
+   {
+      color: 'kanban.progress.green',
+      title_color: 'kanban.progress.title.green',
+      title: 'Green'
+   },
+   {
+      color: 'kanban.progress.red',
+      title_color: 'kanban.progress.title.red',
+      title: 'Red'
+   },
+   {
+      color: 'kanban.progress.blue',
+      title_color: 'kanban.progress.title.blue',
+      title: 'Blue'
+   },
+   {
+      color: 'kanban.progress.purple',
+      title_color: 'kanban.progress.title.purple',
+      title: 'Purple'
+   }
 ]

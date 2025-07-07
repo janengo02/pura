@@ -1,215 +1,435 @@
-/* Styling the scrollbar in Chrome & Safari */
-::-webkit-scrollbar {
-   width: 12px;
-   height: 12px;
-   background: #fff;
+/* =============================================================================
+   CSS CUSTOM PROPERTIES FOR THEME SWITCHING
+   ============================================================================= */
+
+:root {
+   /* Light mode colors */
+   --bg-primary: #ffffff;
+   --bg-secondary: #f7fafc;
+   --bg-tertiary: #edf2f7;
+   --text-primary: #1a202c;
+   --text-secondary: #4a5568;
+   --text-muted: #718096;
+   --border-light: #e2e8f0;
+   --border-lighter: #f1f5f9;
+   --border-lightest: #f7fafc;
+   --shadow-color: rgba(0, 0, 0, 0.1);
+   --scrollbar-track: #f7fafc;
+   --scrollbar-thumb: #cbd5e0;
+   --scrollbar-thumb-hover: #a0aec0;
+   --today-highlight: #805ad5;
+   --off-range-bg: #edf2f6;
 }
-::-webkit-scrollbar-thumb {
-   background-color: #dde3e6;
-   border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-   background-color: #dde3e6;
-}
-/* Styling the scrollbar in Firefox */
-::-moz-scrollbar {
-   width: 10px;
-   height: 10px;
-   background: #fff;
-}
-::-moz-scrollbar-thumb {
-   background-color: #dde3e6;
-   border-radius: 10px;
-}
-::-moz-scrollbar-thumb:hover {
-   background-color: #dde3e6;
+
+/* Dark mode colors */
+[data-theme='dark'],
+.chakra-ui-dark {
+   --bg-primary: #1a202c;
+   --bg-secondary: #2d3748;
+   --bg-tertiary: #4a5568;
+   --text-primary: #f7fafc;
+   --text-secondary: #e2e8f0;
+   --text-muted: #a0aec0;
+   --border-light: #4a5568;
+   --border-lighter: #2d3748;
+   --border-lightest: #1a202c;
+   --shadow-color: rgba(0, 0, 0, 0.3);
+   --scrollbar-track: #2d3748;
+   --scrollbar-thumb: #4a5568;
+   --scrollbar-thumb-hover: #718096;
+   --today-highlight: #9f7aea;
+   --off-range-bg: #2d3748;
 }
 
 /* =============================================================================
-   REACT-BIG-CALENDAR GRID LINE CUSTOMIZATION
-   ============================================================================= */
+      IMPROVED SCROLLBAR STYLING WITH DARK MODE SUPPORT
+      ============================================================================= */
 
-.hidden-card {
-   height: 0 !important;
-   padding: 0 !important;
-   border: 0 !important;
-   overflow: hidden !important;
-   margin: 0 !important;
-   opacity: 0 !important;
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+   width: 8px;
+   height: 8px;
+   background: var(--scrollbar-track);
 }
+
+::-webkit-scrollbar-thumb {
+   background-color: var(--scrollbar-thumb);
+   border-radius: 6px;
+   border: 2px solid var(--scrollbar-track);
+   transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+   background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+   background: var(--scrollbar-track);
+}
+
+/* Firefox scrollbar styling */
+* {
+   scrollbar-width: thin;
+   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* =============================================================================
+      REACT-BIG-CALENDAR DARK MODE IMPROVEMENTS
+      ============================================================================= */
+
 .rbc-calendar {
    width: 80%;
    min-width: 45vw;
+   background-color: var(--bg-primary);
+   color: var(--text-primary);
+   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* =============================================================================
+      CALENDAR CONTAINER AND BORDERS
+      ============================================================================= */
 
 .rbc-time-view,
 .rbc-month-view,
 .rbc-agenda-view {
-   border: 2px solid #edf2f7 !important;
-   border-radius: 8px !important;
+   border: 2px solid var(--border-light) !important;
+   border-radius: 12px !important;
+   background-color: var(--bg-primary) !important;
+   transition: border-color 0.2s ease, background-color 0.2s ease;
+   overflow: hidden;
 }
+
 .rbc-time-content {
    overflow-x: hidden !important;
-}
-.rbc-event-content {
-   font-size: 0.875rem !important; /* Adjust font size for better readability */
-   line-height: 1.25 !important; /* Adjust line height for better spacing */
+   background-color: var(--bg-primary);
 }
 
-/* -------------------------------------------------------------------------
-   MONTH VIEW GRID LINES
-   ------------------------------------------------------------------------- */
+/* =============================================================================
+      CALENDAR HEADERS
+      ============================================================================= */
 
-/* Month view cell borders */
-.rbc-month-view .rbc-date-cell {
-   border-right: 1px solid #dde3e6 !important; /* Light gray - customize this color */
+.rbc-header {
+   background-color: var(--bg-secondary) !important;
+   color: var(--text-primary) !important;
+   border-bottom: 1px solid var(--border-light) !important;
+   border-right: 1px solid var(--border-light) !important;
+   padding: 8px 4px !important;
+   font-weight: 600 !important;
+   font-size: 0.875rem !important;
+   transition: all 0.2s ease;
 }
 
-/* Month view header borders */
-.rbc-month-view .rbc-header {
-   border-bottom: 1px solid #dde3e6 !important; /* Slightly darker for headers */
-   border-right: 1px solid #dde3e6 !important;
+.rbc-header:last-child {
+   border-right: none !important;
 }
 
-/* Month view row borders */
-.rbc-month-row {
-   border-left: 1px solid #dde3e6 !important;
-   border-top: 1px solid #dde3e6 !important;
+/* =============================================================================
+      TIME SLOTS AND GRID LINES
+      ============================================================================= */
+
+.rbc-time-slot {
+   border-top: 1px solid var(--border-lighter) !important;
+   background-color: var(--bg-primary) !important;
+   transition: all 0.2s ease;
 }
 
-/* -------------------------------------------------------------------------
-   WEEK VIEW GRID LINES
-   ------------------------------------------------------------------------- */
-
-/* Week view day columns (vertical lines) */
-.rbc-day-slot .rbc-time-column,
-.rbc-time-view .rbc-time-column {
-   border-right: 1px solid #dde3e6 !important;
+.rbc-time-slot:hover {
+   background-color: var(--bg-secondary) !important;
 }
 
-/* Week view header borders */
-.rbc-time-header-cell {
-   border-right: 1px solid #dde3e6 !important;
-   border-bottom: 1px solid #dde3e6 !important;
-}
-
-/* Week view all-day section */
-.rbc-allday-cell {
-   border-right: 1px solid #dde3e6 !important;
-}
-
-/* -------------------------------------------------------------------------
-   DAY VIEW GRID LINES
-   ------------------------------------------------------------------------- */
-
-/* Day view time slots */
 .rbc-day-slot .rbc-time-slot {
-   border-bottom: 1px solid #edf2f7 !important;
+   border-right: 1px solid var(--border-lighter) !important;
 }
 
-/* Day view time column border */
-.rbc-time-column {
-   border-right: 1px solid #dde3e6 !important;
-}
-.rbc-day-bg + .rbc-day-bg {
-   border-left: 1px solid #dde3e6 !important;
+.rbc-timeslot-group {
+   border-bottom: 1px solid var(--border-light) !important;
+   background-color: var(--bg-primary);
 }
 
-/* -------------------------------------------------------------------------
-   TIME GUTTER (Left time column)
-   ------------------------------------------------------------------------- */
+/* =============================================================================
+      MONTH VIEW IMPROVEMENTS
+      ============================================================================= */
 
-/* Time labels column border */
-.rbc-time-gutter,
-.rbc-time-header-gutter {
-   border-right: 1px solid #dde3e6 !important; /* Darker border for time column */
+.rbc-month-view .rbc-date-cell {
+   border-right: 1px solid var(--border-lighter) !important;
+   border-bottom: 1px solid var(--border-lighter) !important;
+   background-color: var(--bg-primary) !important;
+   min-height: 60px;
+   padding: 4px !important;
+   transition: all 0.2s ease;
 }
 
-/* Individual time slot in gutter */
-.rbc-time-gutter .rbc-timeslot-group {
-   border-bottom: 1px solid #dde3e6 !important;
+.rbc-month-view .rbc-date-cell:hover {
+   background-color: var(--bg-secondary) !important;
 }
 
-/* -------------------------------------------------------------------------
-   AGENDA VIEW GRID LINES
-   ------------------------------------------------------------------------- */
-
-/* Agenda view table borders */
-.rbc-agenda-view table {
-   border: 1px solid #dde3e6 !important;
+.rbc-month-view .rbc-date-cell:last-child {
+   border-right: none !important;
 }
 
-.rbc-agenda-view td {
-   border-bottom: 1px solid #dde3e6 !important;
-   border-right: 1px solid #dde3e6 !important;
+.rbc-month-row {
+   border-bottom: 1px solid var(--border-light) !important;
 }
 
-.rbc-agenda-view th {
-   border-bottom: 1px solid #dde3e6 !important;
-   border-right: 1px solid #dde3e6 !important;
+.rbc-month-row:last-child {
+   border-bottom: none !important;
 }
 
-/* -------------------------------------------------------------------------
-   CURRENT TIME INDICATOR
-   ------------------------------------------------------------------------- */
+/* =============================================================================
+      TODAY AND DATE HIGHLIGHTING
+      ============================================================================= */
 
-/* Current time purple line */
-.rbc-current-time-indicator {
-   background-color: #805ad5 !important; /* Red line for current time */
-   height: 2px !important;
-}
-
-/* Current time indicator in time gutter */
-.rbc-current-time-indicator::before {
-   background-color: #805ad5 !important;
-}
-
-/* -------------------------------------------------------------------------
-   TODAY HIGHLIGHTING
-   ------------------------------------------------------------------------- */
-
-/* Today's date in week/day view */
-.rbc-time-view .rbc-today {
-   background-color: #faf5ff !important; /* Very light purple */
+.rbc-today {
+   background-color: var(--bg-secondary) !important;
 }
 
 .rbc-off-range-bg {
-   background-color: #edf2f6 !important;
+   background-color: var(--off-range-bg) !important;
+   opacity: 0.6;
 }
-.rbc-today {
-   background-color: #fff !important;
-}
+
 .rbc-date-cell {
-   padding-top: 3px;
+   padding-top: 4px;
+   color: var(--text-primary) !important;
 }
+
 .rbc-button-link {
    font-size: 0.8rem;
+   color: var(--text-primary) !important;
+   text-decoration: none;
+   padding: 2px 6px;
+   border-radius: 4px;
+   transition: all 0.2s ease;
 }
+
+.rbc-button-link:hover {
+   background-color: var(--bg-secondary) !important;
+   color: var(--text-primary) !important;
+}
+
 .rbc-date-cell.rbc-now .rbc-button-link {
-   background: #805ad5;
-   color: #fff;
-   border-radius: 100%;
-   padding: 1px 4px;
+   background: var(--today-highlight) !important;
+   color: #ffffff !important;
+   border-radius: 50% !important;
+   padding: 4px 8px !important;
+   font-weight: 600 !important;
+   min-width: 24px;
+   text-align: center;
 }
 
-/* -------------------------------------------------------------------------
-   RESPONSIVE ADJUSTMENTS
-   ------------------------------------------------------------------------- */
+/* =============================================================================
+      EVENT STYLING IMPROVEMENTS
+      ============================================================================= */
 
-/* Hide some grid lines on mobile for cleaner look */
+.rbc-event {
+   border-radius: 6px !important;
+   padding: 2px 6px !important;
+   margin: 1px 0 !important;
+   border: none !important;
+   font-size: 0.75rem !important;
+   line-height: 1.2 !important;
+   box-shadow: 0 1px 3px var(--shadow-color) !important;
+   transition: all 0.2s ease;
+}
+
+.rbc-event:hover {
+   transform: translateY(-1px);
+   box-shadow: 0 2px 6px var(--shadow-color) !important;
+}
+
+.rbc-event-content {
+   font-size: 0.75rem !important;
+   line-height: 1.2 !important;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.rbc-event-allday {
+   border-radius: 4px !important;
+   font-size: 0.8rem !important;
+   padding: 3px 8px !important;
+}
+
+/* =============================================================================
+      TIME GUTTER (LEFT SIDE TIME LABELS)
+      ============================================================================= */
+
+.rbc-time-gutter {
+   background-color: var(--bg-secondary) !important;
+   border-right: 1px solid var(--border-light) !important;
+   width: 60px !important;
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+   border-bottom: 1px solid var(--border-light) !important;
+}
+
+.rbc-label {
+   color: var(--text-secondary) !important;
+   font-size: 0.75rem !important;
+   padding-right: 8px !important;
+   text-align: right !important;
+   font-weight: 500 !important;
+}
+
+/* =============================================================================
+      AGENDA VIEW IMPROVEMENTS
+      ============================================================================= */
+
+.rbc-agenda-view {
+   background-color: var(--bg-primary) !important;
+}
+
+.rbc-agenda-table {
+   background-color: var(--bg-primary) !important;
+}
+
+.rbc-agenda-table tbody tr {
+   border-bottom: 1px solid var(--border-lighter) !important;
+}
+
+.rbc-agenda-table tbody tr:hover {
+   background-color: var(--bg-secondary) !important;
+}
+
+.rbc-agenda-table td {
+   color: var(--text-primary) !important;
+   padding: 12px 8px !important;
+}
+
+.rbc-agenda-date-cell {
+   background-color: var(--bg-secondary) !important;
+   font-weight: 600 !important;
+}
+
+.rbc-agenda-time-cell {
+   color: var(--text-secondary) !important;
+   font-size: 0.875rem !important;
+}
+
+/* =============================================================================
+      POPUP AND OVERLAY IMPROVEMENTS
+      ============================================================================= */
+
+.rbc-overlay {
+   background-color: var(--bg-primary) !important;
+   border: 1px solid var(--border-light) !important;
+   border-radius: 8px !important;
+   box-shadow: 0 4px 12px var(--shadow-color) !important;
+   padding: 8px !important;
+}
+
+.rbc-overlay-header {
+   background-color: var(--bg-secondary) !important;
+   color: var(--text-primary) !important;
+   border-bottom: 1px solid var(--border-light) !important;
+   padding: 8px 12px !important;
+   font-weight: 600 !important;
+}
+
+/* =============================================================================
+      NAVIGATION AND TOOLBAR
+      ============================================================================= */
+
+.rbc-toolbar {
+   background-color: var(--bg-primary) !important;
+   padding: 16px !important;
+   border-bottom: 1px solid var(--border-light) !important;
+   margin-bottom: 16px !important;
+}
+
+.rbc-toolbar button {
+   background-color: var(--bg-secondary) !important;
+   color: var(--text-primary) !important;
+   border: 1px solid var(--border-light) !important;
+   border-radius: 6px !important;
+   padding: 6px 12px !important;
+   font-size: 0.875rem !important;
+   font-weight: 500 !important;
+   transition: all 0.2s ease;
+}
+
+.rbc-toolbar button:hover {
+   background-color: var(--bg-tertiary) !important;
+   border-color: var(--border-light) !important;
+}
+
+.rbc-toolbar button.rbc-active {
+   background-color: var(--today-highlight) !important;
+   color: #ffffff !important;
+   border-color: var(--today-highlight) !important;
+}
+
+/* =============================================================================
+      RESPONSIVE IMPROVEMENTS
+      ============================================================================= */
+
 @media (max-width: 768px) {
+   .rbc-calendar {
+      width: 95%;
+      min-width: 100%;
+   }
+
    .rbc-time-slot {
-      border-bottom: 1px solid #edf2f7 !important;
+      border-bottom: 1px solid var(--border-lighter) !important;
    }
 
    .rbc-date-cell {
-      border-right: 1px solid #f1f5f9 !important;
+      border-right: 1px solid var(--border-lighter) !important;
+      min-height: 40px;
+   }
+
+   .rbc-header {
+      padding: 6px 2px !important;
+      font-size: 0.75rem !important;
+   }
+
+   .rbc-event-content {
+      font-size: 0.7rem !important;
+   }
+
+   .rbc-time-gutter {
+      width: 50px !important;
+   }
+
+   .rbc-label {
+      font-size: 0.65rem !important;
    }
 }
 
-/* -------------------------------------------------------------------------
-   UTILITY CLASSES FOR DYNAMIC THEMING
-   ------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+   .rbc-calendar {
+      width: 100%;
+   }
+
+   .rbc-time-view,
+   .rbc-month-view,
+   .rbc-agenda-view {
+      border-radius: 8px !important;
+   }
+
+   .rbc-date-cell {
+      min-height: 35px;
+   }
+
+   .rbc-header {
+      padding: 4px 1px !important;
+      font-size: 0.7rem !important;
+   }
+
+   .rbc-time-gutter {
+      width: 40px !important;
+   }
+
+   .rbc-label {
+      font-size: 0.6rem !important;
+   }
+}
+
+/* =============================================================================
+      UTILITY CLASSES FOR DYNAMIC THEMING
+      ============================================================================= */
 
 /* Hide all grid lines */
 .calendar-no-grid .rbc-time-slot,
@@ -236,4 +456,77 @@
 .calendar-dashed-grid .rbc-time-slot,
 .calendar-dashed-grid .rbc-date-cell {
    border-style: dashed !important;
+}
+
+/* Minimal grid (lighter borders) */
+.calendar-minimal-grid .rbc-time-slot,
+.calendar-minimal-grid .rbc-date-cell {
+   border-color: var(--border-lightest) !important;
+}
+
+/* High contrast mode */
+.calendar-high-contrast .rbc-time-slot,
+.calendar-high-contrast .rbc-date-cell,
+.calendar-high-contrast .rbc-header {
+   border-color: var(--text-primary) !important;
+   border-width: 1px !important;
+}
+
+/* =============================================================================
+      HIDDEN CARD UTILITY
+      ============================================================================= */
+
+.hidden-card {
+   height: 0 !important;
+   padding: 0 !important;
+   border: 0 !important;
+   overflow: hidden !important;
+   margin: 0 !important;
+   opacity: 0 !important;
+   transition: all 0.3s ease;
+}
+
+/* =============================================================================
+      ACCESSIBILITY IMPROVEMENTS
+      ============================================================================= */
+
+/* Focus states */
+.rbc-button-link:focus,
+.rbc-event:focus {
+   outline: 2px solid var(--today-highlight) !important;
+   outline-offset: 2px !important;
+}
+
+/* High contrast for better readability */
+@media (prefers-contrast: high) {
+   .rbc-time-slot,
+   .rbc-date-cell,
+   .rbc-header {
+      border-width: 2px !important;
+      border-color: var(--text-primary) !important;
+   }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+   * {
+      transition: none !important;
+      animation: none !important;
+   }
+}
+
+/* =============================================================================
+      SMOOTH TRANSITIONS FOR THEME SWITCHING
+      ============================================================================= */
+
+.rbc-calendar,
+.rbc-calendar * {
+   transition: background-color 0.2s ease, color 0.2s ease,
+      border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Force font inheritance for calendar components */
+.rbc-calendar,
+.rbc-calendar * {
+   font-family: inherit !important;
 }

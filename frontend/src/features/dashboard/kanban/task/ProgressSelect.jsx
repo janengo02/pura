@@ -111,7 +111,7 @@ const ProgressSelect = React.memo(
                      w='full'
                      p={1}
                      borderRadius='md'
-                     bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
+                     bg={hovered || tagSelect.isOpen ? 'bg.canvas' : undefined}
                   >
                      <Tag
                         bg={task.progress.color}

@@ -25,10 +25,11 @@ import store from './store'
 import { setAuthToken } from './utils'
 import { loadUserAction } from './actions/authActions'
 import { initializeLanguageAction } from './actions/languageActions'
+import { initializeThemeAction } from './actions/themeActions'
 import { LOGOUT } from './actions/types'
 
 // UI & Theme
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
 import customTheme from './theme/customTheme'
 
 // Styles
@@ -47,8 +48,9 @@ const App = () => {
    // -------------------------------------------------------------------------
 
    useEffect(() => {
-      // Initialize language first
+      // Initialize language and theme first
       store.dispatch(initializeLanguageAction())
+      store.dispatch(initializeThemeAction())
 
       // Check for token in localStorage when app first runs
       if (localStorage.token) {
@@ -73,6 +75,9 @@ const App = () => {
    return (
       <GoogleOAuthProvider clientId={googleAuthClientId}>
          <Provider store={store}>
+            <ColorModeScript
+               initialColorMode={customTheme.config.initialColorMode}
+            />
             <ChakraProvider
                theme={customTheme}
                toastOptions={{

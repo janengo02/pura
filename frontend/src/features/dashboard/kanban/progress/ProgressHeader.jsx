@@ -29,6 +29,7 @@ import {
    MenuOptionGroup,
    Spacer,
    Text,
+   useColorMode,
    useDisclosure
 } from '@chakra-ui/react'
 
@@ -74,6 +75,7 @@ const ProgressHeader = React.memo(
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+      const { colorMode } = useColorMode()
 
       const progressHover = useHover()
       const titleEditing = useEditing()
@@ -262,7 +264,7 @@ const ProgressHeader = React.memo(
                   icon={<PiDotsThreeBold />}
                   variant='ghost'
                   size='xs'
-                  colorScheme='blackAlpha'
+                  colorScheme={colorMode === 'dark' ? 'white' : 'blackAlpha'}
                   opacity={menuButtonOpacity}
                   onClick={dropdownMenu.onOpen}
                />
@@ -290,7 +292,7 @@ const ProgressHeader = React.memo(
                         <MenuItem
                            icon={<PiTrash size={18} />}
                            fontSize='sm'
-                           color='red.400'
+                           color='danger.primary'
                            onClick={handleDeleteClick}
                         >
                            {t('btn-delete-column')}

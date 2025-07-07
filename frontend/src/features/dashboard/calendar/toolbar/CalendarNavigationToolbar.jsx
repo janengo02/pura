@@ -129,7 +129,7 @@ const DateRangeDisplay = React.memo(({ date, view, localizer }) => {
       <Text
          fontSize='lg'
          fontWeight='semibold'
-         color='gray.700'
+         color='text.primary'
          minW='200px'
          textAlign='center'
       >
@@ -168,8 +168,8 @@ const ViewSelector = React.memo(({ view, views, onView }) => {
                <MenuItem
                   key={viewName}
                   onClick={() => onView(viewName)}
-                  bg={view === viewName ? 'purple.50' : 'transparent'}
-                  color={view === viewName ? 'purple.600' : 'gray.700'}
+                  bg={view === viewName ? 'accent.subtle' : 'transparent'}
+                  color={view === viewName ? 'accent.primary' : 'text.primary'}
                >
                   {t(VIEW_LABELS[viewName])}
                </MenuItem>
@@ -218,7 +218,7 @@ const CalendarNavigationToolbar = React.memo(
             w='full'
             alignItems='center'
             justifyContent='space-between'
-            bg='white'
+            bg='bg.surface'
             mb={3}
          >
             {/* Left Section - Navigation Controls */}

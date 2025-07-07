@@ -136,7 +136,7 @@ const Dashboard = React.memo(() => {
 
    const layoutContent = useMemo(
       () => (
-         <Flex bg='white' w='full' h={`calc(100vh - ${NAVBAR_HEIGHT})`}>
+         <Flex bg='bg.surface' w='full' h={`calc(100vh - ${NAVBAR_HEIGHT})`}>
             <SplitPaneLeft ref={leftRef} />
             {viewCalendar && (
                <>

@@ -17,8 +17,8 @@ const NotFound = ({ auth: { isAuthenticated } }) => {
             alignItems='center'
             justifyContent='center'
          >
-            <Text color='gray.600'>404</Text>
-            <Text color='gray.600'>{t('alert-page-notfound')}</Text>
+            <Text color='text.primary'>404</Text>
+            <Text color='text.primary'>{t('alert-page-notfound')}</Text>
 
             {isAuthenticated ? (
                <Link as={ReactRouterLink} to='/dashboard'>

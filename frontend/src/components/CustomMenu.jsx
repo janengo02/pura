@@ -14,7 +14,7 @@ export const ControlMenuButton = ({ isActive, children, ...props }) => (
       as={Button}
       size='sm'
       colorScheme={isActive ? 'purple' : 'gray'}
-      color={isActive ? 'purple.600' : 'gray.600'}
+      color={isActive ? 'accent.primary' : 'text.primary'}
       variant='outline'
       borderRadius='full'
       rightIcon={<PiCaretDown size={8} />}
@@ -28,7 +28,6 @@ export const DropdownMenuButton = ({ children, ...props }) => (
       as={Button}
       size='sm'
       colorScheme='gray'
-      color='gray.600'
       variant='outline'
       rightIcon={<PiCaretDown size={8} />}
       {...props}
@@ -38,7 +37,7 @@ export const DropdownMenuButton = ({ children, ...props }) => (
 )
 export const DropdownMenu = ({ label, children, ...props }) => (
    <Flex flexDirection='column' gap={1}>
-      <Text fontSize='xs' paddingX={1} color='gray.600'>
+      <Text fontSize='xs' paddingX={1}>
          {label}
       </Text>
 
@@ -48,7 +47,5 @@ export const DropdownMenu = ({ label, children, ...props }) => (
    </Flex>
 )
 export const DropdownMenuList = ({ children, ...props }) => (
-   <MenuList minW='fit-content' color='gray.600'>
-      {children}
-   </MenuList>
+   <MenuList minW='fit-content'>{children}</MenuList>
 )

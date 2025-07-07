@@ -31,7 +31,8 @@ const BUTTON_STYLES = {
    'aria-label': 'Reload Calendar',
    variant: 'ghost',
    size: 'sm',
-   colorScheme: 'gray'
+   colorScheme: 'gray',
+   color: 'text.primary'
 }
 
 // =============================================================================

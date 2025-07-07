@@ -24,7 +24,7 @@ const FormAlert = ({ alerts, removeAlertAction, ...props }) => {
                <Alert
                   borderRadius='0.375rem;'
                   mb={index < alerts.length - 1 ? '6' : '0'}
-                  bg='gray.50'
+                  bg='bg.surface'
                   {...props}
                >
                   <Spinner size='sm' marginInlineEnd={3} />

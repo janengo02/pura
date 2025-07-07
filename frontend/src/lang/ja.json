@@ -79,6 +79,8 @@
       "label-settings-language": "言語",
       "label-settings-language-english": "English",
       "label-settings-language-japanese": "日本語",
+      "label-settings-theme": "ダークモード",
+
       "placeholder-": "----------------------------------------",
       "placeholder-email": "example@domain.com",
       "placeholder-group_title": "グループ名を入力...",

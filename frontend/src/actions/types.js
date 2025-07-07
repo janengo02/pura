@@ -48,3 +48,7 @@ export const FILTER_NAME = 'FILTER_NAME'
 // Language Management
 export const CHANGE_LANGUAGE = 'CHANGE_LANGUAGE'
 export const LANGUAGE_ERROR = 'LANGUAGE_ERROR'
+// Theme Management
+export const TOGGLE_THEME = 'TOGGLE_THEME'
+export const SET_THEME = 'SET_THEME'
+export const INITIALIZE_THEME = 'INITIALIZE_THEME'

@@ -20,7 +20,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { DateLocalizer } from 'react-big-calendar'
 
 // UI Components
-import { Skeleton, VStack } from '@chakra-ui/react'
+import { Skeleton, useColorModeValue, VStack } from '@chakra-ui/react'
 
 // Internal Components
 import Toolbar from './calendar/toolbar/Toolbar'
@@ -61,9 +61,12 @@ const SELECTED_EVENT_SHADOW =
 // =============================================================================
 
 const ColoredDateCellWrapper = ({ children }) => {
+   // Use Chakra's color mode hook for dynamic background
+   const bgColor = useColorModeValue('white', 'gray.700')
+
    return React.cloneElement(React.Children.only(children), {
       style: {
-         backgroundColor: 'white'
+         backgroundColor: bgColor
       }
    })
 }

@@ -68,9 +68,9 @@ const GroupSelect = React.memo(
                   }}
                >
                   <Tag
-                     borderColor='gray.100'
+                     borderColor='border.default'
                      borderWidth={1}
-                     bg='white'
+                     bg='bg.overlay'
                      color={group_item.color}
                   >
                      {group_item.title}
@@ -113,12 +113,12 @@ const GroupSelect = React.memo(
                      w='full'
                      p={1}
                      borderRadius='md'
-                     bg={hovered || tagSelect.isOpen ? 'gray.50' : undefined}
+                     bg={hovered || tagSelect.isOpen ? 'bg.canvas' : undefined}
                   >
                      <Tag
-                        borderColor='gray.100'
+                        borderColor='border.default'
                         borderWidth={1}
-                        bg='white'
+                        bg='bg.surface'
                         color={task.group.color}
                      >
                         {task.group.title}

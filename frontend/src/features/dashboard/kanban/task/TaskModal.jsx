@@ -191,7 +191,7 @@ const TaskModal = React.memo(
             h='95%'
             top={20}
             left={0}
-            bg='gray.600'
+            bg='text.primary'
             opacity={0.3}
             onClick={modalCard.onClose}
          />
@@ -206,7 +206,7 @@ const TaskModal = React.memo(
                   variant='ghost'
                   size='xs'
                   colorScheme='gray'
-                  color='gray.600'
+                  color='text.primary'
                   onClick={modalMenu.onOpen}
                />
                <MenuList>

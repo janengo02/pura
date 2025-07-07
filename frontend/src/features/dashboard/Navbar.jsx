@@ -35,8 +35,8 @@ const NavbarWrapper = ({ children }) => (
       w='full'
       p={10}
       alignItems='center'
-      bg='gray.50'
-      borderBottomColor='gray.200'
+      bg='bg.canvas'
+      borderBottomColor='border.default'
       borderBottomWidth={1}
    >
       {children}
@@ -51,7 +51,7 @@ NavbarWrapper.propTypes = {
  * Left section of navbar containing menu and title
  */
 const NavbarLeft = React.memo(({ title }) => (
-   <Heading as='h3' size='lg' color='gray.600'>
+   <Heading as='h3' size='lg' color='text.primary'>
       {title}
    </Heading>
 ))

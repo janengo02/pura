@@ -16,7 +16,7 @@ import { createTaskAction } from '../../../../actions/taskActions'
 import { Droppable } from '@hello-pangea/dnd'
 
 // UI Components
-import { Button, Card, Flex } from '@chakra-ui/react'
+import { Button, Card, Flex, useColorMode } from '@chakra-ui/react'
 
 // Internal Components
 import TaskCard from '../task/TaskCard'
@@ -40,7 +40,13 @@ const Column = ({
    tasks,
    createTaskAction
 }) => {
+   // -------------------------------------------------------------------------
+   // HOOKS & STATE
+   // -------------------------------------------------------------------------
+
    const { t } = useReactiveTranslation()
+   const { colorMode } = useColorMode()
+
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
@@ -137,8 +143,8 @@ const Column = ({
                   <Button
                      size='sm'
                      variant='ghost'
-                     colorScheme='blackAlpha'
-                     color='blackAlpha.400'
+                     colorScheme={colorMode === 'dark' ? 'white' : 'blackAlpha'}
+                     color='text.muted'
                      justifyContent='flex-start'
                      leftIcon={<PiPlus />}
                      onClick={handleCreateTask}
@@ -149,7 +155,7 @@ const Column = ({
             </Flex>
          </Card>
       ),
-      [progress.color, taskCards, newTaskInfo, handleCreateTask, t]
+      [progress.color, taskCards, newTaskInfo, handleCreateTask, t, colorMode]
    )
 
    // -------------------------------------------------------------------------

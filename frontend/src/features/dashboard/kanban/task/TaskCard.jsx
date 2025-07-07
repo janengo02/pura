@@ -84,7 +84,7 @@ const TaskCard = React.memo(
 
       // Memoize card background color
       const cardBackgroundColor = useMemo(
-         () => (taskHover.isHovered ? 'gray.50' : undefined),
+         () => (taskHover.isHovered ? 'bg.canvas' : undefined),
          [taskHover.isHovered]
       )
 
@@ -108,7 +108,8 @@ const TaskCard = React.memo(
                task.schedule.length > 0
                   ? t('schedule_status-true')
                   : t('schedule_status-false'),
-            statusColor: task.schedule.length > 0 ? 'gray.600' : 'red.600'
+            statusColor:
+               task.schedule.length > 0 ? 'text.primary' : 'danger.primary'
          }),
          [task.schedule.length, t]
       )
@@ -262,7 +263,7 @@ const TaskCard = React.memo(
                variant='ghost'
                size='xs'
                colorScheme='gray'
-               color='gray.600'
+               color='text.primary'
                opacity={menuButtonOpacity}
                onClick={dropdownMenu.onOpen}
             />
@@ -277,7 +278,7 @@ const TaskCard = React.memo(
                <MenuItem
                   icon={<PiTrash size={18} />}
                   fontSize='sm'
-                  color='red.400'
+                  color='danger.primary'
                   onClick={handleDeleteClick}
                >
                   {t('btn-delete-task')}
@@ -312,7 +313,7 @@ const TaskCard = React.memo(
          return (
             <Text
                w='full'
-               color='gray.600'
+               color='text.primary'
                fontWeight={600}
                onClick={handleTitleClick}
             >

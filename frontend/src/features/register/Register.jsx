@@ -183,7 +183,7 @@ const Register = React.memo(
                   </GridItem>
 
                   <GridItem colSpan={1}>
-                     <Text color='gray.600'>
+                     <Text color='text.primary'>
                         {t('guide-already_have_account')}
                         <Link to='/login' text={t('guide-login')} />
                      </Text>
@@ -226,7 +226,7 @@ const Register = React.memo(
                   p={10}
                   spacing={10}
                   alignItems='flex-start'
-                  bg='gray.50'
+                  bg='bg.surface'
                   justifyContent='center'
                />
             </Flex>

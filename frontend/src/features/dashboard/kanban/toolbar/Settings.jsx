@@ -38,6 +38,7 @@ const Settings = () => {
             variant='ghost'
             size='sm'
             colorScheme='gray'
+            color='text.primary'
          />
 
          <MenuList>

@@ -13,6 +13,7 @@ import { createSelector } from 'reselect'
 // Actions
 import { logoutAction } from '../../../actions/authActions'
 import { changeLanguageAction } from '../../../actions/languageActions'
+import { toggleThemeAction } from '../../../actions/themeActions'
 
 // UI Components
 import {
@@ -25,11 +26,14 @@ import {
    MenuOptionGroup,
    MenuItemOption,
    HStack,
-   Text
+   Text,
+   useColorMode,
+   Switch,
+   Flex
 } from '@chakra-ui/react'
 
 // Utils & Icons
-import { PiSignOut } from 'react-icons/pi'
+import { PiSignOut, PiMoon, PiSun } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../hooks/useReactiveTranslation'
 
 // =============================================================================
@@ -55,6 +59,7 @@ const LANGUAGE_OPTIONS = [
       flag: '🇯🇵'
    }
 ]
+
 const MENU_ITEM_STYLES = {
    fontSize: 'sm'
 }
@@ -73,7 +78,7 @@ const ProfileAvatar = React.memo(({ user }) => {
       () => ({
          name: user?.name || '',
          ...AVATAR_SIZE,
-         bg: 'gray.300',
+         bg: 'text.muted',
          src: user?.avatar || DEFAULT_AVATAR
       }),
       [user]
@@ -93,11 +98,50 @@ ProfileAvatar.propTypes = {
 }
 
 /**
+ * Theme toggle section
+ */
+const ThemeToggle = React.memo(({ onThemeToggle }) => {
+   const { t } = useReactiveTranslation()
+   const { colorMode, toggleColorMode } = useColorMode()
+
+   const isDark = colorMode === 'dark'
+
+   const handleToggle = useCallback(() => {
+      toggleColorMode() // This toggles Chakra's color mode
+      onThemeToggle() // This updates Redux state
+   }, [toggleColorMode, onThemeToggle])
+
+   return (
+      <MenuItem
+         onClick={handleToggle}
+         icon={isDark ? <PiSun size={20} /> : <PiMoon size={20} />}
+         {...MENU_ITEM_STYLES}
+      >
+         <Flex justify='space-between' align='center' w='full'>
+            <Text>{t('label-settings-theme')}</Text>
+            <Switch
+               isChecked={isDark}
+               size='sm'
+               colorScheme='purple'
+               pointerEvents='none'
+            />
+         </Flex>
+      </MenuItem>
+   )
+})
+
+ThemeToggle.displayName = 'ThemeToggle'
+
+ThemeToggle.propTypes = {
+   onThemeToggle: PropTypes.func.isRequired
+}
+
+/**
  * Language selection section with Redux state management
  */
 const LanguageSelection = React.memo(
    ({ currentLanguage, onLanguageChange }) => {
-      const { t } = useReactiveTranslation() // Reactive translations
+      const { t } = useReactiveTranslation()
 
       const languageMenuItems = useMemo(
          () =>
@@ -141,7 +185,7 @@ LanguageSelection.propTypes = {
  * Profile actions section (logout)
  */
 const ProfileActions = React.memo(({ onLogout }) => {
-   const { t } = useReactiveTranslation() // Reactive translations
+   const { t } = useReactiveTranslation()
 
    const actionItems = useMemo(
       () => [
@@ -180,6 +224,7 @@ const ProfileMenu = React.memo(
    ({
       logoutAction,
       changeLanguageAction,
+      toggleThemeAction,
       profileData: { user, currentLanguage }
    }) => {
       // -------------------------------------------------------------------------
@@ -197,6 +242,10 @@ const ProfileMenu = React.memo(
          [changeLanguageAction]
       )
 
+      const handleThemeToggle = useCallback(() => {
+         toggleThemeAction()
+      }, [toggleThemeAction])
+
       // -------------------------------------------------------------------------
       // RENDER LOGIC
       // -------------------------------------------------------------------------
@@ -205,6 +254,8 @@ const ProfileMenu = React.memo(
          <Menu>
             <ProfileAvatar user={user} />
             <MenuList>
+               <ThemeToggle onThemeToggle={handleThemeToggle} />
+               <MenuDivider />
                <LanguageSelection
                   currentLanguage={currentLanguage}
                   onLanguageChange={handleLanguageChange}
@@ -228,6 +279,7 @@ ProfileMenu.displayName = 'ProfileMenu'
 ProfileMenu.propTypes = {
    logoutAction: PropTypes.func.isRequired,
    changeLanguageAction: PropTypes.func.isRequired,
+   toggleThemeAction: PropTypes.func.isRequired,
    profileData: PropTypes.shape({
       user: PropTypes.object,
       currentLanguage: PropTypes.string.isRequired
@@ -257,7 +309,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    logoutAction,
-   changeLanguageAction
+   changeLanguageAction,
+   toggleThemeAction
 }
 
 // =============================================================================
