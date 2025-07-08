@@ -177,7 +177,12 @@ const Calendar = ({
 
    return (
       <Skeleton isLoaded={!loading}>
-         <VStack h='800px' alignItems='center' gap={2} paddingBottom={10}>
+         <VStack
+            h='calc(100vh - 9rem)'
+            alignItems='center'
+            gap={2}
+            paddingBottom={10}
+         >
             <Toolbar />
             <BigCalendar
                components={calendarConfig.components}

@@ -19,7 +19,7 @@ import SplitPaneRight from './SplitPaneRight'
 // CONSTANTS
 // =============================================================================
 
-const NAVBAR_HEIGHT = '81px'
+const NAVBAR_HEIGHT = '5rem'
 const STORAGE_KEY = 'dashboard.viewCalendar'
 
 // =============================================================================

@@ -7,11 +7,11 @@ const ProgressSchema = new mongoose.Schema({
    },
    title_color: {
       type: String,
-      default: '#4A5568'
+      default: 'kanban.progress.title.default'
    },
    color: {
       type: String,
-      default: '#EDF2F7'
+      default: 'kanban.progress.default'
    },
    visibility: {
       type: Boolean,

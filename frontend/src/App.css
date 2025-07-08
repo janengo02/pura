@@ -103,26 +103,46 @@
    overflow-x: hidden !important;
    background-color: var(--bg-primary);
 }
-
+.rbc-day-bg + .rbc-day-bg,
+.rbc-header + .rbc-header,
+.rbc-time-content > * + * > *,
+.rbc-time-header-content {
+   border-left: 1px solid var(--border-light) !important;
+}
+.rbc-time-header.rbc-overflowing {
+   border-right: 1px solid var(--border-light) !important;
+}
+.rbc-time-content,
+.rbc-month-row + .rbc-month-row {
+   border-top: 2px solid var(--border-light) !important;
+}
+.rbc-current-time-indicator {
+   background-color: var(--today-highlight) !important;
+}
 /* =============================================================================
       CALENDAR HEADERS
       ============================================================================= */
 
 .rbc-header {
-   background-color: var(--bg-secondary) !important;
    color: var(--text-primary) !important;
-   border-bottom: 1px solid var(--border-light) !important;
-   border-right: 1px solid var(--border-light) !important;
+   border-bottom: none !important;
    padding: 8px 4px !important;
    font-weight: 600 !important;
    font-size: 0.875rem !important;
    transition: all 0.2s ease;
 }
 
+.rbc-month-view .rbc-header {
+   border-bottom: 2px solid var(--border-light) !important;
+}
+
 .rbc-header:last-child {
    border-right: none !important;
 }
 
+.rbc-row-bg {
+   width: 100% !important;
+}
 /* =============================================================================
       TIME SLOTS AND GRID LINES
       ============================================================================= */
@@ -151,12 +171,14 @@
       ============================================================================= */
 
 .rbc-month-view .rbc-date-cell {
-   border-right: 1px solid var(--border-lighter) !important;
-   border-bottom: 1px solid var(--border-lighter) !important;
+   border-right: 1px solid var(--border-light) !important;
    background-color: var(--bg-primary) !important;
-   min-height: 60px;
    padding: 4px !important;
    transition: all 0.2s ease;
+}
+.rbc-month-view .rbc-date-cell.rbc-off-range {
+   background-color: var(--off-range-bg) !important;
+   opacity: 0.6;
 }
 
 .rbc-month-view .rbc-date-cell:hover {

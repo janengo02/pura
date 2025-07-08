@@ -250,14 +250,16 @@ const components = {
    // Text components
    Text: {
       baseStyle: {
-         fontFamily: fonts.body
+         fontFamily: fonts.body,
+         color: 'text.primary'
       }
    },
 
    Heading: {
       baseStyle: {
          fontFamily: fonts.heading,
-         fontWeight: '600'
+         fontWeight: '600',
+         color: 'text.primary'
       }
    },
 

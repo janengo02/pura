@@ -7,7 +7,7 @@ const GroupSchema = new mongoose.Schema({
    },
    color: {
       type: String,
-      default: '#4A5568'
+      default: 'kanban.group.default'
    },
    visibility: {
       type: Boolean,

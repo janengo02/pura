@@ -69,22 +69,22 @@ const createDefaultProgresses = async (language) => {
 
    const progress1 = new Progress({
       title: titles.progress.todo,
-      title_color: '#B75151',
-      color: '#FFE5E5'
+      title_color: 'kanban.progress.title.red',
+      color: 'kanban.progress.red'
    })
    await progress1.save()
 
    const progress2 = new Progress({
       title: titles.progress.inProgress,
-      title_color: '#E95F11',
-      color: '#FFF0E4'
+      title_color: 'kanban.progress.title.orange',
+      color: 'kanban.progress.orange'
    })
    await progress2.save()
 
    const progress3 = new Progress({
       title: titles.progress.done,
-      title_color: '#3E9C75',
-      color: '#CDF4E4'
+      title_color: 'kanban.progress.title.green',
+      color: 'kanban.progress.green'
    })
    await progress3.save()
 
