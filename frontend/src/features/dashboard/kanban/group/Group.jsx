@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -82,8 +82,24 @@ const Group = React.memo(
       const dropdownMenu = useDisclosure()
 
       const methods = useForm({
-         resolver: yupResolver(s)
+         resolver: yupResolver(s),
+         defaultValues: {
+            title: isNew ? '' : group.title
+         }
       })
+      // -------------------------------------------------------------------------
+      // EFFECTS
+      // -------------------------------------------------------------------------
+
+      // Reset form whenever task.title changes or editing state changes
+      useEffect(() => {
+         if (titleEditing.isEditing || isNew) {
+            const currentTitle = isNew ? '' : group.title
+            methods.reset({
+               title: currentTitle
+            })
+         }
+      }, [group.title, titleEditing.isEditing, isNew, methods])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -134,11 +150,6 @@ const Group = React.memo(
          },
          [groupHover]
       )
-
-      const handleInputFocus = useCallback((e) => {
-         e.preventDefault()
-         e.currentTarget.select()
-      }, [])
 
       const handleInputBlur = useCallback(
          (e) => {
@@ -205,12 +216,10 @@ const Group = React.memo(
                   variant='unstyled'
                   placeholder={t('placeholder-untitled')}
                   validation={s.title}
-                  defaultValue={group.title}
                   color={group.color}
                   fontWeight={600}
                   borderRadius={0}
                   autoFocus
-                  onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
                />
             </form>

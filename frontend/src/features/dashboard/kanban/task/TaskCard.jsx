@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -76,8 +76,25 @@ const TaskCard = React.memo(
       const dropdownMenu = useDisclosure()
 
       const methods = useForm({
-         resolver: yupResolver(s)
+         resolver: yupResolver(s),
+         defaultValues: {
+            title: isNew ? '' : task.title
+         }
       })
+
+      // -------------------------------------------------------------------------
+      // EFFECTS
+      // -------------------------------------------------------------------------
+
+      // Reset form whenever task.title changes or editing state changes
+      useEffect(() => {
+         if (titleEditing.isEditing || isNew) {
+            const currentTitle = isNew ? '' : task.title
+            methods.reset({
+               title: currentTitle
+            })
+         }
+      }, [task.title, titleEditing.isEditing, isNew, methods])
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -120,7 +137,7 @@ const TaskCard = React.memo(
 
       // Memoize box shadow for dragging state
       const getDragBoxShadow = useCallback(
-         (isDragging) => (isDragging ? 'md' : undefined),
+         (isDragging) => (isDragging ? 'lg' : 'sm'),
          []
       )
 
@@ -228,11 +245,6 @@ const TaskCard = React.memo(
          [handleDeleteTask]
       )
 
-      const handleInputFocus = useCallback((e) => {
-         e.preventDefault()
-         e.currentTarget.select()
-      }, [])
-
       const handleInputBlur = useCallback(
          (e) => {
             e.preventDefault()
@@ -302,11 +314,9 @@ const TaskCard = React.memo(
                         variant='unstyled'
                         placeholder={t('placeholder-untitled')}
                         validation={s.title}
-                        defaultValue={isNew ? undefined : task.title}
                         fontWeight={600}
                         borderRadius={0}
                         autoFocus
-                        onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                      />
                   </form>
@@ -367,6 +377,10 @@ const TaskCard = React.memo(
 // PROPTYPES & REDUX CONNECTION
 // =============================================================================
 
+// Display name for debugging
+TaskCard.displayName = 'TaskCard'
+
+// PropTypes validation
 TaskCard.propTypes = {
    task: PropTypes.object.isRequired,
    isNew: PropTypes.bool,
@@ -381,6 +395,10 @@ TaskCard.propTypes = {
    showTaskModalAction: PropTypes.func.isRequired
 }
 
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
 const mapStateToProps = (state) => ({
    _id: state.page._id,
    filter: state.page.filter
@@ -391,5 +409,9 @@ const mapDispatchToProps = {
    deleteTaskAction,
    showTaskModalAction
 }
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default connect(mapStateToProps, mapDispatchToProps)(TaskCard)

@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -83,8 +83,24 @@ const ProgressHeader = React.memo(
       const dropdownMenu = useDisclosure()
 
       const methods = useForm({
-         resolver: yupResolver(s)
+         resolver: yupResolver(s),
+         defaultValues: {
+            title: isNew ? '' : progress.title
+         }
       })
+      // -------------------------------------------------------------------------
+      // EFFECTS
+      // -------------------------------------------------------------------------
+
+      // Reset form whenever task.title changes or editing state changes
+      useEffect(() => {
+         if (titleEditing.isEditing || isNew) {
+            const currentTitle = isNew ? '' : progress.title
+            methods.reset({
+               title: currentTitle
+            })
+         }
+      }, [progress.title, titleEditing.isEditing, isNew, methods])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -146,11 +162,6 @@ const ProgressHeader = React.memo(
          },
          [progressHover]
       )
-
-      const handleInputFocus = useCallback((e) => {
-         e.preventDefault()
-         e.currentTarget.select()
-      }, [])
 
       const handleInputBlur = useCallback(
          (e) => {
@@ -247,12 +258,10 @@ const ProgressHeader = React.memo(
                   variant='unstyled'
                   placeholder={t('placeholder-untitled')}
                   validation={s.title}
-                  defaultValue={progress.title}
                   color={progress.title_color}
                   fontWeight={500}
                   borderRadius={0}
                   autoFocus
-                  onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
                />
             </form>

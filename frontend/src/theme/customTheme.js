@@ -241,8 +241,6 @@ const styles = {
       // Base font application
       'html, body': {
          fontFamily: fonts.body,
-         lineHeight: '1.5',
-         letterSpacing: '-0.01em',
          textRendering: 'optimizeLegibility',
          WebkitFontSmoothing: 'antialiased',
          MozOsxFontSmoothing: 'grayscale',
@@ -252,15 +250,11 @@ const styles = {
 
       // Language-specific optimizations
       'html[lang="ja"], html[lang="ja"] body': {
-         lineHeight: '1.6',
-         letterSpacing: '0.02em',
          wordBreak: 'break-all',
          overflowWrap: 'break-word'
       },
 
       'html[lang="en"], html[lang="en"] body': {
-         lineHeight: '1.6',
-         letterSpacing: '-0.01em',
          wordBreak: 'break-word'
       },
 
