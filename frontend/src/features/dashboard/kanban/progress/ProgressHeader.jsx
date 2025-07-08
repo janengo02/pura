@@ -44,6 +44,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import {
    PiCircleDuotone,
+   PiCircleFill,
    PiDotsThreeBold,
    PiPencilLine,
    PiTrash
@@ -212,15 +213,25 @@ const ProgressHeader = React.memo(
                   onClick={(e) => handleColorOptionClick(e, colorOption)}
                >
                   <Flex alignItems='center' gap={2}>
-                     <PiCircleDuotone
-                        size={18}
-                        color={colorOption.title_color}
-                     />
+                     {colorMode === 'dark' ? (
+                        <Flex
+                           color={colorOption.color}
+                           border='0.5px solid'
+                           borderColor={colorOption.title_color}
+                           borderRadius='full'
+                        >
+                           <PiCircleFill size={18} />
+                        </Flex>
+                     ) : (
+                        <Flex color={colorOption.title_color}>
+                           <PiCircleDuotone size={18} />
+                        </Flex>
+                     )}
                      {colorOption.title}
                   </Flex>
                </MenuItemOption>
             )),
-         [handleColorOptionClick]
+         [handleColorOptionClick, colorMode]
       )
 
       // -------------------------------------------------------------------------

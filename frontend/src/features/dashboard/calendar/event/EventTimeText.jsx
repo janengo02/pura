@@ -2,19 +2,19 @@
 // IMPORTS
 // =============================================================================
 
-// React
+// React & Hooks
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
+
+// External Libraries
+import moment from 'moment'
+import 'moment/locale/ja'
 
 // UI Components
 import { Text } from '@chakra-ui/react'
 
-// Utils
-import {
-   stringToDateTime,
-   stringToWeekDateTime,
-   stringToTime
-} from '../../../../utils/dates'
+// Utils & Hooks
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // CONSTANTS
@@ -24,31 +24,125 @@ const TEXT_STYLES = {
    fontSize: 'sm'
 }
 
+// Language-specific datetime format configurations
+const DATE_TIME_FORMATS = {
+   ja: {
+      sameDay: {
+         dateFormat: 'M月D日(ddd)',
+         timeFormat: 'HH:mm',
+         dateTimeFormat: 'M月D日(ddd) HH:mm'
+      },
+      multiDay: {
+         dateFormat: 'M月D日',
+         timeFormat: 'HH:mm',
+         dateTimeFormat: 'M月D日 HH:mm'
+      },
+      weekdays: {
+         Sunday: '日',
+         Monday: '月',
+         Tuesday: '火',
+         Wednesday: '水',
+         Thursday: '木',
+         Friday: '金',
+         Saturday: '土'
+      }
+   },
+   en: {
+      sameDay: {
+         dateFormat: 'dddd, MMMM D',
+         timeFormat: 'h:mm A',
+         dateTimeFormat: 'dddd, MMMM D h:mm A'
+      },
+      multiDay: {
+         dateFormat: 'MMMM D',
+         timeFormat: 'h:mm A',
+         dateTimeFormat: 'MMMM D h:mm A'
+      }
+   }
+}
+
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
 
 /**
- * Formats event time display based on start and end dates
+ * Convert string or date to moment object with proper locale
+ * @param {string|Date} dateValue - Date value to convert
+ * @param {string} language - Current language
+ * @returns {moment.Moment} Moment object with locale set
+ */
+const createMomentWithLocale = (dateValue, language) => {
+   return moment(dateValue).locale(language)
+}
+
+/**
+ * Format Japanese date with proper weekday
+ * @param {moment.Moment} momentDate - Moment date object
+ * @param {string} format - Base format string
+ * @returns {string} Formatted date string
+ */
+const formatJapaneseDate = (momentDate, format) => {
+   const weekdays = DATE_TIME_FORMATS.ja.weekdays
+   const englishWeekday = momentDate.format('dddd')
+   const japaneseWeekday = weekdays[englishWeekday] || '日'
+
+   // Replace (ddd) with Japanese weekday
+   return format.includes('(ddd)')
+      ? momentDate.format(format.replace('(ddd)', `(${japaneseWeekday})`))
+      : momentDate.format(format)
+}
+
+/**
+ * Language-aware event time formatting
  * @param {string|Date} start - Event start time
  * @param {string|Date} end - Event end time
+ * @param {string} currentLanguage - Current application language
  * @returns {string} Formatted time string
  */
-const formatEventTime = (start, end) => {
-   const startDate = stringToDateTime(start)
-   const endDate = stringToDateTime(end)
+const formatEventTime = (start, end, currentLanguage = 'en') => {
+   const formats = DATE_TIME_FORMATS[currentLanguage] || DATE_TIME_FORMATS.en
 
-   if (startDate === endDate) {
-      // Same day event
-      return `${stringToWeekDateTime(start)} ${stringToTime(
-         start
-      )} - ${stringToTime(end)}`
+   const startMoment = createMomentWithLocale(start, currentLanguage)
+   const endMoment = createMomentWithLocale(end, currentLanguage)
+
+   // Check if it's the same day
+   const isSameDay =
+      startMoment.format('YYYY-MM-DD') === endMoment.format('YYYY-MM-DD')
+
+   if (isSameDay) {
+      // Same day event - show date once with time range
+      if (currentLanguage === 'ja') {
+         const dateStr = formatJapaneseDate(
+            startMoment,
+            formats.sameDay.dateFormat
+         )
+         const startTime = startMoment.format(formats.sameDay.timeFormat)
+         const endTime = endMoment.format(formats.sameDay.timeFormat)
+         return `${dateStr} ${startTime} - ${endTime}`
+      } else {
+         const dateStr = startMoment.format(formats.sameDay.dateFormat)
+         const startTime = startMoment.format(formats.sameDay.timeFormat)
+         const endTime = endMoment.format(formats.sameDay.timeFormat)
+         return `${dateStr} ${startTime} - ${endTime}`
+      }
+   } else {
+      // Multi-day event - show full date and time for both
+      if (currentLanguage === 'ja') {
+         const startStr = formatJapaneseDate(
+            startMoment,
+            formats.multiDay.dateTimeFormat
+         )
+         const endStr = formatJapaneseDate(
+            endMoment,
+            formats.multiDay.dateTimeFormat
+         )
+         return `${startStr} - ${endStr}`
+      } else {
+         const startStr = startMoment.format(formats.multiDay.dateTimeFormat)
+         const endStr = endMoment.format(formats.multiDay.dateTimeFormat)
+         return `${startStr} - ${endStr}`
+      }
    }
-
-   // Multi-day event
-   return `${startDate} ${stringToTime(start)} - ${endDate} ${stringToTime(
-      end
-   )}`
 }
 
 // =============================================================================
@@ -57,12 +151,18 @@ const formatEventTime = (start, end) => {
 
 const EventTimeText = React.memo(({ start, end }) => {
    // -------------------------------------------------------------------------
+   // HOOKS
+   // -------------------------------------------------------------------------
+
+   const { currentLanguage } = useReactiveTranslation()
+
+   // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
 
    const eventTimeString = useMemo(
-      () => formatEventTime(start, end),
-      [start, end]
+      () => formatEventTime(start, end, currentLanguage || 'en'),
+      [start, end, currentLanguage]
    )
 
    // -------------------------------------------------------------------------

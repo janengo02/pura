@@ -134,7 +134,7 @@ const semanticTokens = {
       },
       'kanban.progress.default': {
          default: '#EDF2F7', // Light gray
-         _dark: '#4A5568' // Gray
+         _dark: 'gray.700' // Gray
       },
       'kanban.progress.orange': {
          default: '#FFF0E4', // Light orange
@@ -179,6 +179,55 @@ const semanticTokens = {
       'kanban.progress.title.purple': {
          default: '#805AD5', // Purple
          _dark: '#d4c4e3' // Light purple
+      },
+      // Kanban progress card colors
+      'kanban.progress.default.card': {
+         default: 'white', // Light gray
+         _dark: 'gray.800' // Gray
+      },
+      'kanban.progress.orange.card': {
+         default: 'white', // Light orange
+         _dark: '#5f4231' // Orange
+      },
+      'kanban.progress.green.card': {
+         default: 'white', // Light green
+         _dark: '#182b2d' // Green
+      },
+      'kanban.progress.red.card': {
+         default: 'white', // Light red
+         _dark: '#3b1b22' // Red
+      },
+      'kanban.progress.blue.card': {
+         default: 'white', // Light blue
+         _dark: '#122442' // Blue
+      },
+      'kanban.progress.purple.card': {
+         default: 'white', // Light purple
+         _dark: '#29213c' // Purple
+      },
+      'kanban.progress.default.card.hover': {
+         default: 'gray.50', // Light gray
+         _dark: 'gray.900' // Gray
+      },
+      'kanban.progress.orange.card.hover': {
+         default: 'gray.50', // Light orange
+         _dark: '#533829' // Orange
+      },
+      'kanban.progress.green.card.hover': {
+         default: 'gray.50', // Light green
+         _dark: '#102021' // Green
+      },
+      'kanban.progress.red.card.hover': {
+         default: 'gray.50', // Light red
+         _dark: '#30141a' // Red
+      },
+      'kanban.progress.blue.card.hover': {
+         default: 'gray.50', // Light blue
+         _dark: '#11223e' // Blue
+      },
+      'kanban.progress.purple.card.hover': {
+         default: 'gray.50', // Light purple
+         _dark: '#211b31' // Purple
       }
    }
 }

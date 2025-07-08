@@ -96,9 +96,10 @@ const Column = ({
                isNew={task.title === ''}
                draggableId={(taskData.taskPointer + taskIndex).toString()}
                taskIndex={taskIndex}
+               progressColor={progress.color}
             />
          )) || [],
-      [taskData.taskArray, taskData.taskPointer]
+      [taskData.taskArray, taskData.taskPointer, progress.color]
    )
 
    // -------------------------------------------------------------------------

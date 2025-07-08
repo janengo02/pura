@@ -178,7 +178,9 @@ const Group = React.memo(
                   onClick={() => handleColorChange(colorOption.color)}
                >
                   <Flex alignItems='center' gap={2}>
-                     <PiCircleFill size={18} color={colorOption.color} />
+                     <Flex color={colorOption.color}>
+                        <PiCircleFill size={18} />
+                     </Flex>
                      {colorOption.title}
                   </Flex>
                </MenuItemOption>

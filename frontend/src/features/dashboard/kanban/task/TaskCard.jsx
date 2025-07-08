@@ -59,6 +59,7 @@ const TaskCard = React.memo(
       isNew = false,
       draggableId,
       taskIndex,
+      progressColor,
       // Redux props
       _id,
       filter,
@@ -84,8 +85,11 @@ const TaskCard = React.memo(
 
       // Memoize card background color
       const cardBackgroundColor = useMemo(
-         () => (taskHover.isHovered ? 'bg.canvas' : undefined),
-         [taskHover.isHovered]
+         () =>
+            taskHover.isHovered
+               ? progressColor + '.card.hover'
+               : progressColor + '.card',
+         [taskHover.isHovered, progressColor]
       )
 
       // Memoize padding bottom calculation
@@ -368,6 +372,7 @@ TaskCard.propTypes = {
    isNew: PropTypes.bool,
    draggableId: PropTypes.string.isRequired,
    taskIndex: PropTypes.number.isRequired,
+   progressColor: PropTypes.string.isRequired,
    // Redux props
    _id: PropTypes.string.isRequired,
    filter: PropTypes.object.isRequired,

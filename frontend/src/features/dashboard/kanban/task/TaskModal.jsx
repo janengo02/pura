@@ -213,6 +213,7 @@ const TaskModal = React.memo(
                   <MenuItem
                      icon={<PiTrash size={18} />}
                      fontSize='sm'
+                     color='danger.primary'
                      onClick={handleMenuDelete}
                   >
                      {t('btn-delete-task')}

@@ -192,8 +192,8 @@ const ScheduleTimeSlot = React.memo(
                {...timeInputProps}
                bg={
                   timeSlotState.isViewingCalendarEvent
-                     ? 'purple.100'
-                     : 'gray.50'
+                     ? 'accent.subtle'
+                     : 'bg.canvas'
                }
                value={timeSlotState.startTime}
                onChange={handleStartTimeChange}
@@ -213,8 +213,8 @@ const ScheduleTimeSlot = React.memo(
                {...timeInputProps}
                bg={
                   timeSlotState.isViewingCalendarEvent
-                     ? 'purple.100'
-                     : 'gray.50'
+                     ? 'accent.subtle'
+                     : 'bg.canvas'
                }
                value={timeSlotState.endTime}
                onChange={handleEndTimeChange}
