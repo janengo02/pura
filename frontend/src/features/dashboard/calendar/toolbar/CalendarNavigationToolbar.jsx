@@ -53,12 +53,47 @@ const TODAY_BUTTON_STYLES = {
    colorScheme: 'purple'
 }
 
+// Language-specific date format configurations
+const DATE_FORMATS = {
+   ja: {
+      monthHeaderFormat: 'YYYY年M月',
+      dayHeaderFormat: 'M月D日(ddd)',
+      weekFormat: 'M月D日',
+      agendaHeaderFormat: 'YYYY年M月D日'
+   },
+   en: {
+      monthHeaderFormat: 'MMMM YYYY',
+      dayHeaderFormat: 'dddd, MMMM D',
+      weekFormat: 'MMMM D',
+      agendaHeaderFormat: 'MMMM D, YYYY'
+   }
+}
+
+// Japanese weekday mapping for proper display
+const JAPANESE_WEEKDAYS = {
+   Sunday: '日',
+   Monday: '月',
+   Tuesday: '火',
+   Wednesday: '水',
+   Thursday: '木',
+   Friday: '金',
+   Saturday: '土'
+}
+
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
 
-const formatDateRange = (date, view, localizer) => {
-   const formats = localizer.formats
+/**
+ * Language-aware date range formatting
+ * @param {Date} date - Current date
+ * @param {string} view - Current calendar view
+ * @param {object} localizer - Moment localizer
+ * @param {string} currentLanguage - Current application language
+ * @returns {string} Formatted date range string
+ */
+const formatDateRange = (date, view, localizer, currentLanguage = 'en') => {
+   const formats = DATE_FORMATS[currentLanguage] || DATE_FORMATS.en
 
    switch (view) {
       case 'month':
@@ -67,17 +102,26 @@ const formatDateRange = (date, view, localizer) => {
       case 'work_week': {
          const start = localizer.startOf(date, 'week')
          const end = localizer.endOf(date, 'week')
-         return `${localizer.format(start, 'MMMM D')} - ${localizer.format(
-            end,
-            'MMMM D'
-         )}`
+         return `${localizer.format(
+            start,
+            formats.weekFormat
+         )} - ${localizer.format(end, formats.weekFormat)}`
       }
-      case 'day':
+      case 'day': {
+         if (currentLanguage === 'ja') {
+            // For Japanese, manually format to ensure proper weekday display
+            const month = localizer.format(date, 'M')
+            const day = localizer.format(date, 'D')
+            const weekdayEnglish = localizer.format(date, 'dddd')
+            const weekdayJapanese = JAPANESE_WEEKDAYS[weekdayEnglish] || '日'
+            return `${month}月${day}日(${weekdayJapanese})`
+         }
          return localizer.format(date, formats.dayHeaderFormat)
+      }
       case 'agenda':
          return localizer.format(date, formats.agendaHeaderFormat)
       default:
-         return localizer.format(date, 'MMMM YYYY')
+         return localizer.format(date, formats.monthHeaderFormat)
    }
 }
 
@@ -117,12 +161,14 @@ NavigationControls.propTypes = {
 }
 
 /**
- * Date range display section
+ * Date range display section with language-aware formatting
  */
 const DateRangeDisplay = React.memo(({ date, view, localizer }) => {
+   const { currentLanguage } = useReactiveTranslation()
+
    const formattedRange = useMemo(
-      () => formatDateRange(date, view, localizer),
-      [date, view, localizer]
+      () => formatDateRange(date, view, localizer, currentLanguage),
+      [date, view, localizer, currentLanguage]
    )
 
    return (

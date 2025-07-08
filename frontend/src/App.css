@@ -126,10 +126,13 @@
 .rbc-header {
    color: var(--text-primary) !important;
    border-bottom: none !important;
-   padding: 8px 4px !important;
+   padding: 12px 4px !important;
    font-weight: 600 !important;
    font-size: 0.875rem !important;
    transition: all 0.2s ease;
+   display: flex;
+   align-items: center;
+   justify-content: center;
 }
 
 .rbc-month-view .rbc-header {
@@ -151,10 +154,6 @@
    border-top: 1px solid var(--border-lighter) !important;
    background-color: var(--bg-primary) !important;
    transition: all 0.2s ease;
-}
-
-.rbc-time-slot:hover {
-   background-color: var(--bg-secondary) !important;
 }
 
 .rbc-day-slot .rbc-time-slot {
@@ -179,10 +178,6 @@
 .rbc-month-view .rbc-date-cell.rbc-off-range {
    background-color: var(--off-range-bg) !important;
    opacity: 0.6;
-}
-
-.rbc-month-view .rbc-date-cell:hover {
-   background-color: var(--bg-secondary) !important;
 }
 
 .rbc-month-view .rbc-date-cell:last-child {
@@ -254,7 +249,8 @@
    transition: all 0.2s ease;
 }
 
-.rbc-event:hover {
+.rbc-event:hover,
+.rbc-event[aria-expanded='true'].rbc-selected {
    transform: translateY(-1px);
    box-shadow: 0 2px 6px var(--shadow-color) !important;
 }
@@ -285,6 +281,10 @@
 
 .rbc-time-gutter .rbc-timeslot-group {
    border-bottom: 1px solid var(--border-light) !important;
+}
+
+.rbc-time-gutter .rbc-timeslot-group .rbc-time-slot {
+   border-top: none !important;
 }
 
 .rbc-label {
@@ -403,7 +403,7 @@
    }
 
    .rbc-header {
-      padding: 6px 2px !important;
+      padding: 12px 2px !important;
       font-size: 0.75rem !important;
    }
 
@@ -436,7 +436,7 @@
    }
 
    .rbc-header {
-      padding: 4px 1px !important;
+      padding: 12px 1px !important;
       font-size: 0.7rem !important;
    }
 
@@ -511,13 +511,6 @@
 /* =============================================================================
       ACCESSIBILITY IMPROVEMENTS
       ============================================================================= */
-
-/* Focus states */
-.rbc-button-link:focus,
-.rbc-event:focus {
-   outline: 2px solid var(--today-highlight) !important;
-   outline-offset: 2px !important;
-}
 
 /* High contrast for better readability */
 @media (prefers-contrast: high) {
