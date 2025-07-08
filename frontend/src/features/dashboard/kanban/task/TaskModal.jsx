@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -12,13 +12,15 @@ import { createSelector } from 'reselect'
 
 // Actions
 import {
+   clearTaskAction,
    deleteTaskAction,
    updateTaskAction
 } from '../../../../actions/taskActions'
 
-// External Libraries
+// Form Handling
 import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { dashboardSchema as s } from '../../DashboardSchema'
 
 // UI Components
 import {
@@ -46,7 +48,11 @@ import ScheduleSelect from './ScheduleSelect'
 // Utils & Icons
 import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
-import { dashboardSchema as s } from '../../DashboardSchema'
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+const FOCUS_DELAY = 100 // Delay before focusing to ensure modal is fully rendered
 
 // =============================================================================
 // MAIN COMPONENT
@@ -59,26 +65,37 @@ const TaskModal = React.memo(
       // Redux props
       taskData: { task, _id },
       deleteTaskAction,
-      updateTaskAction
+      updateTaskAction,
+      clearTaskAction
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
+
       const { t } = useReactiveTranslation()
 
+      // Modal state management
+      const modalMenu = useDisclosure()
+
+      // Form setup
+      const methods = useForm({
+         resolver: yupResolver(s),
+         mode: 'onChange'
+      })
+
+      // Local state for optimistic updates
       const [taskTitle, setTaskTitle] = useState('')
       const [taskContent, setTaskContent] = useState('')
 
-      const modalCard = useDisclosure()
-      const modalMenu = useDisclosure()
-
-      const methods = useForm({
-         resolver: yupResolver(s)
-      })
+      // Ref for title input focus
+      const titleInputRef = useRef(null)
+      const previousTaskIdRef = useRef(null)
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
+      // Memoized modal state based on task existence
+      const isModalOpen = useMemo(() => Boolean(task), [task])
 
       const hasTaskTitleChanged = useMemo(
          () => taskTitle && taskTitle !== task?.title,
@@ -95,26 +112,29 @@ const TaskModal = React.memo(
       // -------------------------------------------------------------------------
 
       const handleDeleteTask = useCallback(() => {
+         if (!task?._id) return
          const formData = {
             page_id: _id,
-            task_id: task._id
+            task_id: task?._id
          }
          deleteTaskAction(formData)
       }, [_id, task?._id, deleteTaskAction])
 
       const handleUpdateTitle = useCallback(async () => {
+         if (!task?._id) return
          const formData = {
             page_id: _id,
-            task_id: task._id,
+            task_id: task?._id,
             title: taskTitle || t('placeholder-untitled')
          }
          await updateTaskAction(formData)
       }, [_id, task?._id, taskTitle, updateTaskAction, t])
 
       const handleUpdateContent = useCallback(async () => {
+         if (!task?._id) return
          const formData = {
             page_id: _id,
-            task_id: task._id,
+            task_id: task?._id,
             content: taskContent
          }
          await updateTaskAction(formData)
@@ -144,10 +164,30 @@ const TaskModal = React.memo(
          async (e) => {
             e.preventDefault()
             handleDeleteTask()
-            modalCard.onClose()
+            // Modal will close automatically when task is deleted from Redux
          },
          [handleDeleteTask]
       )
+
+      const handleCloseModal = useCallback(() => {
+         // Clear the task from Redux state to close modal
+         clearTaskAction()
+      }, [clearTaskAction])
+      // -------------------------------------------------------------------------
+      // FOCUS MANAGEMENT
+      // -------------------------------------------------------------------------
+
+      const focusTitleInput = useCallback(() => {
+         // Use a small delay to ensure the modal and form are fully rendered
+         setTimeout(() => {
+            if (titleInputRef.current) {
+               titleInputRef.current.focus()
+               // Position cursor at the end of existing text
+               const length = titleInputRef.current.value.length
+               titleInputRef.current.setSelectionRange(length, length)
+            }
+         }, FOCUS_DELAY)
+      }, [])
 
       // -------------------------------------------------------------------------
       // EFFECTS
@@ -158,11 +198,22 @@ const TaskModal = React.memo(
          if (task) {
             setTaskTitle(task.title || '')
             setTaskContent(task.content || '')
-            modalCard.onOpen()
-         } else {
-            modalCard.onClose()
          }
       }, [task])
+
+      // Focus title input only when modal first opens (new task selected)
+      useEffect(() => {
+         const currentTaskId = task?._id
+         const previousTaskId = previousTaskIdRef.current
+
+         // Only focus if modal is open, task exists, and task ID has changed
+         if (isModalOpen && task && currentTaskId !== previousTaskId) {
+            focusTitleInput()
+         }
+
+         // Update the previous task ID ref
+         previousTaskIdRef.current = currentTaskId
+      }, [isModalOpen, task, focusTitleInput])
 
       // Auto-save title changes with debounce
       useEffect(() => {
@@ -193,7 +244,7 @@ const TaskModal = React.memo(
             left={0}
             bg='text.primary'
             opacity={0.3}
-            onClick={modalCard.onClose}
+            onClick={handleCloseModal}
          />
       )
 
@@ -227,6 +278,7 @@ const TaskModal = React.memo(
          <FormProvider {...methods} h='fit-content' w='full'>
             <form noValidate autoComplete='on' style={{ width: '100%' }}>
                <MultiInput
+                  ref={titleInputRef}
                   name='title'
                   type='textarea'
                   variant='unstyled'
@@ -275,7 +327,7 @@ const TaskModal = React.memo(
       )
 
       const renderModalCard = () => (
-         <ScaleFade initialScale={0.9} in={modalCard.isOpen}>
+         <ScaleFade initialScale={0.9} in={isModalOpen}>
             <Card
                paddingX={6}
                paddingY={4}
@@ -294,10 +346,9 @@ const TaskModal = React.memo(
       // RENDER LOGIC
       // -------------------------------------------------------------------------
 
-      if (!modalCard.isOpen) {
+      if (!isModalOpen) {
          return null
       }
-
       return (
          <Box
             position='fixed'
@@ -332,7 +383,8 @@ TaskModal.propTypes = {
       _id: PropTypes.string
    }).isRequired,
    updateTaskAction: PropTypes.func.isRequired,
-   deleteTaskAction: PropTypes.func.isRequired
+   deleteTaskAction: PropTypes.func.isRequired,
+   clearTaskAction: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -346,6 +398,7 @@ const selectTaskModalData = createSelector(
       _id
    })
 )
+
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
@@ -356,7 +409,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    updateTaskAction,
-   deleteTaskAction
+   deleteTaskAction,
+   clearTaskAction
 }
 
 // =============================================================================

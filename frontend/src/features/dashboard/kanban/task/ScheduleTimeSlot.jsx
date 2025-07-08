@@ -57,7 +57,7 @@ const ScheduleTimeSlot = React.memo(
 
       const updateScheduleSlot = useCallback(
          async (updateCallback) => {
-            const newSchedule = cloneDeep(task.schedule)
+            const newSchedule = cloneDeep(task.schedule) || []
             updateCallback(newSchedule)
 
             const formData = {

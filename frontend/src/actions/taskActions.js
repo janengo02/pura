@@ -1,5 +1,11 @@
 import { api } from '../utils'
-import { CREATE_TASK, DELETE_TASK, GET_PAGE, SHOW_TASK } from './types'
+import {
+   CLEAR_TASK,
+   CREATE_TASK,
+   DELETE_TASK,
+   GET_PAGE,
+   SHOW_TASK
+} from './types'
 import { pageActionErrorHandler } from './pageActions'
 
 // Create new task
@@ -93,4 +99,10 @@ export const createTaskModalAction = (reqData) => async (dispatch) => {
    } catch (err) {
       pageActionErrorHandler(dispatch, reqData.page_id, err)
    }
+}
+export const clearTaskAction = () => (dispatch) => {
+   dispatch({
+      type: CLEAR_TASK,
+      payload: null
+   })
 }

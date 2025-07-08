@@ -21,6 +21,7 @@ export const GET_PAGE = 'GET_PAGE'
 export const PAGE_ERROR = 'PAGE_ERROR'
 export const SHOW_TASK = 'SHOW_TASK'
 export const MOVE_TASK = 'MOVE_TASK'
+export const CLEAR_TASK = 'CLEAR_TASK'
 
 export const CREATE_PROGRESS = 'CREATE_PROGRESS'
 export const UPDATE_PROGRESS = 'UPDATE_PROGRESS'

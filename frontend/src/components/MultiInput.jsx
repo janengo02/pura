@@ -1,4 +1,8 @@
-import { findInputError, isFormInvalid } from '../utils'
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+import React from 'react'
 import { useFormContext } from 'react-hook-form'
 import {
    FormControl,
@@ -6,100 +10,109 @@ import {
    FormHelperText,
    FormLabel
 } from '@chakra-ui/react'
+
+// Internal Components
 import { PasswordInput, TextInput } from './formInput'
 import { TextAreaInput } from './formInput/TextAreaInput'
 
-export const MultiInput = ({
-   name,
-   required,
-   label,
-   variant,
-   type,
-   placeholder,
-   size,
-   helpertext,
-   validation,
-   options,
-   ...props
-}) => {
-   // Set up validation
-   const {
-      register,
-      formState: { errors }
-   } = useFormContext()
+// Utils
+import { findInputError, isFormInvalid } from '../utils'
 
-   const inputErrors = findInputError(errors, name)
-   const isInvalid = isFormInvalid(inputErrors)
-   // Set up Form Input Type
-   let input = null
-   switch (type) {
-      case 'text':
-         input = (
-            <TextInput
-               register={register}
-               name={name}
-               variant={variant}
-               type={type}
-               placeholder={placeholder}
-               size={size}
-               validation={validation}
-               onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                     e.preventDefault()
-                     e.currentTarget.blur()
-                  }
-               }}
-               {...props}
-            />
-         )
-         break
-      case 'textarea':
-         input = (
-            <TextAreaInput
-               register={register}
-               name={name}
-               variant={variant}
-               placeholder={placeholder}
-               validation={validation}
-               onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                     e.preventDefault()
-                     e.currentTarget.blur()
-                  }
-               }}
-               {...props}
-            />
-         )
-         break
-      case 'password':
-         input = (
-            <PasswordInput
-               register={register}
-               name={name}
-               variant={variant}
-               size={size}
-               validation={validation}
-               onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                     e.preventDefault()
-                     e.currentTarget.blur()
-                  }
-               }}
-               {...props}
-            />
-         )
-         break
-      default:
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+export const MultiInput = React.forwardRef(
+   (
+      {
+         name,
+         required,
+         label,
+         variant,
+         type,
+         placeholder,
+         size,
+         helpertext,
+         validation,
+         options,
+         ...props
+      },
+      ref
+   ) => {
+      // -------------------------------------------------------------------------
+      // FORM SETUP
+      // -------------------------------------------------------------------------
+
+      const {
+         register,
+         formState: { errors }
+      } = useFormContext()
+
+      const inputErrors = findInputError(errors, name)
+      const isInvalid = isFormInvalid(inputErrors)
+
+      // -------------------------------------------------------------------------
+      // INPUT TYPE RENDERING
+      // -------------------------------------------------------------------------
+
+      const renderInput = () => {
+         const commonProps = {
+            register,
+            name,
+            variant,
+            placeholder,
+            validation,
+            onKeyPress: (e) => {
+               if (e.key === 'Enter') {
+                  e.preventDefault()
+                  e.currentTarget.blur()
+               }
+            },
+            ...props
+         }
+
+         switch (type) {
+            case 'text':
+               return (
+                  <TextInput
+                     {...commonProps}
+                     ref={ref}
+                     type={type}
+                     size={size}
+                  />
+               )
+
+            case 'textarea':
+               return <TextAreaInput {...commonProps} ref={ref} />
+
+            case 'password':
+               return <PasswordInput {...commonProps} ref={ref} size={size} />
+
+            default:
+               return null
+         }
+      }
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      return (
+         <FormControl isRequired={required} isInvalid={isInvalid}>
+            {label && <FormLabel>{label}</FormLabel>}
+            {renderInput()}
+            {!isInvalid ? (
+               <FormHelperText>{helpertext}</FormHelperText>
+            ) : (
+               <FormErrorMessage>{inputErrors.error.message}</FormErrorMessage>
+            )}
+         </FormControl>
+      )
    }
-   return (
-      <FormControl isRequired={required} isInvalid={isInvalid}>
-         {label && <FormLabel>{label}</FormLabel>}
-         {input}
-         {!isInvalid ? (
-            <FormHelperText>{helpertext}</FormHelperText>
-         ) : (
-            <FormErrorMessage>{inputErrors.error.message}</FormErrorMessage>
-         )}
-      </FormControl>
-   )
-}
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+MultiInput.displayName = 'MultiInput'

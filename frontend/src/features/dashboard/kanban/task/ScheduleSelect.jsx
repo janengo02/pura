@@ -57,7 +57,7 @@ const ScheduleSelect = React.memo(
             end: ''
          }
 
-         const newSchedule = cloneDeep(task.schedule)
+         const newSchedule = cloneDeep(task.schedule) || []
          newSchedule.push(newSlot)
 
          const formData = {
