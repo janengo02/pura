@@ -4,6 +4,7 @@
       "alert-bad-request": "不正なリクエスト",
       "alert-google_calendar-event_already_synced": "すでに同期済み！",
       "alert-google_calendar-event_created": "Googleカレンダーイベントが作成されました",
+      "alert-google_calendar-account-connect_failed": "Googleカレンダーアカウントの接続に失敗しました",
       "alert-group_progress-notfound": "グループまたは進捗を特定できません",
       "alert-group-notfound": "グループを特定できません",
       "alert-invalid-email": "そのメールアドレスのアカウントが見つかりません",

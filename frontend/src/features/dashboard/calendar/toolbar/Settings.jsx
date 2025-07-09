@@ -31,7 +31,8 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // Actions
 import {
    changeCalendarVisibilityAction,
-   addGoogleAccountAction
+   addGoogleAccountAction,
+   googleAccountErrorHandler
 } from '../../../../actions/googleAccountActions'
 
 // Hooks
@@ -71,6 +72,7 @@ const Settings = React.memo(
       // Redux props
       changeCalendarVisibilityAction,
       addGoogleAccountAction,
+      googleAccountErrorHandler,
       settingsData: { googleAccounts, googleCalendars, range }
    }) => {
       // -------------------------------------------------------------------------
@@ -83,12 +85,17 @@ const Settings = React.memo(
             const { code } = tokenResponse
             addGoogleAccountAction({ code, range }).then(() => {})
          },
-         // TODO Error Handling
          onError: (responseError) => {
-            console.log('onError', responseError)
+            googleAccountErrorHandler({
+               title: 'alert-google_calendar-account-connect_failed',
+               msg: responseError.message
+            })
          },
          onNonOAuthError: (responseError) => {
-            console.log('onNonOAuthError', responseError)
+            googleAccountErrorHandler({
+               title: 'alert-google_calendar-account-connect_failed',
+               msg: responseError.message
+            })
          },
          scope: 'openid email profile https://www.googleapis.com/auth/calendar',
          flow: 'auth-code',
@@ -231,6 +238,7 @@ Settings.displayName = 'CalendarSettings'
 Settings.propTypes = {
    changeCalendarVisibilityAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
+   googleAccountErrorHandler: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
       googleCalendars: PropTypes.array.isRequired,
@@ -265,7 +273,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    changeCalendarVisibilityAction,
-   addGoogleAccountAction
+   addGoogleAccountAction,
+   googleAccountErrorHandler
 }
 
 // =============================================================================
