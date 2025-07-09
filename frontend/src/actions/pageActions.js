@@ -1,4 +1,6 @@
 import { api } from '../utils'
+import { setAlertAction } from './alertActions'
+import { showTaskModalAction } from './taskActions'
 import {
    FILTER_SCHEDULE,
    FILTER_NAME,
@@ -8,7 +10,7 @@ import {
 } from './types'
 
 // Helper for error dispatch
-export const pageActionErrorHandler = (dispatch, pageId, err) => {
+export const pageActionFatalErrorHandler = (dispatch, pageId, err) => {
    const errors = err?.response?.data?.errors || ['Unknown error']
    dispatch({
       type: PAGE_ERROR,
@@ -17,6 +19,29 @@ export const pageActionErrorHandler = (dispatch, pageId, err) => {
          errors
       }
    })
+}
+// Helper for error dispatch
+export const pageActionErrorHandler = (
+   dispatch,
+   err,
+   pageId = null,
+   taskId = null
+) => {
+   const errors = err?.response?.data?.errors || ['Unknown error']
+   if (errors) {
+      errors.forEach((error) =>
+         dispatch(setAlertAction(error.title, error.msg, 'error'))
+      )
+   }
+   dispatch(getFirstPageAction())
+   if (pageId && taskId) {
+      dispatch(
+         showTaskModalAction({
+            page_id: pageId,
+            task_id: taskId
+         })
+      )
+   }
 }
 // Get the first page of a user
 export const getFirstPageAction = () => async (dispatch) => {
@@ -27,7 +52,7 @@ export const getFirstPageAction = () => async (dispatch) => {
          payload: res.data
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, null, err)
+      pageActionFatalErrorHandler(dispatch, null, err)
    }
 }
 
@@ -37,9 +62,9 @@ export const moveTaskAction = (reqData) => async (dispatch) => {
       payload: reqData.result
    })
    try {
-      api.post(`/page/move-task/${reqData.page_id}`, reqData)
+      await api.post(`/page/move-task/${reqData.page_id}`, reqData)
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 export const filterSchedule = (reqData) => async (dispatch) => {

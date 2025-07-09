@@ -12,7 +12,7 @@ export const createGroupAction = (reqData) => async (dispatch) => {
          payload: res.data.group
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 
@@ -28,7 +28,7 @@ export const updateGroupAction = (reqData) => async (dispatch) => {
          reqData
       )
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 
@@ -43,6 +43,6 @@ export const deleteGroupAction = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/group/${reqData.page_id}/${reqData.group_id}`)
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }

@@ -11,7 +11,7 @@ export const createProgressAction = (reqData) => async (dispatch) => {
          payload: res.data.progress
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 
@@ -27,7 +27,7 @@ export const updateProgressAction = (reqData) => async (dispatch) => {
          reqData
       )
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 
@@ -42,6 +42,6 @@ export const deleteProgressAction = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/progress/${reqData.page_id}/${reqData.progress_id}`)
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }

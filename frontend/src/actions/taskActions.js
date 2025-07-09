@@ -6,7 +6,10 @@ import {
    GET_PAGE,
    SHOW_TASK
 } from './types'
-import { pageActionErrorHandler } from './pageActions'
+import {
+   pageActionErrorHandler,
+   pageActionFatalErrorHandler
+} from './pageActions'
 
 // Create new task
 export const createTaskAction = (reqData) => async (dispatch) => {
@@ -20,7 +23,7 @@ export const createTaskAction = (reqData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 
@@ -42,7 +45,12 @@ export const updateTaskAction = (formData) => async (dispatch) => {
          })
       }
    } catch (err) {
-      pageActionErrorHandler(dispatch, formData.page_id, err)
+      pageActionErrorHandler(
+         dispatch,
+         err,
+         formData.page_id,
+         formData.task_detail_flg ? formData.task_id : null
+      )
    }
 }
 // Delete a task
@@ -56,7 +64,7 @@ export const deleteTaskAction = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 // Show target task modal
@@ -73,7 +81,7 @@ export const showTaskModalAction = (formData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, formData.page_id, err)
+      pageActionFatalErrorHandler(dispatch, formData.page_id, err)
    }
 }
 // Create new task
@@ -97,7 +105,7 @@ export const createTaskModalAction = (reqData) => async (dispatch) => {
          }
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, reqData.page_id, err)
+      pageActionErrorHandler(dispatch, err)
    }
 }
 export const clearTaskAction = () => (dispatch) => {
