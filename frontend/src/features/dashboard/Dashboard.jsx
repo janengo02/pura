@@ -2,18 +2,20 @@
 // IMPORTS
 // =============================================================================
 
+// React & Hooks
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Flex } from '@chakra-ui/react'
 
-// *** Context & hooks ***
+// Context & Hooks
 import SplitPaneContext from '../../context/SplitPaneContext'
 import useWindowDimensions from '../../hooks/useWindowDimensions'
 
-// *** Components ***
+// Internal Components
 import Navbar from './Navbar'
 import PageDivider from './PageDivider'
 import SplitPaneLeft from './SplitPaneLeft'
 import SplitPaneRight from './SplitPaneRight'
+import ToastAlert from '../../components/errorHandler/ToastAlert'
 
 // =============================================================================
 // CONSTANTS
@@ -162,6 +164,7 @@ const Dashboard = React.memo(() => {
          role='main'
          aria-label='Dashboard'
       >
+         <ToastAlert />
          <SplitPaneContext.Provider value={contextValue}>
             <Navbar />
             {layoutContent}
@@ -170,6 +173,14 @@ const Dashboard = React.memo(() => {
    )
 })
 
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
 Dashboard.displayName = 'Dashboard'
+
+// =============================================================================
+// EXPORT
+// =============================================================================
 
 export default Dashboard

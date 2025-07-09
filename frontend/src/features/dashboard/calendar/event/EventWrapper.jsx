@@ -27,7 +27,7 @@ import EventWrapperTitle from '../../../../components/typography/EventWrapperTit
 import EventTimeText from './EventTimeText'
 
 // Actions & Hooks
-import { deleteEventAction } from '../../../../actions/googleAccountActions'
+import { deleteGoogleEventAction } from '../../../../actions/googleAccountActions'
 import { showTaskModalAction } from '../../../../actions/taskActions'
 import useLoading from '../../../../hooks/useLoading'
 
@@ -69,7 +69,7 @@ const EventWrapper = React.memo(
       children,
       event,
       // Redux props
-      deleteEventAction,
+      deleteGoogleEventAction,
       showTaskModalAction,
       eventData: { pageId, tasks, googleAccounts }
    }) => {
@@ -101,8 +101,8 @@ const EventWrapper = React.memo(
             calendarId: event.calendarId,
             accountId: event.accountId
          }
-         await deleteEventAction(reqData)
-      }, [deleteEventAction, event.id, event.calendarId, event.accountId])
+         await deleteGoogleEventAction(reqData)
+      }, [deleteGoogleEventAction, event.id, event.calendarId, event.accountId])
 
       const handleShowTask = useCallback(async () => {
          const formData = {
@@ -209,7 +209,7 @@ EventWrapper.propTypes = {
       accountId: PropTypes.string,
       pura_schedule_index: PropTypes.number
    }).isRequired,
-   deleteEventAction: PropTypes.func.isRequired,
+   deleteGoogleEventAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
       pageId: PropTypes.string.isRequired,
@@ -244,7 +244,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   deleteEventAction,
+   deleteGoogleEventAction,
    showTaskModalAction
 }
 

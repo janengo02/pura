@@ -33,7 +33,6 @@ import {
 import Toolbar from './kanban/toolbar/Toolbar'
 import Group from './kanban/group/Group'
 import ProgressHeader from './kanban/progress/ProgressHeader'
-import FormAlert from '../../components/errorHandler/FormAlert'
 import Column from './kanban/progress/Column'
 
 // Utils & Icons
@@ -158,7 +157,6 @@ const Kanban = React.memo(
 
       return (
          <Skeleton isLoaded={!loading}>
-            <FormAlert />
             <VStack
                w='fit-content'
                h='fit-content'
