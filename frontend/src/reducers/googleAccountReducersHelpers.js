@@ -1,6 +1,127 @@
-// =============================================
-// Add Google Account State Transform Functions
-// =============================================
+// =============================================================================
+// CONSTANTS & UTILITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Parse event date/time from Google Calendar API response
+ * Handles both dateTime (timed events) and date (all-day events) formats
+ * @param {Object} eventTime - Event time object from Google API
+ * @returns {Date} Parsed date object
+ */
+const parseEventDateTime = (eventTime) => {
+   if (eventTime?.dateTime) {
+      // Timed event with specific time
+      return new Date(Date.parse(eventTime.dateTime))
+   } else if (eventTime?.date) {
+      // All-day event with date only
+      const date = new Date(eventTime.date)
+      // For all-day events, ensure we're working with local midnight
+      date.setHours(0, 0, 0, 0)
+      return date
+   }
+   // Fallback to current date if neither format is available
+   return new Date()
+}
+
+/**
+ * Check if an event is an all-day event
+ * Considers both Google Calendar's all-day format (date property) and
+ * events that span more than 1 day (which should be treated as all-day for display)
+ * @param {Object} event - Google Calendar event object
+ * @returns {boolean} True if event is all-day
+ */
+const isAllDayEvent = (event) => {
+   // First check Google Calendar's native all-day format
+   if (event.start?.date && event.end?.date) {
+      return true
+   }
+
+   // Check if event spans more than 1 day
+   if (event.start?.dateTime && event.end?.dateTime) {
+      const startDate = new Date(event.start.dateTime)
+      const endDate = new Date(event.end.dateTime)
+
+      // Calculate the difference in days
+      const timeDifferenceMs = endDate.getTime() - startDate.getTime()
+      const daysDifference = timeDifferenceMs / (1000 * 60 * 60 * 24)
+
+      // If event spans more than 1 day, treat as all-day
+      return daysDifference > 1
+   }
+
+   return false
+}
+
+/**
+ * Check if a task schedule slot is an all-day event
+ * Determines if a task schedule spans more than 1 day or covers a full day
+ * @param {Date} startTime - Task start time
+ * @param {Date} endTime - Task end time
+ * @returns {boolean} True if task should be treated as all-day
+ */
+const isTaskScheduleAllDay = (startTime, endTime) => {
+   // Calculate the difference in days
+   const timeDifferenceMs = endTime.getTime() - startTime.getTime()
+   const daysDifference = timeDifferenceMs / (1000 * 60 * 60 * 24)
+
+   // If task spans more than 1 day, treat as all-day
+   if (daysDifference > 1) {
+      return true
+   }
+
+   // Check if it's a full-day task (starts at beginning of day and ends at end of day)
+   const startHour = startTime.getHours()
+   const startMinute = startTime.getMinutes()
+   const endHour = endTime.getHours()
+   const endMinute = endTime.getMinutes()
+
+   // Consider it all-day if it starts early (before 6 AM) and ends late (after 6 PM)
+   // and spans at least 8 hours, or if it's exactly midnight to midnight
+   const isFullDaySpan =
+      (startHour === 0 &&
+         startMinute === 0 &&
+         endHour === 23 &&
+         endMinute >= 59) ||
+      (startHour <= 6 && endHour >= 18 && daysDifference >= 0.33) // At least 8 hours spanning morning to evening
+
+   return isFullDaySpan
+}
+
+/**
+ * Process all-day event end time for react-big-calendar
+ * Google Calendar API returns next day for single-day all-day events, but react-big-calendar
+ * expects the actual end date. For multi-day events, keep the original end time.
+ * @param {Date} startTime - Event start time
+ * @param {Date} endTime - End time from Google API
+ * @returns {Date} Adjusted end time for react-big-calendar
+ */
+const processAllDayEndTime = (startTime, endTime) => {
+   // Calculate the difference in days
+   const timeDifferenceMs = endTime.getTime() - startTime.getTime()
+   const daysDifference = timeDifferenceMs / (1000 * 60 * 60 * 24)
+
+   // For multi-day events (more than 1 day), return original end time
+   if (daysDifference > 1) {
+      return endTime
+   }
+
+   // For single-day all-day events, adjust by subtracting one day and setting to end of day
+   const adjustedEnd = new Date(endTime)
+   adjustedEnd.setDate(adjustedEnd.getDate() - 1)
+   adjustedEnd.setHours(23, 59, 59, 999)
+   return adjustedEnd
+}
+
+// =============================================================================
+// GOOGLE ACCOUNT STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Add or update Google account in account list
+ * @param {Array} currentGoogleAccounts - Current account list
+ * @param {Object} newGoogleAccount - New account data
+ * @returns {Array} Updated account list
+ */
 export const addGoogleAccountListHelper = (
    currentGoogleAccounts,
    newGoogleAccount
@@ -8,88 +129,117 @@ export const addGoogleAccountListHelper = (
    const isExistingAccount = currentGoogleAccounts.find(
       (acc) => acc.accountId === newGoogleAccount._id
    )
+
    if (isExistingAccount) {
       return currentGoogleAccounts.map((acc) =>
          acc.accountId === newGoogleAccount._id
             ? { ...acc, accountSyncStatus: newGoogleAccount.sync_status }
             : acc
       )
-   } else {
-      return [
-         ...currentGoogleAccounts,
-         {
-            accountId: newGoogleAccount._id,
-            accountEmail: newGoogleAccount.account_email,
-            accountSyncStatus: newGoogleAccount.sync_status
-         }
-      ]
    }
+
+   return [
+      ...currentGoogleAccounts,
+      {
+         accountId: newGoogleAccount._id,
+         accountEmail: newGoogleAccount.account_email,
+         accountSyncStatus: newGoogleAccount.sync_status
+      }
+   ]
 }
+
+/**
+ * Add or update calendars for a Google account
+ * @param {Array} currentCalendarList - Current calendar list
+ * @param {Object} newAccountCalendars - New account calendar data
+ * @returns {Array} Updated calendar list
+ */
 export const addGoogleAccountCalendarListHelper = (
    currentCalendarList,
    newAccountCalendars
 ) => {
-   const calendars = currentCalendarList.filter(
+   const calendarsWithoutCurrentAccount = currentCalendarList.filter(
       (c) => c.accountId !== newAccountCalendars._id
    )
-   return [
-      ...calendars,
-      ...newAccountCalendars.calendars.map((calendar) => {
-         const currentCalendarSelected = currentCalendarList.find(
-            (c) => c.calendarId === calendar.id
-         )
-         return {
-            accountId: newAccountCalendars._id,
-            calendarId: calendar.id,
-            title: calendar.summary,
-            color: calendar.backgroundColor,
-            accessRole: calendar.accessRole,
-            isPrimary: calendar.primary || false,
-            selected: currentCalendarSelected
-               ? currentCalendarSelected.selected
-               : calendar.selected || false
-         }
-      })
-   ]
+
+   const newCalendars = newAccountCalendars.calendars.map((calendar) => {
+      const currentCalendarSelected = currentCalendarList.find(
+         (c) => c.calendarId === calendar.id
+      )
+
+      return {
+         accountId: newAccountCalendars._id,
+         calendarId: calendar.id,
+         title: calendar.summary,
+         color: calendar.backgroundColor,
+         accessRole: calendar.accessRole,
+         isPrimary: calendar.primary || false,
+         selected: currentCalendarSelected
+            ? currentCalendarSelected.selected
+            : calendar.selected || false
+      }
+   })
+
+   return [...calendarsWithoutCurrentAccount, ...newCalendars]
 }
 
+/**
+ * Add or update events for a Google account with full date support
+ * @param {Array} currentCalendarEvents - Current event list
+ * @param {Object} newGoogleAccountEvents - New account event data
+ * @returns {Array} Updated event list
+ */
 export const addGoogleAccountEventListHelper = (
    currentCalendarEvents,
    newGoogleAccountEvents
 ) => {
-   const events = currentCalendarEvents.filter(
+   const eventsWithoutCurrentAccount = currentCalendarEvents.filter(
       (ev) => ev.accountId !== newGoogleAccountEvents._id
    )
+
+   const newEvents = []
+
    newGoogleAccountEvents.calendars.forEach((calendar) => {
       calendar?.items?.forEach((event) => {
-         // @todo: Deal with full date events
+         // Handle both timed events (dateTime) and all-day events (date)
          if (
-            event.start?.hasOwnProperty('dateTime') &&
-            event.end?.hasOwnProperty('dateTime')
+            (event.start?.dateTime && event.end?.dateTime) ||
+            (event.start?.date && event.end?.date)
          ) {
-            const newStart = Date.parse(event.start.dateTime)
-            const newEnd = Date.parse(event.end.dateTime)
-            events.push({
+            const startTime = parseEventDateTime(event.start)
+            let endTime = parseEventDateTime(event.end)
+            const isAllDay = isAllDayEvent(event)
+
+            // Adjust end time for all-day events to work with react-big-calendar
+            if (isAllDay) {
+               endTime = processAllDayEndTime(startTime, endTime)
+            }
+
+            newEvents.push({
                id: event.id,
-               title: event.summary,
-               start: new Date(newStart),
-               end: new Date(newEnd),
+               title: event.summary || 'Untitled Event',
+               start: startTime,
+               end: endTime,
+               allDay: isAllDay, // Critical property for react-big-calendar
                calendarId: calendar.id,
                calendar: calendar.summary,
                color: calendar.backgroundColor,
                accessRole: calendar.accessRole,
-               calendarVisible: calendar
-                  ? calendar.selected
-                  : calendar.selected || false,
+               calendarVisible: calendar.selected || false,
                accountId: newGoogleAccountEvents._id
             })
          }
       })
    })
 
-   return events
+   return [...eventsWithoutCurrentAccount, ...newEvents]
 }
 
+/**
+ * Main function to add Google account data to state
+ * @param {Object} params - State and new account data
+ * @returns {Object} Updated state with new account data
+ */
 export const addGoogleAccount = ({
    googleAccounts,
    googleCalendars,
@@ -112,22 +262,31 @@ export const addGoogleAccount = ({
    }
 }
 
-// =============================================
-// Load Google Calendar State Transform Functions
-// =============================================
+// =============================================================================
+// GOOGLE CALENDAR LOADING STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Transform Google accounts for loading state
+ * @param {Array} googleAccounts - Raw Google accounts data
+ * @returns {Array} Transformed account list
+ */
 export const loadAccountListHelper = (googleAccounts) => {
-   const accounts = []
-   googleAccounts.forEach((account) => {
-      accounts.push({
-         accountId: account._id,
-         accountEmail: account.account_email,
-         accountSyncStatus: account.sync_status
-      })
-   })
-   return accounts
+   return googleAccounts.map((account) => ({
+      accountId: account._id,
+      accountEmail: account.account_email,
+      accountSyncStatus: account.sync_status
+   }))
 }
+
+/**
+ * Transform Google calendars for loading state
+ * @param {Array} googleAccounts - Raw Google accounts data
+ * @returns {Array} Transformed calendar list
+ */
 export const loadCalendarListHelper = (googleAccounts) => {
    const calendars = []
+
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendars.push({
@@ -137,25 +296,37 @@ export const loadCalendarListHelper = (googleAccounts) => {
             color: calendar.backgroundColor,
             accessRole: calendar.accessRole,
             isPrimary: calendar.primary || false,
-            selected: calendar ? calendar.selected : calendar.selected || false
+            selected: calendar.selected || false
          })
       })
    })
 
    return calendars
 }
+
+/**
+ * Transform events from Google accounts and tasks with full date support
+ * @param {Array} googleAccounts - Raw Google accounts data
+ * @param {Array} tasks - Task schedule data
+ * @returns {Array} Transformed event list
+ */
 export const loadEventListHelper = (googleAccounts, tasks) => {
    const events = []
+
+   // Add task schedule events
    tasks.forEach((task) => {
       task.schedule.forEach((slot, slotIndex) => {
-         const newStart = Date.parse(slot.start)
-         const newEnd = Date.parse(slot.end)
+         const startTime = new Date(Date.parse(slot.start))
+         const endTime = new Date(Date.parse(slot.end))
+         const isAllDay = isTaskScheduleAllDay(startTime, endTime)
+
          events.push({
             id: task._id,
             pura_schedule_index: slotIndex,
             title: task.title,
-            start: new Date(newStart),
-            end: new Date(newEnd),
+            start: startTime,
+            end: endTime,
+            allDay: isAllDay,
             calendarId: null,
             calendar: null,
             color: '#d2c2f2',
@@ -165,28 +336,36 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
          })
       })
    })
+
+   // Add Google Calendar events
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendar?.items?.forEach((event) => {
-            // @todo: Deal with full date events
+            // Handle both timed events and all-day events
             if (
-               event.start?.hasOwnProperty('dateTime') &&
-               event.end?.hasOwnProperty('dateTime')
+               (event.start?.dateTime && event.end?.dateTime) ||
+               (event.start?.date && event.end?.date)
             ) {
-               const newStart = Date.parse(event.start.dateTime)
-               const newEnd = Date.parse(event.end.dateTime)
+               const startTime = parseEventDateTime(event.start)
+               let endTime = parseEventDateTime(event.end)
+               const isAllDay = isAllDayEvent(event)
+
+               // Adjust end time for all-day events to work with react-big-calendar
+               if (isAllDay) {
+                  endTime = processAllDayEndTime(startTime, endTime)
+               }
+
                events.push({
                   id: event.id,
-                  title: event.summary,
-                  start: new Date(newStart),
-                  end: new Date(newEnd),
+                  title: event.summary || 'Untitled Event',
+                  start: startTime,
+                  end: endTime,
+                  allDay: isAllDay, // Critical property for react-big-calendar
                   calendarId: calendar.id,
                   calendar: calendar.summary,
                   color: calendar.backgroundColor,
                   accessRole: calendar.accessRole,
-                  calendarVisible: calendar
-                     ? calendar.selected
-                     : calendar.selected || false,
+                  calendarVisible: calendar.selected || false,
                   accountId: account._id
                })
             }
@@ -196,6 +375,12 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
 
    return events
 }
+
+/**
+ * Main function to load Google calendar data into state
+ * @param {Object} params - Google accounts and tasks data
+ * @returns {Object} Transformed state data
+ */
 export const loadGoogleCalendar = ({ googleAccounts, tasks }) => {
    return {
       googleAccounts: loadAccountListHelper(googleAccounts),
@@ -204,39 +389,49 @@ export const loadGoogleCalendar = ({ googleAccounts, tasks }) => {
    }
 }
 
-// =============================================
-// Change Google Calendar Visibility State Transform Functions
-// =============================================
+// =============================================================================
+// CALENDAR VISIBILITY STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Toggle calendar visibility in calendar list
+ * @param {Array} currentCalendarList - Current calendar list
+ * @param {string} calendarId - Calendar ID to toggle
+ * @returns {Array} Updated calendar list
+ */
 export const changeVisibilityCalendarListHelper = (
    currentCalendarList,
    calendarId
 ) => {
-   const calendars = currentCalendarList.map((c) =>
-      c.calendarId === calendarId
-         ? {
-              ...c,
-              selected: !c.selected
-           }
-         : c
+   return currentCalendarList.map((calendar) =>
+      calendar.calendarId === calendarId
+         ? { ...calendar, selected: !calendar.selected }
+         : calendar
    )
-   return calendars
 }
 
+/**
+ * Toggle event visibility based on calendar visibility
+ * @param {Array} currentEventList - Current event list
+ * @param {string} calendarId - Calendar ID to toggle
+ * @returns {Array} Updated event list
+ */
 export const changeVisibilityEventListHelper = (
    currentEventList,
    calendarId
 ) => {
-   const events = currentEventList.map((ev) =>
-      ev.calendarId === calendarId
-         ? {
-              ...ev,
-              calendarVisible: !ev.calendarVisible
-           }
-         : ev
+   return currentEventList.map((event) =>
+      event.calendarId === calendarId
+         ? { ...event, calendarVisible: !event.calendarVisible }
+         : event
    )
-   return events
 }
 
+/**
+ * Main function to change Google calendar visibility
+ * @param {Object} params - Calendar and event lists with target calendar ID
+ * @returns {Object} Updated state with toggled visibility
+ */
 export const changeGoogleCalendarVisibility = ({
    googleCalendars,
    googleEvents,
@@ -250,29 +445,59 @@ export const changeGoogleCalendarVisibility = ({
       googleEvents: changeVisibilityEventListHelper(googleEvents, calendarId)
    }
 }
-// =============================================
-// Update Google Event State Transform Functions
-// =============================================
+
+// =============================================================================
+// EVENT UPDATE STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Update or delete Google event with full date support
+ * @param {Object} params - Event list and updated event data
+ * @returns {Object} Updated state with modified event
+ */
 export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
+   // Handle event deletion
    if (updatedEvent.deleted) {
       return {
          googleEvents: googleEvents.filter((ev) => ev.id !== updatedEvent.id)
       }
    }
-   const updatedEventList = googleEvents
-   const newStart = Date.parse(updatedEvent.start.dateTime)
-   const newEnd = Date.parse(updatedEvent.end.dateTime)
-   const updatedEventIndex = googleEvents.findIndex(
-      (ev) => ev.id === updatedEvent.id
-   )
-   updatedEventList[updatedEventIndex].start = new Date(newStart)
-   updatedEventList[updatedEventIndex].end = new Date(newEnd)
+
+   // Update existing event
+   const updatedEventList = googleEvents.map((event) => {
+      if (event.id === updatedEvent.id) {
+         const startTime = parseEventDateTime(updatedEvent.start)
+         let endTime = parseEventDateTime(updatedEvent.end)
+         const isAllDay = isAllDayEvent(updatedEvent)
+
+         // Adjust end time for all-day events to work with react-big-calendar
+         if (isAllDay) {
+            endTime = processAllDayEndTime(startTime, endTime)
+         }
+
+         return {
+            ...event,
+            title: updatedEvent.summary || event.title,
+            start: startTime,
+            end: endTime,
+            allDay: isAllDay // Critical property for react-big-calendar
+         }
+      }
+      return event
+   })
+
    return { googleEvents: updatedEventList }
 }
 
-// =============================================
-// Add Google Event State Transform Functions
-// =============================================
+// =============================================================================
+// EVENT CREATION STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Create new Google event with full date support
+ * @param {Object} params - Calendar list, event list, account ID, and new event data
+ * @returns {Object} Updated state with new event
+ */
 export const createGoogleEvent = ({
    googleCalendars,
    googleEvents,
@@ -281,22 +506,29 @@ export const createGoogleEvent = ({
 }) => {
    // Find the primary calendar for the given accountId
    const calendar = googleCalendars.find(
-      (acc) => acc.accountId === accountId && acc.isPrimary
+      (cal) => cal.accountId === accountId && cal.isPrimary
    )
 
    if (!calendar) {
-      // If no primary calendar found, just return the current list
-      return googleEvents
+      // If no primary calendar found, return current events unchanged
+      return { googleEvents }
    }
 
-   const newStart = Date.parse(newEvent.start.dateTime)
-   const newEnd = Date.parse(newEvent.end.dateTime)
+   const startTime = parseEventDateTime(newEvent.start)
+   let endTime = parseEventDateTime(newEvent.end)
+   const isAllDay = isAllDayEvent(newEvent)
+
+   // Adjust end time for all-day events to work with react-big-calendar
+   if (isAllDay) {
+      endTime = processAllDayEndTime(startTime, endTime)
+   }
 
    const eventToAdd = {
       id: newEvent.id,
-      title: newEvent.summary,
-      start: new Date(newStart),
-      end: new Date(newEnd),
+      title: newEvent.summary || 'New Event',
+      start: startTime,
+      end: endTime,
+      allDay: isAllDay, // Critical property for react-big-calendar
       calendarId: calendar.calendarId,
       calendar: calendar.title,
       color: calendar.color,
@@ -305,6 +537,5 @@ export const createGoogleEvent = ({
       accountId: accountId
    }
 
-   const updatedEventList = [...googleEvents, eventToAdd]
-   return { googleEvents: updatedEventList }
+   return { googleEvents: [...googleEvents, eventToAdd] }
 }
