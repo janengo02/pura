@@ -1,7 +1,583 @@
-import React from "react"
+// =============================================================================
+// IMPORTS
+// =============================================================================
 
-const Landing = () => {
-   return <div>Landing</div>
+// React & Hooks
+import React, { useMemo, useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
+
+// Redux
+import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// UI Components
+import {
+   Box,
+   Button,
+   Container,
+   Flex,
+   Heading,
+   Text,
+   VStack,
+   HStack,
+   SimpleGrid,
+   Card,
+   CardBody,
+   Icon,
+   Badge,
+   Divider,
+   Stack,
+   Image,
+   Center
+} from '@chakra-ui/react'
+
+// Icons
+import {
+   PiKanban,
+   PiCalendar,
+   PiUsers,
+   PiGear,
+   PiPalette,
+   PiGlobe,
+   PiShield,
+   PiRocket,
+   PiCode,
+   PiDatabase,
+   PiDevices,
+   PiLightning,
+   PiArrowRight,
+   PiCheckCircle,
+   PiStar
+} from 'react-icons/pi'
+
+// Internal Components
+import LanguageSwitcher from '../../components/LanguageSwitcher'
+
+// Utils
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const TECH_STACK = [
+   {
+      category: 'Frontend',
+      technologies: [
+         {
+            name: 'React 18',
+            description: 'Modern UI library with hooks',
+            icon: PiCode
+         },
+         {
+            name: 'Chakra UI',
+            description: 'Component library for styling',
+            icon: PiPalette
+         },
+         {
+            name: 'Redux Toolkit',
+            description: 'State management',
+            icon: PiDatabase
+         },
+         {
+            name: 'React Router',
+            description: 'Client-side routing',
+            icon: PiDevices
+         },
+         {
+            name: 'React Hook Form',
+            description: 'Form validation & handling',
+            icon: PiCheckCircle
+         }
+      ]
+   },
+   {
+      category: 'Backend & Tools',
+      technologies: [
+         {
+            name: 'Node.js',
+            description: 'Server-side JavaScript runtime',
+            icon: PiGear
+         },
+         {
+            name: 'Express.js',
+            description: 'Web application framework',
+            icon: PiRocket
+         },
+         { name: 'MongoDB', description: 'NoSQL database', icon: PiDatabase },
+         {
+            name: 'JWT Auth',
+            description: 'Secure authentication',
+            icon: PiShield
+         },
+         {
+            name: 'i18next',
+            description: 'Internationalization support',
+            icon: PiGlobe
+         }
+      ]
+   },
+   {
+      category: 'Features',
+      technologies: [
+         {
+            name: 'Drag & Drop',
+            description: 'Intuitive task management',
+            icon: PiKanban
+         },
+         {
+            name: 'Calendar View',
+            description: 'Schedule & timeline view',
+            icon: PiCalendar
+         },
+         {
+            name: 'Dark/Light Mode',
+            description: 'Theme customization',
+            icon: PiPalette
+         },
+         {
+            name: 'Multi-language',
+            description: 'English & Japanese support',
+            icon: PiGlobe
+         },
+         {
+            name: 'Responsive Design',
+            description: 'Works on all devices',
+            icon: PiDevices
+         }
+      ]
+   }
+]
+
+const FEATURES = [
+   {
+      title: 'Kanban Board',
+      description:
+         'Organize tasks with drag-and-drop functionality across customizable columns',
+      icon: PiKanban,
+      color: 'blue'
+   },
+   {
+      title: 'Calendar Integration',
+      description: 'View tasks in calendar format with scheduling capabilities',
+      icon: PiCalendar,
+      color: 'green'
+   },
+   {
+      title: 'Team Collaboration',
+      description:
+         'Share projects and collaborate with team members in real-time',
+      icon: PiUsers,
+      color: 'purple'
+   },
+   {
+      title: 'Customizable Themes',
+      description:
+         'Switch between dark and light modes with beautiful color schemes',
+      icon: PiPalette,
+      color: 'orange'
+   }
+]
+
+// =============================================================================
+// COMPONENT SECTIONS
+// =============================================================================
+
+/**
+ * Landing page header with navigation
+ */
+const LandingHeader = React.memo(() => {
+   const navigate = useNavigate()
+   const { t } = useReactiveTranslation()
+
+   return (
+      <Flex
+         as='header'
+         w='full'
+         justifyContent='space-between'
+         alignItems='center'
+         p={6}
+         position='sticky'
+         top={0}
+         bg='bg.surface'
+         borderBottom='1px'
+         borderColor='border.default'
+         zIndex={10}
+      >
+         <Heading size='lg' color='accent.primary'>
+            TaskFlow Pro
+         </Heading>
+
+         <HStack spacing={4}>
+            <LanguageSwitcher />
+            <Button variant='ghost' onClick={() => navigate('/login')}>
+               {t('nav-login')}
+            </Button>
+            <Button colorScheme='purple' onClick={() => navigate('/register')}>
+               {t('nav-get-started')}
+            </Button>
+         </HStack>
+      </Flex>
+   )
+})
+
+LandingHeader.displayName = 'LandingHeader'
+
+/**
+ * Hero section with main value proposition
+ */
+const HeroSection = React.memo(() => {
+   const { t } = useReactiveTranslation()
+   const navigate = useNavigate()
+
+   return (
+      <Container maxW='7xl' py={20}>
+         <VStack spacing={8} textAlign='center'>
+            <Badge
+               colorScheme='purple'
+               variant='subtle'
+               px={4}
+               py={2}
+               borderRadius='full'
+               fontSize='md'
+            >
+               🚀 Modern Task Management
+            </Badge>
+
+            <Heading
+               size='3xl'
+               fontWeight='bold'
+               lineHeight='shorter'
+               bgGradient='linear(to-r, purple.400, blue.500)'
+               bgClip='text'
+            >
+               {t('hero-title')}
+            </Heading>
+
+            <Text
+               fontSize='xl'
+               color='text.secondary'
+               maxW='2xl'
+               lineHeight='tall'
+            >
+               {t('hero-description')}
+            </Text>
+
+            <HStack spacing={4} pt={4}>
+               <Button
+                  size='lg'
+                  colorScheme='purple'
+                  rightIcon={<PiArrowRight />}
+                  onClick={() => navigate('/register')}
+               >
+                  {t('btn-start-free')}
+               </Button>
+               <Button
+                  size='lg'
+                  variant='outline'
+                  onClick={() => navigate('/login')}
+               >
+                  {t('btn-sign-in')}
+               </Button>
+            </HStack>
+         </VStack>
+      </Container>
+   )
+})
+
+HeroSection.displayName = 'HeroSection'
+
+/**
+ * Features showcase section
+ */
+const FeaturesSection = React.memo(() => {
+   const { t } = useReactiveTranslation()
+
+   const featureCards = useMemo(
+      () =>
+         FEATURES.map((feature, index) => (
+            <Card
+               key={index}
+               variant='outline'
+               transition='all 0.3s'
+               _hover={{
+                  transform: 'translateY(-4px)',
+                  shadow: 'lg'
+               }}
+            >
+               <CardBody p={8}>
+                  <VStack spacing={4} align='center' textAlign='center'>
+                     <Icon
+                        as={feature.icon}
+                        boxSize={12}
+                        color={`${feature.color}.500`}
+                     />
+                     <Heading size='md'>{feature.title}</Heading>
+                     <Text color='text.secondary'>{feature.description}</Text>
+                  </VStack>
+               </CardBody>
+            </Card>
+         )),
+      []
+   )
+
+   return (
+      <Container maxW='7xl' py={20}>
+         <VStack spacing={12}>
+            <VStack spacing={4} textAlign='center'>
+               <Heading size='2xl'>{t('features-title')}</Heading>
+               <Text fontSize='lg' color='text.secondary' maxW='2xl'>
+                  {t('features-description')}
+               </Text>
+            </VStack>
+
+            <SimpleGrid
+               columns={{ base: 1, md: 2, lg: 4 }}
+               spacing={8}
+               w='full'
+            >
+               {featureCards}
+            </SimpleGrid>
+         </VStack>
+      </Container>
+   )
+})
+
+FeaturesSection.displayName = 'FeaturesSection'
+
+/**
+ * Technology stack section
+ */
+const TechStackSection = React.memo(() => {
+   const { t } = useReactiveTranslation()
+
+   const techCategories = useMemo(
+      () =>
+         TECH_STACK.map((category, categoryIndex) => (
+            <Box key={categoryIndex}>
+               <Heading size='lg' mb={6} color='accent.primary'>
+                  {category.category}
+               </Heading>
+               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  {category.technologies.map((tech, techIndex) => (
+                     <Card
+                        key={techIndex}
+                        variant='filled'
+                        size='sm'
+                        transition='all 0.2s'
+                        _hover={{ bg: 'accent.subtle' }}
+                     >
+                        <CardBody>
+                           <HStack spacing={3}>
+                              <Icon
+                                 as={tech.icon}
+                                 boxSize={6}
+                                 color='accent.primary'
+                              />
+                              <Box>
+                                 <Text fontWeight='bold'>{tech.name}</Text>
+                                 <Text fontSize='sm' color='text.muted'>
+                                    {tech.description}
+                                 </Text>
+                              </Box>
+                           </HStack>
+                        </CardBody>
+                     </Card>
+                  ))}
+               </SimpleGrid>
+            </Box>
+         )),
+      []
+   )
+
+   return (
+      <Box bg='bg.canvas' py={20}>
+         <Container maxW='7xl'>
+            <VStack spacing={12}>
+               <VStack spacing={4} textAlign='center'>
+                  <Badge colorScheme='purple' variant='subtle' px={3} py={1}>
+                     <Icon as={PiLightning} mr={2} />
+                     {t('tech-badge')}
+                  </Badge>
+                  <Heading size='2xl'>{t('tech-title')}</Heading>
+                  <Text fontSize='lg' color='text.secondary' maxW='2xl'>
+                     {t('tech-description')}
+                  </Text>
+               </VStack>
+
+               <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={12} w='full'>
+                  {techCategories}
+               </SimpleGrid>
+            </VStack>
+         </Container>
+      </Box>
+   )
+})
+
+TechStackSection.displayName = 'TechStackSection'
+
+/**
+ * Call-to-action section
+ */
+const CTASection = React.memo(() => {
+   const { t } = useReactiveTranslation()
+   const navigate = useNavigate()
+
+   return (
+      <Container maxW='7xl' py={20}>
+         <Card variant='filled' bg='accent.primary' color='white'>
+            <CardBody p={12}>
+               <VStack spacing={8} textAlign='center'>
+                  <Icon as={PiStar} boxSize={16} color='yellow.400' />
+                  <Heading size='xl' color='white'>
+                     {t('cta-title')}
+                  </Heading>
+                  <Text fontSize='lg' opacity={0.9} maxW='2xl'>
+                     {t('cta-description')}
+                  </Text>
+                  <Button
+                     size='lg'
+                     bg='white'
+                     color='purple.600'
+                     _hover={{ bg: 'gray.100' }}
+                     rightIcon={<PiArrowRight />}
+                     onClick={() => navigate('/register')}
+                  >
+                     {t('btn-start-now')}
+                  </Button>
+               </VStack>
+            </CardBody>
+         </Card>
+      </Container>
+   )
+})
+
+CTASection.displayName = 'CTASection'
+
+/**
+ * Footer section
+ */
+const Footer = React.memo(() => {
+   const { t } = useReactiveTranslation()
+
+   return (
+      <Box
+         as='footer'
+         bg='bg.canvas'
+         py={12}
+         borderTop='1px'
+         borderColor='border.default'
+      >
+         <Container maxW='7xl'>
+            <VStack spacing={8}>
+               <Divider />
+               <Flex
+                  w='full'
+                  justifyContent='space-between'
+                  alignItems='center'
+                  flexDirection={{ base: 'column', md: 'row' }}
+                  gap={4}
+               >
+                  <HStack spacing={2}>
+                     <Heading size='md' color='accent.primary'>
+                        TaskFlow Pro
+                     </Heading>
+                     <Badge variant='outline'>v1.0</Badge>
+                  </HStack>
+
+                  <Text color='text.muted' fontSize='sm'>
+                     {t('footer-copyright')}
+                  </Text>
+               </Flex>
+            </VStack>
+         </Container>
+      </Box>
+   )
+})
+
+Footer.displayName = 'Footer'
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Landing = React.memo(() => {
+   // -------------------------------------------------------------------------
+   // HOOKS & STATE
+   // -------------------------------------------------------------------------
+   const [isScrolled, setIsScrolled] = useState(false)
+
+   // -------------------------------------------------------------------------
+   // EFFECTS
+   // -------------------------------------------------------------------------
+   useEffect(() => {
+      const handleScroll = () => {
+         setIsScrolled(window.scrollY > 50)
+      }
+
+      window.addEventListener('scroll', handleScroll)
+      return () => window.removeEventListener('scroll', handleScroll)
+   }, [])
+
+   // -------------------------------------------------------------------------
+   // RENDER
+   // -------------------------------------------------------------------------
+   return (
+      <Box minH='100vh' bg='bg.surface'>
+         <LandingHeader />
+         <HeroSection />
+         <FeaturesSection />
+         <TechStackSection />
+         <CTASection />
+         <Footer />
+      </Box>
+   )
+})
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+Landing.displayName = 'Landing'
+
+// PropTypes validation
+Landing.propTypes = {
+   // Add props if needed for Redux connection
 }
 
-export default Landing
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectLandingData = createSelector(
+   [
+      // Add selectors if needed
+      (state) => state.language.language,
+      (state) => state.theme.theme
+   ],
+   (language, theme) => ({
+      language,
+      theme
+   })
+)
+
+// =============================================================================
+// REDUX CONNECTION
+// =============================================================================
+
+const mapStateToProps = (state) => ({
+   landingData: selectLandingData(state)
+})
+
+const mapDispatchToProps = {
+   // Add action creators if needed
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default connect(mapStateToProps, mapDispatchToProps)(Landing)
