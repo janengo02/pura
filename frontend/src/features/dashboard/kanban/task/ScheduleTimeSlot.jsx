@@ -288,7 +288,9 @@ const ScheduleTimeSlot = React.memo(
          <Flex
             w='full'
             gap={2}
-            color={timeSlotState.isInvalidTimeSlot ? 'red.600' : undefined}
+            color={
+               timeSlotState.isInvalidTimeSlot ? 'danger.secondary' : undefined
+            }
          >
             {startTimeInput}-{endTimeInput}
             {deleteButton}
