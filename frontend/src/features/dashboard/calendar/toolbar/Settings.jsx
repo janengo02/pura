@@ -31,9 +31,9 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // Actions
 import {
    changeCalendarVisibilityAction,
-   addGoogleAccountAction,
-   googleAccountErrorHandler
+   addGoogleAccountAction
 } from '../../../../actions/googleAccountActions'
+import { setAlertAction } from '../../../../actions/alertActions'
 
 // Hooks
 import { useGoogleLogin } from '@react-oauth/google'
@@ -72,7 +72,7 @@ const Settings = React.memo(
       // Redux props
       changeCalendarVisibilityAction,
       addGoogleAccountAction,
-      googleAccountErrorHandler,
+      setAlertAction,
       settingsData: { googleAccounts, googleCalendars, range }
    }) => {
       // -------------------------------------------------------------------------
@@ -86,16 +86,18 @@ const Settings = React.memo(
             addGoogleAccountAction({ code, range }).then(() => {})
          },
          onError: (responseError) => {
-            googleAccountErrorHandler({
-               title: 'alert-google_calendar-account-connect_failed',
-               msg: responseError.message
-            })
+            setAlertAction(
+               'alert-google_calendar-account-connect_failed',
+               '',
+               'error'
+            )
          },
          onNonOAuthError: (responseError) => {
-            googleAccountErrorHandler({
-               title: 'alert-google_calendar-account-connect_failed',
-               msg: responseError.message
-            })
+            setAlertAction(
+               'alert-google_calendar-account-connect_failed',
+               '',
+               'error'
+            )
          },
          scope: 'openid email profile https://www.googleapis.com/auth/calendar',
          flow: 'auth-code',
@@ -238,7 +240,7 @@ Settings.displayName = 'CalendarSettings'
 Settings.propTypes = {
    changeCalendarVisibilityAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
-   googleAccountErrorHandler: PropTypes.func.isRequired,
+   setAlertAction: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
       googleCalendars: PropTypes.array.isRequired,
@@ -274,7 +276,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    changeCalendarVisibilityAction,
    addGoogleAccountAction,
-   googleAccountErrorHandler
+   setAlertAction
 }
 
 // =============================================================================

@@ -19,7 +19,6 @@ import {
    momentLocalizer
 } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { DateLocalizer } from 'react-big-calendar'
 
 // UI Components
 import { Skeleton, useColorModeValue, VStack } from '@chakra-ui/react'
