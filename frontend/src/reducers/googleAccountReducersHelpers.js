@@ -117,35 +117,33 @@ const processAllDayEndTime = (startTime, endTime) => {
 // =============================================================================
 
 /**
- * Add or update Google account in account list
- * @param {Array} currentGoogleAccounts - Current account list
+ * Transform account for account list helper
+ * @param {Array} googleAccounts - Current account list
  * @param {Object} newGoogleAccount - New account data
  * @returns {Array} Updated account list
  */
 export const addGoogleAccountListHelper = (
-   currentGoogleAccounts,
+   googleAccounts,
    newGoogleAccount
 ) => {
-   const isExistingAccount = currentGoogleAccounts.find(
-      (acc) => acc.accountId === newGoogleAccount._id
+   const existingAccountIndex = googleAccounts.findIndex(
+      (account) => account.accountId === newGoogleAccount._id
    )
 
-   if (isExistingAccount) {
-      return currentGoogleAccounts.map((acc) =>
-         acc.accountId === newGoogleAccount._id
-            ? { ...acc, accountSyncStatus: newGoogleAccount.sync_status }
-            : acc
-      )
+   const newAccountData = {
+      accountId: newGoogleAccount._id,
+      accountEmail: newGoogleAccount.account_email,
+      accountSyncStatus: newGoogleAccount.sync_status,
+      isDefault: newGoogleAccount.is_default || false
    }
 
-   return [
-      ...currentGoogleAccounts,
-      {
-         accountId: newGoogleAccount._id,
-         accountEmail: newGoogleAccount.account_email,
-         accountSyncStatus: newGoogleAccount.sync_status
-      }
-   ]
+   if (existingAccountIndex !== -1) {
+      const updatedAccounts = [...googleAccounts]
+      updatedAccounts[existingAccountIndex] = newAccountData
+      return updatedAccounts
+   } else {
+      return [...googleAccounts, newAccountData]
+   }
 }
 
 /**
@@ -246,11 +244,15 @@ export const addGoogleAccount = ({
    googleEvents,
    newGoogleAccount
 }) => {
+   const updatedAccounts = addGoogleAccountListHelper(
+      googleAccounts,
+      newGoogleAccount
+   )
+   const defaultAccount =
+      updatedAccounts.find((account) => account.isDefault) || null
+
    return {
-      googleAccounts: addGoogleAccountListHelper(
-         googleAccounts,
-         newGoogleAccount
-      ),
+      googleAccounts: updatedAccounts,
       googleCalendars: addGoogleAccountCalendarListHelper(
          googleCalendars,
          newGoogleAccount
@@ -258,16 +260,67 @@ export const addGoogleAccount = ({
       googleEvents: addGoogleAccountEventListHelper(
          googleEvents,
          newGoogleAccount
-      )
+      ),
+      defaultAccount
+   }
+}
+// =============================================================================
+// DEFAULT ACCOUNT STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Set default Google account in state
+ * @param {Object} params - State and account data
+ * @param {Array} params.googleAccounts - Current accounts list
+ * @param {String} params.accountId - ID of account to set as default
+ * @param {Object} params.accountData - Updated account data
+ * @returns {Object} Updated state
+ */
+export const setDefaultGoogleAccount = ({
+   googleAccounts,
+   accountId,
+   accountData
+}) => {
+   const updatedAccounts = googleAccounts.map((account) => ({
+      ...account,
+      isDefault: account.accountId === accountId
+   }))
+
+   return {
+      googleAccounts: updatedAccounts,
+      defaultAccount: {
+         accountId: accountData._id,
+         accountEmail: accountData.account_email,
+         accountSyncStatus: accountData.sync_status,
+         isDefault: true
+      }
+   }
+}
+
+/**
+ * Get default Google account in state
+ * @param {Object} params - Default account data
+ * @param {Object} params.defaultAccountData - Default account data from API
+ * @returns {Object} Updated state
+ */
+export const getDefaultGoogleAccount = ({ defaultAccountData }) => {
+   return {
+      defaultAccount: defaultAccountData
+         ? {
+              accountId: defaultAccountData._id,
+              accountEmail: defaultAccountData.account_email,
+              accountSyncStatus: defaultAccountData.sync_status,
+              isDefault: true
+           }
+         : null
    }
 }
 
 // =============================================================================
 // GOOGLE CALENDAR LOADING STATE TRANSFORMERS
 // =============================================================================
-
 /**
- * Transform Google accounts for loading state
+ * Transform accounts for loading state
  * @param {Array} googleAccounts - Raw Google accounts data
  * @returns {Array} Transformed account list
  */
@@ -275,7 +328,8 @@ export const loadAccountListHelper = (googleAccounts) => {
    return googleAccounts.map((account) => ({
       accountId: account._id,
       accountEmail: account.account_email,
-      accountSyncStatus: account.sync_status
+      accountSyncStatus: account.sync_status,
+      isDefault: account.is_default || false
    }))
 }
 
@@ -377,15 +431,23 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
 }
 
 /**
- * Main function to load Google calendar data into state
- * @param {Object} params - Google accounts and tasks data
- * @returns {Object} Transformed state data
+ * Main function to load Google calendar data to state
+ * @param {Object} params - State and API data
+ * @param {Array} params.googleAccounts - Raw Google accounts data
+ * @param {Array} params.tasks - Task data
+ * @returns {Object} Updated state with calendar data
  */
 export const loadGoogleCalendar = ({ googleAccounts, tasks }) => {
+   const accounts = loadAccountListHelper(googleAccounts)
+   const calendars = loadCalendarListHelper(googleAccounts)
+   const events = loadEventListHelper(googleAccounts, tasks)
+   const defaultAccount = accounts.find((account) => account.isDefault) || null
+
    return {
-      googleAccounts: loadAccountListHelper(googleAccounts),
-      googleCalendars: loadCalendarListHelper(googleAccounts),
-      googleEvents: loadEventListHelper(googleAccounts, tasks)
+      googleAccounts: accounts,
+      googleCalendars: calendars,
+      googleEvents: events,
+      defaultAccount
    }
 }
 

@@ -12,7 +12,9 @@ const { sendErrorResponse } = require('../../utils/responseHelper')
 const {
    setOAuthCredentials,
    listEvent,
-   updateGoogleAccountSyncStatus
+   updateGoogleAccountSyncStatus,
+   autoSetDefaultForSingleAccount,
+   ensureSingleDefaultAccount
 } = require('../../utils/googleAccountHelper')
 
 dotenv.config()
@@ -27,6 +29,7 @@ router.get('/list-events', auth, async (req, res) => {
       const user = await User.findById(req.user.id)
       const { minDate, maxDate } = req.query
       const notSyncedAccounts = []
+
       const gAccounts = await Promise.all(
          user.google_accounts.map(async (account) => {
             const accountCalendars = await listEvent(
@@ -41,10 +44,12 @@ router.get('/list-events', auth, async (req, res) => {
                _id: account._id,
                account_email: account.account_email,
                sync_status: accountCalendars.length > 0,
+               is_default: account.is_default,
                calendars: accountCalendars
             }
          })
       )
+
       updateGoogleAccountSyncStatus(user, notSyncedAccounts)
       res.json(gAccounts)
    } catch (err) {
@@ -63,24 +68,31 @@ router.post('/add-account', auth, async (req, res) => {
       const oath2Client = setOAuthCredentials()
       const { tokens } = await oath2Client.getToken(code)
       const { refresh_token, id_token } = tokens
+
       const ticket = await oath2Client.verifyIdToken({
          idToken: id_token,
          audience: process.env?.GOOGLE_CLIENT_ID
       })
+
       const account_email = ticket.getPayload()['email']
       const user = await User.findById(req.user.id)
+
       let existingGoogleAccount = user.google_accounts.find(
          (acc) => acc.account_email === account_email
       )
+
       if (existingGoogleAccount) {
+         // Update existing account
          user.google_accounts = user.google_accounts.map((acc) =>
             acc.account_email === account_email
                ? { ...acc, refresh_token: refresh_token, sync_status: true }
                : acc
          )
          user.update_date = new Date()
-         user.save()
+         await user.save()
       } else {
+         // Add new account
+         const isFirstAccount = user.google_accounts.length === 0
          const newUser = await User.findOneAndUpdate(
             { _id: req.user.id },
             {
@@ -88,28 +100,102 @@ router.post('/add-account', auth, async (req, res) => {
                   google_accounts: {
                      refresh_token: refresh_token,
                      account_email: account_email,
-                     sync_status: true
+                     sync_status: true,
+                     is_default: isFirstAccount // First account is automatically default
                   }
                },
                $set: { update_date: new Date() }
             },
             { new: true }
          )
+
          existingGoogleAccount = newUser.google_accounts.find(
             (acc) => acc.account_email === account_email
          )
       }
+
+      // Auto-set default if only one account
+      await autoSetDefaultForSingleAccount(user)
 
       const newAccountCalendars = await listEvent(
          refresh_token,
          range[0],
          range[1]
       )
+
       res.json({
          _id: existingGoogleAccount._id,
          account_email: existingGoogleAccount.account_email,
          sync_status: true,
+         is_default: existingGoogleAccount.is_default,
          calendars: newAccountCalendars
+      })
+   } catch (err) {
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+   }
+})
+
+// @route   PUT api/google-account/set-default/:account_id
+// @desc    Set a Google account as the default account
+// @params  account_id (params) - ID of the account to set as default
+// @access  Private
+router.put('/set-default/:account_id', auth, async (req, res) => {
+   try {
+      const { account_id } = req.params
+      const user = await User.findById(req.user.id)
+
+      // Verify account exists and belongs to user
+      const targetAccount = user.google_accounts.find(
+         (acc) => acc._id.toString() === account_id
+      )
+
+      if (!targetAccount) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'Account not found')
+      }
+
+      // Set new default account
+      await ensureSingleDefaultAccount(user, account_id)
+
+      // Return updated account data
+      const updatedUser = await User.findById(req.user.id)
+      const updatedAccount = updatedUser.google_accounts.find(
+         (acc) => acc._id.toString() === account_id
+      )
+
+      res.json({
+         _id: updatedAccount._id,
+         account_email: updatedAccount.account_email,
+         sync_status: updatedAccount.sync_status,
+         is_default: updatedAccount.is_default,
+         message: 'Default account updated successfully'
+      })
+   } catch (err) {
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+   }
+})
+
+// @route   GET api/google-account/default
+// @desc    Get the current default Google account
+// @access  Private
+router.get('/default', auth, async (req, res) => {
+   try {
+      const user = await User.findById(req.user.id)
+      const defaultAccount = user.google_accounts.find((acc) => acc.is_default)
+
+      if (!defaultAccount) {
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'No default account set'
+         )
+      }
+
+      res.json({
+         _id: defaultAccount._id,
+         account_email: defaultAccount.account_email,
+         sync_status: defaultAccount.sync_status,
+         is_default: defaultAccount.is_default
       })
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)

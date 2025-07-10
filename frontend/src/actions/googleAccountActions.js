@@ -11,7 +11,9 @@ import {
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
    GOOGLE_CALENDAR_ADD_EVENT,
-   GOOGLE_CALENDAR_ADD_ACCOUNT
+   GOOGLE_CALENDAR_ADD_ACCOUNT,
+   GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
+   GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT
 } from './types'
 
 // =============================================================================
@@ -115,16 +117,16 @@ export const loadCalendarAction =
 
 /**
  * Add Google Account Action
- * Creates Google Account tokens and initializes calendar connection
- * @param {Object} reqData - Request data containing authorization code and range
- * @param {string} reqData.code - Authorization code from Google OAuth
- * @param {Array} reqData.range - Date range for initial calendar load
+ * Adds a new Google account connection
+ * @param {Object} reqData - Request data for adding account
+ * @param {string} reqData.code - OAuth authorization code
+ * @param {Array} reqData.range - Date range for initial sync
  */
 export const addGoogleAccountAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/google-account/add-account', reqData)
 
-      if (res.data) {
+      if (res.data?.account_email) {
          dispatch({
             type: GOOGLE_CALENDAR_ADD_ACCOUNT,
             payload: {
@@ -132,13 +134,85 @@ export const addGoogleAccountAction = (reqData) => async (dispatch) => {
                range: reqData.range
             }
          })
+         dispatch(
+            setAlertAction(
+               'alert-google_calendar-account-connected',
+               `Successfully connected ${res.data.account_email}`,
+               'success'
+            )
+         )
       } else {
          throw new Error(
             'Unexpected response format from /google-account/add-account'
          )
       }
    } catch (err) {
-      googleAccountFatalErrorHandler(dispatch, err)
+      googleAccountErrorHandler(dispatch, err)
+   }
+}
+
+/**
+ * Set Default Google Account Action
+ * Sets a specific Google account as the default account
+ * @param {Object} reqData - Request data for setting default account
+ * @param {string} reqData.account_id - ID of the account to set as default
+ */
+export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
+   try {
+      const res = await api.put(
+         `/google-account/set-default/${reqData.account_id}`
+      )
+
+      if (res.data?._id) {
+         dispatch({
+            type: GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
+            payload: {
+               accountId: res.data._id,
+               accountData: res.data
+            }
+         })
+         dispatch(
+            setAlertAction(
+               'alert-google_calendar-default-set',
+               `${res.data.account_email} is now your default account`,
+               'success'
+            )
+         )
+      } else {
+         throw new Error(
+            'Unexpected response format from /google-account/set-default'
+         )
+      }
+   } catch (err) {
+      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+   }
+}
+
+/**
+ * Get Default Google Account Action
+ * Retrieves the current default Google account
+ */
+export const getDefaultGoogleAccountAction = () => async (dispatch) => {
+   try {
+      const res = await api.get('/google-account/default')
+
+      if (res.data?._id) {
+         dispatch({
+            type: GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT,
+            payload: res.data
+         })
+      } else {
+         // No default account set - this is not an error
+         dispatch({
+            type: GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT,
+            payload: null
+         })
+      }
+   } catch (err) {
+      // Only show error if it's not a 404 (no default account)
+      if (err.response?.status !== 404) {
+         googleAccountErrorHandler(dispatch, err)
+      }
    }
 }
 

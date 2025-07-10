@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -21,17 +21,21 @@ import {
    MenuList,
    MenuItem,
    MenuOptionGroup,
-   MenuItemOption
+   MenuItemOption,
+   Text,
+   Divider,
+   Badge
 } from '@chakra-ui/react'
 
 // Icons & Utils
-import { PiPlugs, PiCircleFill } from 'react-icons/pi'
+import { PiPlugs, PiCircleFill, PiStar, PiStarFill } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Actions
 import {
    changeCalendarVisibilityAction,
-   addGoogleAccountAction
+   addGoogleAccountAction,
+   setDefaultGoogleAccountAction
 } from '../../../../actions/googleAccountActions'
 import { setAlertAction } from '../../../../actions/alertActions'
 
@@ -52,10 +56,11 @@ const ACCOUNT_BUTTON_BASE_STYLES = {
 // UTILITY FUNCTIONS
 // =============================================================================
 
-const getAccountButtonStyles = (accountSyncStatus) => ({
+const getAccountButtonStyles = (accountSyncStatus, isDefault) => ({
    ...ACCOUNT_BUTTON_BASE_STYLES,
-   colorScheme: accountSyncStatus ? 'purple' : 'gray',
-   color: accountSyncStatus ? undefined : 'text.secondary'
+   colorScheme: accountSyncStatus ? (isDefault ? 'purple' : 'blue') : 'gray',
+   color: accountSyncStatus ? undefined : 'text.secondary',
+   borderWidth: isDefault ? 2 : 1
 })
 
 const getAccountImage = (accountSyncStatus) =>
@@ -72,13 +77,15 @@ const Settings = React.memo(
       // Redux props
       changeCalendarVisibilityAction,
       addGoogleAccountAction,
+      setDefaultGoogleAccountAction,
       setAlertAction,
-      settingsData: { googleAccounts, googleCalendars, range }
+      settingsData: { googleAccounts, googleCalendars, range, defaultAccount }
    }) => {
       // -------------------------------------------------------------------------
-      // HOOKS
+      // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+      const [isSettingDefault, setIsSettingDefault] = useState(false)
 
       const googleLogin = useGoogleLogin({
          onSuccess: (tokenResponse) => {
@@ -131,37 +138,93 @@ const Settings = React.memo(
          googleLogin()
       }, [googleLogin])
 
+      const handleSetDefaultAccount = useCallback(
+         async (accountId) => {
+            if (isSettingDefault) return
+
+            setIsSettingDefault(true)
+            try {
+               await setDefaultGoogleAccountAction({ account_id: accountId })
+            } finally {
+               setIsSettingDefault(false)
+            }
+         },
+         [setDefaultGoogleAccountAction, isSettingDefault]
+      )
+
       // -------------------------------------------------------------------------
       // RENDER HELPERS
       // -------------------------------------------------------------------------
 
-      const renderAccountButton = (account) => (
-         <MenuButton
-            key={account.accountId}
-            as={Button}
-            {...getAccountButtonStyles(account.accountSyncStatus)}
-         >
-            <Box
+      const renderDefaultAccountBadge = (isDefault) => {
+         if (!isDefault) return null
+
+         return (
+            <Badge
+               colorScheme='purple'
+               variant='solid'
+               fontSize='xs'
+               ml={1}
                display='flex'
-               flexDirection='row'
-               gap={2}
-               justifyContent='center'
-               alignContent='center'
+               alignItems='center'
+               gap={1}
             >
-               <Image
-                  src={getAccountImage(account.accountSyncStatus)}
-                  size={10}
-                  alt='Google Calendar Status'
-               />
-               {account.accountEmail}
-            </Box>
-         </MenuButton>
+               <PiStarFill size={10} />
+               {t('label-default')}
+            </Badge>
+         )
+      }
+
+      const renderSetDefaultButton = (account) => {
+         if (account.isDefault || googleAccounts.length === 1) return null
+
+         return (
+            <MenuItem
+               icon={<PiStar />}
+               onClick={() => handleSetDefaultAccount(account.accountId)}
+               isDisabled={isSettingDefault || !account.accountSyncStatus}
+            >
+               {t('btn-set-as-default')}
+            </MenuItem>
+         )
+      }
+
+      const renderAccountButton = (account) => (
+         <Menu key={account.accountId} isLazy>
+            <MenuButton
+               as={Button}
+               {...getAccountButtonStyles(
+                  account.accountSyncStatus,
+                  account.isDefault
+               )}
+            >
+               <Box
+                  display='flex'
+                  flexDirection='row'
+                  gap={2}
+                  justifyContent='center'
+                  alignContent='center'
+               >
+                  <Image
+                     src={getAccountImage(account.accountSyncStatus)}
+                     size={10}
+                     alt='Google Calendar Status'
+                  />
+                  <Flex direction='column' align='start'>
+                     <Text fontSize='sm'>{account.accountEmail}</Text>
+                     {renderDefaultAccountBadge(account.isDefault)}
+                  </Flex>
+               </Box>
+            </MenuButton>
+            {renderCalendarOptions(account)}
+         </Menu>
       )
 
       const renderCalendarOptions = (account) => {
          const currentCalendars = googleCalendars.filter(
             (calendar) => calendar.accountId === account.accountId
          )
+
          return (
             <MenuList zIndex={10}>
                <MenuOptionGroup
@@ -179,33 +242,48 @@ const Settings = React.memo(
                      </MenuItem>
                   )}
 
-                  {currentCalendars.map((calendar) => (
-                     <MenuItemOption
-                        key={calendar.calendarId}
-                        value={calendar.calendarId}
-                        fontSize='sm'
-                        onClick={(e) => {
-                           e.preventDefault()
-                           handleCalendarVisibilityChange(calendar.calendarId)
-                        }}
-                        isChecked={calendar.selected}
-                     >
-                        <Flex alignItems='center' gap={2}>
-                           <PiCircleFill size={18} color={calendar.color} />
-                           {calendar.title}
-                        </Flex>
-                     </MenuItemOption>
-                  ))}
+                  {account.accountSyncStatus && currentCalendars.length > 0 && (
+                     <>
+                        {currentCalendars.map((calendar) => (
+                           <MenuItemOption
+                              key={calendar.calendarId}
+                              value={calendar.calendarId}
+                              onChange={() =>
+                                 handleCalendarVisibilityChange(
+                                    calendar.calendarId
+                                 )
+                              }
+                           >
+                              <Flex gap={2} alignItems='center'>
+                                 <PiCircleFill
+                                    color={calendar.color}
+                                    size={18}
+                                 />
+                                 <Text fontSize='sm'>{calendar.title}</Text>
+                              </Flex>
+                           </MenuItemOption>
+                        ))}
+
+                        {googleAccounts.length > 1 && (
+                           <>
+                              <Divider />
+                              {renderSetDefaultButton(account)}
+                           </>
+                        )}
+                     </>
+                  )}
                </MenuOptionGroup>
             </MenuList>
          )
       }
 
       const GoogleCalendarGroupTitle = () => (
-         <Flex w='max-content' gap={3}>
-            <Image src='assets/img/logos--google-calendar.svg' />
-            {t('label-google_calendar')}
-         </Flex>
+         <Button size='sm' colorScheme='gray' onClick={googleLogin}>
+            <Flex w='max-content' gap={3}>
+               <Image src='assets/img/logos--google-calendar.svg' />
+               {t('label-google_calendar')}
+            </Flex>
+         </Button>
       )
 
       // -------------------------------------------------------------------------
@@ -213,18 +291,11 @@ const Settings = React.memo(
       // -------------------------------------------------------------------------
 
       return (
-         <>
-            {/* Google Account Menus */}
-            {googleAccounts.map((account) => (
-               <Menu key={account.accountId} isLazy>
-                  {renderAccountButton(account)}
-                  {renderCalendarOptions(account)}
-               </Menu>
-            ))}
-            <Button size='sm' colorScheme='gray' onClick={googleLogin}>
-               <GoogleCalendarGroupTitle />
-            </Button>
-         </>
+         <Flex gap={3} alignItems='center' flexWrap='wrap'>
+            {googleAccounts.map(renderAccountButton)}
+
+            {GoogleCalendarGroupTitle()}
+         </Flex>
       )
    }
 )
@@ -240,11 +311,13 @@ Settings.displayName = 'CalendarSettings'
 Settings.propTypes = {
    changeCalendarVisibilityAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
+   setDefaultGoogleAccountAction: PropTypes.func.isRequired,
    setAlertAction: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
       googleCalendars: PropTypes.array.isRequired,
-      range: PropTypes.array.isRequired
+      range: PropTypes.array.isRequired,
+      defaultAccount: PropTypes.object
    }).isRequired
 }
 
@@ -256,12 +329,14 @@ const selectSettingsData = createSelector(
    [
       (state) => state.googleAccount.googleAccounts,
       (state) => state.googleAccount.googleCalendars,
-      (state) => state.googleAccount.range
+      (state) => state.googleAccount.range,
+      (state) => state.googleAccount.defaultAccount
    ],
-   (googleAccounts, googleCalendars, range) => ({
+   (googleAccounts, googleCalendars, range, defaultAccount) => ({
       googleAccounts: googleAccounts || [],
       googleCalendars: googleCalendars || [],
-      range: range || []
+      range: range || [],
+      defaultAccount
    })
 )
 
@@ -276,6 +351,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    changeCalendarVisibilityAction,
    addGoogleAccountAction,
+   setDefaultGoogleAccountAction,
    setAlertAction
 }
 

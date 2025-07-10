@@ -69,10 +69,38 @@ const updateGoogleAccountSyncStatus = (user, notSyncedAccounts) => {
    user.save()
 }
 
+/**
+ * Ensure only one default account exists
+ * @param {Object} user - User object
+ * @param {String} newDefaultAccountId - ID of the new default account
+ */
+const ensureSingleDefaultAccount = async (user, newDefaultAccountId) => {
+   user.google_accounts = user.google_accounts.map((account) => ({
+      ...account,
+      is_default: account._id.toString() === newDefaultAccountId
+   }))
+   user.update_date = new Date()
+   await user.save()
+}
+
+/**
+ * Set default account automatically for single account
+ * @param {Object} user - User object
+ */
+const autoSetDefaultForSingleAccount = async (user) => {
+   if (user.google_accounts.length === 1) {
+      user.google_accounts[0].is_default = true
+      user.update_date = new Date()
+      await user.save()
+   }
+}
+
 module.exports = {
    newOath2Client,
    setOAuthCredentials,
    fetchCalendarEvents,
    listEvent,
-   updateGoogleAccountSyncStatus
+   updateGoogleAccountSyncStatus,
+   ensureSingleDefaultAccount,
+   autoSetDefaultForSingleAccount
 }

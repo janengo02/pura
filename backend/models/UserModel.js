@@ -31,6 +31,11 @@ const UserSchema = new mongoose.Schema({
             type: Boolean,
             required: true,
             default: true
+         },
+         is_default: {
+            type: Boolean,
+            required: true,
+            default: false
          }
       }
    ],

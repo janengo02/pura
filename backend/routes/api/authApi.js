@@ -27,7 +27,8 @@ router.get('/', auth, async (req, res) => {
             google_accounts: google_accounts.map((account) => ({
                _id: account._id,
                account_email: account.account_email,
-               sync_status: account.sync_status
+               sync_status: account.sync_status,
+               is_default: account.is_default
             }))
          })
       } else {
