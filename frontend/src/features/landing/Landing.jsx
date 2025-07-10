@@ -48,7 +48,10 @@ import {
    PiLightning,
    PiArrowRight,
    PiCheckCircle,
-   PiStar
+   PiStar,
+   PiPlay,
+   PiImage,
+   PiVideo
 } from 'react-icons/pi'
 
 // Internal Components
@@ -180,6 +183,81 @@ const FEATURES = [
    }
 ]
 
+const DEMO_FEATURES = [
+   {
+      id: 'kanban-demo',
+      title: 'Powerful Kanban Board',
+      subtitle: 'Drag, Drop, and Organize with Ease',
+      description:
+         'Experience seamless task management with our intuitive Kanban board. Create custom columns, drag tasks between stages, and track progress in real-time. Perfect for agile workflows and project management.',
+      features: [
+         'Drag & drop task cards between columns',
+         'Customizable column colors and names',
+         'Real-time updates across team members',
+         'Task priorities and due dates',
+         'Progress tracking and analytics'
+      ],
+      mediaType: 'video',
+      mediaSrc: '/assets/videos/kanban-demo.mp4',
+      mediaAlt: 'Kanban board drag and drop demonstration',
+      reversed: false
+   },
+   {
+      id: 'calendar-demo',
+      title: 'Integrated Calendar View',
+      subtitle: 'Schedule and Timeline Management',
+      description:
+         'Switch seamlessly between Kanban and Calendar views to see your tasks in a timeline format. Schedule deadlines, view upcoming tasks, and manage your workflow with powerful calendar integration.',
+      features: [
+         'Multiple calendar views (month, week, day)',
+         'Task scheduling with drag & drop',
+         'Deadline notifications and reminders',
+         'Integration with external calendars',
+         'Multi-language date formatting'
+      ],
+      mediaType: 'image',
+      mediaSrc: '/assets/images/calendar-view.png',
+      mediaAlt: 'Calendar view showing scheduled tasks',
+      reversed: true
+   },
+   {
+      id: 'themes-demo',
+      title: 'Beautiful Dark & Light Themes',
+      subtitle: 'Customize Your Experience',
+      description:
+         'Work comfortably in any environment with our carefully crafted dark and light themes. Automatic theme switching, custom color schemes, and accessibility-focused design ensure the perfect viewing experience.',
+      features: [
+         'Automatic dark/light mode detection',
+         'Custom color schemes for projects',
+         'High contrast accessibility options',
+         'Smooth theme transitions',
+         'Per-user theme preferences'
+      ],
+      mediaType: 'image',
+      mediaSrc: '/assets/images/theme-comparison.png',
+      mediaAlt: 'Side-by-side comparison of dark and light themes',
+      reversed: false
+   },
+   {
+      id: 'collaboration-demo',
+      title: 'Real-time Team Collaboration',
+      subtitle: 'Work Together, Achieve More',
+      description:
+         'Collaborate with your team in real-time. Share projects, assign tasks, track progress, and communicate effectively. Built for modern distributed teams with multilingual support.',
+      features: [
+         'Real-time collaborative editing',
+         'Team member assignments and notifications',
+         'Project sharing and permissions',
+         'Activity feeds and updates',
+         'Multi-language interface (EN/JP)'
+      ],
+      mediaType: 'video',
+      mediaSrc: '/assets/videos/collaboration-demo.mp4',
+      mediaAlt: 'Team collaboration features demonstration',
+      reversed: true
+   }
+]
+
 // =============================================================================
 // COMPONENT SECTIONS
 // =============================================================================
@@ -206,7 +284,13 @@ const LandingHeader = React.memo(() => {
          zIndex={10}
       >
          <Heading size='lg' color='accent.primary'>
-            TaskFlow Pro
+            <Image
+               src='/assets/img/pura-logo.png'
+               alt='Pura Logo'
+               height='40px'
+               cursor='pointer'
+               onClick={() => navigate('/')}
+            />
          </Heading>
 
          <HStack spacing={4}>
@@ -344,7 +428,193 @@ const FeaturesSection = React.memo(() => {
    )
 })
 
-FeaturesSection.displayName = 'FeaturesSection'
+/**
+ * Demo feature section with media
+ */
+const DemoFeatureSection = React.memo(({ feature, index }) => {
+   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+
+   const handleVideoPlay = useCallback(() => {
+      setIsVideoPlaying(true)
+   }, [])
+
+   const mediaContent = useMemo(() => {
+      if (feature.mediaType === 'video') {
+         return (
+            <Box
+               position='relative'
+               borderRadius='xl'
+               overflow='hidden'
+               shadow='2xl'
+            >
+               {!isVideoPlaying ? (
+                  <Box
+                     position='relative'
+                     cursor='pointer'
+                     onClick={handleVideoPlay}
+                     _hover={{ transform: 'scale(1.02)' }}
+                     transition='transform 0.3s'
+                  >
+                     <Image
+                        src={`${feature.mediaSrc.replace(
+                           '.mp4',
+                           '-thumbnail.jpg'
+                        )}`}
+                        alt={feature.mediaAlt}
+                        w='full'
+                        h='400px'
+                        objectFit='cover'
+                        fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Video+Demo'
+                     />
+                     <Center
+                        position='absolute'
+                        top='50%'
+                        left='50%'
+                        transform='translate(-50%, -50%)'
+                        bg='blackAlpha.700'
+                        color='white'
+                        borderRadius='full'
+                        w={16}
+                        h={16}
+                        _hover={{ bg: 'blackAlpha.800' }}
+                        transition='background 0.2s'
+                     >
+                        <Icon as={PiPlay} boxSize={8} />
+                     </Center>
+                  </Box>
+               ) : (
+                  <Box as='video' w='full' h='400px' controls autoPlay>
+                     <source src={feature.mediaSrc} type='video/mp4' />
+                     Your browser does not support the video tag.
+                  </Box>
+               )}
+            </Box>
+         )
+      }
+
+      return (
+         <Image
+            src={feature.mediaSrc}
+            alt={feature.mediaAlt}
+            w='full'
+            h='400px'
+            objectFit='cover'
+            borderRadius='xl'
+            shadow='2xl'
+            _hover={{ transform: 'scale(1.02)' }}
+            transition='transform 0.3s'
+            fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Demo'
+         />
+      )
+   }, [feature, isVideoPlaying, handleVideoPlay])
+
+   const content = (
+      <VStack align='start' spacing={6} flex={1}>
+         <Badge colorScheme='purple' variant='subtle' px={3} py={1}>
+            <Icon
+               as={feature.mediaType === 'video' ? PiVideo : PiImage}
+               mr={2}
+            />
+            {feature.mediaType === 'video'
+               ? 'Interactive Demo'
+               : 'Feature Preview'}
+         </Badge>
+
+         <VStack align='start' spacing={4}>
+            <Heading size='xl' color='text.primary'>
+               {feature.title}
+            </Heading>
+            <Text fontSize='lg' color='accent.primary' fontWeight='semibold'>
+               {feature.subtitle}
+            </Text>
+            <Text fontSize='md' color='text.secondary' lineHeight='tall'>
+               {feature.description}
+            </Text>
+         </VStack>
+
+         <VStack align='start' spacing={3} w='full'>
+            {feature.features.map((item, idx) => (
+               <HStack key={idx} spacing={3} align='start'>
+                  <Icon
+                     as={PiCheckCircle}
+                     color='green.500'
+                     mt={1}
+                     flexShrink={0}
+                  />
+                  <Text fontSize='sm' color='text.primary'>
+                     {item}
+                  </Text>
+               </HStack>
+            ))}
+         </VStack>
+      </VStack>
+   )
+
+   return (
+      <Container maxW='7xl' py={20}>
+         <SimpleGrid
+            columns={{ base: 1, lg: 2 }}
+            spacing={12}
+            alignItems='center'
+         >
+            {feature.reversed ? (
+               <>
+                  <Box order={{ base: 2, lg: 1 }}>{mediaContent}</Box>
+                  <Box order={{ base: 1, lg: 2 }}>{content}</Box>
+               </>
+            ) : (
+               <>
+                  <Box>{content}</Box>
+                  <Box>{mediaContent}</Box>
+               </>
+            )}
+         </SimpleGrid>
+      </Container>
+   )
+})
+
+DemoFeatureSection.displayName = 'DemoFeatureSection'
+
+DemoFeatureSection.propTypes = {
+   feature: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+      subtitle: PropTypes.string.isRequired,
+      description: PropTypes.string.isRequired,
+      features: PropTypes.arrayOf(PropTypes.string).isRequired,
+      mediaType: PropTypes.oneOf(['image', 'video']).isRequired,
+      mediaSrc: PropTypes.string.isRequired,
+      mediaAlt: PropTypes.string.isRequired,
+      reversed: PropTypes.bool.isRequired
+   }).isRequired,
+   index: PropTypes.number.isRequired
+}
+
+/**
+ * All demo features showcase
+ */
+const DemoFeaturesShowcase = React.memo(() => {
+   const { t } = useReactiveTranslation()
+
+   return (
+      <Box>
+         {DEMO_FEATURES.map((feature, index) => (
+            <Box key={feature.id}>
+               <DemoFeatureSection feature={feature} index={index} />
+               {index < DEMO_FEATURES.length - 1 && (
+                  <Box bg='bg.canvas' py={1}>
+                     <Container maxW='7xl'>
+                        <Divider opacity={0.3} />
+                     </Container>
+                  </Box>
+               )}
+            </Box>
+         ))}
+      </Box>
+   )
+})
+
+DemoFeaturesShowcase.displayName = 'DemoFeaturesShowcase'
 
 /**
  * Technology stack section
@@ -528,6 +798,7 @@ const Landing = React.memo(() => {
          <LandingHeader />
          <HeroSection />
          <FeaturesSection />
+         <DemoFeaturesShowcase />
          <TechStackSection />
          <CTASection />
          <Footer />
