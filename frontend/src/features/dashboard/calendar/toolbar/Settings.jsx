@@ -100,11 +100,7 @@ const Settings = React.memo(
             )
          },
          onNonOAuthError: (responseError) => {
-            setAlertAction(
-               'alert-google_calendar-account-connect_failed',
-               '',
-               'error'
-            )
+            // Empty
          },
          scope: 'openid email profile https://www.googleapis.com/auth/calendar',
          flow: 'auth-code',
@@ -164,13 +160,12 @@ const Settings = React.memo(
                colorScheme='purple'
                variant='solid'
                fontSize='xs'
-               ml={1}
                display='flex'
                alignItems='center'
-               gap={1}
+               justifyContent='center'
+               borderRadius='full'
             >
                <PiStarFill size={10} />
-               {t('label-default')}
             </Badge>
          )
       }
@@ -179,13 +174,16 @@ const Settings = React.memo(
          if (account.isDefault || googleAccounts.length === 1) return null
 
          return (
-            <MenuItem
-               icon={<PiStar />}
-               onClick={() => handleSetDefaultAccount(account.accountId)}
-               isDisabled={isSettingDefault || !account.accountSyncStatus}
-            >
-               {t('btn-set-as-default')}
-            </MenuItem>
+            <>
+               <Divider />
+               <MenuItem
+                  icon={<PiStar />}
+                  onClick={() => handleSetDefaultAccount(account.accountId)}
+                  isDisabled={isSettingDefault || !account.accountSyncStatus}
+               >
+                  {t('btn-set-as-default')}
+               </MenuItem>
+            </>
          )
       }
 
@@ -210,10 +208,8 @@ const Settings = React.memo(
                      size={10}
                      alt='Google Calendar Status'
                   />
-                  <Flex direction='column' align='start'>
-                     <Text fontSize='sm'>{account.accountEmail}</Text>
-                     {renderDefaultAccountBadge(account.isDefault)}
-                  </Flex>
+                  <Text fontSize='sm'>{account.accountEmail}</Text>
+                  {renderDefaultAccountBadge(account.isDefault)}
                </Box>
             </MenuButton>
             {renderCalendarOptions(account)}
@@ -248,11 +244,13 @@ const Settings = React.memo(
                            <MenuItemOption
                               key={calendar.calendarId}
                               value={calendar.calendarId}
-                              onChange={() =>
+                              onClick={(e) => {
+                                 e.preventDefault()
                                  handleCalendarVisibilityChange(
                                     calendar.calendarId
                                  )
-                              }
+                              }}
+                              isChecked={calendar.selected}
                            >
                               <Flex gap={2} alignItems='center'>
                                  <PiCircleFill
@@ -264,12 +262,7 @@ const Settings = React.memo(
                            </MenuItemOption>
                         ))}
 
-                        {googleAccounts.length > 1 && (
-                           <>
-                              <Divider />
-                              {renderSetDefaultButton(account)}
-                           </>
-                        )}
+                        {!account.isDefault && renderSetDefaultButton(account)}
                      </>
                   )}
                </MenuOptionGroup>
@@ -281,7 +274,7 @@ const Settings = React.memo(
          <Button size='sm' colorScheme='gray' onClick={googleLogin}>
             <Flex w='max-content' gap={3}>
                <Image src='assets/img/logos--google-calendar.svg' />
-               {t('label-google_calendar')}
+               {t('btn-connect-google_calendar')}
             </Flex>
          </Button>
       )
@@ -293,7 +286,6 @@ const Settings = React.memo(
       return (
          <Flex gap={3} alignItems='center' flexWrap='wrap'>
             {googleAccounts.map(renderAccountButton)}
-
             {GoogleCalendarGroupTitle()}
          </Flex>
       )

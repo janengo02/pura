@@ -134,13 +134,6 @@ export const addGoogleAccountAction = (reqData) => async (dispatch) => {
                range: reqData.range
             }
          })
-         dispatch(
-            setAlertAction(
-               'alert-google_calendar-account-connected',
-               `Successfully connected ${res.data.account_email}`,
-               'success'
-            )
-         )
       } else {
          throw new Error(
             'Unexpected response format from /google-account/add-account'
@@ -171,13 +164,6 @@ export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
                accountData: res.data
             }
          })
-         dispatch(
-            setAlertAction(
-               'alert-google_calendar-default-set',
-               `${res.data.account_email} is now your default account`,
-               'success'
-            )
-         )
       } else {
          throw new Error(
             'Unexpected response format from /google-account/set-default'

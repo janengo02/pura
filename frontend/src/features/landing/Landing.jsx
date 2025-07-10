@@ -27,7 +27,6 @@ import {
    Icon,
    Badge,
    Divider,
-   Stack,
    Image,
    Center
 } from '@chakra-ui/react'
