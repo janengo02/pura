@@ -49,12 +49,72 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       const progress = await Progress.findById(
          page.progress_order[newProgressIndex]
       )
+
+      // --- Google sync status logic ---
+      const scheduleWithSync = await Promise.all(
+         (task.schedule || []).map(async (slot) => {
+            // 0 = no sync event (no google_event_id)
+            if (!slot.google_event_id) {
+               return { ...slot.toObject(), sync_status: 0 }
+            }
+
+            // 2 = not synced (google account cannot be connected)
+            const account = user.google_accounts?.find(
+               (acc) => acc._id.toString() === slot.google_account_id
+            )
+            if (!account) {
+               return { ...slot.toObject(), sync_status: 2 }
+            }
+
+            let oauth2Client, calendar, event
+            try {
+               oauth2Client = setOAuthCredentials(account.refresh_token)
+               calendar = google.calendar({ version: 'v3', auth: oauth2Client })
+            } catch (err) {
+               return { ...slot.toObject(), sync_status: 2 }
+            }
+
+            try {
+               event = await calendar.events.get({
+                  calendarId: slot.google_calendar_id || 'primary',
+                  eventId: slot.google_event_id
+               })
+            } catch (err) {
+               // 3 = not synced (account ok, event not found)
+               return { ...slot.toObject(), sync_status: 3 }
+            }
+
+            // Compare slot schedule with event schedule
+            const slotStart = new Date(slot.start).toISOString()
+            const slotEnd = new Date(slot.end).toISOString()
+            const eventStart =
+               event.data.start?.dateTime || event.data.start?.date
+            const eventEnd = event.data.end?.dateTime || event.data.end?.date
+
+            if (slotStart === eventStart && slotEnd === eventEnd) {
+               // 1 = synced normally
+               return {
+                  ...slot.toObject(),
+                  sync_status: 1,
+                  google_event: event.data
+               }
+            } else {
+               // 4 = not synced (event found, but schedule mismatch)
+               return {
+                  ...slot.toObject(),
+                  sync_status: 4,
+                  google_event: event.data
+               }
+            }
+         })
+      )
+
       const { _id, title, schedule, content, create_date, update_date } = task
 
       const response = {
          _id,
          title,
-         schedule,
+         schedule: scheduleWithSync,
          content,
          create_date,
          update_date,
