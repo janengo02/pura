@@ -4,12 +4,14 @@ import {
    CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
-   SHOW_TASK
+   SHOW_TASK,
+   GOOGLE_CALENDAR_ADD_EVENT
 } from './types'
 import {
    pageActionErrorHandler,
    pageActionFatalErrorHandler
 } from './pageActions'
+import { googleAccountErrorHandler } from './googleAccountActions'
 
 // Create new task
 export const createTaskAction = (reqData) => async (dispatch) => {
@@ -61,6 +63,9 @@ export const deleteTaskAction = (reqData) => async (dispatch) => {
          task_id: reqData.task_id
       }
    })
+   dispatch({
+      type: CLEAR_TASK
+   })
    try {
       await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
    } catch (err) {
@@ -108,9 +113,46 @@ export const createTaskModalAction = (reqData) => async (dispatch) => {
       pageActionErrorHandler(dispatch, err)
    }
 }
+
 export const clearTaskAction = () => (dispatch) => {
    dispatch({
       type: CLEAR_TASK,
       payload: null
    })
+}
+
+/**
+ * Create Google Event Action
+ * Creates a new event in Google Calendar
+ * @param {Object} reqData - Request data for event creation
+ * @param {string} reqData.task_id - Task ID for the event
+ * @param {Object} reqData.slot_index - Index of the time slot in the task schedule.
+ * @param {string} reqData.account_id - Google account ID to use
+ * @param {string} reqData.calendar_id - ID of the specific calendar to use
+ */
+export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
+   try {
+      const res = await api.post('/task/sync-google-event', reqData)
+
+      if (res.data?.task && res.data?.event) {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+
+         dispatch({
+            type: GOOGLE_CALENDAR_ADD_EVENT,
+            payload: {
+               accountId: reqData.account_id,
+               event: res.data.event
+            }
+         })
+      } else {
+         throw new Error(
+            'Unexpected response format from /task/sync-google-event'
+         )
+      }
+   } catch (err) {
+      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+   }
 }

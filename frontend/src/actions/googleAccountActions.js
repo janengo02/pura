@@ -7,10 +7,8 @@ import { setAlertAction } from './alertActions'
 import {
    GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
-   SHOW_TASK,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
-   GOOGLE_CALENDAR_ADD_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT,
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
    GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT
@@ -199,40 +197,6 @@ export const getDefaultGoogleAccountAction = () => async (dispatch) => {
       if (err.response?.status !== 404) {
          googleAccountErrorHandler(dispatch, err)
       }
-   }
-}
-
-/**
- * Create Google Event Action
- * Creates a new event in Google Calendar
- * @param {Object} reqData - Request data for event creation
- * @param {string} reqData.account_id - Google account ID
- * @param {Object} reqData.event - Event details
- */
-export const createGoogleEventAction = (reqData) => async (dispatch) => {
-   try {
-      const res = await api.post('/google-account/create-event', reqData)
-
-      if (res.data?.task && res.data?.event) {
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-
-         dispatch({
-            type: GOOGLE_CALENDAR_ADD_EVENT,
-            payload: {
-               accountId: reqData.account_id,
-               event: res.data.event
-            }
-         })
-      } else {
-         throw new Error(
-            'Unexpected response format from /google-account/create-event'
-         )
-      }
-   } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_id)
    }
 }
 

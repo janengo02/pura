@@ -1,3 +1,8 @@
+const Task = require('../models/TaskModel')
+const User = require('../models/UserModel')
+const { google } = require('googleapis')
+const { setOAuthCredentials } = require('./googleAccountHelper')
+
 const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
    let taskMapIndex = 0
@@ -56,6 +61,189 @@ const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    return { newTaskArray, newTaskMap, newGroupIndex, newProgressIndex }
 }
 
+/**
+ * Sync a specific task schedule slot with Google Calendar
+ * Creates or updates a Google Calendar event for a specific schedule slot
+ */
+const syncTaskSlotWithGoogle = async (
+   taskId,
+   taskTitle,
+   slot,
+   accountId,
+   calendarId,
+   userId
+) => {
+   try {
+      const user = await User.findById(userId)
+
+      // Find the specified Google account
+      const account = user.google_accounts.find(
+         (acc) => acc._id.toString() === accountId
+      )
+      if (!account) {
+         return { success: false, message: 'Google account not found' }
+      }
+
+      const oauth2Client = setOAuthCredentials(account.refresh_token)
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
+
+      try {
+         let event
+
+         if (slot.google_event_id) {
+            // Update existing event
+            event = await calendar.events.update({
+               calendarId: calendarId || 'primary',
+               eventId: slot.google_event_id,
+               requestBody: {
+                  summary: taskTitle,
+                  start: {
+                     dateTime: new Date(slot.start).toISOString()
+                  },
+                  end: {
+                     dateTime: new Date(slot.end).toISOString()
+                  }
+               }
+            })
+         } else {
+            // Create new event
+            event = await calendar.events.insert({
+               calendarId: calendarId || 'primary',
+               requestBody: {
+                  summary: taskTitle,
+                  colorId: '3', // Purple color for task events
+                  start: {
+                     dateTime: new Date(slot.start).toISOString()
+                  },
+                  end: {
+                     dateTime: new Date(slot.end).toISOString()
+                  },
+                  extendedProperties: {
+                     private: {
+                        pura_task_id: taskId
+                     }
+                  }
+               }
+            })
+         }
+
+         return { success: true, event: event.data }
+      } catch (err) {
+         console.error(`Error syncing slot ${slot}:`, err)
+         return { success: false, error: err.message }
+      }
+   } catch (err) {
+      console.error('Error syncing task slot:', err)
+      return { success: false, error: err.message }
+   }
+}
+/**
+ * Delete Google Calendar events for removed schedule slots
+ */
+const deleteGoogleEventsForRemovedSlots = async (
+   oldSchedule,
+   newSchedule,
+   userId
+) => {
+   try {
+      const user = await User.findById(userId)
+
+      // Find slots that were removed
+      const removedSlots = oldSchedule.filter((oldSlot) => {
+         return (
+            oldSlot.google_event_id &&
+            !newSchedule.find(
+               (newSlot) => newSlot.google_event_id === oldSlot.google_event_id
+            )
+         )
+      })
+
+      // Group removed slots by account
+      const slotsByAccount = {}
+      removedSlots.forEach((slot) => {
+         if (slot.google_event_id && slot.google_account_id) {
+            if (!slotsByAccount[slot.google_account_id]) {
+               slotsByAccount[slot.google_account_id] = []
+            }
+            slotsByAccount[slot.google_account_id].push(slot)
+         }
+      })
+
+      // Delete Google events for each account
+      for (const [accountId, slots] of Object.entries(slotsByAccount)) {
+         const account = user.google_accounts.find(
+            (acc) => acc._id.toString() === accountId
+         )
+         if (!account) continue
+
+         const oauth2Client = setOAuthCredentials(account.refresh_token)
+         const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
+
+         for (const slot of slots) {
+            try {
+               await calendar.events.delete({
+                  calendarId: slot.google_calendar_id || 'primary',
+                  eventId: slot.google_event_id
+               })
+            } catch (err) {
+               console.error('Error deleting Google event:', err)
+            }
+         }
+      }
+   } catch (err) {
+      console.error('Error deleting Google events:', err)
+   }
+}
+
+/**
+ * Handle Google Calendar event updates from calendar UI
+ * Updates the corresponding task schedule slot
+ */
+const updateTaskFromGoogleEvent = async (eventId, eventData) => {
+   try {
+      // Check if this is a Pura task event using extendedProperties
+      if (!eventData.extendedProperties?.private?.pura_task_id) {
+         return { success: false, message: 'Not a Pura task event' }
+      }
+
+      const taskId = eventData.extendedProperties.private.pura_task_id
+
+      // Find the task
+      const task = await Task.findById(taskId)
+
+      if (!task) {
+         return { success: false, message: 'Task not found' }
+      }
+
+      const slotIndex = task.schedule.findIndex(
+         (slot) => slot.google_event_id === eventId
+      )
+
+      if (!task.schedule[slotIndex]) {
+         return { success: false, message: 'Schedule slot not found' }
+      }
+      s
+
+      // Update the schedule slot
+      task.schedule[slotIndex].start = new Date(
+         eventData.start.dateTime || eventData.start.date
+      )
+      task.schedule[slotIndex].end = new Date(
+         eventData.end.dateTime || eventData.end.date
+      )
+
+      task.update_date = new Date()
+      await task.save()
+
+      return { success: true, task }
+   } catch (err) {
+      console.error('Error updating task from Google event:', err)
+      return { success: false, error: err.message }
+   }
+}
 module.exports = {
-   getNewMap
+   getNewMap,
+   deleteGoogleEventsForRemovedSlots,
+   updateTaskFromGoogleEvent,
+   syncTaskSlotWithGoogle
 }

@@ -6,7 +6,11 @@ const dotenv = require('dotenv')
 const auth = require('../../middleware/auth')
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const { validatePage } = require('../../utils/pageHelpers')
-const { getNewMap } = require('../../utils/taskHelpers')
+const {
+   getNewMap,
+   deleteGoogleEventsForRemovedSlots,
+   syncTaskSlotWithGoogle
+} = require('../../utils/taskHelpers')
 
 const User = require('../../models/UserModel')
 const Page = require('../../models/PageModel')
@@ -175,14 +179,67 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    if (!task) {
       return sendErrorResponse(res, 404, 'alert-oops', 'alert-task-notfound')
    }
+   // Store old schedule for comparison
+   const oldSchedule = task.schedule ? [...task.schedule] : []
 
    //   Prepare: Set up new task
    const { title, schedule, content, group_id, progress_id, task_detail_flg } =
       req.body
    task.update_date = new Date()
+
+   const titleChanged = title && title !== task.title
    if (title) task.title = title
    if (schedule) task.schedule = schedule
    if (content) task.content = content
+
+   // Handle schedule updates
+   if (schedule) {
+      // Delete Google events for removed slots
+      if (oldSchedule.length > 0) {
+         await deleteGoogleEventsForRemovedSlots(
+            oldSchedule,
+            schedule,
+            req.user.id
+         )
+      }
+
+      // Update existing Google events for modified slots
+      for (let i = 0; i < schedule.length; i++) {
+         const newSlot = schedule[i]
+         if (newSlot.google_event_id) {
+            const oldSlot = oldSchedule.find(
+               (slot) => slot.google_event_id === newSlot.google_event_id
+            )
+
+            // Check if this slot has a Google event and if times have changed
+            if (
+               oldSlot &&
+               (newSlot.start !== oldSlot.start ||
+                  newSlot.end !== oldSlot.end ||
+                  titleChanged)
+            ) {
+               // Update the Google Calendar event
+               const result = await syncTaskSlotWithGoogle(
+                  task._id,
+                  title,
+                  newSlot,
+                  newSlot.google_account_id,
+                  newSlot.google_calendar_id,
+                  req.user.id
+               )
+
+               if (!result.success) {
+                  return sendErrorResponse(
+                     res,
+                     400,
+                     'alert-oops',
+                     result.message || 'alert-server_error'
+                  )
+               }
+            }
+         }
+      }
+   }
    const currentSchedule = schedule
    try {
       if (!group_id && !progress_id) {
@@ -253,10 +310,67 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
    }
 })
 
+// @route   POST api/task/sync-google-event
+// @desc    Create a new event in the user's Google Calendar with explicit calendar selection
+// @params  task_id (body) - Task ID for the event.
+//          slot_index (body) - Index of the time slot in the task schedule.
+//          account_id (body) - ID of the Google account to use.
+//          calendar_id (body) - ID of the specific calendar to use.
+// @access  Private
+router.post('/sync-google-event', auth, async (req, res) => {
+   try {
+      const { task_id, slot_index, account_id, calendar_id } = req.body
+      //   Validation: Check if task exists
+      const task = await Task.findById(task_id)
+      if (!task) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-task-notfound')
+      }
+      const slot = task.schedule[slot_index]
+
+      const result = await syncTaskSlotWithGoogle(
+         task_id,
+         task.title,
+         slot,
+         account_id,
+         calendar_id,
+         req.user.id
+      )
+
+      if (!result.success) {
+         return sendErrorResponse(
+            res,
+            400,
+            'alert-oops',
+            result.message || 'alert-server_error'
+         )
+      }
+      // Update task slot with Google event info
+      task.schedule[slot_index].google_event_id = result.event.id
+      task.schedule[slot_index].google_account_id = account_id
+      task.schedule[slot_index].google_calendar_id = calendar_id
+      task.update_date = new Date()
+      await task.save()
+
+      res.json({
+         event: result.event,
+         task: task
+      })
+   } catch (err) {
+      sendErrorResponse(
+         res,
+         err.code || 500,
+         'alert-oops',
+         'alert-server_error',
+         err
+      )
+   }
+})
+
 // @route   DELETE api/task/:page-id/:task-id
 // @desc    Delete a task
 // @access  Private
 router.delete('/:page_id/:task_id', [auth], async (req, res) => {
+   const { task_id } = req.params
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
@@ -269,12 +383,17 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
    }
 
    //   Validation: Check if task exists
-   const task = await Task.findById(req.params.task_id)
+   const task = await Task.findById(task_id)
    if (!task) {
       return sendErrorResponse(res, 404, 'alert-oops', 'alert-task-notfound')
    }
+
+   // Delete associated Google Calendar events
+   if (task.schedule && task.schedule.length > 0) {
+      await deleteGoogleEventsForRemovedSlots(task.schedule, [], req.user.id)
+   }
+
    //   Prepare: Set up new tasks array
-   const { task_id } = req.params
    let newTasks = page.tasks.slice()
    const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
    newTasks.splice(taskIndex, 1)

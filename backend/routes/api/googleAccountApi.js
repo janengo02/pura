@@ -5,7 +5,6 @@ const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
 const User = require('../../models/UserModel')
-const Page = require('../../models/PageModel')
 const Task = require('../../models/TaskModel')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
@@ -16,6 +15,7 @@ const {
    autoSetDefaultForSingleAccount,
    ensureSingleDefaultAccount
 } = require('../../utils/googleAccountHelper')
+const { updateTaskFromGoogleEvent } = require('../../utils/taskHelpers')
 
 dotenv.config()
 
@@ -202,97 +202,145 @@ router.get('/default', auth, async (req, res) => {
    }
 })
 
-// @route   POST api/google-account/create-event
-// @desc    Create a new event in the user's Google Calendar.
-// @params  target_task (body) - Task details for the event.
-//          slot_index (body) - Index of the time slot in the task schedule.
-//          page_id (body) - ID of the page associated with the task.
-//          account_id (body) - ID of the Google account to use.
+// @route   POST api/google-account/update-event/:eventId
+// @desc    Update an event in the user's Google Calendar (handles bi-directional sync)
+// @params  eventId (params) - ID of the event to update.
+//          accountId (body) - ID of the Google account to use.
+//          calendarId (body) - ID of the calendar containing the event.
+//          eventData (body) - Updated event data
 // @access  Private
-router.post('/create-event', auth, async (req, res) => {
+router.post('/update-event/:eventId', auth, async (req, res) => {
    try {
-      const { target_task, slot_index, page_id, account_id } = req.body
+      const { eventId } = req.params
+      const { accountId, calendarId, eventData } = req.body
+
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
-         (acc) => acc._id.toString() === account_id
+         (acc) => acc._id.toString() === accountId
       ).refresh_token
+
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
-      const event = await calendar.events.insert({
+
+      // Update Google Calendar event
+      const event = await calendar.events.update({
          auth: oath2Client,
-         calendarId: 'primary',
-         requestBody: {
-            summary: target_task.title,
-            colorId: '3',
-            start: {
-               dateTime: new Date(target_task.schedule[slot_index].start)
-            },
-            end: { dateTime: new Date(target_task.schedule[slot_index].end) }
-         }
+         calendarId: calendarId || 'primary',
+         eventId: eventId,
+         requestBody: eventData
       })
-      const task = await Task.findById(target_task._id)
-      task.update_date = new Date()
-      await task.save()
 
-      const newPage = await Page.findOneAndUpdate(
-         { _id: page_id },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule'])
+      // Update corresponding task if this is a Pura task event
+      await updateTaskFromGoogleEvent(eventId, event.data)
 
-      res.json({
-         event: event.data,
-         task: { ...target_task, schedule: task.schedule }
-      })
+      res.json({ event: event.data })
    } catch (err) {
-      sendErrorResponse(
-         res,
-         err.code || 500,
-         'alert-oops',
-         'alert-server_error',
-         err
-      )
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 
-// @route   POST api/google-account/delete-event/:eventId
+// @route   DELETE api/google-account/delete-event/:eventId
 // @desc    Delete an event from the user's Google Calendar.
 // @params  eventId (params) - ID of the event to delete.
 //          accountId (body) - ID of the Google account to use.
 //          calendarId (body) - ID of the calendar containing the event.
 // @access  Private
-router.post('/delete-event/:eventId', auth, async (req, res) => {
+router.delete('/delete-event/:eventId', auth, async (req, res) => {
    try {
+      const { eventId } = req.params
       const { accountId, calendarId } = req.body
+
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
          (acc) => acc._id.toString() === accountId
       ).refresh_token
+
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
+
+      // First get the event to check if it's a Pura task
+      let eventData
+      try {
+         const event = await calendar.events.get({
+            auth: oath2Client,
+            calendarId: calendarId || 'primary',
+            eventId: eventId
+         })
+         eventData = event.data
+      } catch (err) {
+         // Event might already be deleted
+         console.log('Event not found, might already be deleted')
+      }
+
+      // Delete the event
       await calendar.events.delete({
          auth: oath2Client,
-         calendarId,
-         eventId: req.params.eventId
+         calendarId: calendarId || 'primary',
+         eventId: eventId
       })
 
-      res.json({ event: { id: req.params.eventId, deleted: true } })
+      // Update task to remove Google event ID if this was a Pura task
+      if (eventData?.extendedProperties?.private?.pura_task_id) {
+         const taskId = eventData.extendedProperties.private.pura_task_id
+
+         const task = await Task.findById(taskId)
+
+         if (task) {
+            const slotIndex = task.schedule.findIndex(
+               (slot) => slot.google_event_id === eventId
+            )
+            task.schedule[slotIndex].google_event_id = null
+            task.schedule[slotIndex].google_account_id = null
+            task.schedule[slotIndex].google_calendar_id = null
+            task.update_date = new Date()
+            await task.save()
+         }
+      }
+
+      res.json({ event: { id: eventId, deleted: true } })
    } catch (err) {
-      sendErrorResponse(
-         res,
-         err.code || 500,
-         'alert-oops',
-         'alert-server_error',
-         err
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+   }
+})
+
+// @route   DELETE api/google-account/disconnect/:account_id
+// @desc    Disconnect a Google account
+// @params  account_id (params) - ID of the account to disconnect
+// @access  Private
+router.delete('/disconnect/:account_id', auth, async (req, res) => {
+   try {
+      const { account_id } = req.params
+      const user = await User.findById(req.user.id)
+
+      // Remove Google event IDs from all tasks for this account
+      const tasks = await Task.find({
+         'schedule.google_account_id': account_id
+      })
+
+      for (const task of tasks) {
+         task.schedule = task.schedule.map((slot) => {
+            if (slot.google_account_id === account_id) {
+               return {
+                  ...slot.toObject(),
+                  google_event_id: null,
+                  google_account_id: null,
+                  google_calendar_id: null
+               }
+            }
+            return slot
+         })
+         await task.save()
+      }
+
+      // Remove the Google account
+      user.google_accounts = user.google_accounts.filter(
+         (acc) => acc._id.toString() !== account_id
       )
+
+      await user.save()
+      res.json({ message: 'Account disconnected' })
+   } catch (err) {
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
 

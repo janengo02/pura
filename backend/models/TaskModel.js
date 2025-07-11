@@ -12,6 +12,18 @@ const TaskSchema = new mongoose.Schema({
          },
          end: {
             type: Date
+         },
+         google_event_id: {
+            type: String,
+            default: null
+         },
+         google_account_id: {
+            type: String,
+            default: null
+         },
+         google_calendar_id: {
+            type: String,
+            default: null
          }
       }
    ],
@@ -29,4 +41,4 @@ const TaskSchema = new mongoose.Schema({
    }
 })
 
-module.exports = Task = mongoose.model('task', TaskSchema) //name of the database
+module.exports = Task = mongoose.model('task', TaskSchema)
