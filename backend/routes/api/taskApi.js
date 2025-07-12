@@ -17,6 +17,7 @@ const Page = require('../../models/PageModel')
 const Task = require('../../models/TaskModel')
 const Progress = require('../../models/ProgressModel')
 const Group = require('../../models/GroupModel')
+const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
 
 dotenv.config()
 
@@ -53,17 +54,23 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       // --- Google sync status logic ---
       const scheduleWithSync = await Promise.all(
          (task.schedule || []).map(async (slot) => {
-            // 0 = no sync event (no google_event_id)
+            // NONE = no sync event (no google_event_id)
             if (!slot.google_event_id) {
-               return { ...slot.toObject(), sync_status: 0 }
+               return {
+                  ...slot.toObject(),
+                  sync_status: SCHEDULE_SYNCE_STATUS.NONE
+               }
             }
 
-            // 2 = not synced (google account cannot be connected)
+            // ACCOUNT_NOT_CONNECTED = not synced (google account cannot be connected)
             const account = user.google_accounts?.find(
                (acc) => acc._id.toString() === slot.google_account_id
             )
             if (!account) {
-               return { ...slot.toObject(), sync_status: 2 }
+               return {
+                  ...slot.toObject(),
+                  sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+               }
             }
 
             let oauth2Client, calendar, event
@@ -71,7 +78,10 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
                oauth2Client = setOAuthCredentials(account.refresh_token)
                calendar = google.calendar({ version: 'v3', auth: oauth2Client })
             } catch (err) {
-               return { ...slot.toObject(), sync_status: 2 }
+               return {
+                  ...slot.toObject(),
+                  sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+               }
             }
 
             try {
@@ -80,8 +90,11 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
                   eventId: slot.google_event_id
                })
             } catch (err) {
-               // 3 = not synced (account ok, event not found)
-               return { ...slot.toObject(), sync_status: 3 }
+               // EVENT_NOT_FOUND = not synced (account ok, event not found)
+               return {
+                  ...slot.toObject(),
+                  sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
+               }
             }
 
             // Compare slot schedule with event schedule
@@ -92,24 +105,24 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
             const eventEnd = event.data.end?.dateTime || event.data.end?.date
 
             if (slotStart === eventStart && slotEnd === eventEnd) {
-               // 1 = synced normally
+               // SYNCED = synced normally
                return {
                   ...slot.toObject(),
-                  sync_status: 1,
+                  sync_status: SCHEDULE_SYNCE_STATUS.SYNCED,
                   google_event: event.data
                }
             } else {
-               // 4 = not synced (event found, but schedule mismatch)
+               // NOT_SYNCED = not synced (event found, but schedule mismatch)
                return {
                   ...slot.toObject(),
-                  sync_status: 4,
+                  sync_status: SCHEDULE_SYNCE_STATUS.NOT_SYNCED,
                   google_event: event.data
                }
             }
          })
       )
 
-      const { _id, title, schedule, content, create_date, update_date } = task
+      const { _id, title, content, create_date, update_date } = task
 
       const response = {
          _id,

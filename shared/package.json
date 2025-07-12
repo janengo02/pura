@@ -5,6 +5,7 @@
    "private": true,
    "exports": {
       ".": "./index.js",
-      "./utils": "./utils.js"
+      "./utils": "./utils.js",
+      "./constants": "./constants.js"
    }
 }
