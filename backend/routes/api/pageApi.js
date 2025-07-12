@@ -86,7 +86,7 @@ router.post('/', [auth], async (req, res) => {
    }
    try {
       // Data: Add new page
-      page = new Page(newPage)
+      const page = new Page(newPage)
       await page.save()
 
       res.json(page)

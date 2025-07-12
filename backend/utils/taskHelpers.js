@@ -222,7 +222,6 @@ const updateTaskFromGoogleEvent = async (eventId, eventData) => {
       if (!task.schedule[slotIndex]) {
          return { success: false, message: 'Schedule slot not found' }
       }
-      s
 
       // Update the schedule slot
       task.schedule[slotIndex].start = new Date(

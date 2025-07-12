@@ -236,7 +236,7 @@ function deleteTask({ task_id, task_map, tasks }) {
    return { tasks: newTasks, task_map: newTaskMap }
 }
 
-module.exports = {
+export {
    moveTask,
    createGroup,
    deleteGroup,
