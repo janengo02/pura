@@ -183,6 +183,8 @@ export const addGoogleAccountCalendarListHelper = (
 
 /**
  * Add or update events for a Google account with full date support
+ * Note: This function handles only Google Calendar events. Task merging should be done
+ * at the application level when tasks data is available.
  * @param {Array} currentCalendarEvents - Current event list
  * @param {Object} newGoogleAccountEvents - New account event data
  * @returns {Array} Updated event list
@@ -213,8 +215,26 @@ export const addGoogleAccountEventListHelper = (
                endTime = processAllDayEndTime(startTime, endTime)
             }
 
+            // Note: We preserve existing synced event information if it exists
+            const existingEvent = currentCalendarEvents.find(
+               (ev) => ev.google_event_id === event.id
+            )
+            const syncedInfo =
+               existingEvent &&
+               (existingEvent.eventType === 'synced' ||
+                  existingEvent.eventType === 'task')
+                  ? {
+                       pura_task_id: existingEvent.pura_task_id,
+                       pura_schedule_index: existingEvent.pura_schedule_index,
+                       eventType: 'synced'
+                    }
+                  : {
+                       eventType: 'google'
+                    }
+
             newEvents.push({
                id: event.id,
+               google_event_id: event.id,
                title: event.summary || 'Untitled Event',
                start: startTime,
                end: endTime,
@@ -224,7 +244,8 @@ export const addGoogleAccountEventListHelper = (
                color: calendar.backgroundColor,
                accessRole: calendar.accessRole,
                calendarVisible: calendar.selected || false,
-               accountId: newGoogleAccountEvents._id
+               accountId: newGoogleAccountEvents._id,
+               ...syncedInfo
             })
          }
       })
@@ -360,38 +381,79 @@ export const loadCalendarListHelper = (googleAccounts) => {
 
 /**
  * Transform events from Google accounts and tasks with full date support
+ * Merges synced task schedule slots with Google events to avoid duplication
  * @param {Array} googleAccounts - Raw Google accounts data
  * @param {Array} tasks - Task schedule data
- * @returns {Array} Transformed event list
+ * @returns {Array} Transformed event list with merged synced events
  */
 export const loadEventListHelper = (googleAccounts, tasks) => {
    const events = []
 
-   // Add task schedule events
-   tasks.forEach((task) => {
-      task.schedule.forEach((slot, slotIndex) => {
-         const startTime = new Date(Date.parse(slot.start))
-         const endTime = new Date(Date.parse(slot.end))
-         const isAllDay = isTaskScheduleAllDay(startTime, endTime)
-
-         events.push({
-            id: task._id,
-            pura_schedule_index: slotIndex,
-            title: task.title,
-            start: startTime,
-            end: endTime,
-            allDay: isAllDay,
-            calendarId: null,
-            calendar: null,
-            color: '#d2c2f2',
-            accessRole: 'owner',
-            calendarVisible: true,
-            accountId: null
+   // Create a set of all existing Google event IDs
+   const existingGoogleEventIds = new Set()
+   googleAccounts.forEach((account) => {
+      account.calendars.forEach((calendar) => {
+         calendar?.items?.forEach((event) => {
+            existingGoogleEventIds.add(event.id)
          })
       })
    })
 
-   // Add Google Calendar events
+   // Create a map of synced Google events to task information
+   // Only include task slots that have matching Google events
+   const syncedEventMap = new Map()
+
+   tasks.forEach((task) => {
+      task.schedule?.forEach((slot, slotIndex) => {
+         if (
+            slot.google_event_id &&
+            existingGoogleEventIds.has(slot.google_event_id)
+         ) {
+            syncedEventMap.set(slot.google_event_id, {
+               taskId: task._id,
+               taskTitle: task.title,
+               slotIndex,
+               slot
+            })
+         }
+      })
+   })
+
+   // Add task schedule events that are NOT synced with existing Google Calendar events
+   tasks.forEach((task) => {
+      task.schedule?.forEach((slot, slotIndex) => {
+         // Add task events if:
+         // 1. No google_event_id (never been synced), OR
+         // 2. Has google_event_id but no matching Google event exists (orphaned sync)
+         if (
+            !slot.google_event_id ||
+            !existingGoogleEventIds.has(slot.google_event_id)
+         ) {
+            const startTime = new Date(Date.parse(slot.start))
+            const endTime = new Date(Date.parse(slot.end))
+            const isAllDay = isTaskScheduleAllDay(startTime, endTime)
+
+            events.push({
+               id: `${task._id}_${slotIndex}`, // Unique ID for unsynced task events
+               pura_task_id: task._id,
+               pura_schedule_index: slotIndex,
+               title: task.title,
+               start: startTime,
+               end: endTime,
+               allDay: isAllDay,
+               calendarId: null,
+               calendar: null,
+               color: '#d2c2f2',
+               accessRole: 'owner',
+               calendarVisible: true,
+               accountId: null,
+               eventType: 'task' // Identify as task event
+            })
+         }
+      })
+   })
+
+   // Add Google Calendar events (with merged task information for synced events)
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendar?.items?.forEach((event) => {
@@ -409,19 +471,48 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                   endTime = processAllDayEndTime(startTime, endTime)
                }
 
-               events.push({
-                  id: event.id,
-                  title: event.summary || 'Untitled Event',
-                  start: startTime,
-                  end: endTime,
-                  allDay: isAllDay, // Critical property for react-big-calendar
-                  calendarId: calendar.id,
-                  calendar: calendar.summary,
-                  color: calendar.backgroundColor,
-                  accessRole: calendar.accessRole,
-                  calendarVisible: calendar.selected || false,
-                  accountId: account._id
-               })
+               // Check if this Google event is synced with a task
+               const syncedTaskInfo = syncedEventMap.get(event.id)
+
+               if (syncedTaskInfo) {
+                  // This is a synced event - merge task and Google event information
+                  events.push({
+                     id: event.id,
+                     google_event_id: event.id,
+                     pura_task_id: syncedTaskInfo.taskId,
+                     pura_schedule_index: syncedTaskInfo.slotIndex,
+                     title: syncedTaskInfo.taskTitle, // Use task title for synced events
+                     start: startTime,
+                     end: endTime,
+                     allDay: isAllDay,
+                     calendarId: calendar.id,
+                     calendar: calendar.summary,
+                     color: '#8B5CF6', // Purple color to indicate synced event
+                     accessRole: calendar.accessRole,
+                     calendarVisible: calendar.selected || false,
+                     accountId: account._id,
+                     eventType: 'synced', // Identify as synced event
+                     // Keep Google event details for reference
+                     googleEventTitle: event.summary || 'Untitled Event'
+                  })
+               } else {
+                  // This is a regular Google Calendar event (not synced with any task)
+                  events.push({
+                     id: event.id,
+                     google_event_id: event.id,
+                     title: event.summary || 'Untitled Event',
+                     start: startTime,
+                     end: endTime,
+                     allDay: isAllDay,
+                     calendarId: calendar.id,
+                     calendar: calendar.summary,
+                     color: calendar.backgroundColor,
+                     accessRole: calendar.accessRole,
+                     calendarVisible: calendar.selected || false,
+                     accountId: account._id,
+                     eventType: 'google' // Identify as Google event
+                  })
+               }
             }
          })
       })

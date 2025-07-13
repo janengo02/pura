@@ -32,7 +32,6 @@ import {
    Badge,
    HStack,
    Divider,
-   MenuGroup,
    MenuItem,
    VStack
 } from '@chakra-ui/react'

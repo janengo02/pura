@@ -5,6 +5,7 @@ const Progress = require('../models/ProgressModel')
 const Page = require('../models/PageModel')
 const { google } = require('googleapis')
 const { setOAuthCredentials } = require('./googleAccountHelper')
+const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
 
 const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
@@ -247,19 +248,118 @@ const updateTaskFromGoogleEvent = async (eventId, eventData) => {
    }
 }
 /**
- * Standardized task response formatter
+ * Calculate sync status for a schedule slot
  */
-const formatTaskResponse = async (task, page) => {
+const calculateSlotSyncStatus = async (slot, userId) => {
+   // NONE = no sync event (no google_event_id)
+   if (!slot.google_event_id) {
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.NONE
+      }
+   }
+
+   // Get user to check account connectivity
+   const user = await User.findById(userId)
+   if (!user) {
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+      }
+   }
+
+   // ACCOUNT_NOT_CONNECTED = not synced (google account cannot be connected)
+   const account = user.google_accounts?.find(
+      (acc) => acc._id.toString() === slot.google_account_id
+   )
+   if (!account) {
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+      }
+   }
+
+   let oauth2Client, calendar, event
+   try {
+      oauth2Client = setOAuthCredentials(account.refresh_token)
+      calendar = google.calendar({ version: 'v3', auth: oauth2Client })
+   } catch (err) {
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+      }
+   }
+
+   try {
+      event = await calendar.events.get({
+         calendarId: slot.google_calendar_id || 'primary',
+         eventId: slot.google_event_id
+      })
+   } catch (err) {
+      // EVENT_NOT_FOUND = not synced (account ok, event not found)
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
+      }
+   }
+
+   if (event.data.status === 'cancelled') {
+      // EVENT_CANCELLED = not synced (event cancelled)
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.EVENT_CANCELLED
+      }
+   }
+
+   // Compare slot schedule with event schedule
+   const slotStart = new Date(slot.start).toISOString()
+   const slotEnd = new Date(slot.end).toISOString()
+   const eventStartRaw = event.data.start?.dateTime || event.data.start?.date
+   const eventEndRaw = event.data.end?.dateTime || event.data.end?.date
+
+   // Normalize event times to ISO string for comparison
+   const eventStart = new Date(eventStartRaw).toISOString()
+   const eventEnd = new Date(eventEndRaw).toISOString()
+
+   if (slotStart === eventStart && slotEnd === eventEnd) {
+      // SYNCED = synced normally
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.SYNCED,
+         google_event: event.data
+      }
+   } else {
+      // NOT_SYNCED = not synced (event found, but schedule mismatch)
+      return {
+         ...slot.toObject(),
+         sync_status: SCHEDULE_SYNCE_STATUS.NOT_SYNCED,
+         google_event: event.data
+      }
+   }
+}
+
+/**
+ * Standardized task response formatter with sync status
+ */
+const formatTaskResponse = async (task, page, userId = null) => {
    const { newGroupIndex, newProgressIndex } = getNewMap(page, task._id)
    const group = await Group.findById(page.group_order[newGroupIndex])
    const progress = await Progress.findById(
       page.progress_order[newProgressIndex]
    )
 
+   // Calculate sync status for schedule if userId is provided
+   let scheduleWithSync = task.schedule
+   if (userId && task.schedule && task.schedule.length > 0) {
+      scheduleWithSync = await Promise.all(
+         task.schedule.map((slot) => calculateSlotSyncStatus(slot, userId))
+      )
+   }
+
    const formattedTask = {
       _id: task._id,
       title: task.title,
-      schedule: task.schedule,
+      schedule: scheduleWithSync,
       content: task.content,
       create_date: task.create_date,
       update_date: task.update_date,
@@ -555,6 +655,7 @@ module.exports = {
    deleteGoogleEventsForRemovedSlots,
    updateTaskFromGoogleEvent,
    syncTaskSlotWithGoogle,
+   calculateSlotSyncStatus,
    formatTaskResponse,
    updateTaskBasicInfo,
    moveTask,

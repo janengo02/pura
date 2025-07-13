@@ -23,9 +23,6 @@ const Page = require('../../models/PageModel')
 const Task = require('../../models/TaskModel')
 const Progress = require('../../models/ProgressModel')
 const Group = require('../../models/GroupModel')
-const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
-const { google } = require('googleapis')
-const { setOAuthCredentials } = require('../../utils/googleAccountHelper')
 
 dotenv.config()
 
@@ -44,119 +41,16 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
             'Page not found or unauthorized'
          )
       }
-      const user = await User.findById(req.user.id)
 
       //   Validation: Check if task exists
       const task = await Task.findById(req.params.task_id)
-
-      // Get group and progress data
-      const { newGroupIndex, newProgressIndex } = getNewMap(
-         page,
-         req.params.task_id
-      )
-      const group = await Group.findById(page.group_order[newGroupIndex])
-      const progress = await Progress.findById(
-         page.progress_order[newProgressIndex]
-      )
-
-      // --- Google sync status logic ---
-      const scheduleWithSync = await Promise.all(
-         (task.schedule || []).map(async (slot) => {
-            // NONE = no sync event (no google_event_id)
-            if (!slot.google_event_id) {
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.NONE
-               }
-            }
-
-            // ACCOUNT_NOT_CONNECTED = not synced (google account cannot be connected)
-            const account = user.google_accounts?.find(
-               (acc) => acc._id.toString() === slot.google_account_id
-            )
-            if (!account) {
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
-               }
-            }
-
-            let oauth2Client, calendar, event
-            try {
-               oauth2Client = setOAuthCredentials(account.refresh_token)
-               calendar = google.calendar({ version: 'v3', auth: oauth2Client })
-            } catch (err) {
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
-               }
-            }
-
-            try {
-               event = await calendar.events.get({
-                  calendarId: slot.google_calendar_id || 'primary',
-                  eventId: slot.google_event_id
-               })
-            } catch (err) {
-               // EVENT_NOT_FOUND = not synced (account ok, event not found)
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
-               }
-            }
-            if (event.data.status === 'cancelled') {
-               // EVENT_CANCELLED = not synced (event cancelled)
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.EVENT_CANCELLED
-               }
-            }
-            // Compare slot schedule with event schedule
-            const slotStart = new Date(slot.start).toISOString()
-            const slotEnd = new Date(slot.end).toISOString()
-            const eventStartRaw =
-               event.data.start?.dateTime || event.data.start?.date
-            const eventEndRaw = event.data.end?.dateTime || event.data.end?.date
-
-            // Normalize event times to ISO string for comparison
-            const eventStart = new Date(eventStartRaw).toISOString()
-            const eventEnd = new Date(eventEndRaw).toISOString()
-
-            console.log(
-               `Slot: ${slotStart} - ${slotEnd}, Event: ${eventStart} - ${eventEnd}`
-            )
-
-            if (slotStart === eventStart && slotEnd === eventEnd) {
-               // SYNCED = synced normally
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.SYNCED,
-                  google_event: event.data
-               }
-            } else {
-               // NOT_SYNCED = not synced (event found, but schedule mismatch)
-               return {
-                  ...slot.toObject(),
-                  sync_status: SCHEDULE_SYNCE_STATUS.NOT_SYNCED,
-                  google_event: event.data
-               }
-            }
-         })
-      )
-
-      const { _id, title, content, create_date, update_date } = task
-
-      const response = {
-         _id,
-         title,
-         schedule: scheduleWithSync,
-         content,
-         create_date,
-         update_date,
-         group,
-         progress
+      if (!task) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'Task not found')
       }
-      res.json(response)
+
+      // Use the enhanced formatTaskResponse with sync status calculation
+      const response = await formatTaskResponse(task, page, req.user.id)
+      res.json(response.task)
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
@@ -534,7 +428,7 @@ router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
          )
       }
 
-      const response = await formatTaskResponse(result.task, result.page)
+      const response = await formatTaskResponse(result.task, result.page, req.user.id)
       res.json(response)
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
@@ -581,7 +475,7 @@ router.put('/move/:page_id/:task_id', auth, async (req, res) => {
          )
       }
 
-      const response = await formatTaskResponse(result.task, result.page)
+      const response = await formatTaskResponse(result.task, result.page, req.user.id)
       res.json(response)
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
@@ -643,7 +537,7 @@ router.put(
             )
          }
 
-         const response = await formatTaskResponse(result.task, result.page)
+         const response = await formatTaskResponse(result.task, result.page, req.user.id)
          res.json(response)
       } catch (err) {
          sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
@@ -695,7 +589,7 @@ router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
          )
       }
 
-      const response = await formatTaskResponse(result.task, result.page)
+      const response = await formatTaskResponse(result.task, result.page, req.user.id)
       res.json({ ...response, newSlotIndex: result.newSlotIndex })
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
@@ -747,7 +641,7 @@ router.delete(
             )
          }
 
-         const response = await formatTaskResponse(result.task, result.page)
+         const response = await formatTaskResponse(result.task, result.page, req.user.id)
          res.json(response)
       } catch (err) {
          sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)

@@ -18,7 +18,8 @@ import {
    PopoverBody,
    PopoverContent,
    PopoverHeader,
-   PopoverTrigger
+   PopoverTrigger,
+   HStack
 } from '@chakra-ui/react'
 
 // Icons & Components
@@ -38,7 +39,8 @@ import useLoading from '../../../../hooks/useLoading'
 const BUTTON_STYLES = {
    variant: 'ghost',
    size: 'sm',
-   colorScheme: 'gray'
+   colorScheme: 'gray',
+   color: 'text.primary'
 }
 
 const POPOVER_STYLES = {
@@ -71,7 +73,7 @@ const EventWrapper = React.memo(
       // Redux props
       deleteGoogleEventAction,
       showTaskModalAction,
-      eventData: { pageId, tasks, googleAccounts }
+      eventData: { pageId }
    }) => {
       // -------------------------------------------------------------------------
       // REFS & STATE
@@ -83,13 +85,13 @@ const EventWrapper = React.memo(
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
 
-      const taskId = useMemo(
-         () =>
-            typeof event.pura_schedule_index !== 'undefined' ? event.id : null,
-         [event.id, event.pura_schedule_index]
-      )
-
-      const isPuraTask = useMemo(() => taskId !== null, [taskId])
+      const taskId = useMemo(() => {
+         // For 'task' and 'synced' eventTypes, use pura_task_id
+         if (event.eventType === 'task' || event.eventType === 'synced') {
+            return event.pura_task_id
+         }
+         return null
+      }, [event.eventType, event.pura_task_id])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -124,13 +126,28 @@ const EventWrapper = React.memo(
       // -------------------------------------------------------------------------
 
       const renderActionButton = (onClose) => {
-         if (isPuraTask) {
-            return (
+         let puraTaskIcon = null
+         let googleCalendarIcon = null
+         const deleteIcon = (
+            <IconButton
+               icon={<PiTrash size={16} />}
+               {...BUTTON_STYLES}
+               ref={initRef}
+               isLoading={deleteLoading}
+               onClick={async (e) => {
+                  e.preventDefault()
+                  await deleteEvent()
+                  onClose()
+               }}
+            />
+         )
+         if (event.eventType === 'task' || event.eventType === 'synced') {
+            puraTaskIcon = (
                <IconButton
                   icon={
                      <Image
                         src='assets/img/pura-logo-icon.svg'
-                        size={30}
+                        boxSize={4}
                         alt='Pura Task'
                      />
                   }
@@ -142,19 +159,26 @@ const EventWrapper = React.memo(
                />
             )
          }
-
+         if (event.eventType === 'google' || event.eventType === 'synced') {
+            googleCalendarIcon = (
+               <IconButton
+                  icon={
+                     <Image
+                        src='assets/img/logos--google-calendar.svg'
+                        boxSize={4}
+                        alt='Google Calendar'
+                     />
+                  }
+                  {...BUTTON_STYLES}
+               />
+            )
+         }
          return (
-            <IconButton
-               icon={<PiTrash />}
-               {...BUTTON_STYLES}
-               ref={initRef}
-               isLoading={deleteLoading}
-               onClick={async (e) => {
-                  e.preventDefault()
-                  await deleteEvent()
-                  onClose()
-               }}
-            />
+            <HStack spacing={1}>
+               {puraTaskIcon}
+               {googleCalendarIcon}
+               {deleteIcon}
+            </HStack>
          )
       }
 
@@ -207,14 +231,14 @@ EventWrapper.propTypes = {
       calendar: PropTypes.string,
       calendarId: PropTypes.string,
       accountId: PropTypes.string,
+      eventType: PropTypes.oneOf(['task', 'google', 'synced']).isRequired,
+      pura_task_id: PropTypes.string,
       pura_schedule_index: PropTypes.number
    }).isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
-      pageId: PropTypes.string.isRequired,
-      tasks: PropTypes.array.isRequired,
-      googleAccounts: PropTypes.array.isRequired
+      pageId: PropTypes.string.isRequired
    }).isRequired
 }
 
@@ -223,15 +247,9 @@ EventWrapper.propTypes = {
 // =============================================================================
 
 const selectEventWrapperData = createSelector(
-   [
-      (state) => state.page._id,
-      (state) => state.page.tasks,
-      (state) => state.googleAccount.googleAccounts
-   ],
-   (_id, tasks, googleAccounts) => ({
-      pageId: _id,
-      tasks: tasks || [],
-      googleAccounts: googleAccounts || []
+   [(state) => state.page._id],
+   (_id) => ({
+      pageId: _id
    })
 )
 
