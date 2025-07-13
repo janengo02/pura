@@ -156,3 +156,155 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
       googleAccountErrorHandler(dispatch, err, reqData.account_id)
    }
 }
+
+// Update task basic info (title, content)
+export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
+   try {
+      const res = await api.put(
+         `/task/basic/${formData.page_id}/${formData.task_id}`,
+         {
+            title: formData.title,
+            content: formData.content
+         }
+      )
+
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+
+      if (formData.task_detail_flg) {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      }
+   } catch (err) {
+      pageActionErrorHandler(
+         dispatch,
+         err,
+         formData.page_id,
+         formData.task_detail_flg ? formData.task_id : null
+      )
+   }
+}
+
+// Move task to different group/progress
+export const moveTaskAction = (formData) => async (dispatch) => {
+   try {
+      const res = await api.put(
+         `/task/move/${formData.page_id}/${formData.task_id}`,
+         {
+            group_id: formData.group_id,
+            progress_id: formData.progress_id
+         }
+      )
+
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+
+      if (formData.task_detail_flg) {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      }
+   } catch (err) {
+      pageActionErrorHandler(
+         dispatch,
+         err,
+         formData.page_id,
+         formData.task_detail_flg ? formData.task_id : null
+      )
+   }
+}
+
+// Update task schedule slot time
+export const updateTaskScheduleAction = (formData) => async (dispatch) => {
+   try {
+      const res = await api.put(
+         `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`,
+         {
+            start: formData.start,
+            end: formData.end
+         }
+      )
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+      if (formData.task_detail_flg) {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      }
+   } catch (err) {
+      pageActionErrorHandler(
+         dispatch,
+         err,
+         formData.page_id,
+         formData.task_detail_flg ? formData.task_id : null
+      )
+   }
+}
+
+// Add new schedule slot to task
+export const addTaskScheduleSlotAction = (formData) => async (dispatch) => {
+   try {
+      const res = await api.post(
+         `/task/schedule/${formData.page_id}/${formData.task_id}`,
+         {
+            start: formData.start,
+            end: formData.end
+         }
+      )
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+      if (formData.task_detail_flg) {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      }
+
+      return { newSlotIndex: res.data.newSlotIndex }
+   } catch (err) {
+      pageActionErrorHandler(
+         dispatch,
+         err,
+         formData.page_id,
+         formData.task_detail_flg ? formData.task_id : null
+      )
+   }
+}
+
+// Remove schedule slot from task
+export const removeTaskScheduleSlotAction = (formData) => async (dispatch) => {
+   try {
+      const res = await api.delete(
+         `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`
+      )
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+      if (formData.task_detail_flg) {
+         dispatch({
+            type: SHOW_TASK,
+            payload: res.data.task
+         })
+      }
+   } catch (err) {
+      pageActionErrorHandler(
+         dispatch,
+         err,
+         formData.page_id,
+         formData.task_detail_flg ? formData.task_id : null
+      )
+   }
+}

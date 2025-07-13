@@ -12,7 +12,8 @@ import { createSelector } from 'reselect'
 
 // Actions
 import {
-   updateTaskAction,
+   updateTaskScheduleAction,
+   removeTaskScheduleSlotAction,
    syncTaskWithGoogleAction
 } from '../../../../actions/taskActions'
 
@@ -30,11 +31,11 @@ import {
    Text,
    Badge,
    HStack,
-   Divider
+   Divider,
+   MenuGroup,
+   MenuItem,
+   VStack
 } from '@chakra-ui/react'
-
-// External Libraries
-import cloneDeep from 'clone-deep'
 
 // Utils & Icons
 import { stringToDateTimeLocal } from '../../../../utils/dates'
@@ -55,7 +56,8 @@ const ScheduleTimeSlot = React.memo(
       slot,
       index,
       // Redux props
-      updateTaskAction,
+      updateTaskScheduleAction,
+      removeTaskScheduleSlotAction,
       syncTaskWithGoogleAction,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars }
@@ -66,45 +68,43 @@ const ScheduleTimeSlot = React.memo(
       // Note: t is available for future i18n implementation
       // const { t } = useReactiveTranslation()
 
-      const updateScheduleSlot = useCallback(
-         async (updateCallback) => {
-            const newSchedule = cloneDeep(task.schedule) || []
-            updateCallback(newSchedule)
-
+      const handleUpdateStartTime = useCallback(
+         async (newStartTime) => {
             const formData = {
                page_id: pageId,
                task_id: task._id,
-               schedule: newSchedule,
+               slot_index: index,
+               start: newStartTime,
                task_detail_flg: true
             }
-            await updateTaskAction(formData)
+            await updateTaskScheduleAction(formData)
          },
-         [task.schedule, task._id, pageId, updateTaskAction]
-      )
-
-      const handleUpdateStartTime = useCallback(
-         async (newStartTime) => {
-            await updateScheduleSlot((schedule) => {
-               schedule[index].start = newStartTime
-            })
-         },
-         [updateScheduleSlot, index]
+         [updateTaskScheduleAction, index, pageId, task._id]
       )
 
       const handleUpdateEndTime = useCallback(
          async (newEndTime) => {
-            await updateScheduleSlot((schedule) => {
-               schedule[index].end = newEndTime
-            })
+            const formData = {
+               page_id: pageId,
+               task_id: task._id,
+               slot_index: index,
+               end: newEndTime,
+               task_detail_flg: true
+            }
+            await updateTaskScheduleAction(formData)
          },
-         [updateScheduleSlot, index]
+         [updateTaskScheduleAction, index, pageId, task._id]
       )
 
       const handleDeleteSlot = useCallback(async () => {
-         await updateScheduleSlot((schedule) => {
-            schedule.splice(index, 1)
-         })
-      }, [updateScheduleSlot, index])
+         const formData = {
+            page_id: pageId,
+            task_id: task._id,
+            slot_index: index,
+            task_detail_flg: true
+         }
+         await removeTaskScheduleSlotAction(formData)
+      }, [removeTaskScheduleSlotAction, index, pageId, task._id])
 
       // -------------------------------------------------------------------------
       // SYNC HANDLERS
@@ -140,7 +140,9 @@ const ScheduleTimeSlot = React.memo(
       const handleStartTimeChange = useCallback(
          async (e) => {
             e.preventDefault()
-            await handleUpdateStartTime(e.target.value)
+            const dateTime = new Date(e.target.value)
+            dateTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+            await handleUpdateStartTime(dateTime.toISOString())
          },
          [handleUpdateStartTime]
       )
@@ -148,7 +150,9 @@ const ScheduleTimeSlot = React.memo(
       const handleEndTimeChange = useCallback(
          async (e) => {
             e.preventDefault()
-            await handleUpdateEndTime(e.target.value)
+            const dateTime = new Date(e.target.value)
+            dateTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+            await handleUpdateEndTime(dateTime.toISOString())
          },
          [handleUpdateEndTime]
       )
@@ -341,28 +345,33 @@ const ScheduleTimeSlot = React.memo(
             )
 
             return (
-               <Button
-                  size='sm'
-                  variant='ghost'
-                  colorScheme='green'
-                  leftIcon={<PiCalendarCheck size={16} />}
-               >
-                  <HStack spacing={2}>
+               <Menu>
+                  <MenuButton
+                     as={Button}
+                     size='sm'
+                     variant='ghost'
+                     colorScheme='green'
+                     leftIcon={<PiCalendarCheck size={16} />}
+                  >
                      <Badge colorScheme='green' size='sm'>
                         Synced
                      </Badge>
+                  </MenuButton>
+                  <MenuList zIndex={10}>
                      {syncedCalendar && (
-                        <Text fontSize='xs' color='text.secondary'>
-                           {syncedCalendar.title}
-                        </Text>
+                        <MenuItem value='calendar'>
+                           <VStack spacing={2} align='start'>
+                              <Text fontSize='sm'>
+                                 Account: {syncedAccount.accountEmail}
+                              </Text>
+                              <Text fontSize='sm'>
+                                 Calendar: {syncedCalendar.title}
+                              </Text>
+                           </VStack>
+                        </MenuItem>
                      )}
-                     {syncedAccount && (
-                        <Text fontSize='xs' color='text.secondary'>
-                           ({syncedAccount.accountEmail})
-                        </Text>
-                     )}
-                  </HStack>
-               </Button>
+                  </MenuList>
+               </Menu>
             )
          }
 
@@ -450,7 +459,8 @@ ScheduleTimeSlot.propTypes = {
       google_calendar_id: PropTypes.string
    }).isRequired,
    index: PropTypes.number.isRequired,
-   updateTaskAction: PropTypes.func.isRequired,
+   updateTaskScheduleAction: PropTypes.func.isRequired,
+   removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    syncTaskWithGoogleAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
@@ -495,7 +505,8 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskAction,
+   updateTaskScheduleAction,
+   removeTaskScheduleSlotAction,
    syncTaskWithGoogleAction
 }
 

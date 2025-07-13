@@ -9,7 +9,13 @@ const { validatePage } = require('../../utils/pageHelpers')
 const {
    getNewMap,
    deleteGoogleEventsForRemovedSlots,
-   syncTaskSlotWithGoogle
+   syncTaskSlotWithGoogle,
+   formatTaskResponse,
+   updateTaskBasicInfo,
+   moveTask,
+   updateTaskSchedule,
+   addTaskScheduleSlot,
+   removeTaskScheduleSlot
 } = require('../../utils/taskHelpers')
 
 const User = require('../../models/UserModel')
@@ -115,6 +121,10 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
             // Normalize event times to ISO string for comparison
             const eventStart = new Date(eventStartRaw).toISOString()
             const eventEnd = new Date(eventEndRaw).toISOString()
+
+            console.log(
+               `Slot: ${slotStart} - ${slotEnd}, Event: ${eventStart} - ${eventEnd}`
+            )
 
             if (slotStart === eventStart && slotEnd === eventEnd) {
                // SYNCED = synced normally
@@ -488,6 +498,262 @@ router.post('/sync-google-event', auth, async (req, res) => {
       )
    }
 })
+
+// @route   PUT api/task/basic/:page-id/:task-id
+// @desc    Update task basic info (title, content)
+// @access  Private
+router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
+   try {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page) {
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'Page not found or unauthorized'
+         )
+      }
+
+      const { title, content } = req.body
+      const result = await updateTaskBasicInfo(
+         req.params.task_id,
+         req.params.page_id,
+         {
+            title,
+            content
+         }
+      )
+
+      if (!result.success) {
+         return sendErrorResponse(
+            res,
+            result.statusCode || 500,
+            'alert-oops',
+            result.message
+         )
+      }
+
+      const response = await formatTaskResponse(result.task, result.page)
+      res.json(response)
+   } catch (err) {
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+   }
+})
+
+// @route   PUT api/task/move/:page-id/:task-id
+// @desc    Move task to different group/progress
+// @access  Private
+router.put('/move/:page_id/:task_id', auth, async (req, res) => {
+   try {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page) {
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'Page not found or unauthorized'
+         )
+      }
+
+      const { group_id, progress_id } = req.body
+      if (!group_id && !progress_id) {
+         return sendErrorResponse(
+            res,
+            400,
+            'alert-oops',
+            'Either group_id or progress_id is required'
+         )
+      }
+
+      const result = await moveTask(req.params.task_id, req.params.page_id, {
+         group_id,
+         progress_id
+      })
+
+      if (!result.success) {
+         return sendErrorResponse(
+            res,
+            result.statusCode || 500,
+            'alert-oops',
+            result.message
+         )
+      }
+
+      const response = await formatTaskResponse(result.task, result.page)
+      res.json(response)
+   } catch (err) {
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+   }
+})
+
+// @route   PUT api/task/schedule/:page-id/:task-id/:slot-index
+// @desc    Update specific schedule slot time
+// @access  Private
+router.put(
+   '/schedule/:page_id/:task_id/:slot_index',
+   auth,
+   async (req, res) => {
+      try {
+         // Validation: Check if page exists and user is the owner
+         const page = await validatePage(req.params.page_id, req.user.id)
+         if (!page) {
+            return sendErrorResponse(
+               res,
+               404,
+               'alert-oops',
+               'Page not found or unauthorized'
+            )
+         }
+
+         const slotIndex = parseInt(req.params.slot_index)
+         if (isNaN(slotIndex)) {
+            return sendErrorResponse(
+               res,
+               400,
+               'alert-oops',
+               'Invalid slot index'
+            )
+         }
+
+         const { start, end } = req.body
+         if (!start && !end) {
+            return sendErrorResponse(
+               res,
+               400,
+               'alert-oops',
+               'Either start or end time is required'
+            )
+         }
+
+         const result = await updateTaskSchedule(
+            req.params.task_id,
+            req.params.page_id,
+            req.user.id,
+            { slotIndex, start, end }
+         )
+
+         if (!result.success) {
+            return sendErrorResponse(
+               res,
+               result.statusCode || 500,
+               'alert-oops',
+               result.message
+            )
+         }
+
+         const response = await formatTaskResponse(result.task, result.page)
+         res.json(response)
+      } catch (err) {
+         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      }
+   }
+)
+
+// @route   POST api/task/schedule/:page-id/:task-id
+// @desc    Add new schedule slot to task
+// @access  Private
+router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
+   try {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.page_id, req.user.id)
+      if (!page) {
+         return sendErrorResponse(
+            res,
+            404,
+            'alert-oops',
+            'Page not found or unauthorized'
+         )
+      }
+
+      const { start, end } = req.body
+      if (!start || !end) {
+         return sendErrorResponse(
+            res,
+            400,
+            'alert-oops',
+            'Both start and end times are required'
+         )
+      }
+
+      const result = await addTaskScheduleSlot(
+         req.params.task_id,
+         req.params.page_id,
+         {
+            start,
+            end
+         }
+      )
+
+      if (!result.success) {
+         return sendErrorResponse(
+            res,
+            result.statusCode || 500,
+            'alert-oops',
+            result.message
+         )
+      }
+
+      const response = await formatTaskResponse(result.task, result.page)
+      res.json({ ...response, newSlotIndex: result.newSlotIndex })
+   } catch (err) {
+      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+   }
+})
+
+// @route   DELETE api/task/schedule/:page-id/:task-id/:slot-index
+// @desc    Remove schedule slot from task
+// @access  Private
+router.delete(
+   '/schedule/:page_id/:task_id/:slot_index',
+   auth,
+   async (req, res) => {
+      try {
+         // Validation: Check if page exists and user is the owner
+         const page = await validatePage(req.params.page_id, req.user.id)
+         if (!page) {
+            return sendErrorResponse(
+               res,
+               404,
+               'alert-oops',
+               'Page not found or unauthorized'
+            )
+         }
+
+         const slotIndex = parseInt(req.params.slot_index)
+         if (isNaN(slotIndex)) {
+            return sendErrorResponse(
+               res,
+               400,
+               'alert-oops',
+               'Invalid slot index'
+            )
+         }
+
+         const result = await removeTaskScheduleSlot(
+            req.params.task_id,
+            req.params.page_id,
+            req.user.id,
+            { slotIndex }
+         )
+
+         if (!result.success) {
+            return sendErrorResponse(
+               res,
+               result.statusCode || 500,
+               'alert-oops',
+               result.message
+            )
+         }
+
+         const response = await formatTaskResponse(result.task, result.page)
+         res.json(response)
+      } catch (err) {
+         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      }
+   }
+)
 
 // @route   DELETE api/task/:page-id/:task-id
 // @desc    Delete a task

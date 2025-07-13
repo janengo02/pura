@@ -12,7 +12,7 @@ import { connect } from 'react-redux'
 // Actions
 import {
    deleteTaskAction,
-   updateTaskAction,
+   updateTaskBasicInfoAction,
    showTaskModalAction
 } from '../../../../actions/taskActions'
 
@@ -64,7 +64,7 @@ const TaskCard = React.memo(
       _id,
       filter,
       deleteTaskAction,
-      updateTaskAction,
+      updateTaskBasicInfoAction,
       showTaskModalAction
    }) => {
       // -------------------------------------------------------------------------
@@ -177,7 +177,7 @@ const TaskCard = React.memo(
             task_id: task._id,
             title: data.title || t('placeholder-untitled')
          }
-         await updateTaskAction(formData)
+         await updateTaskBasicInfoAction(formData)
          titleEditing.end()
       })
 
@@ -390,7 +390,7 @@ TaskCard.propTypes = {
    // Redux props
    _id: PropTypes.string.isRequired,
    filter: PropTypes.object.isRequired,
-   updateTaskAction: PropTypes.func.isRequired,
+   updateTaskBasicInfoAction: PropTypes.func.isRequired,
    deleteTaskAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired
 }
@@ -405,7 +405,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskAction,
+   updateTaskBasicInfoAction,
    deleteTaskAction,
    showTaskModalAction
 }

@@ -11,10 +11,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { updateTaskAction } from '../../../../actions/taskActions'
-
-// External Libraries
-import cloneDeep from 'lodash/cloneDeep'
+import { addTaskScheduleSlotAction } from '../../../../actions/taskActions'
 
 // UI Components
 import { Button, Flex, VStack } from '@chakra-ui/react'
@@ -32,7 +29,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const ScheduleSelect = React.memo(
-   ({ updateTaskAction, scheduleData: { task, _id } }) => {
+   ({ addTaskScheduleSlotAction, scheduleData: { task, _id } }) => {
       const { t } = useReactiveTranslation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -52,23 +49,24 @@ const ScheduleSelect = React.memo(
       // -------------------------------------------------------------------------
 
       const handleAddSlot = useCallback(async () => {
-         const newSlot = {
-            start: '',
-            end: ''
-         }
-
-         const newSchedule = cloneDeep(task.schedule) || []
-         newSchedule.push(newSlot)
-
+         // Create properly formatted timestamps that match Google Calendar format
+         const now = new Date()
+         const startTime = new Date(now)
+         startTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+         
+         const endTime = new Date(startTime)
+         endTime.setHours(endTime.getHours() + 1) // 1 hour from start time
+         
          const formData = {
             page_id: _id,
             task_id: task._id,
-            schedule: newSchedule,
+            start: startTime.toISOString(),
+            end: endTime.toISOString(),
             task_detail_flg: true
          }
 
-         await updateTaskAction(formData)
-      }, [task.schedule, task._id, _id, updateTaskAction])
+         await addTaskScheduleSlotAction(formData)
+      }, [task._id, _id, addTaskScheduleSlotAction])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC
@@ -110,7 +108,7 @@ ScheduleSelect.displayName = 'ScheduleSelect'
 
 // PropTypes validation
 ScheduleSelect.propTypes = {
-   updateTaskAction: PropTypes.func.isRequired,
+   addTaskScheduleSlotAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       _id: PropTypes.string.isRequired
@@ -138,7 +136,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskAction
+   addTaskScheduleSlotAction
 }
 
 // =============================================================================

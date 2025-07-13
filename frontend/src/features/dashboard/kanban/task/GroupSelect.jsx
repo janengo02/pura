@@ -11,7 +11,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { updateTaskAction } from '../../../../actions/taskActions'
+import { moveTaskAction } from '../../../../actions/taskActions'
 
 // UI Components
 import {
@@ -36,7 +36,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const GroupSelect = React.memo(
-   ({ updateTaskAction, groupData: { task, _id, group_order } }) => {
+   ({ moveTaskAction, groupData: { task, _id, group_order } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -58,7 +58,7 @@ const GroupSelect = React.memo(
                   onClick={async (e) => {
                      e.preventDefault()
                      if (group_item._id !== task.group._id) {
-                        updateTaskAction({
+                        moveTaskAction({
                            page_id: _id,
                            task_id: task._id,
                            group_id: group_item._id,
@@ -78,7 +78,7 @@ const GroupSelect = React.memo(
                </MenuItem>
             )) || []
          )
-      }, [group_order, task.group._id, task._id, _id, updateTaskAction])
+      }, [group_order, task.group._id, task._id, _id, moveTaskAction])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -142,7 +142,7 @@ GroupSelect.displayName = 'GroupSelect'
 
 // PropTypes validation
 GroupSelect.propTypes = {
-   updateTaskAction: PropTypes.func.isRequired,
+   moveTaskAction: PropTypes.func.isRequired,
    groupData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       _id: PropTypes.string.isRequired,
@@ -175,7 +175,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskAction
+   moveTaskAction
 }
 
 // =============================================================================

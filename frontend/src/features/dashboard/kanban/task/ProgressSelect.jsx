@@ -11,7 +11,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { updateTaskAction } from '../../../../actions/taskActions'
+import { moveTaskAction } from '../../../../actions/taskActions'
 
 // UI Components
 import {
@@ -36,7 +36,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const ProgressSelect = React.memo(
-   ({ updateTaskAction, progressData: { task, _id, progress_order } }) => {
+   ({ moveTaskAction, progressData: { task, _id, progress_order } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -58,7 +58,7 @@ const ProgressSelect = React.memo(
                   onClick={async (e) => {
                      e.preventDefault()
                      if (progress_item._id !== task.progress._id) {
-                        updateTaskAction({
+                        moveTaskAction({
                            page_id: _id,
                            task_id: task._id,
                            progress_id: progress_item._id,
@@ -76,7 +76,7 @@ const ProgressSelect = React.memo(
                </MenuItem>
             )) || []
          )
-      }, [progress_order, task.progress._id, task._id, _id, updateTaskAction])
+      }, [progress_order, task.progress._id, task._id, _id, moveTaskAction])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -138,7 +138,7 @@ ProgressSelect.displayName = 'ProgressSelect'
 
 // PropTypes validation
 ProgressSelect.propTypes = {
-   updateTaskAction: PropTypes.func.isRequired,
+   moveTaskAction: PropTypes.func.isRequired,
    progressData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       _id: PropTypes.string.isRequired,
@@ -172,7 +172,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskAction
+   moveTaskAction
 }
 
 // =============================================================================

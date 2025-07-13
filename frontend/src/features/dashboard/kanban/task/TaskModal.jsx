@@ -14,7 +14,7 @@ import { createSelector } from 'reselect'
 import {
    clearTaskAction,
    deleteTaskAction,
-   updateTaskAction
+   updateTaskBasicInfoAction
 } from '../../../../actions/taskActions'
 
 // Form Handling
@@ -65,7 +65,7 @@ const TaskModal = React.memo(
       // Redux props
       taskData: { task, _id },
       deleteTaskAction,
-      updateTaskAction,
+      updateTaskBasicInfoAction,
       clearTaskAction
    }) => {
       // -------------------------------------------------------------------------
@@ -127,8 +127,8 @@ const TaskModal = React.memo(
             task_id: task?._id,
             title: taskTitle || t('placeholder-untitled')
          }
-         await updateTaskAction(formData)
-      }, [_id, task?._id, taskTitle, updateTaskAction, t])
+         await updateTaskBasicInfoAction(formData)
+      }, [_id, task?._id, taskTitle, updateTaskBasicInfoAction, t])
 
       const handleUpdateContent = useCallback(async () => {
          if (!task?._id) return
@@ -137,8 +137,8 @@ const TaskModal = React.memo(
             task_id: task?._id,
             content: taskContent
          }
-         await updateTaskAction(formData)
-      }, [_id, task?._id, taskContent, updateTaskAction])
+         await updateTaskBasicInfoAction(formData)
+      }, [_id, task?._id, taskContent, updateTaskBasicInfoAction])
 
       const handleTitleChange = useCallback((e) => {
          e.preventDefault()
@@ -383,7 +383,7 @@ TaskModal.propTypes = {
       task: PropTypes.object,
       _id: PropTypes.string
    }).isRequired,
-   updateTaskAction: PropTypes.func.isRequired,
+   updateTaskBasicInfoAction: PropTypes.func.isRequired,
    deleteTaskAction: PropTypes.func.isRequired,
    clearTaskAction: PropTypes.func.isRequired
 }
@@ -409,7 +409,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskAction,
+   updateTaskBasicInfoAction,
    deleteTaskAction,
    clearTaskAction
 }
