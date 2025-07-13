@@ -134,24 +134,14 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/task/sync-google-event', reqData)
 
-      if (res.data?.task && res.data?.event) {
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-
-         dispatch({
-            type: GOOGLE_CALENDAR_ADD_EVENT,
-            payload: {
-               accountId: reqData.account_id,
-               event: res.data.event
-            }
-         })
-      } else {
-         throw new Error(
-            'Unexpected response format from /task/sync-google-event'
-         )
-      }
+      dispatch({
+         type: GET_PAGE,
+         payload: res.data.page
+      })
+      dispatch({
+         type: SHOW_TASK,
+         payload: res.data.task
+      })
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.account_id)
    }

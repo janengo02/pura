@@ -650,11 +650,85 @@ const removeTaskScheduleSlot = async (
    return { success: true, task, page }
 }
 
+/**
+ * Sync task slot with Google Calendar and update task data
+ */
+const syncTaskSlotWithGoogleHelper = async (
+   taskId,
+   slotIndex,
+   accountId,
+   calendarId,
+   userId,
+   syncAction = 'create'
+) => {
+   try {
+      // Validation: Check if task exists
+      const task = await Task.findById(taskId)
+      if (!task) {
+         return { success: false, message: 'Task not found', statusCode: 404 }
+      }
+
+      // Validation: Check if slot index is valid
+      if (!task.schedule || slotIndex < 0 || slotIndex >= task.schedule.length) {
+         return { success: false, message: 'Invalid slot index', statusCode: 400 }
+      }
+
+      const slot = task.schedule[slotIndex]
+
+      // Sync with Google Calendar
+      const result = await syncTaskSlotWithGoogle(
+         taskId,
+         task.title,
+         slot,
+         accountId,
+         calendarId,
+         userId,
+         syncAction
+      )
+
+      if (!result.success) {
+         return {
+            success: false,
+            message: result.message || 'Failed to sync with Google Calendar',
+            statusCode: 400
+         }
+      }
+
+      // Update task slot with Google event info
+      task.schedule[slotIndex].google_event_id = result.event.id
+      task.schedule[slotIndex].google_account_id = accountId
+      task.schedule[slotIndex].google_calendar_id = calendarId
+      task.update_date = new Date()
+      await task.save()
+
+      // Get page to determine group and progress
+      const page = await Page.findOne({ tasks: taskId })
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'schedule'])
+
+      if (!page) {
+         return { success: false, message: 'Page not found', statusCode: 404 }
+      }
+
+      return { success: true, task, page, event: result.event }
+   } catch (err) {
+      console.error('Error syncing task slot with Google:', err)
+      return { success: false, error: err.message, statusCode: 500 }
+   }
+}
+
 module.exports = {
    getNewMap,
    deleteGoogleEventsForRemovedSlots,
    updateTaskFromGoogleEvent,
    syncTaskSlotWithGoogle,
+   syncTaskSlotWithGoogleHelper,
    calculateSlotSyncStatus,
    formatTaskResponse,
    updateTaskBasicInfo,
