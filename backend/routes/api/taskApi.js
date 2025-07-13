@@ -17,7 +17,6 @@ const {
    removeTaskScheduleSlot
 } = require('../../utils/taskHelpers')
 
-const User = require('../../models/UserModel')
 const Page = require('../../models/PageModel')
 const Task = require('../../models/TaskModel')
 

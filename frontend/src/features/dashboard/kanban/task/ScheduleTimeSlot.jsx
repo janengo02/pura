@@ -67,32 +67,18 @@ const ScheduleTimeSlot = React.memo(
       // Note: t is available for future i18n implementation
       // const { t } = useReactiveTranslation()
 
-      const handleUpdateStartTime = useCallback(
-         async (newStartTime) => {
+      const updateScheduleSlot = useCallback(
+         async (updates) => {
             const formData = {
                page_id: pageId,
                task_id: task._id,
                slot_index: index,
-               start: newStartTime,
-               task_detail_flg: true
+               task_detail_flg: true,
+               ...updates
             }
             await updateTaskScheduleAction(formData)
          },
-         [updateTaskScheduleAction, index, pageId, task._id]
-      )
-
-      const handleUpdateEndTime = useCallback(
-         async (newEndTime) => {
-            const formData = {
-               page_id: pageId,
-               task_id: task._id,
-               slot_index: index,
-               end: newEndTime,
-               task_detail_flg: true
-            }
-            await updateTaskScheduleAction(formData)
-         },
-         [updateTaskScheduleAction, index, pageId, task._id]
+         [updateTaskScheduleAction, pageId, task._id, index]
       )
 
       const handleDeleteSlot = useCallback(async () => {
@@ -139,21 +125,59 @@ const ScheduleTimeSlot = React.memo(
       const handleStartTimeChange = useCallback(
          async (e) => {
             e.preventDefault()
-            const dateTime = new Date(e.target.value)
-            dateTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
-            await handleUpdateStartTime(dateTime.toISOString())
+            const newStartTime = new Date(e.target.value)
+            newStartTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+
+            const currentEndTime = new Date(slot.end)
+
+            // Validate: if new start time is equal or later than end time
+            if (newStartTime >= currentEndTime) {
+               // Auto-correct: set end time to 1 hour after new start time
+               const correctedEndTime = new Date(newStartTime)
+               correctedEndTime.setHours(correctedEndTime.getHours() + 1)
+
+               // Update both start and end times
+               await updateScheduleSlot({
+                  start: newStartTime.toISOString(),
+                  end: correctedEndTime.toISOString()
+               })
+            } else {
+               // Only update start time
+               await updateScheduleSlot({
+                  start: newStartTime.toISOString()
+               })
+            }
          },
-         [handleUpdateStartTime]
+         [updateScheduleSlot, slot.end]
       )
 
       const handleEndTimeChange = useCallback(
          async (e) => {
             e.preventDefault()
-            const dateTime = new Date(e.target.value)
-            dateTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
-            await handleUpdateEndTime(dateTime.toISOString())
+            const newEndTime = new Date(e.target.value)
+            newEndTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+
+            const currentStartTime = new Date(slot.start)
+
+            // Validate: if new end time is equal or earlier than start time
+            if (newEndTime <= currentStartTime) {
+               // Auto-correct: set start time to 1 hour before new end time
+               const correctedStartTime = new Date(newEndTime)
+               correctedStartTime.setHours(correctedStartTime.getHours() - 1)
+
+               // Update both start and end times
+               await updateScheduleSlot({
+                  start: correctedStartTime.toISOString(),
+                  end: newEndTime.toISOString()
+               })
+            } else {
+               // Only update end time
+               await updateScheduleSlot({
+                  end: newEndTime.toISOString()
+               })
+            }
          },
-         [handleUpdateEndTime]
+         [updateScheduleSlot, slot.start]
       )
 
       const handleDeleteClick = useCallback(
