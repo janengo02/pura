@@ -89,6 +89,88 @@ const semanticTokens = {
          _dark: 'red.400'
       },
 
+      // Success colors
+      'success.primary': {
+         default: 'green.600',
+         _dark: 'green.300'
+      },
+      'success.secondary': {
+         default: 'green.500',
+         _dark: 'green.400'
+      },
+      'success.subtle': {
+         default: 'green.50',
+         _dark: 'green.800'
+      },
+
+      // Warning colors
+      'warning.primary': {
+         default: 'orange.600',
+         _dark: 'orange.300'
+      },
+      'warning.secondary': {
+         default: 'orange.500',
+         _dark: 'orange.400'
+      },
+      'warning.subtle': {
+         default: 'orange.50',
+         _dark: 'orange.800'
+      },
+
+      // Info colors
+      'info.primary': {
+         default: 'blue.600',
+         _dark: 'blue.300'
+      },
+      'info.secondary': {
+         default: 'blue.500',
+         _dark: 'blue.400'
+      },
+      'info.subtle': {
+         default: 'blue.50',
+         _dark: 'blue.800'
+      },
+
+      // Status colors
+      'status.synced.bg': {
+         default: 'green.50',
+         _dark: 'green.800'
+      },
+      'status.synced.text': {
+         default: 'green.700',
+         _dark: 'green.200'
+      },
+      'status.warning.bg': {
+         default: 'orange.50',
+         _dark: 'orange.800'
+      },
+      'status.warning.text': {
+         default: 'orange.600',
+         _dark: 'orange.200'
+      },
+      'status.error.bg': {
+         default: 'red.50',
+         _dark: 'red.800'
+      },
+      'status.error.text': {
+         default: 'red.600',
+         _dark: 'red.200'
+      },
+      'status.disconnected.bg': {
+         default: 'yellow.50',
+         _dark: 'yellow.800'
+      },
+      'status.disconnected.text': {
+         default: 'yellow.700',
+         _dark: 'yellow.200'
+      },
+
+      // Background variants
+      'bg.subtle': {
+         default: 'gray.50',
+         _dark: 'gray.800'
+      },
+
       // Border colors
       'border.default': {
          default: 'gray.200',

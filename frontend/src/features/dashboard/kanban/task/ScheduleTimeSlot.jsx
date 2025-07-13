@@ -29,11 +29,13 @@ import {
    MenuOptionGroup,
    MenuItemOption,
    Text,
-   Badge,
    HStack,
    Divider,
    MenuItem,
-   VStack
+   VStack,
+   Image,
+   Box,
+   Tooltip
 } from '@chakra-ui/react'
 
 // Utils & Icons
@@ -41,10 +43,11 @@ import { stringToDateTimeLocal } from '../../../../utils/dates'
 
 // Hooks
 import useLoading from '../../../../hooks/useLoading'
-import { PiTrash, PiCloudArrowUp, PiCalendarCheck } from 'react-icons/pi'
+import { PiTrash } from 'react-icons/pi'
 
 // Constants
 import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -64,8 +67,7 @@ const ScheduleTimeSlot = React.memo(
       // -------------------------------------------------------------------------
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
-      // Note: t is available for future i18n implementation
-      // const { t } = useReactiveTranslation()
+      const { t } = useReactiveTranslation()
 
       const updateScheduleSlot = useCallback(
          async (updates) => {
@@ -279,85 +281,131 @@ const ScheduleTimeSlot = React.memo(
       )
 
       // -------------------------------------------------------------------------
-      // SYNC STATUS COMPONENTS
+      // SYNC STATUS HELPER COMPONENTS
       // -------------------------------------------------------------------------
 
-      const syncButton = useMemo(() => {
-         const syncStatus = slot.sync_status
+      // Reusable icon component
+      const StatusIcon = useCallback(
+         ({ src }) => (
+            <Image src={src} boxSize={4} alt='Google Calendar Status' />
+         ),
+         []
+      )
 
-         // If no sync status or NONE, show sync dropdown
-         if (!syncStatus || syncStatus === SCHEDULE_SYNCE_STATUS.NONE) {
-            if (googleAccounts.length === 0) {
-               return (
-                  <Button
-                     size='sm'
-                     variant='ghost'
-                     colorScheme='gray'
-                     isDisabled
-                     leftIcon={<PiCloudArrowUp size={16} />}
-                  >
-                     No Accounts
-                  </Button>
-               )
-            }
+      // Reusable status box wrapper
+      const StatusBox = useCallback(
+         ({ bgColor, children }) => (
+            <Box p={3} bg={bgColor} borderRadius='md'>
+               {children}
+            </Box>
+         ),
+         []
+      )
 
+      // Account display component
+      const AccountDisplay = useCallback(
+         ({ account, calendar, textColor = 'text.primary' }) => (
+            <VStack spacing={2} align='start'>
+               <HStack spacing={2}>
+                  <Image
+                     src='assets/img/logos--google.svg'
+                     boxSize={3}
+                     alt='Google'
+                  />
+                  <Text fontSize='sm' fontWeight='semibold' color={textColor}>
+                     {account?.accountEmail}
+                  </Text>
+               </HStack>
+               {calendar && (
+                  <HStack spacing={2}>
+                     <Box
+                        w={3}
+                        h={3}
+                        borderRadius='full'
+                        bg={calendar?.color || 'blue.500'}
+                        flexShrink={0}
+                     />
+                     <Text fontSize='sm' color={textColor}>
+                        {calendar?.title}
+                     </Text>
+                  </HStack>
+               )}
+            </VStack>
+         ),
+         []
+      )
+
+      // Centered message component
+      const CenteredMessage = useCallback(
+         ({ children, color = 'text.primary' }) => (
+            <Text fontSize='sm' color={color} textAlign='center'>
+               {children}
+            </Text>
+         ),
+         []
+      )
+
+      // Calendar list component
+      const SyncableCalendarList = useMemo(() => {
+         if (googleAccounts.length === 0) {
             return (
-               <Menu>
-                  <MenuButton
-                     as={Button}
-                     size='sm'
-                     variant='ghost'
-                     colorScheme='blue'
-                     isLoading={syncLoading}
-                  >
-                     Sync
-                  </MenuButton>
-                  <MenuList zIndex={10}>
-                     {googleAccounts.map((account, accountIndex) => {
-                        const accountCalendars = googleCalendars.filter(
-                           (cal) => cal.accountId === account.accountId
-                        )
-
-                        if (accountCalendars.length === 0) return null
-
-                        return (
-                           <MenuOptionGroup
-                              key={account.accountId}
-                              title={account.accountEmail}
-                              fontSize='sm'
-                              type='button'
-                           >
-                              {accountCalendars.map((calendar) => (
-                                 <MenuItemOption
-                                    key={`${account.accountId}-${calendar.calendarId}`}
-                                    value={calendar.calendarId}
-                                    onClick={() => {
-                                       syncWithGoogle(
-                                          account.accountId,
-                                          calendar.calendarId
-                                       )
-                                    }}
-                                 >
-                                    <HStack spacing={2}>
-                                       <Text fontSize='sm' fontWeight='medium'>
-                                          {calendar.title}
-                                       </Text>
-                                    </HStack>
-                                 </MenuItemOption>
-                              ))}
-                              {accountIndex < googleAccounts.length - 1 && (
-                                 <Divider />
-                              )}
-                           </MenuOptionGroup>
-                        )
-                     })}
-                  </MenuList>
-               </Menu>
+               <MenuItem size='sm' isDisabled>
+                  <Text fontSize='sm' color='text.secondary'>
+                     No Google accounts connected
+                  </Text>
+               </MenuItem>
             )
          }
 
-         // If SYNCED, show sync info
-         if (syncStatus === SCHEDULE_SYNCE_STATUS.SYNCED) {
+         return googleAccounts.map((account) => {
+            const accountCalendars = googleCalendars.filter(
+               (cal) => cal.accountId === account.accountId
+            )
+
+            if (accountCalendars.length === 0) return null
+
+            return (
+               <MenuOptionGroup
+                  key={account.accountId}
+                  title={account.accountEmail}
+                  fontSize='sm'
+                  type='button'
+               >
+                  {accountCalendars.map((calendar) => (
+                     <MenuItemOption
+                        key={`${account.accountId}-${calendar.calendarId}`}
+                        value={calendar.calendarId}
+                        onClick={() => {
+                           syncWithGoogle(
+                              account.accountId,
+                              calendar.calendarId
+                           )
+                        }}
+                     >
+                        <HStack spacing={3} w='full'>
+                           <Box
+                              w={3}
+                              h={3}
+                              borderRadius='full'
+                              bg={calendar.color || 'primary.500'}
+                              flexShrink={0}
+                           />
+                           <VStack spacing={0} align='start' flex={1}>
+                              <Text fontSize='sm' fontWeight='medium'>
+                                 {calendar.title}
+                              </Text>
+                           </VStack>
+                        </HStack>
+                     </MenuItemOption>
+                  ))}
+               </MenuOptionGroup>
+            )
+         })
+      }, [googleAccounts, googleCalendars, syncWithGoogle])
+
+      // Sync status configuration
+      const getSyncConfig = useCallback(
+         (syncStatus) => {
             const syncedAccount = googleAccounts.find(
                (acc) => acc.accountId === slot.google_account_id
             )
@@ -367,83 +415,188 @@ const ScheduleTimeSlot = React.memo(
                   cal.accountId === slot.google_account_id
             )
 
+            const configs = {
+               [SCHEDULE_SYNCE_STATUS.SYNCED]: {
+                  colorScheme: 'green',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='status.synced.bg'>
+                        <AccountDisplay
+                           account={syncedAccount}
+                           calendar={syncedCalendar}
+                           textColor='status.synced.text'
+                        />
+                     </StatusBox>
+                  ),
+                  actions: <MenuItem>{t('sync-unsync-action')}</MenuItem>
+               },
+               [SCHEDULE_SYNCE_STATUS.NONE]: {
+                  colorScheme: 'gray',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='bg.subtle'>
+                        <CenteredMessage>
+                           Select a Google Calendar to sync this time slot
+                        </CenteredMessage>
+                     </StatusBox>
+                  ),
+                  actions: SyncableCalendarList
+               },
+               [SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED]: {
+                  colorScheme: 'yellow',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='status.disconnected.bg'>
+                        <VStack spacing={2} align='start'>
+                           <AccountDisplay
+                              account={syncedAccount}
+                              textColor='status.disconnected.text'
+                           />
+                           <Text fontSize='sm' color='status.disconnected.text'>
+                              {t('sync-account-disconnected-message')}
+                           </Text>
+                        </VStack>
+                     </StatusBox>
+                  ),
+                  actions: <MenuItem>{t('sync-reconnect-action')}</MenuItem>
+               },
+               [SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND]: {
+                  colorScheme: 'orange',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='status.warning.bg'>
+                        <CenteredMessage color='status.warning.text'>
+                           {t('sync-event-not-found-message')}
+                           <br />
+                           {t('sync-create-new-event-message')}
+                        </CenteredMessage>
+                     </StatusBox>
+                  ),
+                  actions: SyncableCalendarList
+               },
+               [SCHEDULE_SYNCE_STATUS.NOT_SYNCED]: {
+                  colorScheme: 'orange',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='status.warning.bg'>
+                        <VStack spacing={2} align='center'>
+                           <Text
+                              fontSize='sm'
+                              color='status.warning.text'
+                              fontWeight='semibold'
+                           >
+                              {t('sync-times-mismatch-title')}
+                           </Text>
+                           <Text
+                              fontSize='xs'
+                              color='status.warning.text'
+                              textAlign='center'
+                           >
+                              {t('sync-times-mismatch-message')}
+                           </Text>
+                        </VStack>
+                     </StatusBox>
+                  ),
+                  actions: (
+                     <>
+                        <MenuItem>{t('sync-from-pura-task')}</MenuItem>
+                        <MenuItem>{t('sync-from-google-calendar')}</MenuItem>
+                     </>
+                  )
+               },
+               [SCHEDULE_SYNCE_STATUS.SYNC_ERROR]: {
+                  colorScheme: 'red',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='status.error.bg'>
+                        <CenteredMessage color='status.error.text'>
+                           {t('sync-error-occurred-message')}
+                           <br />
+                           {t('sync-error-retry-message')}
+                        </CenteredMessage>
+                     </StatusBox>
+                  )
+               }
+            }
+
             return (
+               configs[syncStatus] || {
+                  colorScheme: 'gray',
+                  icon: (
+                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
+                  ),
+                  desc: (
+                     <StatusBox bgColor='bg.subtle'>
+                        <CenteredMessage>
+                           {t('sync-unknown-status-message')}
+                           <br />
+                           {t('sync-unknown-status-action')}
+                        </CenteredMessage>
+                     </StatusBox>
+                  )
+               }
+            )
+         },
+         [
+            googleAccounts,
+            googleCalendars,
+            slot.google_account_id,
+            slot.google_calendar_id,
+            SyncableCalendarList,
+            t
+         ]
+      )
+
+      const syncButton = useMemo(() => {
+         const syncStatus = slot.sync_status
+         const syncProps = getSyncConfig(syncStatus)
+
+         return (
+            <Tooltip
+               label={`${t('sync-status-tooltip')}: ${syncStatus}`}
+               placement='top'
+               hasArrow
+            >
                <Menu>
                   <MenuButton
                      as={Button}
                      size='sm'
                      variant='ghost'
-                     colorScheme='green'
-                     leftIcon={<PiCalendarCheck size={16} />}
+                     colorScheme={syncProps.colorScheme}
+                     isLoading={syncLoading}
+                     display='flex'
+                     alignItems='center'
+                     justifyContent='center'
                   >
-                     <Badge colorScheme='green' size='sm'>
-                        Synced
-                     </Badge>
+                     {syncProps.icon}
                   </MenuButton>
-                  <MenuList zIndex={10}>
-                     {syncedCalendar && (
-                        <MenuItem value='calendar'>
-                           <VStack spacing={2} align='start'>
-                              <Text fontSize='sm'>
-                                 Account: {syncedAccount.accountEmail}
-                              </Text>
-                              <Text fontSize='sm'>
-                                 Calendar: {syncedCalendar.title}
-                              </Text>
-                           </VStack>
-                        </MenuItem>
+                  <MenuList zIndex={10} minW='300px' p={0}>
+                     <Box p={2}>{syncProps.desc}</Box>
+                     {syncProps.desc && syncProps.actions && (
+                        <Divider borderColor='gray.200' />
+                     )}
+                     {syncProps.actions && (
+                        <Box maxH='200px' overflowY='auto'>
+                           {syncProps.actions}
+                        </Box>
                      )}
                   </MenuList>
                </Menu>
-            )
-         }
-
-         // For other statuses (errors, etc.), show status badge
-         const getStatusProps = () => {
-            switch (syncStatus) {
-               case SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED:
-                  return {
-                     colorScheme: 'orange',
-                     text: 'Account Disconnected'
-                  }
-               case SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND:
-                  return {
-                     colorScheme: 'yellow',
-                     text: 'Event Not Found'
-                  }
-               case SCHEDULE_SYNCE_STATUS.NOT_SYNCED:
-                  return {
-                     colorScheme: 'orange',
-                     text: 'Out of Sync'
-                  }
-               case SCHEDULE_SYNCE_STATUS.SYNC_ERROR:
-                  return {
-                     colorScheme: 'red',
-                     text: 'Sync Error'
-                  }
-               default:
-                  return {
-                     colorScheme: 'gray',
-                     text: 'Unknown'
-                  }
-            }
-         }
-
-         const statusProps = getStatusProps()
-         return (
-            <Badge colorScheme={statusProps.colorScheme} size='sm'>
-               {statusProps.text}
-            </Badge>
+            </Tooltip>
          )
-      }, [
-         slot.sync_status,
-         slot.google_account_id,
-         slot.google_calendar_id,
-         googleAccounts,
-         googleCalendars,
-         syncWithGoogle,
-         syncLoading
-      ])
+      }, [slot.sync_status, getSyncConfig, syncLoading, t])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC

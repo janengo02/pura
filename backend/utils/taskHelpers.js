@@ -304,10 +304,10 @@ const calculateSlotSyncStatus = async (slot, userId) => {
    }
 
    if (event.data.status === 'cancelled') {
-      // EVENT_CANCELLED = not synced (event cancelled)
+      // EVENT_NOT_FOUND = not synced (event cancelled)
       return {
          ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.EVENT_CANCELLED
+         sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
       }
    }
 
@@ -669,8 +669,16 @@ const syncTaskSlotWithGoogleHelper = async (
       }
 
       // Validation: Check if slot index is valid
-      if (!task.schedule || slotIndex < 0 || slotIndex >= task.schedule.length) {
-         return { success: false, message: 'Invalid slot index', statusCode: 400 }
+      if (
+         !task.schedule ||
+         slotIndex < 0 ||
+         slotIndex >= task.schedule.length
+      ) {
+         return {
+            success: false,
+            message: 'Invalid slot index',
+            statusCode: 400
+         }
       }
 
       const slot = task.schedule[slotIndex]
