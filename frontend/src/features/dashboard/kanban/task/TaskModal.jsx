@@ -334,6 +334,7 @@ const TaskModal = React.memo(
                borderRadius={8}
                boxShadow='xl'
                w='680px'
+               minW='fit-content'
                maxW='80vw'
             >
                {renderModalHeader()}

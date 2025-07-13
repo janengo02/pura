@@ -98,13 +98,23 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
                   sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
                }
             }
-
+            if (event.data.status === 'cancelled') {
+               // EVENT_CANCELLED = not synced (event cancelled)
+               return {
+                  ...slot.toObject(),
+                  sync_status: SCHEDULE_SYNCE_STATUS.EVENT_CANCELLED
+               }
+            }
             // Compare slot schedule with event schedule
             const slotStart = new Date(slot.start).toISOString()
             const slotEnd = new Date(slot.end).toISOString()
-            const eventStart =
+            const eventStartRaw =
                event.data.start?.dateTime || event.data.start?.date
-            const eventEnd = event.data.end?.dateTime || event.data.end?.date
+            const eventEndRaw = event.data.end?.dateTime || event.data.end?.date
+
+            // Normalize event times to ISO string for comparison
+            const eventStart = new Date(eventStartRaw).toISOString()
+            const eventEnd = new Date(eventEndRaw).toISOString()
 
             if (slotStart === eventStart && slotEnd === eventEnd) {
                // SYNCED = synced normally
@@ -394,7 +404,8 @@ router.post('/update/:page_id/:task_id', [auth], async (req, res) => {
 // @access  Private
 router.post('/sync-google-event', auth, async (req, res) => {
    try {
-      const { task_id, slot_index, account_id, calendar_id } = req.body
+      const { task_id, slot_index, account_id, calendar_id, sync_action } =
+         req.body
       //   Validation: Check if task exists
       const task = await Task.findById(task_id)
       if (!task) {
@@ -408,7 +419,8 @@ router.post('/sync-google-event', auth, async (req, res) => {
          slot,
          account_id,
          calendar_id,
-         req.user.id
+         req.user.id,
+         sync_action
       )
 
       if (!result.success) {
@@ -426,9 +438,45 @@ router.post('/sync-google-event', auth, async (req, res) => {
       task.update_date = new Date()
       await task.save()
 
+      // Get page to determine group and progress
+      const page = await Page.findOne({ tasks: task_id })
+         .populate('progress_order', [
+            'title',
+            'title_color',
+            'color',
+            'visibility'
+         ])
+         .populate('group_order', ['title', 'color', 'visibility'])
+         .populate('tasks', ['title', 'schedule'])
+
+      if (!page) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'Page not found')
+      }
+
+      // Get group and progress data using the same logic as update API
+      const { newGroupIndex, newProgressIndex } = getNewMap(page, task_id)
+      const group = await Group.findById(page.group_order[newGroupIndex])
+      const progress = await Progress.findById(
+         page.progress_order[newProgressIndex]
+      )
+
+      // Format task response to match update API structure
+      const { _id, title, content, create_date, update_date } = task
+      const newTask = {
+         _id,
+         title,
+         schedule: task.schedule,
+         content,
+         create_date,
+         update_date,
+         group,
+         progress
+      }
+
       res.json({
-         event: result.event,
-         task: task
+         page: page,
+         task: newTask,
+         event: result.event
       })
    } catch (err) {
       sendErrorResponse(

@@ -71,12 +71,15 @@ const syncTaskSlotWithGoogle = async (
    slot,
    accountId,
    calendarId,
-   userId
+   userId,
+   syncAction
 ) => {
    try {
       const user = await User.findById(userId)
+      if (!user) {
+         return { success: false, message: 'User not found' }
+      }
 
-      // Find the specified Google account
       const account = user.google_accounts.find(
          (acc) => acc._id.toString() === accountId
       )
@@ -90,7 +93,7 @@ const syncTaskSlotWithGoogle = async (
       try {
          let event
 
-         if (slot.google_event_id) {
+         if (syncAction === 'update' && slot.google_event_id) {
             // Update existing event
             event = await calendar.events.update({
                calendarId: calendarId || 'primary',
@@ -105,7 +108,7 @@ const syncTaskSlotWithGoogle = async (
                   }
                }
             })
-         } else {
+         } else if (syncAction === 'create' || !slot.google_event_id) {
             // Create new event
             event = await calendar.events.insert({
                calendarId: calendarId || 'primary',
