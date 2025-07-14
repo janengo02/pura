@@ -143,18 +143,18 @@ router.post(
 // @desc    Create a new event in the user's Google Calendar with explicit calendar selection
 // @params  task_id (body) - Task ID for the event.
 //          slot_index (body) - Index of the time slot in the task schedule.
-//          account_id (body) - ID of the Google account to use.
+//          account_email (body) - Email of the Google account to use.
 //          calendar_id (body) - ID of the specific calendar to use.
 // @access  Private
 router.post('/sync-google-event', auth, async (req, res) => {
    try {
-      const { task_id, slot_index, account_id, calendar_id, sync_action } =
+      const { task_id, slot_index, account_email, calendar_id, sync_action } =
          req.body
 
       const result = await syncTaskSlotWithGoogleHelper(
          task_id,
          slot_index,
-         account_id,
+         account_email,
          calendar_id,
          req.user.id,
          sync_action

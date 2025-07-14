@@ -146,11 +146,11 @@ const ScheduleTimeSlot = React.memo(
 
       const handleSyncWithGoogle = useCallback(
          async (args) => {
-            const [accountId, calendarId] = args
+            const [accountEmail, calendarId] = args
             const reqData = {
                task_id: task._id,
                slot_index: index,
-               account_id: accountId,
+               account_email: accountEmail,
                calendar_id: calendarId,
                sync_action: 'create'
             }
@@ -237,24 +237,24 @@ const ScheduleTimeSlot = React.memo(
 
          return googleAccounts.map((account) => {
             const accountCalendars = googleCalendars.filter(
-               (cal) => cal.accountId === account.accountId
+               (cal) => cal.accountEmail === account.accountEmail
             )
 
             if (accountCalendars.length === 0) return null
 
             return (
                <MenuOptionGroup
-                  key={account.accountId}
+                  key={account.accountEmail}
                   title={account.accountEmail}
                   fontSize='sm'
                   type='button'
                >
                   {accountCalendars.map((calendar) => (
                      <MenuItemOption
-                        key={`${account.accountId}-${calendar.calendarId}`}
+                        key={`${account.accountEmail}-${calendar.calendarId}`}
                         value={calendar.calendarId}
                         onClick={() => {
-                           syncWithGoogle(account.accountId, calendar.calendarId)
+                           syncWithGoogle(account.accountEmail, calendar.calendarId)
                         }}
                      >
                         <HStack spacing={3} w='full'>
@@ -284,12 +284,12 @@ const ScheduleTimeSlot = React.memo(
 
       const getSyncConfig = useCallback((syncStatus) => {
          const syncedAccount = googleAccounts.find(
-            (acc) => acc.accountId === slot.google_account_id
+            (acc) => acc.accountEmail === slot.google_account_id
          )
          const syncedCalendar = googleCalendars.find(
             (cal) =>
                cal.calendarId === slot.google_calendar_id &&
-               cal.accountId === slot.google_account_id
+               cal.accountEmail === slot.google_account_id
          )
 
          const configs = {

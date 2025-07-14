@@ -127,11 +127,10 @@ export const addGoogleAccountListHelper = (
    newGoogleAccount
 ) => {
    const existingAccountIndex = googleAccounts.findIndex(
-      (account) => account.accountId === newGoogleAccount._id
+      (account) => account.accountEmail === newGoogleAccount.account_email
    )
 
    const newAccountData = {
-      accountId: newGoogleAccount._id,
       accountEmail: newGoogleAccount.account_email,
       accountSyncStatus: newGoogleAccount.sync_status,
       isDefault: newGoogleAccount.is_default || false
@@ -157,7 +156,7 @@ export const addGoogleAccountCalendarListHelper = (
    newAccountCalendars
 ) => {
    const calendarsWithoutCurrentAccount = currentCalendarList.filter(
-      (c) => c.accountId !== newAccountCalendars._id
+      (c) => c.accountEmail !== newAccountCalendars.account_email
    )
 
    const newCalendars = newAccountCalendars.calendars.map((calendar) => {
@@ -166,7 +165,7 @@ export const addGoogleAccountCalendarListHelper = (
       )
 
       return {
-         accountId: newAccountCalendars._id,
+         accountEmail: newAccountCalendars.account_email,
          calendarId: calendar.id,
          title: calendar.summary,
          color: calendar.backgroundColor,
@@ -194,7 +193,7 @@ export const addGoogleAccountEventListHelper = (
    newGoogleAccountEvents
 ) => {
    const eventsWithoutCurrentAccount = currentCalendarEvents.filter(
-      (ev) => ev.accountId !== newGoogleAccountEvents._id
+      (ev) => ev.accountEmail !== newGoogleAccountEvents.account_email
    )
 
    const newEvents = []
@@ -244,7 +243,7 @@ export const addGoogleAccountEventListHelper = (
                color: calendar.backgroundColor,
                accessRole: calendar.accessRole,
                calendarVisible: calendar.selected || false,
-               accountId: newGoogleAccountEvents._id,
+               accountEmail: newGoogleAccountEvents.account_email,
                ...syncedInfo
             })
          }
@@ -299,18 +298,17 @@ export const addGoogleAccount = ({
  */
 export const setDefaultGoogleAccount = ({
    googleAccounts,
-   accountId,
+   accountEmail,
    accountData
 }) => {
    const updatedAccounts = googleAccounts.map((account) => ({
       ...account,
-      isDefault: account.accountId === accountId
+      isDefault: account.accountEmail === accountEmail
    }))
 
    return {
       googleAccounts: updatedAccounts,
       defaultAccount: {
-         accountId: accountData._id,
          accountEmail: accountData.account_email,
          accountSyncStatus: accountData.sync_status,
          isDefault: true
@@ -328,7 +326,6 @@ export const getDefaultGoogleAccount = ({ defaultAccountData }) => {
    return {
       defaultAccount: defaultAccountData
          ? {
-              accountId: defaultAccountData._id,
               accountEmail: defaultAccountData.account_email,
               accountSyncStatus: defaultAccountData.sync_status,
               isDefault: true
@@ -347,7 +344,6 @@ export const getDefaultGoogleAccount = ({ defaultAccountData }) => {
  */
 export const loadAccountListHelper = (googleAccounts) => {
    return googleAccounts.map((account) => ({
-      accountId: account._id,
       accountEmail: account.account_email,
       accountSyncStatus: account.sync_status,
       isDefault: account.is_default || false
@@ -365,7 +361,7 @@ export const loadCalendarListHelper = (googleAccounts) => {
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendars.push({
-            accountId: account._id,
+            accountEmail: account.account_email,
             calendarId: calendar.id,
             title: calendar.summary,
             color: calendar.backgroundColor,
@@ -446,7 +442,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                color: '#d2c2f2',
                accessRole: 'owner',
                calendarVisible: true,
-               accountId: null,
+               accountEmail: null,
                eventType: 'task' // Identify as task event
             })
          }
@@ -490,7 +486,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                      color: '#8B5CF6', // Purple color to indicate synced event
                      accessRole: calendar.accessRole,
                      calendarVisible: calendar.selected || false,
-                     accountId: account._id,
+                     accountEmail: account.account_email,
                      eventType: 'synced', // Identify as synced event
                      // Keep Google event details for reference
                      googleEventTitle: event.summary || 'Untitled Event'
@@ -509,7 +505,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                      color: calendar.backgroundColor,
                      accessRole: calendar.accessRole,
                      calendarVisible: calendar.selected || false,
-                     accountId: account._id,
+                     accountEmail: account.account_email,
                      eventType: 'google' // Identify as Google event
                   })
                }
@@ -654,12 +650,12 @@ export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
 export const createGoogleEvent = ({
    googleCalendars,
    googleEvents,
-   accountId,
+   accountEmail,
    newEvent
 }) => {
-   // Find the primary calendar for the given accountId
+   // Find the primary calendar for the given accountEmail
    const calendar = googleCalendars.find(
-      (cal) => cal.accountId === accountId && cal.isPrimary
+      (cal) => cal.accountEmail === accountEmail && cal.isPrimary
    )
 
    if (!calendar) {
@@ -687,7 +683,7 @@ export const createGoogleEvent = ({
       color: calendar.color,
       accessRole: calendar.accessRole,
       calendarVisible: calendar.selected || false,
-      accountId: accountId
+      accountEmail: accountEmail
    }
 
    return { googleEvents: [...googleEvents, eventToAdd] }
@@ -699,30 +695,30 @@ export const removeGoogleAccount = ({
    googleAccounts,
    googleCalendars,
    googleEvents,
-   removedAccountId
+   removedAccountEmail
 }) => {
    // Remove the account from the list
    const updatedAccounts = googleAccounts.filter(
-      (account) => account.accountId !== removedAccountId
+      (account) => account.accountEmail !== removedAccountEmail
    )
 
    // Remove all calendars associated with the removed account
    const updatedCalendars = googleCalendars.filter(
-      (calendar) => calendar.accountId !== removedAccountId
+      (calendar) => calendar.accountEmail !== removedAccountEmail
    )
 
    // Filter and transform events associated with the removed account
    const updatedEvents = googleEvents
       .filter((event) => {
          // Remove events with eventType "google" from the removed account
-         if (event.accountId === removedAccountId && event.eventType === 'google') {
+         if (event.accountEmail === removedAccountEmail && event.eventType === 'google') {
             return false
          }
          return true
       })
       .map((event) => {
          // Convert events with eventType "synced" from the removed account to "task"
-         if (event.accountId === removedAccountId && event.eventType === 'synced') {
+         if (event.accountEmail === removedAccountEmail && event.eventType === 'synced') {
             return {
                ...event,
                eventType: 'task',
@@ -733,7 +729,7 @@ export const removeGoogleAccount = ({
                color: '#d2c2f2', // Default task color
                accessRole: 'owner',
                calendarVisible: true,
-               accountId: null,
+               accountEmail: null,
                googleEventTitle: undefined
             }
          }

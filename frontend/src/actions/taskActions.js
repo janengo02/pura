@@ -126,7 +126,7 @@ export const clearTaskAction = () => (dispatch) => {
  * @param {Object} reqData - Request data for event creation
  * @param {string} reqData.task_id - Task ID for the event
  * @param {Object} reqData.slot_index - Index of the time slot in the task schedule.
- * @param {string} reqData.account_id - Google account ID to use
+ * @param {string} reqData.account_email - Google account email to use
  * @param {string} reqData.calendar_id - ID of the specific calendar to use
  */
 export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {

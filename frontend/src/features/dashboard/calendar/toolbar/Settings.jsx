@@ -123,21 +123,23 @@ const Settings = React.memo(
       }, [googleLogin])
 
       const handleGoogleDisconnect = useCallback(
-         async (accountId) => {
+         async (accountEmail) => {
             disconnectGoogleAccountAction({
-               account_id: accountId
+               account_email: accountEmail
             })
          },
          [disconnectGoogleAccountAction]
       )
 
       const handleSetDefaultAccount = useCallback(
-         async (accountId) => {
+         async (accountEmail) => {
             if (isSettingDefault) return
 
             setIsSettingDefault(true)
             try {
-               await setDefaultGoogleAccountAction({ account_id: accountId })
+               await setDefaultGoogleAccountAction({
+                  account_email: accountEmail
+               })
             } finally {
                setIsSettingDefault(false)
             }
@@ -175,7 +177,7 @@ const Settings = React.memo(
                <Divider />
                <MenuItem
                   icon={<PiStar />}
-                  onClick={() => handleSetDefaultAccount(account.accountId)}
+                  onClick={() => handleSetDefaultAccount(account.accountEmail)}
                   isDisabled={isSettingDefault || !account.accountSyncStatus}
                >
                   {t('btn-set-as-default')}
@@ -185,7 +187,7 @@ const Settings = React.memo(
       }
 
       const renderAccountButton = (account) => (
-         <Menu key={account.accountId} isLazy>
+         <Menu key={account.accountEmail} isLazy>
             <MenuButton
                as={Button}
                {...getAccountButtonStyles(
@@ -215,7 +217,7 @@ const Settings = React.memo(
 
       const renderCalendarOptions = (account) => {
          const currentCalendars = googleCalendars.filter(
-            (calendar) => calendar.accountId === account.accountId
+            (calendar) => calendar.accountEmail === account.accountEmail
          )
 
          return (
@@ -265,7 +267,7 @@ const Settings = React.memo(
                               icon={<PiPlugs />}
                               onClick={(e) => {
                                  e.preventDefault()
-                                 handleGoogleDisconnect(account.accountId)
+                                 handleGoogleDisconnect(account.accountEmail)
                               }}
                            >
                               {t('btn-dis_connect-google_calendar')}

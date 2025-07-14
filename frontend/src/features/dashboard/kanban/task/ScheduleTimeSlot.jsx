@@ -135,11 +135,11 @@ const ScheduleTimeSlot = React.memo(
       const handleSyncWithGoogle = useCallback(
          async (args) => {
             // Handle args array from useLoading hook
-            const [accountId, calendarId] = args
+            const [accountEmail, calendarId] = args
             const reqData = {
                task_id: task._id,
                slot_index: index,
-               account_id: accountId,
+               account_email: accountEmail,
                calendar_id: calendarId,
                sync_action: 'create'
             }

@@ -137,16 +137,16 @@ router.post('/add-account', auth, async (req, res) => {
 
 // @route   PUT api/google-account/set-default/:account_id
 // @desc    Set a Google account as the default account
-// @params  account_id (params) - ID of the account to set as default
+// @params  account_email (params) - Email of the account to set as default
 // @access  Private
-router.put('/set-default/:account_id', auth, async (req, res) => {
+router.put('/set-default/:account_email', auth, async (req, res) => {
    try {
-      const { account_id } = req.params
+      const { account_email } = req.params
       const user = await User.findById(req.user.id)
 
       // Verify account exists and belongs to user
       const targetAccount = user.google_accounts.find(
-         (acc) => acc._id.toString() === account_id
+         (acc) => acc.account_email === account_email
       )
 
       if (!targetAccount) {
@@ -154,12 +154,12 @@ router.put('/set-default/:account_id', auth, async (req, res) => {
       }
 
       // Set new default account
-      await ensureSingleDefaultAccount(user, account_id)
+      await ensureSingleDefaultAccount(user, account_email)
 
       // Return updated account data
       const updatedUser = await User.findById(req.user.id)
       const updatedAccount = updatedUser.google_accounts.find(
-         (acc) => acc._id.toString() === account_id
+         (acc) => acc.account_email === account_email
       )
 
       res.json({
@@ -205,18 +205,18 @@ router.get('/default', auth, async (req, res) => {
 // @route   POST api/google-account/update-event/:eventId
 // @desc    Update an event in the user's Google Calendar (handles bi-directional sync)
 // @params  eventId (params) - ID of the event to update.
-//          accountId (body) - ID of the Google account to use.
+//          accountEmail (body) - Email of the Google account to use.
 //          calendarId (body) - ID of the calendar containing the event.
 //          eventData (body) - Updated event data
 // @access  Private
 router.post('/update-event/:eventId', auth, async (req, res) => {
    try {
       const { eventId } = req.params
-      const { accountId, calendarId, eventData } = req.body
+      const { accountEmail, calendarId, eventData } = req.body
 
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
-         (acc) => acc._id.toString() === accountId
+         (acc) => acc.account_email === accountEmail
       ).refresh_token
 
       const oath2Client = setOAuthCredentials(refreshToken)
@@ -242,17 +242,17 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
 // @route   DELETE api/google-account/delete-event/:eventId
 // @desc    Delete an event from the user's Google Calendar.
 // @params  eventId (params) - ID of the event to delete.
-//          accountId (body) - ID of the Google account to use.
+//          accountEmail (body) - Email of the Google account to use.
 //          calendarId (body) - ID of the calendar containing the event.
 // @access  Private
 router.delete('/delete-event/:eventId', auth, async (req, res) => {
    try {
       const { eventId } = req.params
-      const { accountId, calendarId } = req.body
+      const { accountEmail, calendarId } = req.body
 
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
-         (acc) => acc._id.toString() === accountId
+         (acc) => acc.account_email === accountEmail
       ).refresh_token
 
       const oath2Client = setOAuthCredentials(refreshToken)
@@ -303,18 +303,18 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
    }
 })
 
-// @route   DELETE api/google-account/disconnect/:account_id
+// @route   DELETE api/google-account/disconnect/:account_email
 // @desc    Disconnect a Google account
-// @params  account_id (params) - ID of the account to disconnect
+// @params  account_email (params) - Email of the account to disconnect
 // @access  Private
-router.delete('/disconnect/:account_id', auth, async (req, res) => {
+router.delete('/disconnect/:account_email', auth, async (req, res) => {
    try {
-      const { account_id } = req.params
+      const { account_email } = req.params
       const user = await User.findById(req.user.id)
 
       // Remove the Google account
       user.google_accounts = user.google_accounts.filter(
-         (acc) => acc._id.toString() !== account_id
+         (acc) => acc.account_email !== account_email
       )
 
       await user.save()

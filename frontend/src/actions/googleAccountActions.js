@@ -148,19 +148,19 @@ export const addGoogleAccountAction = (reqData) => async (dispatch) => {
  * Set Default Google Account Action
  * Sets a specific Google account as the default account
  * @param {Object} reqData - Request data for setting default account
- * @param {string} reqData.account_id - ID of the account to set as default
+ * @param {string} reqData.account_email - ID of the account to set as default
  */
 export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.put(
-         `/google-account/set-default/${reqData.account_id}`
+         `/google-account/set-default/${reqData.account_email}`
       )
 
       if (res.data?._id) {
          dispatch({
             type: GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
             payload: {
-               accountId: res.data._id,
+               accountEmail: reqData.account_email,
                accountData: res.data
             }
          })
@@ -170,7 +170,7 @@ export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
          )
       }
    } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+      googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
 }
 
@@ -207,7 +207,7 @@ export const getDefaultGoogleAccountAction = () => async (dispatch) => {
  * Updates an existing event in Google Calendar
  * @param {Object} reqData - Request data for event update
  * @param {string} reqData.eventId - Event ID to update
- * @param {string} reqData.account_id - Google account ID
+ * @param {string} reqData.accountEmail - Google account ID
  */
 export const updateGoogleEventAction = (reqData) => async (dispatch) => {
    try {
@@ -245,7 +245,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
  * Deletes an event from Google Calendar
  * @param {Object} reqData - Request data for event deletion
  * @param {string} reqData.eventId - Event ID to delete
- * @param {string} reqData.account_id - Google account ID
+ * @param {string} reqData.accountEmail - Google account ID
  */
 export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
    try {
@@ -292,20 +292,20 @@ export const changeCalendarVisibilityAction =
  * Disconnect Google Account Action
  * Removes Google Account connection and clears calendar data
  * @param {Object} reqData - Request data for disconnection
- * @param {string} reqData.account_id - Google account ID to disconnect
+ * @param {string} reqData.account_email - Google account ID to disconnect
  */
 export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
    try {
-      await api.delete(`/google-account/disconnect/${reqData.account_id}`)
+      await api.delete(`/google-account/disconnect/${reqData.account_email}`)
 
       // Clear calendar state
       dispatch({
          type: GOOGLE_CALENDAR_REMOVE_ACCOUNT,
          payload: {
-            accountId: reqData.account_id
+            accountEmail: reqData.account_email
          }
       })
    } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+      googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
 }

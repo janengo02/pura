@@ -74,12 +74,12 @@ const updateGoogleAccountSyncStatus = (user, notSyncedAccounts) => {
 /**
  * Ensure only one default account exists
  * @param {Object} user - User object
- * @param {String} newDefaultAccountId - ID of the new default account
+ * @param {String} newDefaultAccountEmail - Email of the new default account
  */
-const ensureSingleDefaultAccount = async (user, newDefaultAccountId) => {
+const ensureSingleDefaultAccount = async (user, newDefaultAccountEmail) => {
    user.google_accounts = user.google_accounts.map((account) => ({
       ...account,
-      is_default: account._id.toString() === newDefaultAccountId
+      is_default: account.account_email === newDefaultAccountEmail
    }))
    user.update_date = new Date()
    await user.save()
