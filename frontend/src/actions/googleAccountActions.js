@@ -4,12 +4,14 @@
 
 import { api } from '../utils'
 import { setAlertAction } from './alertActions'
+import { clearTaskAction, showTaskModalAction } from './taskActions'
 import {
    GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT,
+   GOOGLE_CALENDAR_REMOVE_ACCOUNT,
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
    GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT
 } from './types'
@@ -298,7 +300,10 @@ export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
 
       // Clear calendar state
       dispatch({
-         type: GOOGLE_CALENDAR_AUTH_ERROR
+         type: GOOGLE_CALENDAR_REMOVE_ACCOUNT,
+         payload: {
+            accountId: reqData.account_id
+         }
       })
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.account_id)

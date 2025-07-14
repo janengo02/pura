@@ -14,8 +14,11 @@ import { createSelector } from 'reselect'
 import {
    updateTaskScheduleAction,
    removeTaskScheduleSlotAction,
-   syncTaskWithGoogleAction
+   syncTaskWithGoogleAction,
+   showTaskModalAction
 } from '../../../../actions/taskActions'
+import { addGoogleAccountAction } from '../../../../actions/googleAccountActions'
+import { setAlertAction } from '../../../../actions/alertActions'
 
 // UI Components
 import {
@@ -49,6 +52,12 @@ import { PiTrash } from 'react-icons/pi'
 import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
+// Utils
+import {
+   useGoogleAccountLogin,
+   useStandardGoogleAccountLogin
+} from '../../../../utils/googleAuthHelpers'
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -61,13 +70,39 @@ const ScheduleTimeSlot = React.memo(
       updateTaskScheduleAction,
       removeTaskScheduleSlotAction,
       syncTaskWithGoogleAction,
+      addGoogleAccountAction,
+      setAlertAction,
       scheduleData: { task, pageId },
-      googleData: { googleAccounts, googleCalendars }
+      googleData: { googleAccounts, googleCalendars },
+      settingsData: { range }
    }) => {
       // -------------------------------------------------------------------------
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+
+      // -------------------------------------------------------------------------
+      // GOOGLE LOGIN HANDLER
+      // -------------------------------------------------------------------------
+      const googleReconnectLogin = useGoogleAccountLogin({
+         onSuccess: (code, range) => {
+            addGoogleAccountAction({ code, range }).then(async () => {
+               const formData = {
+                  page_id: pageId,
+                  task_id: task._id
+               }
+               showTaskModalAction(formData)
+            })
+         },
+         onError: (responseError) => {
+            setAlertAction(
+               'alert-google_calendar-account-connect_failed',
+               '',
+               'error'
+            )
+         },
+         range
+      })
 
       const updateScheduleSlot = useCallback(
          async (updates) => {
@@ -454,17 +489,23 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='status.disconnected.bg'>
                         <VStack spacing={2} align='start'>
-                           <AccountDisplay
-                              account={syncedAccount}
-                              textColor='status.disconnected.text'
-                           />
+                           {syncedAccount && (
+                              <AccountDisplay
+                                 account={syncedAccount}
+                                 textColor='status.disconnected.text'
+                              />
+                           )}
                            <Text fontSize='sm' color='status.disconnected.text'>
                               {t('sync-account-disconnected-message')}
                            </Text>
                         </VStack>
                      </StatusBox>
                   ),
-                  actions: <MenuItem>{t('sync-reconnect-action')}</MenuItem>
+                  actions: (
+                     <MenuItem onClick={googleReconnectLogin}>
+                        {t('sync-reconnect-action')}
+                     </MenuItem>
+                  )
                },
                [SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND]: {
                   colorScheme: 'orange',
@@ -555,7 +596,8 @@ const ScheduleTimeSlot = React.memo(
             slot.google_account_id,
             slot.google_calendar_id,
             SyncableCalendarList,
-            t
+            t,
+            googleReconnectLogin
          ]
       )
 
@@ -638,6 +680,8 @@ ScheduleTimeSlot.propTypes = {
    updateTaskScheduleAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    syncTaskWithGoogleAction: PropTypes.func.isRequired,
+   addGoogleAccountAction: PropTypes.func.isRequired,
+   setAlertAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       pageId: PropTypes.string.isRequired
@@ -645,6 +689,9 @@ ScheduleTimeSlot.propTypes = {
    googleData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
       googleCalendars: PropTypes.array.isRequired
+   }).isRequired,
+   settingsData: PropTypes.shape({
+      range: PropTypes.string.isRequired
    }).isRequired
 }
 
@@ -671,19 +718,29 @@ const selectGoogleData = createSelector(
    })
 )
 
+const selectSettingsData = createSelector(
+   [(state) => state.googleAccount.range],
+   (range) => ({
+      range
+   })
+)
+
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
 const mapStateToProps = (state) => ({
    scheduleData: selectScheduleData(state),
-   googleData: selectGoogleData(state)
+   googleData: selectGoogleData(state),
+   settingsData: selectSettingsData(state)
 })
 
 const mapDispatchToProps = {
    updateTaskScheduleAction,
    removeTaskScheduleSlotAction,
-   syncTaskWithGoogleAction
+   syncTaskWithGoogleAction,
+   addGoogleAccountAction,
+   setAlertAction
 }
 
 // =============================================================================

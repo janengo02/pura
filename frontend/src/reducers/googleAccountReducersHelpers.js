@@ -692,3 +692,59 @@ export const createGoogleEvent = ({
 
    return { googleEvents: [...googleEvents, eventToAdd] }
 }
+// =============================================================================
+// REMOVE ACCOUNT STATE TRANSFORMERS
+// =============================================================================
+export const removeGoogleAccount = ({
+   googleAccounts,
+   googleCalendars,
+   googleEvents,
+   removedAccountId
+}) => {
+   // Remove the account from the list
+   const updatedAccounts = googleAccounts.filter(
+      (account) => account.accountId !== removedAccountId
+   )
+
+   // Remove all calendars associated with the removed account
+   const updatedCalendars = googleCalendars.filter(
+      (calendar) => calendar.accountId !== removedAccountId
+   )
+
+   // Filter and transform events associated with the removed account
+   const updatedEvents = googleEvents
+      .filter((event) => {
+         // Remove events with eventType "google" from the removed account
+         if (event.accountId === removedAccountId && event.eventType === 'google') {
+            return false
+         }
+         return true
+      })
+      .map((event) => {
+         // Convert events with eventType "synced" from the removed account to "task"
+         if (event.accountId === removedAccountId && event.eventType === 'synced') {
+            return {
+               ...event,
+               eventType: 'task',
+               // Remove Google Calendar related values
+               google_event_id: undefined,
+               calendarId: null,
+               calendar: null,
+               color: '#d2c2f2', // Default task color
+               accessRole: 'owner',
+               calendarVisible: true,
+               accountId: null,
+               googleEventTitle: undefined
+            }
+         }
+         return event
+      })
+
+   return {
+      googleAccounts: updatedAccounts,
+      googleCalendars: updatedCalendars,
+      googleEvents: updatedEvents,
+      defaultAccount:
+         updatedAccounts.find((account) => account.isDefault) || null
+   }
+}

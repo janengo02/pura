@@ -278,6 +278,7 @@ const calculateSlotSyncStatus = async (slot, userId) => {
          sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
       }
    }
+   console.log(account)
 
    let oauth2Client, calendar, event
    try {

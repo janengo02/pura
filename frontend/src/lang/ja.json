@@ -41,6 +41,7 @@
       "btn-new_page": "新しいページ",
       "btn-not_synced": "未同期",
       "btn-re_connect-google_calendar": "再接続",
+      "btn-dis_connect-google_calendar": "接続解除",
       "btn-register": "登録",
       "btn-set-as-default": "デフォルトに設定",
       "btn-show": "表示",

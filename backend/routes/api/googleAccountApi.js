@@ -312,26 +312,6 @@ router.delete('/disconnect/:account_id', auth, async (req, res) => {
       const { account_id } = req.params
       const user = await User.findById(req.user.id)
 
-      // Remove Google event IDs from all tasks for this account
-      const tasks = await Task.find({
-         'schedule.google_account_id': account_id
-      })
-
-      for (const task of tasks) {
-         task.schedule = task.schedule.map((slot) => {
-            if (slot.google_account_id === account_id) {
-               return {
-                  ...slot.toObject(),
-                  google_event_id: null,
-                  google_account_id: null,
-                  google_calendar_id: null
-               }
-            }
-            return slot
-         })
-         await task.save()
-      }
-
       // Remove the Google account
       user.google_accounts = user.google_accounts.filter(
          (acc) => acc._id.toString() !== account_id

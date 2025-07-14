@@ -5,6 +5,7 @@ import {
    GOOGLE_CALENDAR_UPDATE_EVENT,
    GOOGLE_CALENDAR_ADD_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT,
+   GOOGLE_CALENDAR_REMOVE_ACCOUNT,
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
    GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT
 } from '../actions/types'
@@ -15,7 +16,8 @@ import {
    updateGoogleEvent,
    createGoogleEvent,
    setDefaultGoogleAccount,
-   getDefaultGoogleAccount
+   getDefaultGoogleAccount,
+   removeGoogleAccount
 } from './googleAccountReducersHelpers'
 
 const initialState = {
@@ -40,6 +42,19 @@ function googleAccountReducer(state = initialState, action) {
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
                newGoogleAccount: payload.data
+            }),
+            loading: false,
+            range: payload.range
+         }
+      case GOOGLE_CALENDAR_REMOVE_ACCOUNT:
+         return {
+            ...state,
+            isLoggedIn: true,
+            ...removeGoogleAccount({
+               googleAccounts: state.googleAccounts,
+               googleCalendars: state.googleCalendars,
+               googleEvents: state.googleEvents,
+               removedAccountId: payload.accountId
             }),
             loading: false,
             range: payload.range

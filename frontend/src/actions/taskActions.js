@@ -4,8 +4,7 @@ import {
    CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
-   SHOW_TASK,
-   GOOGLE_CALENDAR_ADD_EVENT
+   SHOW_TASK
 } from './types'
 import {
    pageActionErrorHandler,

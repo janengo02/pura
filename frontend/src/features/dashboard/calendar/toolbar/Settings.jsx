@@ -35,12 +35,13 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import {
    changeCalendarVisibilityAction,
    addGoogleAccountAction,
+   disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction
 } from '../../../../actions/googleAccountActions'
 import { setAlertAction } from '../../../../actions/alertActions'
 
-// Hooks
-import { useGoogleLogin } from '@react-oauth/google'
+// Utils
+import { useStandardGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 
 // =============================================================================
 // CONSTANTS
@@ -77,6 +78,7 @@ const Settings = React.memo(
       // Redux props
       changeCalendarVisibilityAction,
       addGoogleAccountAction,
+      disconnectGoogleAccountAction,
       setDefaultGoogleAccountAction,
       setAlertAction,
       settingsData: { googleAccounts, googleCalendars, range, defaultAccount }
@@ -87,24 +89,10 @@ const Settings = React.memo(
       const { t } = useReactiveTranslation()
       const [isSettingDefault, setIsSettingDefault] = useState(false)
 
-      const googleLogin = useGoogleLogin({
-         onSuccess: (tokenResponse) => {
-            const { code } = tokenResponse
-            addGoogleAccountAction({ code, range }).then(() => {})
-         },
-         onError: (responseError) => {
-            setAlertAction(
-               'alert-google_calendar-account-connect_failed',
-               '',
-               'error'
-            )
-         },
-         onNonOAuthError: (responseError) => {
-            // Empty
-         },
-         scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-         flow: 'auth-code',
-         auto_select: true
+      const googleLogin = useStandardGoogleAccountLogin({
+         addGoogleAccountAction,
+         setAlertAction,
+         range
       })
 
       // -------------------------------------------------------------------------
@@ -133,6 +121,15 @@ const Settings = React.memo(
       const handleGoogleReconnect = useCallback(() => {
          googleLogin()
       }, [googleLogin])
+
+      const handleGoogleDisconnect = useCallback(
+         async (accountId) => {
+            disconnectGoogleAccountAction({
+               account_id: accountId
+            })
+         },
+         [disconnectGoogleAccountAction]
+      )
 
       const handleSetDefaultAccount = useCallback(
          async (accountId) => {
@@ -263,6 +260,17 @@ const Settings = React.memo(
                         ))}
 
                         {!account.isDefault && renderSetDefaultButton(account)}
+                        {account.accountSyncStatus && (
+                           <MenuItem
+                              icon={<PiPlugs />}
+                              onClick={(e) => {
+                                 e.preventDefault()
+                                 handleGoogleDisconnect(account.accountId)
+                              }}
+                           >
+                              {t('btn-dis_connect-google_calendar')}
+                           </MenuItem>
+                        )}
                      </>
                   )}
                </MenuOptionGroup>
@@ -303,6 +311,7 @@ Settings.displayName = 'CalendarSettings'
 Settings.propTypes = {
    changeCalendarVisibilityAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
+   disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setDefaultGoogleAccountAction: PropTypes.func.isRequired,
    setAlertAction: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
@@ -343,6 +352,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    changeCalendarVisibilityAction,
    addGoogleAccountAction,
+   disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction,
    setAlertAction
 }

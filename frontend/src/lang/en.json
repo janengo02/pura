@@ -41,6 +41,7 @@
       "btn-new_page": "New Page",
       "btn-not_synced": "Not synced",
       "btn-re_connect-google_calendar": "Reconnect",
+      "btn-dis_connect-google_calendar": "Disconnect",
       "btn-register": "Register",
       "btn-set-as-default": "Set as default",
       "btn-show": "Show",
