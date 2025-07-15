@@ -4,7 +4,6 @@
 
 import { api } from '../utils'
 import { setAlertAction } from './alertActions'
-import { clearTaskAction, showTaskModalAction } from './taskActions'
 import {
    GOOGLE_CALENDAR_LOADED,
    GOOGLE_CALENDAR_AUTH_ERROR,
@@ -55,9 +54,13 @@ export const googleAccountFatalErrorHandler = (dispatch, err) => {
  * Used for errors that allow retry or graceful degradation
  * @param {Function} dispatch - Redux dispatch function
  * @param {Object} err - Error object
- * @param {string} accountId - Optional account ID for context
+ * @param {string} accountEmail - Optional account email for context
  */
-export const googleAccountErrorHandler = (dispatch, err, accountId = null) => {
+export const googleAccountErrorHandler = (
+   dispatch,
+   err,
+   accountEmail = null
+) => {
    const errors = err?.response?.data?.errors || [
       { title: 'alert-oops', msg: 'alert-server_error' }
    ]
@@ -236,7 +239,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          )
       }
    } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+      googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
    }
 }
 
@@ -267,7 +270,7 @@ export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
          )
       }
    } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+      googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
    }
 }
 

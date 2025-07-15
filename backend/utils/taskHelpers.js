@@ -168,11 +168,11 @@ const deleteGoogleEventsForRemovedSlots = async (
       // Group removed slots by account
       const slotsByAccount = {}
       removedSlots.forEach((slot) => {
-         if (slot.google_event_id && slot.google_account_id) {
-            if (!slotsByAccount[slot.google_account_id]) {
-               slotsByAccount[slot.google_account_id] = []
+         if (slot.google_event_id && slot.google_account_email) {
+            if (!slotsByAccount[slot.google_account_email]) {
+               slotsByAccount[slot.google_account_email] = []
             }
-            slotsByAccount[slot.google_account_id].push(slot)
+            slotsByAccount[slot.google_account_email].push(slot)
          }
       })
 
@@ -270,7 +270,7 @@ const calculateSlotSyncStatus = async (slot, userId) => {
 
    // ACCOUNT_NOT_CONNECTED = not synced (google account cannot be connected)
    const account = user.google_accounts?.find(
-      (acc) => acc.account_email === slot.google_account_id
+      (acc) => acc.account_email === slot.google_account_email
    )
    if (!account) {
       return {
@@ -394,7 +394,7 @@ const updateTaskBasicInfo = async (taskId, pageId, { title, content }) => {
                task._id,
                title,
                slot,
-               slot.google_account_id,
+               slot.google_account_email,
                slot.google_calendar_id,
                task.user_id,
                'update'
@@ -517,7 +517,7 @@ const updateTaskSchedule = async (
          task._id,
          task.title,
          slot,
-         slot.google_account_id,
+         slot.google_account_email,
          slot.google_calendar_id,
          userId,
          'update'
@@ -705,7 +705,7 @@ const syncTaskSlotWithGoogleHelper = async (
 
       // Update task slot with Google event info
       task.schedule[slotIndex].google_event_id = result.event.id
-      task.schedule[slotIndex].google_account_id = accountEmail
+      task.schedule[slotIndex].google_account_email = accountEmail
       task.schedule[slotIndex].google_calendar_id = calendarId
       task.update_date = new Date()
       await task.save()

@@ -292,7 +292,7 @@ export const addGoogleAccount = ({
  * Set default Google account in state
  * @param {Object} params - State and account data
  * @param {Array} params.googleAccounts - Current accounts list
- * @param {String} params.accountId - ID of account to set as default
+ * @param {String} params.accountEmail - ID of account to set as default
  * @param {Object} params.accountData - Updated account data
  * @returns {Object} Updated state
  */
@@ -711,14 +711,20 @@ export const removeGoogleAccount = ({
    const updatedEvents = googleEvents
       .filter((event) => {
          // Remove events with eventType "google" from the removed account
-         if (event.accountEmail === removedAccountEmail && event.eventType === 'google') {
+         if (
+            event.accountEmail === removedAccountEmail &&
+            event.eventType === 'google'
+         ) {
             return false
          }
          return true
       })
       .map((event) => {
          // Convert events with eventType "synced" from the removed account to "task"
-         if (event.accountEmail === removedAccountEmail && event.eventType === 'synced') {
+         if (
+            event.accountEmail === removedAccountEmail &&
+            event.eventType === 'synced'
+         ) {
             return {
                ...event,
                eventType: 'task',

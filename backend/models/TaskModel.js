@@ -17,7 +17,7 @@ const TaskSchema = new mongoose.Schema({
             type: String,
             default: null
          },
-         google_account_id: {
+         google_account_email: {
             type: String,
             default: null
          },

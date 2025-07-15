@@ -53,10 +53,7 @@ import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Utils
-import {
-   useGoogleAccountLogin,
-   useStandardGoogleAccountLogin
-} from '../../../../utils/googleAuthHelpers'
+import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -94,7 +91,7 @@ const ScheduleTimeSlot = React.memo(
                showTaskModalAction(formData)
             })
          },
-         onError: (responseError) => {
+         onError: () => {
             setAlertAction(
                'alert-google_calendar-account-connect_failed',
                '',
@@ -343,7 +340,7 @@ const ScheduleTimeSlot = React.memo(
             <VStack spacing={2} align='start'>
                <HStack spacing={2}>
                   <Image
-                     src='assets/img/logos--google.svg'
+                     src='assets/img/logos--google-calendar.svg'
                      boxSize={3}
                      alt='Google'
                   />
@@ -394,25 +391,25 @@ const ScheduleTimeSlot = React.memo(
 
          return googleAccounts.map((account) => {
             const accountCalendars = googleCalendars.filter(
-               (cal) => cal.accountId === account.accountId
+               (cal) => cal.accountEmail === account.accountEmail
             )
 
             if (accountCalendars.length === 0) return null
 
             return (
                <MenuOptionGroup
-                  key={account.accountId}
+                  key={account.accountEmail}
                   title={account.accountEmail}
                   fontSize='sm'
                   type='button'
                >
                   {accountCalendars.map((calendar) => (
                      <MenuItemOption
-                        key={`${account.accountId}-${calendar.calendarId}`}
+                        key={`${account.accountEmail}-${calendar.calendarId}`}
                         value={calendar.calendarId}
                         onClick={() => {
                            syncWithGoogle(
-                              account.accountId,
+                              account.accountEmail,
                               calendar.calendarId
                            )
                         }}
@@ -442,12 +439,12 @@ const ScheduleTimeSlot = React.memo(
       const getSyncConfig = useCallback(
          (syncStatus) => {
             const syncedAccount = googleAccounts.find(
-               (acc) => acc.accountId === slot.google_account_id
+               (acc) => acc.accountEmail === slot.google_account_email
             )
             const syncedCalendar = googleCalendars.find(
                (cal) =>
                   cal.calendarId === slot.google_calendar_id &&
-                  cal.accountId === slot.google_account_id
+                  cal.accountEmail === slot.google_account_email
             )
 
             const configs = {
@@ -593,7 +590,7 @@ const ScheduleTimeSlot = React.memo(
          [
             googleAccounts,
             googleCalendars,
-            slot.google_account_id,
+            slot.google_account_email,
             slot.google_calendar_id,
             SyncableCalendarList,
             t,
@@ -673,7 +670,7 @@ ScheduleTimeSlot.propTypes = {
       start: PropTypes.string.isRequired,
       end: PropTypes.string.isRequired,
       sync_status: PropTypes.string,
-      google_account_id: PropTypes.string,
+      google_account_email: PropTypes.string,
       google_calendar_id: PropTypes.string
    }).isRequired,
    index: PropTypes.number.isRequired,

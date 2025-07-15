@@ -142,7 +142,7 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
          payload: res.data.task
       })
    } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_id)
+      googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
 }
 

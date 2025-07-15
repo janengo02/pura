@@ -54,7 +54,7 @@ function googleAccountReducer(state = initialState, action) {
                googleAccounts: state.googleAccounts,
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
-               removedAccountId: payload.accountId
+               removedAccountEmail: payload.accountEmail
             }),
             loading: false,
             range: payload.range
@@ -97,7 +97,7 @@ function googleAccountReducer(state = initialState, action) {
             ...createGoogleEvent({
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
-               accountId: payload.accountId,
+               accountEmail: payload.accountEmail,
                newEvent: payload.event
             })
          }
@@ -107,7 +107,7 @@ function googleAccountReducer(state = initialState, action) {
             ...state,
             ...setDefaultGoogleAccount({
                googleAccounts: state.googleAccounts,
-               accountId: payload.accountId,
+               accountEmail: payload.accountEmail,
                accountData: payload.accountData
             })
          }

@@ -101,10 +101,15 @@ const EventWrapper = React.memo(
          const reqData = {
             eventId: event.id,
             calendarId: event.calendarId,
-            accountId: event.accountId
+            accountEmail: event.accountEmail
          }
          await deleteGoogleEventAction(reqData)
-      }, [deleteGoogleEventAction, event.id, event.calendarId, event.accountId])
+      }, [
+         deleteGoogleEventAction,
+         event.id,
+         event.calendarId,
+         event.accountEmail
+      ])
 
       const handleShowTask = useCallback(async () => {
          const formData = {
@@ -230,7 +235,7 @@ EventWrapper.propTypes = {
       end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
       calendar: PropTypes.string,
       calendarId: PropTypes.string,
-      accountId: PropTypes.string,
+      accountEmail: PropTypes.string,
       eventType: PropTypes.oneOf(['task', 'google', 'synced']).isRequired,
       pura_task_id: PropTypes.string,
       pura_schedule_index: PropTypes.number
