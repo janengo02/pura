@@ -192,6 +192,7 @@ export const addGoogleAccountEventListHelper = (
    currentCalendarEvents,
    newGoogleAccountEvents
 ) => {
+   // Preserve all events that are not related to the new Google account
    const eventsWithoutCurrentAccount = currentCalendarEvents.filter(
       (ev) => ev.accountEmail !== newGoogleAccountEvents.account_email
    )
@@ -214,36 +215,41 @@ export const addGoogleAccountEventListHelper = (
                endTime = processAllDayEndTime(startTime, endTime)
             }
 
-            // Note: We preserve existing synced event information if it exists
-            const existingEvent = currentCalendarEvents.find(
-               (ev) => ev.google_event_id === event.id
+            // Look for existing task events that match this Google event ID
+            // This includes both 'task' and 'synced' events from ALL accounts, not just the current one
+            const existingTaskEvent = currentCalendarEvents.find(
+               (ev) =>
+                  ev.google_event_id === event.id &&
+                  (ev.eventType === 'task' || ev.eventType === 'synced') &&
+                  ev.pura_task_id // Ensure it's actually a task-related event
             )
-            const syncedInfo =
-               existingEvent &&
-               (existingEvent.eventType === 'synced' ||
-                  existingEvent.eventType === 'task')
-                  ? {
-                       pura_task_id: existingEvent.pura_task_id,
-                       pura_schedule_index: existingEvent.pura_schedule_index,
-                       eventType: 'synced'
-                    }
-                  : {
-                       eventType: 'google'
-                    }
+
+            const syncedInfo = existingTaskEvent
+               ? {
+                    pura_task_id: existingTaskEvent.pura_task_id,
+                    pura_schedule_index: existingTaskEvent.pura_schedule_index,
+                    eventType: 'synced',
+                    title: existingTaskEvent.title, // Use task title for synced events
+                    color: '#8B5CF6' // Purple color for synced events
+                 }
+               : {
+                    eventType: 'google',
+                    title: event.summary || 'Untitled Event',
+                    color: calendar.backgroundColor // Use calendar color for Google events
+                 }
 
             newEvents.push({
                id: event.id,
                google_event_id: event.id,
-               title: event.summary || 'Untitled Event',
                start: startTime,
                end: endTime,
                allDay: isAllDay, // Critical property for react-big-calendar
                calendarId: calendar.id,
                calendar: calendar.summary,
-               color: calendar.backgroundColor,
                accessRole: calendar.accessRole,
                calendarVisible: calendar.selected || false,
                accountEmail: newGoogleAccountEvents.account_email,
+               googleEventTitle: event.summary || 'Untitled Event',
                ...syncedInfo
             })
          }
@@ -264,23 +270,34 @@ export const addGoogleAccount = ({
    googleEvents,
    newGoogleAccount
 }) => {
+   console.log('Adding Google account========================')
+   console.log('Old googleAccounts:', googleAccounts)
+   console.log('Old googleCalendars:', googleCalendars)
+   console.log('Old googleEvents:', googleEvents)
+   console.log('New account data-------', newGoogleAccount)
+
    const updatedAccounts = addGoogleAccountListHelper(
       googleAccounts,
       newGoogleAccount
    )
+   const updatedCalendars = addGoogleAccountCalendarListHelper(
+      googleCalendars,
+      newGoogleAccount
+   )
+   const newAccountEvents = addGoogleAccountEventListHelper(
+      googleEvents,
+      newGoogleAccount
+   )
    const defaultAccount =
       updatedAccounts.find((account) => account.isDefault) || null
+   console.log('New googleAccounts:', updatedAccounts)
+   console.log('New googleCalendars:', updatedCalendars)
+   console.log('New googleEvents:', newAccountEvents)
 
    return {
       googleAccounts: updatedAccounts,
-      googleCalendars: addGoogleAccountCalendarListHelper(
-         googleCalendars,
-         newGoogleAccount
-      ),
-      googleEvents: addGoogleAccountEventListHelper(
-         googleEvents,
-         newGoogleAccount
-      ),
+      googleCalendars: updatedCalendars,
+      googleEvents: newAccountEvents,
       defaultAccount
    }
 }
@@ -431,19 +448,22 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
 
             events.push({
                id: `${task._id}_${slotIndex}`, // Unique ID for unsynced task events
+               google_event_id: slot.google_event_id || null, // Keep google_event_id if it exists,
                pura_task_id: task._id,
                pura_schedule_index: slotIndex,
                title: task.title,
                start: startTime,
                end: endTime,
                allDay: isAllDay,
-               calendarId: null,
+               calendarId: slot.google_calendar_id || null, // Keep calendar ID if it exists,
                calendar: null,
                color: '#d2c2f2',
                accessRole: 'owner',
                calendarVisible: true,
-               accountEmail: null,
-               eventType: 'task' // Identify as task event
+               accountEmail: slot.google_account_email || null, // Keep account email if it exists
+               eventType: 'task', // Identify as task event
+               // Keep Google event details for reference
+               googleEventTitle: null
             })
          }
       })
@@ -530,6 +550,10 @@ export const loadGoogleCalendar = ({ googleAccounts, tasks }) => {
    const events = loadEventListHelper(googleAccounts, tasks)
    const defaultAccount = accounts.find((account) => account.isDefault) || null
 
+   console.log('Loaded Google Calebdar=============================')
+   console.log('Loaded Google accounts:', accounts)
+   console.log('Loaded Google calendars:', calendars)
+   console.log('Loaded Google events:', events)
    return {
       googleAccounts: accounts,
       googleCalendars: calendars,
@@ -728,20 +752,19 @@ export const removeGoogleAccount = ({
             return {
                ...event,
                eventType: 'task',
-               // Remove Google Calendar related values
-               google_event_id: undefined,
-               calendarId: null,
-               calendar: null,
                color: '#d2c2f2', // Default task color
                accessRole: 'owner',
-               calendarVisible: true,
-               accountEmail: null,
-               googleEventTitle: undefined
+               calendarVisible: true
+               // Keep Google events info for future sync detection
             }
          }
          return event
       })
 
+   console.log('Removed Google account=============================')
+   console.log('Updated Google accounts:', updatedAccounts)
+   console.log('Updated Google calendars:', updatedCalendars)
+   console.log('Updated Google events:', updatedEvents)
    return {
       googleAccounts: updatedAccounts,
       googleCalendars: updatedCalendars,

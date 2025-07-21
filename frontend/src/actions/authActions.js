@@ -14,6 +14,7 @@ import {
 } from './types'
 import { setAlertAction, removeAllAlertAction } from './alertActions'
 import { setLoadingAction } from './loadingActions'
+import { clearTaskAction } from './taskActions'
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -105,6 +106,7 @@ export const loginAction = (formData) => async (dispatch) => {
          type: LOGIN_SUCCESS,
          payload: res.data
       })
+      dispatch(clearTaskAction())
 
       dispatch(loadUserAction())
    } catch (err) {

@@ -265,7 +265,7 @@ const Calendar = React.memo(
       // Handle calendar range changes (month/week navigation)
       const onRangeChange = useCallback(
          (newRange) => {
-            if (!newRange) return
+            if (!newRange || !range || !range.length) return
 
             // Handle month view range change
             if (!Array.isArray(newRange)) {

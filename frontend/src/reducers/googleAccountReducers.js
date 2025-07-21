@@ -56,8 +56,8 @@ function googleAccountReducer(state = initialState, action) {
                googleEvents: state.googleEvents,
                removedAccountEmail: payload.accountEmail
             }),
-            loading: false,
-            range: payload.range
+            loading: false
+            // Keep existing range when removing account
          }
 
       case GOOGLE_CALENDAR_LOADED:

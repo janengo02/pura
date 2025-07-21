@@ -46,7 +46,13 @@ import { stringToDateTimeLocal } from '../../../../utils/dates'
 
 // Hooks
 import useLoading from '../../../../hooks/useLoading'
-import { PiTrash } from 'react-icons/pi'
+import {
+   PiArrowClockwise,
+   PiCalendarPlus,
+   PiCalendarPlusFill,
+   PiPlugs,
+   PiTrash
+} from 'react-icons/pi'
 
 // Constants
 import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
@@ -69,6 +75,7 @@ const ScheduleTimeSlot = React.memo(
       syncTaskWithGoogleAction,
       addGoogleAccountAction,
       setAlertAction,
+      showTaskModalAction,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars },
       settingsData: { range }
@@ -81,15 +88,22 @@ const ScheduleTimeSlot = React.memo(
       // -------------------------------------------------------------------------
       // GOOGLE LOGIN HANDLER
       // -------------------------------------------------------------------------
+      const refetchTaskModalIfOpen = useCallback(async () => {
+         // Check if task modal is displayed (task exists in state)
+         if (task && pageId) {
+            const formData = {
+               page_id: pageId,
+               task_id: task._id
+            }
+            await showTaskModalAction(formData)
+         }
+      }, [task, pageId, showTaskModalAction])
+
       const googleReconnectLogin = useGoogleAccountLogin({
-         onSuccess: (code, range) => {
-            addGoogleAccountAction({ code, range }).then(async () => {
-               const formData = {
-                  page_id: pageId,
-                  task_id: task._id
-               }
-               showTaskModalAction(formData)
-            })
+         onSuccess: async (code, range) => {
+            await addGoogleAccountAction({ code, range })
+            // Reload task modal data after successful Google account reconnection
+            await refetchTaskModalIfOpen()
          },
          onError: () => {
             setAlertAction(
@@ -383,7 +397,7 @@ const ScheduleTimeSlot = React.memo(
             return (
                <MenuItem size='sm' isDisabled>
                   <Text fontSize='sm' color='text.secondary'>
-                     No Google accounts connected
+                     {t('sync-no-accounts-connected')}
                   </Text>
                </MenuItem>
             )
@@ -433,7 +447,7 @@ const ScheduleTimeSlot = React.memo(
                </MenuOptionGroup>
             )
          })
-      }, [googleAccounts, googleCalendars, syncWithGoogle])
+      }, [googleAccounts, googleCalendars, syncWithGoogle, t])
 
       // Sync status configuration
       const getSyncConfig = useCallback(
@@ -462,17 +476,19 @@ const ScheduleTimeSlot = React.memo(
                         />
                      </StatusBox>
                   ),
-                  actions: <MenuItem>{t('sync-unsync-action')}</MenuItem>
+                  actions: (
+                     <MenuItem icon={<PiPlugs />}>
+                        {t('sync-unsync-action')}
+                     </MenuItem>
+                  )
                },
                [SCHEDULE_SYNCE_STATUS.NONE]: {
                   colorScheme: 'gray',
-                  icon: (
-                     <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />
-                  ),
+                  icon: <PiCalendarPlus size={16} color='text.primary' />,
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
                         <CenteredMessage>
-                           Select a Google Calendar to sync this time slot
+                           {t('sync-select-calendar-message')}
                         </CenteredMessage>
                      </StatusBox>
                   ),
@@ -486,11 +502,21 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='status.disconnected.bg'>
                         <VStack spacing={2} align='start'>
-                           {syncedAccount && (
-                              <AccountDisplay
-                                 account={syncedAccount}
-                                 textColor='status.disconnected.text'
-                              />
+                           {slot.google_account_email && (
+                              <HStack spacing={2}>
+                                 <Image
+                                    src='assets/img/logos--google-calendar.svg'
+                                    boxSize={3}
+                                    alt='Google'
+                                 />
+                                 <Text
+                                    fontSize='sm'
+                                    fontWeight='semibold'
+                                    color='status.disconnected.text'
+                                 >
+                                    {slot.google_account_email}
+                                 </Text>
+                              </HStack>
                            )}
                            <Text fontSize='sm' color='status.disconnected.text'>
                               {t('sync-account-disconnected-message')}
@@ -499,9 +525,17 @@ const ScheduleTimeSlot = React.memo(
                      </StatusBox>
                   ),
                   actions: (
-                     <MenuItem onClick={googleReconnectLogin}>
-                        {t('sync-reconnect-action')}
-                     </MenuItem>
+                     <>
+                        <MenuItem
+                           icon={<PiArrowClockwise />}
+                           onClick={googleReconnectLogin}
+                        >
+                           {t('sync-reconnect-action')}
+                        </MenuItem>
+                        <MenuItem icon={<PiPlugs />}>
+                           {t('sync-unsync-action')}
+                        </MenuItem>
+                     </>
                   )
                },
                [SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND]: {
@@ -513,12 +547,14 @@ const ScheduleTimeSlot = React.memo(
                      <StatusBox bgColor='status.warning.bg'>
                         <CenteredMessage color='status.warning.text'>
                            {t('sync-event-not-found-message')}
-                           <br />
-                           {t('sync-create-new-event-message')}
                         </CenteredMessage>
                      </StatusBox>
                   ),
-                  actions: SyncableCalendarList
+                  actions: (
+                     <MenuItem icon={<PiPlugs />}>
+                        {t('sync-unsync-action')}
+                     </MenuItem>
+                  )
                },
                [SCHEDULE_SYNCE_STATUS.NOT_SYNCED]: {
                   colorScheme: 'orange',
@@ -549,6 +585,9 @@ const ScheduleTimeSlot = React.memo(
                      <>
                         <MenuItem>{t('sync-from-pura-task')}</MenuItem>
                         <MenuItem>{t('sync-from-google-calendar')}</MenuItem>
+                        <MenuItem icon={<PiPlugs />}>
+                           {t('sync-unsync-action')}
+                        </MenuItem>
                      </>
                   )
                },
@@ -679,6 +718,7 @@ ScheduleTimeSlot.propTypes = {
    syncTaskWithGoogleAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
    setAlertAction: PropTypes.func.isRequired,
+   showTaskModalAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       pageId: PropTypes.string.isRequired
@@ -737,7 +777,8 @@ const mapDispatchToProps = {
    removeTaskScheduleSlotAction,
    syncTaskWithGoogleAction,
    addGoogleAccountAction,
-   setAlertAction
+   setAlertAction,
+   showTaskModalAction
 }
 
 // =============================================================================

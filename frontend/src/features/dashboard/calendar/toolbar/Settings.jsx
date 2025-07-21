@@ -28,7 +28,13 @@ import {
 } from '@chakra-ui/react'
 
 // Icons & Utils
-import { PiPlugs, PiCircleFill, PiStar, PiStarFill } from 'react-icons/pi'
+import {
+   PiPlugs,
+   PiCircleFill,
+   PiStar,
+   PiStarFill,
+   PiCalendarPlus
+} from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Actions
@@ -39,9 +45,10 @@ import {
    setDefaultGoogleAccountAction
 } from '../../../../actions/googleAccountActions'
 import { setAlertAction } from '../../../../actions/alertActions'
+import { showTaskModalAction } from '../../../../actions/taskActions'
 
 // Utils
-import { useStandardGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
+import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 
 // =============================================================================
 // CONSTANTS
@@ -81,7 +88,9 @@ const Settings = React.memo(
       disconnectGoogleAccountAction,
       setDefaultGoogleAccountAction,
       setAlertAction,
-      settingsData: { googleAccounts, googleCalendars, range, defaultAccount }
+      showTaskModalAction,
+      settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
+      taskData: { task, pageId }
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
@@ -89,9 +98,34 @@ const Settings = React.memo(
       const { t } = useReactiveTranslation()
       const [isSettingDefault, setIsSettingDefault] = useState(false)
 
-      const googleLogin = useStandardGoogleAccountLogin({
-         addGoogleAccountAction,
-         setAlertAction,
+      // -------------------------------------------------------------------------
+      // TASK MODAL REFRESH HELPER
+      // -------------------------------------------------------------------------
+
+      const refetchTaskModalIfOpen = useCallback(async () => {
+         // Check if task modal is displayed (task exists in state)
+         if (task && pageId) {
+            const formData = {
+               page_id: pageId,
+               task_id: task._id
+            }
+            await showTaskModalAction(formData)
+         }
+      }, [task, pageId, showTaskModalAction])
+
+      const googleLogin = useGoogleAccountLogin({
+         onSuccess: async (code, range) => {
+            await addGoogleAccountAction({ code, range })
+            // Refetch task modal data if open after successful Google account connection
+            await refetchTaskModalIfOpen()
+         },
+         onError: () => {
+            setAlertAction(
+               'alert-google_calendar-account-connect_failed',
+               '',
+               'error'
+            )
+         },
          range
       })
 
@@ -124,11 +158,13 @@ const Settings = React.memo(
 
       const handleGoogleDisconnect = useCallback(
          async (accountEmail) => {
-            disconnectGoogleAccountAction({
+            await disconnectGoogleAccountAction({
                account_email: accountEmail
             })
+            // Refetch task modal data if open after disconnecting Google account
+            await refetchTaskModalIfOpen()
          },
-         [disconnectGoogleAccountAction]
+         [disconnectGoogleAccountAction, refetchTaskModalIfOpen]
       )
 
       const handleSetDefaultAccount = useCallback(
@@ -283,8 +319,8 @@ const Settings = React.memo(
       const GoogleCalendarGroupTitle = () => (
          <Button size='sm' colorScheme='gray' onClick={googleLogin}>
             <Flex w='max-content' gap={3}>
-               <Image src='assets/img/logos--google-calendar.svg' />
-               {t('btn-connect-google_calendar')}
+               <PiCalendarPlus size={16} />
+               {t('btn-connect-calendar')}
             </Flex>
          </Button>
       )
@@ -316,11 +352,16 @@ Settings.propTypes = {
    disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setDefaultGoogleAccountAction: PropTypes.func.isRequired,
    setAlertAction: PropTypes.func.isRequired,
+   showTaskModalAction: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
       googleCalendars: PropTypes.array.isRequired,
       range: PropTypes.array.isRequired,
       defaultAccount: PropTypes.object
+   }).isRequired,
+   taskData: PropTypes.shape({
+      task: PropTypes.object,
+      pageId: PropTypes.string
    }).isRequired
 }
 
@@ -343,12 +384,21 @@ const selectSettingsData = createSelector(
    })
 )
 
+const selectTaskData = createSelector(
+   [(state) => state.task.task, (state) => state.page._id],
+   (task, pageId) => ({
+      task,
+      pageId
+   })
+)
+
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   settingsData: selectSettingsData(state)
+   settingsData: selectSettingsData(state),
+   taskData: selectTaskData(state)
 })
 
 const mapDispatchToProps = {
@@ -356,7 +406,8 @@ const mapDispatchToProps = {
    addGoogleAccountAction,
    disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction,
-   setAlertAction
+   setAlertAction,
+   showTaskModalAction
 }
 
 // =============================================================================
