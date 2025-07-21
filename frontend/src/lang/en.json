@@ -112,7 +112,7 @@
       "sync-no-accounts-connected": "No Google account connected",
       "sync-select-calendar-message": "Select a Google Calendar to sync this time slot",
       "sync-account-disconnected-message": "Account disconnected. Please reconnect to sync.",
-      "sync-event-not-found-message": "Event not found in Google Calendar. It might have been deleted.",
+      "sync-event-not-found-message": "Event not found in Google Calendar.",
       "sync-times-mismatch-title": "Times don't match",
       "sync-times-mismatch-message": "This time slot and Google Calendar event have different times. Choose which one to keep.",
       "sync-from-pura-task": "Sync from PURA task",

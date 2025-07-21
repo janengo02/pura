@@ -159,12 +159,22 @@ const ScheduleTimeSlot = React.memo(
          [task._id, index, syncTaskWithGoogleAction]
       )
 
+      const handleUnsyncFromGoogle = useCallback(async () => {
+         const reqData = {
+            task_id: task._id,
+            slot_index: index,
+            sync_action: 'delete'
+         }
+         await syncTaskWithGoogleAction(reqData)
+      }, [task._id, index, syncTaskWithGoogleAction])
+
       // -------------------------------------------------------------------------
       // LOADING STATES
       // -------------------------------------------------------------------------
 
       const [deleteSlot, deleteSlotLoading] = useLoading(handleDeleteSlot)
       const [syncWithGoogle, syncLoading] = useLoading(handleSyncWithGoogle)
+      const [unsyncFromGoogle, unsyncLoading] = useLoading(handleUnsyncFromGoogle)
 
       // -------------------------------------------------------------------------
       // UI EVENT HANDLERS
@@ -477,7 +487,7 @@ const ScheduleTimeSlot = React.memo(
                      </StatusBox>
                   ),
                   actions: (
-                     <MenuItem icon={<PiPlugs />}>
+                     <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
                         {t('sync-unsync-action')}
                      </MenuItem>
                   )
@@ -532,7 +542,7 @@ const ScheduleTimeSlot = React.memo(
                         >
                            {t('sync-reconnect-action')}
                         </MenuItem>
-                        <MenuItem icon={<PiPlugs />}>
+                        <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
                            {t('sync-unsync-action')}
                         </MenuItem>
                      </>
@@ -545,13 +555,31 @@ const ScheduleTimeSlot = React.memo(
                   ),
                   desc: (
                      <StatusBox bgColor='status.warning.bg'>
-                        <CenteredMessage color='status.warning.text'>
-                           {t('sync-event-not-found-message')}
-                        </CenteredMessage>
+                        <VStack spacing={2} align='start'>
+                           {slot.google_account_email && (
+                              <HStack spacing={2}>
+                                 <Image
+                                    src='assets/img/logos--google-calendar.svg'
+                                    boxSize={3}
+                                    alt='Google'
+                                 />
+                                 <Text
+                                    fontSize='sm'
+                                    fontWeight='semibold'
+                                    color='status.warning.text'
+                                 >
+                                    {slot.google_account_email}
+                                 </Text>
+                              </HStack>
+                           )}
+                           <Text fontSize='sm' color='status.warning.text'>
+                              {t('sync-event-not-found-message')}
+                           </Text>
+                        </VStack>
                      </StatusBox>
                   ),
                   actions: (
-                     <MenuItem icon={<PiPlugs />}>
+                     <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
                         {t('sync-unsync-action')}
                      </MenuItem>
                   )
@@ -585,7 +613,7 @@ const ScheduleTimeSlot = React.memo(
                      <>
                         <MenuItem>{t('sync-from-pura-task')}</MenuItem>
                         <MenuItem>{t('sync-from-google-calendar')}</MenuItem>
-                        <MenuItem icon={<PiPlugs />}>
+                        <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
                            {t('sync-unsync-action')}
                         </MenuItem>
                      </>
@@ -633,7 +661,8 @@ const ScheduleTimeSlot = React.memo(
             slot.google_calendar_id,
             SyncableCalendarList,
             t,
-            googleReconnectLogin
+            googleReconnectLogin,
+            unsyncFromGoogle
          ]
       )
 

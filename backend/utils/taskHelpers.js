@@ -134,7 +134,7 @@ const syncTaskSlotWithGoogle = async (
             })
          }
 
-         return { success: true, event: event.data }
+         return { success: true, event: event.data || event }
       } catch (err) {
          console.error(`Error syncing slot ${slot}:`, err)
          return { success: false, error: err.message }
@@ -657,8 +657,8 @@ const removeTaskScheduleSlot = async (
 const syncTaskSlotWithGoogleHelper = async (
    taskId,
    slotIndex,
-   accountEmail,
-   calendarId,
+   accountEmail = null,
+   calendarId = null,
    userId,
    syncAction = 'create'
 ) => {
@@ -682,31 +682,39 @@ const syncTaskSlotWithGoogleHelper = async (
          }
       }
 
-      const slot = task.schedule[slotIndex]
+      // Update task slot with Google event info based on sync action
+      if (syncAction === 'delete') {
+         // Clear sync information for unsync action
+         task.schedule[slotIndex].google_event_id = null
+         task.schedule[slotIndex].google_account_email = null
+         task.schedule[slotIndex].google_calendar_id = null
+      } else {
+         const slot = task.schedule[slotIndex]
 
-      // Sync with Google Calendar
-      const result = await syncTaskSlotWithGoogle(
-         taskId,
-         task.title,
-         slot,
-         accountEmail,
-         calendarId,
-         userId,
-         syncAction
-      )
+         // Sync with Google Calendar
+         const result = await syncTaskSlotWithGoogle(
+            taskId,
+            task.title,
+            slot,
+            accountEmail,
+            calendarId,
+            userId,
+            syncAction
+         )
 
-      if (!result.success) {
-         return {
-            success: false,
-            message: result.message || 'Failed to sync with Google Calendar',
-            statusCode: 400
+         if (!result.success) {
+            return {
+               success: false,
+               message: result.message || 'Failed to sync with Google Calendar',
+               statusCode: 400
+            }
          }
-      }
 
-      // Update task slot with Google event info
-      task.schedule[slotIndex].google_event_id = result.event.id
-      task.schedule[slotIndex].google_account_email = accountEmail
-      task.schedule[slotIndex].google_calendar_id = calendarId
+         // Set sync information for create/update actions
+         task.schedule[slotIndex].google_event_id = result.event.id
+         task.schedule[slotIndex].google_account_email = accountEmail
+         task.schedule[slotIndex].google_calendar_id = calendarId
+      }
       task.update_date = new Date()
       await task.save()
 
