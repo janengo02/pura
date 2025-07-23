@@ -7,6 +7,50 @@ const { google } = require('googleapis')
 const { setOAuthCredentials } = require('./googleAccountHelper')
 const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
 
+/**
+ * Parse Google Calendar event times to ISO strings
+ * Handles both timed events (dateTime) and all-day events (date)
+ * Matches frontend logic in googleAccountReducersHelpers.js
+ */
+const parseGoogleEventTime = (startData, endData) => {
+   const startRaw = startData?.dateTime || startData?.date
+   const endRaw = endData?.dateTime || endData?.date
+
+   let eventStart, eventEnd
+
+   if (startData?.date && !startData?.dateTime) {
+      // All-day event - use local timezone approach like frontend
+      const startDate = new Date(startRaw)
+      startDate.setHours(0, 0, 0, 0) // Set to local midnight
+      
+      const endDate = new Date(endRaw)
+      endDate.setHours(0, 0, 0, 0) // Set to local midnight
+      
+      // Apply frontend's processAllDayEndTime logic
+      const timeDifferenceMs = endDate.getTime() - startDate.getTime()
+      const daysDifference = timeDifferenceMs / (1000 * 60 * 60 * 24)
+      
+      if (daysDifference > 1) {
+         // Multi-day event: keep original end time
+         eventEnd = endDate.toISOString()
+      } else {
+         // Single-day event: subtract 1 day and set to end of day
+         const adjustedEnd = new Date(endDate)
+         adjustedEnd.setDate(adjustedEnd.getDate() - 1)
+         adjustedEnd.setHours(23, 59, 59, 999)
+         eventEnd = adjustedEnd.toISOString()
+      }
+      
+      eventStart = startDate.toISOString()
+   } else {
+      // Timed event - normalize to ISO string
+      eventStart = new Date(startRaw).toISOString()
+      eventEnd = new Date(endRaw).toISOString()
+   }
+
+   return { eventStart, eventEnd }
+}
+
 const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
    let taskMapIndex = 0
@@ -315,26 +359,25 @@ const calculateSlotSyncStatus = async (slot, userId) => {
    // Compare slot schedule with event schedule
    const slotStart = new Date(slot.start).toISOString()
    const slotEnd = new Date(slot.end).toISOString()
-   const eventStartRaw = event.data.start?.dateTime || event.data.start?.date
-   const eventEndRaw = event.data.end?.dateTime || event.data.end?.date
-
-   // Normalize event times to ISO string for comparison
-   const eventStart = new Date(eventStartRaw).toISOString()
-   const eventEnd = new Date(eventEndRaw).toISOString()
+   
+   // Parse Google event times properly (handles both timed and all-day events)
+   const { eventStart, eventEnd } = parseGoogleEventTime(event.data.start, event.data.end)
 
    if (slotStart === eventStart && slotEnd === eventEnd) {
       // SYNCED = synced normally
       return {
          ...slot.toObject(),
          sync_status: SCHEDULE_SYNCE_STATUS.SYNCED,
-         google_event: event.data
+         google_event_start: eventStart,
+         google_event_end: eventEnd
       }
    } else {
       // CONFLICTED = not synced (event found, but schedule mismatch)
       return {
          ...slot.toObject(),
          sync_status: SCHEDULE_SYNCE_STATUS.CONFLICTED,
-         google_event: event.data
+         google_event_start: eventStart,
+         google_event_end: eventEnd
       }
    }
 }
@@ -725,7 +768,7 @@ const syncTaskSlotWithGoogleHelper = async (
          task.schedule[slotIndex].google_account_email = accountEmail
          task.schedule[slotIndex].google_calendar_id = calendarId
       }
-      
+
       task.update_date = new Date()
       await task.save()
 

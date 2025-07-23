@@ -77,7 +77,7 @@ const ScheduleTimeSlot = React.memo(
       setAlertAction,
       showTaskModalAction,
       scheduleData: { task, pageId },
-      googleData: { googleAccounts, googleCalendars, googleEvents },
+      googleData: { googleAccounts, googleCalendars },
       settingsData: { range }
    }) => {
       // -------------------------------------------------------------------------
@@ -169,6 +169,26 @@ const ScheduleTimeSlot = React.memo(
       }, [task._id, index, syncTaskWithGoogleAction])
 
       // -------------------------------------------------------------------------
+      // SYNC RESOLUTION HANDLERS
+      // -------------------------------------------------------------------------
+
+      const handleUseTaskTime = useCallback(async () => {
+         await updateScheduleSlot({
+            start: slot.start,
+            end: slot.end
+         })
+      }, [updateScheduleSlot, slot.start, slot.end])
+
+      const handleUseGoogleTime = useCallback(async () => {
+         if (slot.google_event_start && slot.google_event_end) {
+            await updateScheduleSlot({
+               start: slot.google_event_start,
+               end: slot.google_event_end
+            })
+         }
+      }, [updateScheduleSlot, slot.google_event_start, slot.google_event_end])
+
+      // -------------------------------------------------------------------------
       // LOADING STATES
       // -------------------------------------------------------------------------
 
@@ -177,6 +197,9 @@ const ScheduleTimeSlot = React.memo(
       const [unsyncFromGoogle, unsyncLoading] = useLoading(
          handleUnsyncFromGoogle
       )
+      const [useTaskTime, useTaskTimeLoading] = useLoading(handleUseTaskTime)
+      const [useGoogleTime, useGoogleTimeLoading] =
+         useLoading(handleUseGoogleTime)
 
       // -------------------------------------------------------------------------
       // UI EVENT HANDLERS
@@ -185,16 +208,34 @@ const ScheduleTimeSlot = React.memo(
       const handleStartTimeChange = useCallback(
          async (e) => {
             e.preventDefault()
+
+            // Handle empty or invalid input
+            if (!e.target.value) {
+               return
+            }
+
             const newStartTime = new Date(e.target.value)
+
+            // Validate that the input is a valid date
+            if (isNaN(newStartTime.getTime())) {
+               return
+            }
+
             newStartTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
 
             const currentEndTime = new Date(slot.end)
 
+            // Additional validation for end time
+            if (isNaN(currentEndTime.getTime())) {
+               return
+            }
+
             // Validate: if new start time is equal or later than end time
             if (newStartTime >= currentEndTime) {
                // Auto-correct: set end time to 1 hour after new start time
-               const correctedEndTime = new Date(newStartTime)
-               correctedEndTime.setHours(correctedEndTime.getHours() + 1)
+               const correctedEndTime = new Date(
+                  newStartTime.getTime() + 60 * 60 * 1000
+               ) // Add 1 hour in milliseconds
 
                // Update both start and end times
                await updateScheduleSlot({
@@ -214,16 +255,34 @@ const ScheduleTimeSlot = React.memo(
       const handleEndTimeChange = useCallback(
          async (e) => {
             e.preventDefault()
+
+            // Handle empty or invalid input
+            if (!e.target.value) {
+               return
+            }
+
             const newEndTime = new Date(e.target.value)
+
+            // Validate that the input is a valid date
+            if (isNaN(newEndTime.getTime())) {
+               return
+            }
+
             newEndTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
 
             const currentStartTime = new Date(slot.start)
 
+            // Additional validation for start time
+            if (isNaN(currentStartTime.getTime())) {
+               return
+            }
+
             // Validate: if new end time is equal or earlier than start time
             if (newEndTime <= currentStartTime) {
                // Auto-correct: set start time to 1 hour before new end time
-               const correctedStartTime = new Date(newEndTime)
-               correctedStartTime.setHours(correctedStartTime.getHours() - 1)
+               const correctedStartTime = new Date(
+                  newEndTime.getTime() - 60 * 60 * 1000
+               ) // Subtract 1 hour in milliseconds
 
                // Update both start and end times
                await updateScheduleSlot({
@@ -403,7 +462,6 @@ const ScheduleTimeSlot = React.memo(
          []
       )
 
-
       // Calendar list component
       const SyncableCalendarList = useMemo(() => {
          if (googleAccounts.length === 0) {
@@ -486,12 +544,6 @@ const ScheduleTimeSlot = React.memo(
                (cal) =>
                   cal.calendarId === slot.google_calendar_id &&
                   cal.accountEmail === slot.google_account_email
-            )
-            const googleEvent = googleEvents.find(
-               (event) =>
-                  event.google_event_id === slot.google_event_id ||
-                  (event.pura_task_id === task._id &&
-                   event.pura_schedule_index === index)
             )
 
             const configs = {
@@ -618,28 +670,37 @@ const ScheduleTimeSlot = React.memo(
                   ),
                   actions: (
                      <>
-                        <MenuItem>
+                        <MenuItem
+                           onClick={useTaskTime}
+                           isDisabled={useTaskTimeLoading}
+                        >
                            <VStack spacing={1} align='start'>
                               <Text fontSize='sm' fontWeight='medium'>
                                  {t('sync-use-task-time')}
                               </Text>
                               <Text fontSize='xs' color='text.secondary'>
-                                 {formatTime(slot.start)} - {formatTime(slot.end)}
+                                 {formatTime(slot.start)} -{' '}
+                                 {formatTime(slot.end)}
                               </Text>
                            </VStack>
                         </MenuItem>
-                        <MenuItem>
-                           <VStack spacing={1} align='start'>
-                              <Text fontSize='sm' fontWeight='medium'>
-                                 {t('sync-use-google-time')}
-                              </Text>
-                              {googleEvent && (
-                                 <Text fontSize='xs' color='text.secondary'>
-                                    {formatTime(googleEvent.start)} - {formatTime(googleEvent.end)}
+                        {slot.google_event_start && slot.google_event_end && (
+                           <MenuItem
+                              onClick={useGoogleTime}
+                              isDisabled={useGoogleTimeLoading}
+                           >
+                              <VStack spacing={1} align='start'>
+                                 <Text fontSize='sm' fontWeight='medium'>
+                                    {t('sync-use-google-time')}
                                  </Text>
-                              )}
-                           </VStack>
-                        </MenuItem>
+                                 <Text fontSize='xs' color='text.secondary'>
+                                    {formatTime(slot.google_event_start)} -{' '}
+                                    {formatTime(slot.google_event_end)}
+                                 </Text>
+                              </VStack>
+                           </MenuItem>
+                        )}
+
                         <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
                            {t('sync-unsync-action')}
                         </MenuItem>
@@ -684,15 +745,16 @@ const ScheduleTimeSlot = React.memo(
          [
             googleAccounts,
             googleCalendars,
-            googleEvents,
             slot,
             SyncableCalendarList,
             t,
             googleReconnectLogin,
             unsyncFromGoogle,
-            task._id,
-            index,
-            formatTime
+            formatTime,
+            useTaskTime,
+            useGoogleTime,
+            useTaskTimeLoading,
+            useGoogleTimeLoading
          ]
       )
 
@@ -712,7 +774,12 @@ const ScheduleTimeSlot = React.memo(
                      size='sm'
                      variant='ghost'
                      colorScheme={syncProps.colorScheme}
-                     isLoading={syncLoading || unsyncLoading}
+                     isLoading={
+                        syncLoading ||
+                        unsyncLoading ||
+                        useTaskTimeLoading ||
+                        useGoogleTimeLoading
+                     }
                      display='flex'
                      alignItems='center'
                      justifyContent='center'
@@ -733,7 +800,15 @@ const ScheduleTimeSlot = React.memo(
                </Menu>
             </Tooltip>
          )
-      }, [slot.sync_status, getSyncConfig, syncLoading, unsyncLoading, t])
+      }, [
+         slot.sync_status,
+         getSyncConfig,
+         syncLoading,
+         unsyncLoading,
+         useTaskTimeLoading,
+         useGoogleTimeLoading,
+         t
+      ])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC
@@ -784,8 +859,7 @@ ScheduleTimeSlot.propTypes = {
    }).isRequired,
    googleData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
-      googleCalendars: PropTypes.array.isRequired,
-      googleEvents: PropTypes.array.isRequired
+      googleCalendars: PropTypes.array.isRequired
    }).isRequired,
    settingsData: PropTypes.shape({
       range: PropTypes.string.isRequired
@@ -807,13 +881,11 @@ const selectScheduleData = createSelector(
 const selectGoogleData = createSelector(
    [
       (state) => state.googleAccount.googleAccounts,
-      (state) => state.googleAccount.googleCalendars,
-      (state) => state.googleAccount.googleEvents
+      (state) => state.googleAccount.googleCalendars
    ],
-   (googleAccounts, googleCalendars, googleEvents) => ({
+   (googleAccounts, googleCalendars) => ({
       googleAccounts,
-      googleCalendars,
-      googleEvents
+      googleCalendars
    })
 )
 

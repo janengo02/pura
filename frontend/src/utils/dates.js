@@ -185,7 +185,7 @@ export function tomorrow() {
 }
 
 export const stringToDateTimeLocal = (dString) => {
-   const d = moment(dString).format('YYYY-MM-DDTkk:mm')
+   const d = moment(dString).format('YYYY-MM-DDTHH:mm')
    return d
 }
 export const stringToDateTime = (dString) => {
