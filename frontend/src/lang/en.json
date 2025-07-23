@@ -124,6 +124,8 @@
       "sync-unsync-action": "Unsync",
       "sync-reconnect-action": "Reconnect",
       "sync-status-tooltip": "Google Calendar sync status",
+      "sync-status-synced": "Synced",
+      "sync-status-conflicted": "Conflicted",
       "yup-": "---------------------------------------------",
       "yup-custom-confirm_password": "Passwords must match",
       "yup-date-max": "Date must be on or before ${max}",

@@ -125,6 +125,8 @@
       "sync-unsync-action": "同期解除",
       "sync-reconnect-action": "再接続",
       "sync-status-tooltip": "Googleカレンダー同期ステータス",
+      "sync-status-synced": "同期済み",
+      "sync-status-conflicted": "競合",
       "yup-": "---------------------------------------------",
       "yup-custom-confirm_password": "パスワードが一致しません",
       "yup-date-max": "日付は${max}以前でなければなりません",

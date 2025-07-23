@@ -545,3 +545,8 @@
 .rbc-calendar * {
    font-family: inherit !important;
 }
+
+.conflicted-event {
+   border: 2px dashed #f6ad55 !important;
+   border-radius: 4px !important;
+}

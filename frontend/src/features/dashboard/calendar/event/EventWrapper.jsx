@@ -19,7 +19,10 @@ import {
    PopoverContent,
    PopoverHeader,
    PopoverTrigger,
-   HStack
+   HStack,
+   Tag,
+   TagLabel,
+   Box
 } from '@chakra-ui/react'
 
 // Icons & Components
@@ -31,6 +34,10 @@ import EventTimeText from './EventTimeText'
 import { deleteGoogleEventAction } from '../../../../actions/googleAccountActions'
 import { showTaskModalAction } from '../../../../actions/taskActions'
 import useLoading from '../../../../hooks/useLoading'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
+
+// Constants
+import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
 
 // =============================================================================
 // CONSTANTS
@@ -55,7 +62,8 @@ const POPOVER_CONTENT_STYLES = {
 
 const POPOVER_HEADER_STYLES = {
    display: 'flex',
-   justifyContent: 'flex-end',
+   justifyContent: 'space-between',
+   alignItems: 'center',
    paddingX: 1,
    paddingTop: 1,
    paddingBottom: 0,
@@ -75,6 +83,12 @@ const EventWrapper = React.memo(
       showTaskModalAction,
       eventData: { pageId }
    }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS
+      // -------------------------------------------------------------------------
+
+      const { t } = useReactiveTranslation()
+
       // -------------------------------------------------------------------------
       // REFS & STATE
       // -------------------------------------------------------------------------
@@ -129,6 +143,38 @@ const EventWrapper = React.memo(
       // -------------------------------------------------------------------------
       // RENDER HELPERS
       // -------------------------------------------------------------------------
+
+      const renderSyncStatusTag = () => {
+         if (event.eventType !== 'synced') return <Box w='full'></Box>
+
+         const syncStatus = event.syncStatus
+         let tagProps = {}
+
+         if (syncStatus === SCHEDULE_SYNCE_STATUS.SYNCED) {
+            tagProps = {
+               colorScheme: 'green',
+               size: 'sm'
+            }
+         } else if (syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED) {
+            tagProps = {
+               colorScheme: 'orange',
+               size: 'sm'
+            }
+         } else {
+            return <Box w='full'></Box>
+         }
+
+         const statusText =
+            syncStatus === SCHEDULE_SYNCE_STATUS.SYNCED
+               ? t('sync-status-synced')
+               : t('sync-status-conflicted')
+
+         return (
+            <Tag {...tagProps}>
+               <TagLabel>{statusText}</TagLabel>
+            </Tag>
+         )
+      }
 
       const renderActionButton = (onClose) => {
          let puraTaskIcon = null
@@ -190,6 +236,7 @@ const EventWrapper = React.memo(
       const renderPopoverContent = (onClose) => (
          <PopoverContent {...POPOVER_CONTENT_STYLES}>
             <PopoverHeader {...POPOVER_HEADER_STYLES}>
+               {renderSyncStatusTag()}
                {renderActionButton(onClose)}
             </PopoverHeader>
             <PopoverBody>
@@ -238,7 +285,8 @@ EventWrapper.propTypes = {
       accountEmail: PropTypes.string,
       eventType: PropTypes.oneOf(['task', 'google', 'synced']).isRequired,
       pura_task_id: PropTypes.string,
-      pura_schedule_index: PropTypes.number
+      pura_schedule_index: PropTypes.number,
+      syncStatus: PropTypes.string // Add sync status for synced events
    }).isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,

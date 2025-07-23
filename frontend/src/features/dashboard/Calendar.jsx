@@ -304,13 +304,13 @@ const Calendar = React.memo(
          // Add conflict styling for conflicted events
          const isConflicted =
             event.syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED
-         const border = isConflicted ? '2px dashed #F6AD55 !important' : 'none' // orange.300 color
+         const className = isConflicted ? 'conflicted-event' : ''
 
          return {
+            className: className,
             style: {
                opacity: eventOpacity,
                backgroundColor: backgroundColor,
-               border: border,
                color: EVENT_TEXT_COLOR,
                boxShadow: boxShadow,
                outline: 'none'

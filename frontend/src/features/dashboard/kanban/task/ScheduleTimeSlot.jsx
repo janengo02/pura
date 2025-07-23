@@ -49,7 +49,6 @@ import useLoading from '../../../../hooks/useLoading'
 import {
    PiArrowClockwise,
    PiCalendarPlus,
-   PiCalendarPlusFill,
    PiPlugs,
    PiTrash
 } from 'react-icons/pi'
