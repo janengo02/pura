@@ -77,7 +77,7 @@ const ScheduleTimeSlot = React.memo(
       setAlertAction,
       showTaskModalAction,
       scheduleData: { task, pageId },
-      googleData: { googleAccounts, googleCalendars },
+      googleData: { googleAccounts, googleCalendars, googleEvents },
       settingsData: { range }
    }) => {
       // -------------------------------------------------------------------------
@@ -174,7 +174,9 @@ const ScheduleTimeSlot = React.memo(
 
       const [deleteSlot, deleteSlotLoading] = useLoading(handleDeleteSlot)
       const [syncWithGoogle, syncLoading] = useLoading(handleSyncWithGoogle)
-      const [unsyncFromGoogle, unsyncLoading] = useLoading(handleUnsyncFromGoogle)
+      const [unsyncFromGoogle, unsyncLoading] = useLoading(
+         handleUnsyncFromGoogle
+      )
 
       // -------------------------------------------------------------------------
       // UI EVENT HANDLERS
@@ -392,14 +394,15 @@ const ScheduleTimeSlot = React.memo(
       )
 
       // Centered message component
-      const CenteredMessage = useCallback(
+      const StatusMessage = useCallback(
          ({ children, color = 'text.primary' }) => (
-            <Text fontSize='sm' color={color} textAlign='center'>
+            <Text fontSize='sm' color={color}>
                {children}
             </Text>
          ),
          []
       )
+
 
       // Calendar list component
       const SyncableCalendarList = useMemo(() => {
@@ -459,6 +462,20 @@ const ScheduleTimeSlot = React.memo(
          })
       }, [googleAccounts, googleCalendars, syncWithGoogle, t])
 
+      // Helper function to format time
+      const formatTime = useCallback((dateString) => {
+         try {
+            return new Date(dateString).toLocaleString(undefined, {
+               month: 'short',
+               day: 'numeric',
+               hour: '2-digit',
+               minute: '2-digit'
+            })
+         } catch {
+            return 'Invalid date'
+         }
+      }, [])
+
       // Sync status configuration
       const getSyncConfig = useCallback(
          (syncStatus) => {
@@ -469,6 +486,12 @@ const ScheduleTimeSlot = React.memo(
                (cal) =>
                   cal.calendarId === slot.google_calendar_id &&
                   cal.accountEmail === slot.google_account_email
+            )
+            const googleEvent = googleEvents.find(
+               (event) =>
+                  event.google_event_id === slot.google_event_id ||
+                  (event.pura_task_id === task._id &&
+                   event.pura_schedule_index === index)
             )
 
             const configs = {
@@ -497,9 +520,9 @@ const ScheduleTimeSlot = React.memo(
                   icon: <PiCalendarPlus size={16} color='text.primary' />,
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
-                        <CenteredMessage>
+                        <StatusMessage>
                            {t('sync-select-calendar-message')}
-                        </CenteredMessage>
+                        </StatusMessage>
                      </StatusBox>
                   ),
                   actions: SyncableCalendarList
@@ -513,24 +536,17 @@ const ScheduleTimeSlot = React.memo(
                      <StatusBox bgColor='status.disconnected.bg'>
                         <VStack spacing={2} align='start'>
                            {slot.google_account_email && (
-                              <HStack spacing={2}>
-                                 <Image
-                                    src='assets/img/logos--google-calendar.svg'
-                                    boxSize={3}
-                                    alt='Google'
-                                 />
-                                 <Text
-                                    fontSize='sm'
-                                    fontWeight='semibold'
-                                    color='status.disconnected.text'
-                                 >
-                                    {slot.google_account_email}
-                                 </Text>
-                              </HStack>
+                              <AccountDisplay
+                                 account={{
+                                    accountEmail: slot.google_account_email
+                                 }}
+                                 calendar={null}
+                                 textColor='status.disconnected.text'
+                              />
                            )}
-                           <Text fontSize='sm' color='status.disconnected.text'>
+                           <StatusMessage color='status.disconnected.text'>
                               {t('sync-account-disconnected-message')}
-                           </Text>
+                           </StatusMessage>
                         </VStack>
                      </StatusBox>
                   ),
@@ -557,24 +573,17 @@ const ScheduleTimeSlot = React.memo(
                      <StatusBox bgColor='status.warning.bg'>
                         <VStack spacing={2} align='start'>
                            {slot.google_account_email && (
-                              <HStack spacing={2}>
-                                 <Image
-                                    src='assets/img/logos--google-calendar.svg'
-                                    boxSize={3}
-                                    alt='Google'
-                                 />
-                                 <Text
-                                    fontSize='sm'
-                                    fontWeight='semibold'
-                                    color='status.warning.text'
-                                 >
-                                    {slot.google_account_email}
-                                 </Text>
-                              </HStack>
+                              <AccountDisplay
+                                 account={{
+                                    accountEmail: slot.google_account_email
+                                 }}
+                                 calendar={syncedCalendar}
+                                 textColor='status.warning.text'
+                              />
                            )}
-                           <Text fontSize='sm' color='status.warning.text'>
+                           <StatusMessage color='status.warning.text'>
                               {t('sync-event-not-found-message')}
-                           </Text>
+                           </StatusMessage>
                         </VStack>
                      </StatusBox>
                   ),
@@ -591,28 +600,46 @@ const ScheduleTimeSlot = React.memo(
                   ),
                   desc: (
                      <StatusBox bgColor='status.warning.bg'>
-                        <VStack spacing={2} align='center'>
-                           <Text
-                              fontSize='sm'
-                              color='status.warning.text'
-                              fontWeight='semibold'
-                           >
+                        <VStack spacing={2} align='start'>
+                           {slot.google_account_email && (
+                              <AccountDisplay
+                                 account={{
+                                    accountEmail: slot.google_account_email
+                                 }}
+                                 calendar={syncedCalendar}
+                                 textColor='status.warning.text'
+                              />
+                           )}
+                           <StatusMessage color='status.warning.text'>
                               {t('sync-times-mismatch-title')}
-                           </Text>
-                           <Text
-                              fontSize='xs'
-                              color='status.warning.text'
-                              textAlign='center'
-                           >
-                              {t('sync-times-mismatch-message')}
-                           </Text>
+                           </StatusMessage>
                         </VStack>
                      </StatusBox>
                   ),
                   actions: (
                      <>
-                        <MenuItem>{t('sync-from-pura-task')}</MenuItem>
-                        <MenuItem>{t('sync-from-google-calendar')}</MenuItem>
+                        <MenuItem>
+                           <VStack spacing={1} align='start'>
+                              <Text fontSize='sm' fontWeight='medium'>
+                                 {t('sync-use-task-time')}
+                              </Text>
+                              <Text fontSize='xs' color='text.secondary'>
+                                 {formatTime(slot.start)} - {formatTime(slot.end)}
+                              </Text>
+                           </VStack>
+                        </MenuItem>
+                        <MenuItem>
+                           <VStack spacing={1} align='start'>
+                              <Text fontSize='sm' fontWeight='medium'>
+                                 {t('sync-use-google-time')}
+                              </Text>
+                              {googleEvent && (
+                                 <Text fontSize='xs' color='text.secondary'>
+                                    {formatTime(googleEvent.start)} - {formatTime(googleEvent.end)}
+                                 </Text>
+                              )}
+                           </VStack>
+                        </MenuItem>
                         <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
                            {t('sync-unsync-action')}
                         </MenuItem>
@@ -626,11 +653,11 @@ const ScheduleTimeSlot = React.memo(
                   ),
                   desc: (
                      <StatusBox bgColor='status.error.bg'>
-                        <CenteredMessage color='status.error.text'>
+                        <StatusMessage color='status.error.text'>
                            {t('sync-error-occurred-message')}
                            <br />
                            {t('sync-error-retry-message')}
-                        </CenteredMessage>
+                        </StatusMessage>
                      </StatusBox>
                   )
                }
@@ -644,11 +671,11 @@ const ScheduleTimeSlot = React.memo(
                   ),
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
-                        <CenteredMessage>
+                        <StatusMessage>
                            {t('sync-unknown-status-message')}
                            <br />
                            {t('sync-unknown-status-action')}
-                        </CenteredMessage>
+                        </StatusMessage>
                      </StatusBox>
                   )
                }
@@ -657,12 +684,15 @@ const ScheduleTimeSlot = React.memo(
          [
             googleAccounts,
             googleCalendars,
-            slot.google_account_email,
-            slot.google_calendar_id,
+            googleEvents,
+            slot,
             SyncableCalendarList,
             t,
             googleReconnectLogin,
-            unsyncFromGoogle
+            unsyncFromGoogle,
+            task._id,
+            index,
+            formatTime
          ]
       )
 
@@ -682,7 +712,7 @@ const ScheduleTimeSlot = React.memo(
                      size='sm'
                      variant='ghost'
                      colorScheme={syncProps.colorScheme}
-                     isLoading={syncLoading}
+                     isLoading={syncLoading || unsyncLoading}
                      display='flex'
                      alignItems='center'
                      justifyContent='center'
@@ -703,7 +733,7 @@ const ScheduleTimeSlot = React.memo(
                </Menu>
             </Tooltip>
          )
-      }, [slot.sync_status, getSyncConfig, syncLoading, t])
+      }, [slot.sync_status, getSyncConfig, syncLoading, unsyncLoading, t])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC
@@ -754,7 +784,8 @@ ScheduleTimeSlot.propTypes = {
    }).isRequired,
    googleData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
-      googleCalendars: PropTypes.array.isRequired
+      googleCalendars: PropTypes.array.isRequired,
+      googleEvents: PropTypes.array.isRequired
    }).isRequired,
    settingsData: PropTypes.shape({
       range: PropTypes.string.isRequired
@@ -776,11 +807,13 @@ const selectScheduleData = createSelector(
 const selectGoogleData = createSelector(
    [
       (state) => state.googleAccount.googleAccounts,
-      (state) => state.googleAccount.googleCalendars
+      (state) => state.googleAccount.googleCalendars,
+      (state) => state.googleAccount.googleEvents
    ],
-   (googleAccounts, googleCalendars) => ({
+   (googleAccounts, googleCalendars, googleEvents) => ({
       googleAccounts,
-      googleCalendars
+      googleCalendars,
+      googleEvents
    })
 )
 
