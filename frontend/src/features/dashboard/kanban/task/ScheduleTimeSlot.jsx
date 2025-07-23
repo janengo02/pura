@@ -593,7 +593,7 @@ const ScheduleTimeSlot = React.memo(
                      </MenuItem>
                   )
                },
-               [SCHEDULE_SYNCE_STATUS.NOT_SYNCED]: {
+               [SCHEDULE_SYNCE_STATUS.CONFLICTED]: {
                   colorScheme: 'orange',
                   icon: (
                      <StatusIcon src='assets/img/logos--google-calendar-not-synced.svg' />

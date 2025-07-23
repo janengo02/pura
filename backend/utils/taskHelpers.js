@@ -330,10 +330,10 @@ const calculateSlotSyncStatus = async (slot, userId) => {
          google_event: event.data
       }
    } else {
-      // NOT_SYNCED = not synced (event found, but schedule mismatch)
+      // CONFLICTED = not synced (event found, but schedule mismatch)
       return {
          ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.NOT_SYNCED,
+         sync_status: SCHEDULE_SYNCE_STATUS.CONFLICTED,
          google_event: event.data
       }
    }
