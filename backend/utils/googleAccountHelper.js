@@ -30,7 +30,9 @@ const fetchCalendarEvents = async (
       singleEvents: true,
       orderBy: 'startTime',
       showDeleted: false,
-      showHiddenInvitations: true
+      showHiddenInvitations: true,
+      fields:
+         'items(id,summary,description,start,end,location,attendees,conferenceData,reminders,recurrence,visibility,transparency,status,creator,organizer,created,updated,htmlLink,hangoutLink,extendedProperties,source,etag,sequence,locked,privateCopy,guestsCanInviteOthers,guestsCanModify,guestsCanSeeOtherGuests)'
    })
    return event.data
 }

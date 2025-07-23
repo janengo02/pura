@@ -114,6 +114,159 @@ const processAllDayEndTime = (startTime, endTime) => {
    return adjustedEnd
 }
 
+/**
+ * Extract Google Meet conference data from event
+ * @param {Object} event - Google Calendar event object
+ * @returns {Object|null} Conference data with Google Meet info
+ */
+const extractConferenceData = (event) => {
+   if (!event.conferenceData) return null
+
+   const conferenceData = event.conferenceData
+
+   // Extract Google Meet specific data
+   if (conferenceData.conferenceSolution?.key?.type === 'hangoutsMeet') {
+      return {
+         type: 'google_meet',
+         id: conferenceData.conferenceId,
+         joinUrl: conferenceData.entryPoints?.find(
+            (ep) => ep.entryPointType === 'video'
+         )?.uri,
+         phoneNumbers:
+            conferenceData.entryPoints
+               ?.filter((ep) => ep.entryPointType === 'phone')
+               ?.map((ep) => ({
+                  number: ep.uri?.replace('tel:', ''),
+                  pin: ep.pin,
+                  regionCode: ep.regionCode
+               })) || [],
+         notes: conferenceData.notes,
+         signature: conferenceData.signature
+      }
+   }
+
+   // Handle other conference types (Zoom, Teams, etc.)
+   return {
+      type: 'other',
+      name: conferenceData.conferenceSolution?.name,
+      joinUrl: conferenceData.entryPoints?.find(
+         (ep) => ep.entryPointType === 'video'
+      )?.uri,
+      notes: conferenceData.notes
+   }
+}
+
+/**
+ * Extract attendee/guest information from event
+ * @param {Object} event - Google Calendar event object
+ * @returns {Array} Array of attendee objects
+ */
+const extractAttendees = (event) => {
+   if (!event.attendees) return []
+
+   return event.attendees.map((attendee) => ({
+      email: attendee.email,
+      displayName: attendee.displayName,
+      responseStatus: attendee.responseStatus, // 'accepted', 'declined', 'tentative', 'needsAction'
+      isOptional: attendee.optional || false,
+      isOrganizer: attendee.organizer || false,
+      isSelf: attendee.self || false,
+      comment: attendee.comment,
+      additionalGuests: attendee.additionalGuests || 0
+   }))
+}
+
+/**
+ * Extract reminder information from event
+ * @param {Object} event - Google Calendar event object
+ * @returns {Object} Reminder configuration
+ */
+const extractReminders = (event) => {
+   const reminders = event.reminders || {}
+
+   return {
+      useDefault: reminders.useDefault || false,
+      overrides:
+         reminders.overrides?.map((override) => ({
+            method: override.method, // 'email', 'popup'
+            minutes: override.minutes
+         })) || []
+   }
+}
+
+/**
+ * Extract location information with enhanced parsing
+ * @param {Object} event - Google Calendar event object
+ * @returns {Object|null} Location data
+ */
+const extractLocation = (event) => {
+   if (!event.location) return null
+
+   // Try to parse structured location data if available
+   const location = {
+      raw: event.location,
+      displayName: event.location
+   }
+
+   // Check if location contains additional structured data
+   if (event.location.includes(',')) {
+      const parts = event.location.split(',').map((part) => part.trim())
+      location.address = {
+         full: event.location,
+         parts: parts
+      }
+   }
+
+   return location
+}
+
+/**
+ * Extract extended properties and metadata
+ * @param {Object} event - Google Calendar event object
+ * @returns {Object} Extended properties
+ */
+const extractExtendedProperties = (event) => {
+   return {
+      private: event.extendedProperties?.private || {},
+      shared: event.extendedProperties?.shared || {},
+      // Check for Pura-specific properties
+      isPuraTask: !!event.extendedProperties?.private?.pura_task_id,
+      puraTaskId: event.extendedProperties?.private?.pura_task_id || null
+   }
+}
+
+/**
+ * Extract visibility and access information
+ * @param {Object} event - Google Calendar event object
+ * @returns {Object} Visibility settings
+ */
+const extractVisibilityInfo = (event) => {
+   return {
+      visibility: event.visibility || 'default', // 'default', 'public', 'private', 'confidential'
+      transparency: event.transparency || 'opaque', // 'opaque', 'transparent'
+      status: event.status || 'confirmed', // 'confirmed', 'tentative', 'cancelled'
+      locked: event.locked || false,
+      privateCopy: event.privateCopy || false
+   }
+}
+
+/**
+ * Extract recurrence information
+ * @param {Object} event - Google Calendar event object
+ * @returns {Object|null} Recurrence data
+ */
+const extractRecurrence = (event) => {
+   if (!event.recurrence || event.recurrence.length === 0) return null
+
+   return {
+      rules: event.recurrence,
+      recurringEventId: event.recurringEventId || null,
+      originalStartTime: event.originalStartTime
+         ? parseEventDateTime(event.originalStartTime)
+         : null
+   }
+}
+
 // =============================================================================
 // GOOGLE ACCOUNT STATE TRANSFORMERS
 // =============================================================================
@@ -233,7 +386,7 @@ export const addGoogleAccountEventListHelper = (
                const taskEnd = new Date(existingTaskEvent.end).toISOString()
                const googleStart = startTime.toISOString()
                const googleEnd = endTime.toISOString()
-               
+
                if (taskStart === googleStart && taskEnd === googleEnd) {
                   syncStatus = SCHEDULE_SYNCE_STATUS.SYNCED
                } else {
@@ -411,6 +564,114 @@ export const loadCalendarListHelper = (googleAccounts) => {
 }
 
 /**
+ * Enhanced event data extraction with comprehensive Google Calendar data
+ * @param {Object} event - Raw Google Calendar event object
+ * @param {Object} calendar - Calendar object
+ * @param {Object} account - Account object
+ * @param {Object} syncedTaskInfo - Task sync information (optional)
+ * @returns {Object} Enhanced event object
+ */
+const createEnhancedEventObject = (
+   event,
+   calendar,
+   account,
+   syncedTaskInfo = null
+) => {
+   const startTime = parseEventDateTime(event.start)
+   let endTime = parseEventDateTime(event.end)
+   const isAllDay = isAllDayEvent(event)
+
+   // Adjust end time for all-day events
+   if (isAllDay) {
+      endTime = processAllDayEndTime(startTime, endTime)
+   }
+
+   // Base event object
+   const baseEvent = {
+      id: event.id,
+      google_event_id: event.id,
+      title: event.summary || 'Untitled Event',
+      start: startTime,
+      end: endTime,
+      allDay: isAllDay,
+      calendarId: calendar.id,
+      calendar: calendar.summary,
+      color: calendar.backgroundColor,
+      accessRole: calendar.accessRole,
+      calendarVisible: calendar.selected || false,
+      accountEmail: account.account_email,
+
+      // Enhanced data extraction
+      description: event.description || null,
+      location: extractLocation(event),
+      attendees: extractAttendees(event),
+      conferenceData: extractConferenceData(event),
+      reminders: extractReminders(event),
+      visibility: extractVisibilityInfo(event),
+      extendedProperties: extractExtendedProperties(event),
+      recurrence: extractRecurrence(event),
+
+      // Event metadata
+      createdDate: event.created ? new Date(event.created) : null,
+      updatedDate: event.updated ? new Date(event.updated) : null,
+      creator: {
+         email: event.creator?.email || null,
+         displayName: event.creator?.displayName || null,
+         self: event.creator?.self || false
+      },
+      organizer: {
+         email: event.organizer?.email || null,
+         displayName: event.organizer?.displayName || null,
+         self: event.organizer?.self || false
+      },
+
+      // Event URLs and links
+      htmlLink: event.htmlLink || null,
+      hangoutLink: event.hangoutLink || null, // Legacy Google Meet link
+
+      // Guest management
+      guestsCanInviteOthers: event.guestsCanInviteOthers !== false,
+      guestsCanModify: event.guestsCanModify || false,
+      guestsCanSeeOtherGuests: event.guestsCanSeeOtherGuests !== false,
+
+      // Additional metadata
+      etag: event.etag || null,
+      sequence: event.sequence || 0,
+      source: event.source || null
+   }
+
+   // Handle synced task events
+   if (syncedTaskInfo) {
+      // Calculate sync status
+      const taskStart = new Date(syncedTaskInfo.slot.start).toISOString()
+      const taskEnd = new Date(syncedTaskInfo.slot.end).toISOString()
+      const googleStart = startTime.toISOString()
+      const googleEnd = endTime.toISOString()
+
+      const syncStatus =
+         taskStart === googleStart && taskEnd === googleEnd
+            ? SCHEDULE_SYNCE_STATUS.SYNCED
+            : SCHEDULE_SYNCE_STATUS.CONFLICTED
+
+      return {
+         ...baseEvent,
+         title: syncedTaskInfo.taskTitle, // Use task title for synced events
+         color: '#8B5CF6', // Purple color to indicate synced event
+         eventType: 'synced',
+         syncStatus: syncStatus,
+         pura_task_id: syncedTaskInfo.taskId,
+         pura_schedule_index: syncedTaskInfo.slotIndex,
+         googleEventTitle: event.summary || 'Untitled Event' // Keep original Google event title
+      }
+   }
+
+   // Regular Google Calendar event
+   return {
+      ...baseEvent,
+      eventType: 'google'
+   }
+}
+/**
  * Transform events from Google accounts and tasks with full date support
  * Merges synced task schedule slots with Google events to avoid duplication
  * @param {Array} googleAccounts - Raw Google accounts data
@@ -431,9 +692,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
    })
 
    // Create a map of synced Google events to task information
-   // Only include task slots that have matching Google events
    const syncedEventMap = new Map()
-
    tasks.forEach((task) => {
       task.schedule?.forEach((slot, slotIndex) => {
          if (
@@ -453,9 +712,6 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
    // Add task schedule events that are NOT synced with existing Google Calendar events
    tasks.forEach((task) => {
       task.schedule?.forEach((slot, slotIndex) => {
-         // Add task events if:
-         // 1. No google_event_id (never been synced), OR
-         // 2. Has google_event_id but no matching Google event exists (orphaned sync)
          if (
             !slot.google_event_id ||
             !existingGoogleEventIds.has(slot.google_event_id)
@@ -465,29 +721,47 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
             const isAllDay = isTaskScheduleAllDay(startTime, endTime)
 
             events.push({
-               id: `${task._id}_${slotIndex}`, // Unique ID for unsynced task events
-               google_event_id: slot.google_event_id || null, // Keep google_event_id if it exists,
+               id: `${task._id}_${slotIndex}`,
+               google_event_id: slot.google_event_id || null,
                pura_task_id: task._id,
                pura_schedule_index: slotIndex,
                title: task.title,
                start: startTime,
                end: endTime,
                allDay: isAllDay,
-               calendarId: slot.google_calendar_id || null, // Keep calendar ID if it exists,
+               calendarId: slot.google_calendar_id || null,
                calendar: null,
                color: '#d2c2f2',
                accessRole: 'owner',
                calendarVisible: true,
-               accountEmail: slot.google_account_email || null, // Keep account email if it exists
-               eventType: 'task', // Identify as task event
-               // Keep Google event details for reference
-               googleEventTitle: null
+               accountEmail: slot.google_account_email || null,
+               eventType: 'task',
+               googleEventTitle: null,
+
+               // Initialize enhanced fields for task events
+               description: task.content || null,
+               location: null,
+               attendees: [],
+               conferenceData: null,
+               reminders: { useDefaultNullifier: false, overrides: [] },
+               visibility: {
+                  visibility: 'default',
+                  transparency: 'opaque',
+                  status: 'confirmed'
+               },
+               extendedProperties: {
+                  private: {},
+                  shared: {},
+                  isPuraTask: true,
+                  puraTaskId: task._id
+               },
+               recurrence: null
             })
          }
       })
    })
 
-   // Add Google Calendar events (with merged task information for synced events)
+   // Add Google Calendar events with enhanced data extraction
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendar?.items?.forEach((event) => {
@@ -496,71 +770,14 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                (event.start?.dateTime && event.end?.dateTime) ||
                (event.start?.date && event.end?.date)
             ) {
-               const startTime = parseEventDateTime(event.start)
-               let endTime = parseEventDateTime(event.end)
-               const isAllDay = isAllDayEvent(event)
-
-               // Adjust end time for all-day events to work with react-big-calendar
-               if (isAllDay) {
-                  endTime = processAllDayEndTime(startTime, endTime)
-               }
-
-               // Check if this Google event is synced with a task
                const syncedTaskInfo = syncedEventMap.get(event.id)
-
-               if (syncedTaskInfo) {
-                  // Calculate sync status by comparing times between task slot and Google event
-                  const taskStart = new Date(syncedTaskInfo.slot.start).toISOString()
-                  const taskEnd = new Date(syncedTaskInfo.slot.end).toISOString()
-                  const googleStart = startTime.toISOString()
-                  const googleEnd = endTime.toISOString()
-                  
-                  let syncStatus
-                  if (taskStart === googleStart && taskEnd === googleEnd) {
-                     syncStatus = SCHEDULE_SYNCE_STATUS.SYNCED
-                  } else {
-                     syncStatus = SCHEDULE_SYNCE_STATUS.CONFLICTED
-                  }
-
-                  // This is a synced event - merge task and Google event information
-                  events.push({
-                     id: event.id,
-                     google_event_id: event.id,
-                     pura_task_id: syncedTaskInfo.taskId,
-                     pura_schedule_index: syncedTaskInfo.slotIndex,
-                     title: syncedTaskInfo.taskTitle, // Use task title for synced events
-                     start: startTime,
-                     end: endTime,
-                     allDay: isAllDay,
-                     calendarId: calendar.id,
-                     calendar: calendar.summary,
-                     color: '#8B5CF6', // Purple color to indicate synced event
-                     accessRole: calendar.accessRole,
-                     calendarVisible: calendar.selected || false,
-                     accountEmail: account.account_email,
-                     eventType: 'synced', // Identify as synced event
-                     syncStatus: syncStatus, // Calculate sync status from time comparison
-                     // Keep Google event details for reference
-                     googleEventTitle: event.summary || 'Untitled Event'
-                  })
-               } else {
-                  // This is a regular Google Calendar event (not synced with any task)
-                  events.push({
-                     id: event.id,
-                     google_event_id: event.id,
-                     title: event.summary || 'Untitled Event',
-                     start: startTime,
-                     end: endTime,
-                     allDay: isAllDay,
-                     calendarId: calendar.id,
-                     calendar: calendar.summary,
-                     color: calendar.backgroundColor,
-                     accessRole: calendar.accessRole,
-                     calendarVisible: calendar.selected || false,
-                     accountEmail: account.account_email,
-                     eventType: 'google' // Identify as Google event
-                  })
-               }
+               const enhancedEvent = createEnhancedEventObject(
+                  event,
+                  calendar,
+                  account,
+                  syncedTaskInfo
+               )
+               events.push(enhancedEvent)
             }
          })
       })
@@ -568,7 +785,6 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
 
    return events
 }
-
 /**
  * Main function to load Google calendar data to state
  * @param {Object} params - State and API data
@@ -668,14 +884,13 @@ export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
       }
    }
 
-   // Update existing event
+   // Update existing event with enhanced data
    const updatedEventList = googleEvents.map((event) => {
       if (event.id === updatedEvent.id) {
          const startTime = parseEventDateTime(updatedEvent.start)
          let endTime = parseEventDateTime(updatedEvent.end)
          const isAllDay = isAllDayEvent(updatedEvent)
 
-         // Adjust end time for all-day events to work with react-big-calendar
          if (isAllDay) {
             endTime = processAllDayEndTime(startTime, endTime)
          }
@@ -685,7 +900,19 @@ export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
             title: updatedEvent.summary || event.title,
             start: startTime,
             end: endTime,
-            allDay: isAllDay // Critical property for react-big-calendar
+            allDay: isAllDay,
+            description: updatedEvent.description || event.description,
+            location: extractLocation(updatedEvent) || event.location,
+            attendees: extractAttendees(updatedEvent),
+            conferenceData:
+               extractConferenceData(updatedEvent) || event.conferenceData,
+            reminders: extractReminders(updatedEvent),
+            visibility: extractVisibilityInfo(updatedEvent),
+            extendedProperties: extractExtendedProperties(updatedEvent),
+            recurrence: extractRecurrence(updatedEvent) || event.recurrence,
+            updatedDate: updatedEvent.updated
+               ? new Date(updatedEvent.updated)
+               : new Date()
          }
       }
       return event
