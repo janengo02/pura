@@ -682,17 +682,27 @@ const syncTaskSlotWithGoogleHelper = async (
          }
       }
 
-      // Update task slot with Google event info based on sync action
+      const slot = task.schedule[slotIndex]
+      let result = null
+
+      // Handle sync action
       if (syncAction === 'delete') {
          // Clear sync information for unsync action
          task.schedule[slotIndex].google_event_id = null
          task.schedule[slotIndex].google_account_email = null
          task.schedule[slotIndex].google_calendar_id = null
+         // Create a mock result for unsync action
+         result = {
+            success: true,
+            event: {
+               id: null,
+               status: 'unsynced',
+               summary: 'Task unsynced from Google Calendar'
+            }
+         }
       } else {
-         const slot = task.schedule[slotIndex]
-
          // Sync with Google Calendar
-         const result = await syncTaskSlotWithGoogle(
+         result = await syncTaskSlotWithGoogle(
             taskId,
             task.title,
             slot,
@@ -715,6 +725,7 @@ const syncTaskSlotWithGoogleHelper = async (
          task.schedule[slotIndex].google_account_email = accountEmail
          task.schedule[slotIndex].google_calendar_id = calendarId
       }
+      
       task.update_date = new Date()
       await task.save()
 
@@ -733,7 +744,12 @@ const syncTaskSlotWithGoogleHelper = async (
          return { success: false, message: 'Page not found', statusCode: 404 }
       }
 
-      return { success: true, task, page, event: result.event }
+      return {
+         success: true,
+         task,
+         page,
+         event: result.event
+      }
    } catch (err) {
       console.error('Error syncing task slot with Google:', err)
       return { success: false, error: err.message, statusCode: 500 }

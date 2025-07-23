@@ -289,11 +289,13 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
             const slotIndex = task.schedule.findIndex(
                (slot) => slot.google_event_id === eventId
             )
-            task.schedule[slotIndex].google_event_id = null
-            task.schedule[slotIndex].google_account_email = null
-            task.schedule[slotIndex].google_calendar_id = null
-            task.update_date = new Date()
-            await task.save()
+            if (slotIndex !== -1) {
+               task.schedule[slotIndex].google_event_id = null
+               task.schedule[slotIndex].google_account_email = null
+               task.schedule[slotIndex].google_calendar_id = null
+               task.update_date = new Date()
+               await task.save()
+            }
          }
       }
 
