@@ -40,6 +40,9 @@ import {
 } from '../../utils/dates'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
+// Constants
+import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+
 // =============================================================================
 // CONSTANTS & CONFIGURATION
 // =============================================================================
@@ -298,11 +301,16 @@ const Calendar = React.memo(
          const backgroundColor = event.color
          const boxShadow = isSelected ? SELECTED_EVENT_SHADOW : 'none'
 
+         // Add conflict styling for conflicted events
+         const isConflicted =
+            event.syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED
+         const border = isConflicted ? '2px dashed #F6AD55 !important' : 'none' // orange.300 color
+
          return {
             style: {
                opacity: eventOpacity,
                backgroundColor: backgroundColor,
-               border: 'none',
+               border: border,
                color: EVENT_TEXT_COLOR,
                boxShadow: boxShadow,
                outline: 'none'

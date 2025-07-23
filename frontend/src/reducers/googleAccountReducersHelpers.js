@@ -2,6 +2,8 @@
 // CONSTANTS & UTILITY FUNCTIONS
 // =============================================================================
 
+import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+
 /**
  * Parse event date/time from Google Calendar API response
  * Handles both dateTime (timed events) and date (all-day events) formats
@@ -224,13 +226,29 @@ export const addGoogleAccountEventListHelper = (
                   ev.pura_task_id // Ensure it's actually a task-related event
             )
 
+            let syncStatus
+            if (existingTaskEvent) {
+               // Calculate sync status by comparing times between task and Google event
+               const taskStart = new Date(existingTaskEvent.start).toISOString()
+               const taskEnd = new Date(existingTaskEvent.end).toISOString()
+               const googleStart = startTime.toISOString()
+               const googleEnd = endTime.toISOString()
+               
+               if (taskStart === googleStart && taskEnd === googleEnd) {
+                  syncStatus = SCHEDULE_SYNCE_STATUS.SYNCED
+               } else {
+                  syncStatus = SCHEDULE_SYNCE_STATUS.CONFLICTED
+               }
+            }
+
             const syncedInfo = existingTaskEvent
                ? {
                     pura_task_id: existingTaskEvent.pura_task_id,
                     pura_schedule_index: existingTaskEvent.pura_schedule_index,
                     eventType: 'synced',
                     title: existingTaskEvent.title, // Use task title for synced events
-                    color: '#8B5CF6' // Purple color for synced events
+                    color: '#8B5CF6', // Purple color for synced events
+                    syncStatus: syncStatus // Calculate sync status from time comparison
                  }
                : {
                     eventType: 'google',
@@ -491,6 +509,19 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                const syncedTaskInfo = syncedEventMap.get(event.id)
 
                if (syncedTaskInfo) {
+                  // Calculate sync status by comparing times between task slot and Google event
+                  const taskStart = new Date(syncedTaskInfo.slot.start).toISOString()
+                  const taskEnd = new Date(syncedTaskInfo.slot.end).toISOString()
+                  const googleStart = startTime.toISOString()
+                  const googleEnd = endTime.toISOString()
+                  
+                  let syncStatus
+                  if (taskStart === googleStart && taskEnd === googleEnd) {
+                     syncStatus = SCHEDULE_SYNCE_STATUS.SYNCED
+                  } else {
+                     syncStatus = SCHEDULE_SYNCE_STATUS.CONFLICTED
+                  }
+
                   // This is a synced event - merge task and Google event information
                   events.push({
                      id: event.id,
@@ -508,6 +539,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                      calendarVisible: calendar.selected || false,
                      accountEmail: account.account_email,
                      eventType: 'synced', // Identify as synced event
+                     syncStatus: syncStatus, // Calculate sync status from time comparison
                      // Keep Google event details for reference
                      googleEventTitle: event.summary || 'Untitled Event'
                   })
