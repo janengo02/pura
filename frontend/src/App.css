@@ -550,3 +550,154 @@
    border: 2px dashed #f6ad55 !important;
    border-radius: 4px !important;
 }
+
+/* =============================================================================
+      EVENT WRAPPER POPOVER STYLING AND Z-INDEX
+      ============================================================================= */
+
+/* Ensure popover content appears above calendar cells */
+[data-popper-placement] {
+   z-index: 9999 !important;
+}
+
+/* Chakra UI Popover specific z-index improvements */
+.chakra-popover__popper {
+   z-index: 9999 !important;
+}
+
+.chakra-popover__content {
+   z-index: 9999 !important;
+   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+   border: 1px solid var(--border-light) !important;
+   background-color: var(--bg-primary) !important;
+}
+
+/* Ensure popover arrow also has proper z-index */
+.chakra-popover__arrow-positioner {
+   z-index: 9999 !important;
+}
+
+.chakra-popover__arrow {
+   z-index: 9999 !important;
+   background-color: var(--bg-primary) !important;
+   border-color: var(--border-light) !important;
+}
+
+/* Calendar container z-index adjustments */
+.rbc-calendar {
+   position: relative;
+   z-index: 1;
+}
+
+.rbc-time-view,
+.rbc-month-view,
+.rbc-agenda-view {
+   position: relative;
+   z-index: 1;
+}
+
+/* Ensure row content doesn't block popover */
+.rbc-row-content {
+   position: relative;
+   z-index: 1;
+}
+
+.rbc-month-row {
+   position: relative;
+   z-index: 1;
+}
+
+.rbc-row-segment {
+   position: relative;
+   z-index: 1;
+}
+
+/* Event elements should have lower z-index than popover */
+.rbc-event {
+   position: relative;
+   z-index: 2;
+}
+
+.rbc-event:hover,
+.rbc-event:focus,
+.rbc-event.rbc-selected {
+   z-index: 3;
+}
+
+/* Ensure calendar cells don't interfere with popover */
+.rbc-date-cell,
+.rbc-time-slot {
+   position: relative;
+   z-index: 1;
+}
+
+/* Specific styling for event wrapper popover */
+.event-wrapper-popover {
+   z-index: 10000 !important;
+   position: relative !important;
+}
+
+/* Force popover to appear on top of everything */
+[role="dialog"].event-wrapper-popover,
+[role="dialog"] .event-wrapper-popover {
+   z-index: 10000 !important;
+}
+
+/* Popover portal container should also have high z-index */
+.chakra-portal .event-wrapper-popover {
+   z-index: 10000 !important;
+}
+
+/* Ensure all Chakra Portal elements have proper z-index for popovers */
+.chakra-portal [data-popper-placement] {
+   z-index: 10000 !important;
+}
+
+/* Override any calendar overlay z-index */
+.rbc-overlay {
+   z-index: 100 !important;
+}
+
+.rbc-calendar .chakra-popover__content {
+   z-index: 10000 !important;
+}
+
+/* Force all calendar elements to have lower z-index than popover */
+.rbc-calendar,
+.rbc-calendar *:not(.chakra-popover__content):not(.chakra-popover__popper):not([data-popper-placement]) {
+   z-index: auto !important;
+}
+
+/* Specifically target problematic calendar elements */
+.rbc-row-content,
+.rbc-row-segment,
+.rbc-month-row,
+.rbc-date-cell,
+.rbc-time-slot,
+.rbc-time-view,
+.rbc-month-view,
+.rbc-allday-cell,
+.rbc-time-header {
+   z-index: 1 !important;
+}
+
+/* Popover should always be on top */
+.chakra-popover__content,
+.chakra-popover__popper,
+[data-popper-placement] {
+   z-index: 10000 !important;
+}
+
+/* Nuclear option: force all popover elements to highest z-index */
+[class*="chakra-popover"],
+[class*="popover"],
+[role="dialog"],
+[role="tooltip"] {
+   z-index: 10000 !important;
+}
+
+/* Ensure event wrapper popover is never behind anything */
+.event-wrapper-popover,
+.event-wrapper-popover * {
+   z-index: 10000 !important;
+}

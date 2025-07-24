@@ -77,6 +77,12 @@ const POPOVER_STYLES = {
          options: {
             fallbackPlacements: ['top', 'bottom', 'right', 'left']
          }
+      },
+      {
+         name: 'zIndex',
+         options: {
+            zIndex: 10000
+         }
       }
    ]
 }
@@ -85,7 +91,9 @@ const POPOVER_CONTENT_STYLES = {
    boxShadow: 'md',
    w: '400px',
    maxH: '80vh',
-   overflow: 'hidden'
+   overflow: 'hidden',
+   zIndex: 10000,
+   position: 'relative'
 }
 
 const POPOVER_HEADER_STYLES = {
@@ -274,7 +282,7 @@ const EventWrapper = React.memo(
       }
 
       const renderPopoverContent = (onClose) => (
-         <PopoverContent {...POPOVER_CONTENT_STYLES}>
+         <PopoverContent {...POPOVER_CONTENT_STYLES} className="event-wrapper-popover">
             <PopoverHeader {...POPOVER_HEADER_STYLES}>
                {renderSyncStatusTag()}
                {renderActionButton(onClose)}
