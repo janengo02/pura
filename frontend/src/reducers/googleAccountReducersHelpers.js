@@ -4,6 +4,22 @@
 
 import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
 
+// Google Calendar event color palette
+// These colors match Google Calendar's official color scheme
+const GOOGLE_CALENDAR_COLORS = {
+   1: '#a4bdfc', // Lavender
+   2: '#33b679', // Sage
+   3: '#8e24aa', // Grape
+   4: '#e67c73', // Flamingo
+   5: '#f6bf26', // Banana
+   6: '#e3683e', // Tangerine
+   7: '#039be5', // Peacock
+   8: '#7986cb', // Graphite
+   9: '#3f51b5', // Blueberry
+   10: '#0b8043', // Basil
+   11: '#da5234' // Tomato
+}
+
 /**
  * Parse event date/time from Google Calendar API response
  * Handles both dateTime (timed events) and date (all-day events) formats
@@ -405,7 +421,10 @@ export const addGoogleAccountEventListHelper = (
                : {
                     eventType: 'google',
                     title: event.summary || 'Untitled Event',
-                    color: calendar.backgroundColor // Use calendar color for Google events
+                    color: event.colorId
+                       ? GOOGLE_CALENDAR_COLORS[event.colorId] ||
+                         calendar.backgroundColor
+                       : calendar.backgroundColor // Use event color if available, fallback to calendar color
                  }
 
             newEvents.push({
@@ -595,7 +614,9 @@ const createEnhancedEventObject = (
       allDay: isAllDay,
       calendarId: calendar.id,
       calendar: calendar.summary,
-      color: calendar.backgroundColor,
+      color: event.colorId
+         ? GOOGLE_CALENDAR_COLORS[event.colorId] || calendar.backgroundColor
+         : calendar.backgroundColor,
       accessRole: calendar.accessRole,
       calendarVisible: calendar.selected || false,
       accountEmail: account.account_email,

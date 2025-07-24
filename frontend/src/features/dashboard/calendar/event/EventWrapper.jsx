@@ -168,6 +168,11 @@ const EventWrapper = React.memo(
          await showTaskModalAction(formData)
       }, [showTaskModalAction, pageId, taskId, event.pura_schedule_index])
 
+      const handleOpenGoogleEvent = () => {
+         if (event.htmlLink) {
+            window.open(event.htmlLink, '_blank')
+         }
+      }
       // -------------------------------------------------------------------------
       // LOADING HOOKS
       // -------------------------------------------------------------------------
@@ -254,6 +259,7 @@ const EventWrapper = React.memo(
                         alt='Google Calendar'
                      />
                   }
+                  onClick={handleOpenGoogleEvent}
                   {...BUTTON_STYLES}
                />
             )
