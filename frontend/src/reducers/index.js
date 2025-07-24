@@ -7,6 +7,7 @@ import task from './taskReducers'
 import googleAccount from './googleAccountReducers'
 import languageReducer from './languageReducer'
 import themeReducer from '../reducers/themeReducer'
+import eventReducer from '../reducers/eventReducers'
 
 export default combineReducers({
    loading,
@@ -16,5 +17,6 @@ export default combineReducers({
    task,
    googleAccount,
    language: languageReducer,
-   theme: themeReducer
+   theme: themeReducer,
+   event: eventReducer
 })

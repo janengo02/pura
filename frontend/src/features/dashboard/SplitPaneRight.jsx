@@ -13,6 +13,7 @@ import SplitPaneContext from '../../context/SplitPaneContext'
 
 // Internal Components
 import Calendar from './Calendar'
+import EventEditModal from './calendar/event/EventEditModal'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -23,7 +24,7 @@ const SplitPaneRight = React.memo(() => {
    // HOOKS & CONTEXT
    // -------------------------------------------------------------------------
 
-   const { rightRef } = useContext(SplitPaneContext)
+   const { leftWidth, rightRef } = useContext(SplitPaneContext)
 
    // -------------------------------------------------------------------------
    // RENDER LOGIC
@@ -32,6 +33,7 @@ const SplitPaneRight = React.memo(() => {
    return (
       <Box ref={rightRef} w='full' h='full' overflow='auto'>
          <Calendar />
+         <EventEditModal rightWidth={`${100 - leftWidth}%`} />
       </Box>
    )
 })

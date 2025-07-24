@@ -27,7 +27,7 @@ import {
 } from '@chakra-ui/react'
 
 // Icons & Components
-import { PiTrash } from 'react-icons/pi'
+import { PiPencilFill, PiTrash } from 'react-icons/pi'
 
 // Event Components
 import EventWrapperTitle from './EventWrapperTitle'
@@ -43,6 +43,7 @@ import EventCalendarInfo from './EventCalendarInfo'
 // Actions & Hooks
 import { deleteGoogleEventAction } from '../../../../actions/googleAccountActions'
 import { showTaskModalAction } from '../../../../actions/taskActions'
+import { showEventEditModalAction } from '../../../../actions/eventActions'
 import useLoading from '../../../../hooks/useLoading'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
@@ -124,6 +125,7 @@ const EventWrapper = React.memo(
       // Redux props
       deleteGoogleEventAction,
       showTaskModalAction,
+      showEventEditModalAction,
       eventData: { pageId }
    }) => {
       // -------------------------------------------------------------------------
@@ -181,6 +183,15 @@ const EventWrapper = React.memo(
             window.open(event.htmlLink, '_blank')
          }
       }
+
+      const handleShowEvent = useCallback(() => {
+         const formData = {
+            ...event,
+            pageId
+         }
+
+         showEventEditModalAction(formData)
+      }, [showEventEditModalAction, event, pageId])
       // -------------------------------------------------------------------------
       // LOADING HOOKS
       // -------------------------------------------------------------------------
@@ -239,6 +250,16 @@ const EventWrapper = React.memo(
                }}
             />
          )
+         const editIcon = (
+            <IconButton
+               icon={<PiPencilFill size={16} />}
+               {...BUTTON_STYLES}
+               onClick={async (e) => {
+                  e.preventDefault()
+                  await handleShowEvent()
+               }}
+            />
+         )
          if (event.eventType === 'task' || event.eventType === 'synced') {
             puraTaskIcon = (
                <IconButton
@@ -276,13 +297,17 @@ const EventWrapper = React.memo(
             <HStack spacing={1}>
                {puraTaskIcon}
                {googleCalendarIcon}
+               {editIcon}
                {deleteIcon}
             </HStack>
          )
       }
 
       const renderPopoverContent = (onClose) => (
-         <PopoverContent {...POPOVER_CONTENT_STYLES} className="event-wrapper-popover">
+         <PopoverContent
+            {...POPOVER_CONTENT_STYLES}
+            className='event-wrapper-popover'
+         >
             <PopoverHeader {...POPOVER_HEADER_STYLES}>
                {renderSyncStatusTag()}
                {renderActionButton(onClose)}
@@ -406,6 +431,7 @@ EventWrapper.propTypes = {
    }).isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
+   showEventEditModalAction: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
       pageId: PropTypes.string.isRequired
    }).isRequired
@@ -432,7 +458,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    deleteGoogleEventAction,
-   showTaskModalAction
+   showTaskModalAction,
+   showEventEditModalAction
 }
 
 // =============================================================================
