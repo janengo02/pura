@@ -4,28 +4,25 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { VStack, Text } from '@chakra-ui/react'
-import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
+import { HStack, Text } from '@chakra-ui/react'
+import { PiTextAlignLeft } from 'react-icons/pi'
 
 const EventDescription = ({ description }) => {
-   const { t } = useReactiveTranslation()
-
    if (!description) return null
 
    return (
-      <VStack align='start' spacing={1} mb={3}>
-         <Text fontSize='sm' fontWeight='medium' color='text.secondary'>
-            {t('event-description')}
-         </Text>
+      <HStack align='start' spacing={3} w='full'>
+         <PiTextAlignLeft size={16} />
          <Text
             fontSize='sm'
             color='text.primary'
             whiteSpace='pre-wrap'
             wordBreak='break-word'
+            flex={1}
          >
             {description}
          </Text>
-      </VStack>
+      </HStack>
    )
 }
 

@@ -22,9 +22,9 @@ const AttendeeAvatar = ({ attendee }) => {
    const getResponseStatusIcon = (responseStatus) => {
       switch (responseStatus) {
          case 'accepted':
-            return <PiCheckBold color='white' />
+            return <PiCheckBold color='white' fontWeight='bold' />
          case 'declined':
-            return <PiXBold color='white' />
+            return <PiXBold color='white' fontWeight='bold' />
          default:
             return <></>
       }
@@ -44,6 +44,7 @@ const AttendeeAvatar = ({ attendee }) => {
                bg={getResponseBadgeColor(attendee.responseStatus)}
                border='1px solid'
                borderColor='bg.surface'
+               p='3px'
                borderRadius='full'
                display='flex'
                alignItems='center'

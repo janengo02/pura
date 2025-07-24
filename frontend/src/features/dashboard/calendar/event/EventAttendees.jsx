@@ -16,10 +16,7 @@ import {
 import { PiUsers, PiCaretDown, PiCaretUp } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import AttendeeAvatar from './AttendeeAvatar'
-import {
-   calculateResponseStats,
-   getResponseText
-} from '../../../../utils/eventUtils'
+import { calculateResponseStats } from '../../../../utils/eventUtils'
 
 const EventAttendees = ({ attendees }) => {
    const { t } = useReactiveTranslation()
@@ -30,75 +27,60 @@ const EventAttendees = ({ attendees }) => {
    const responseStats = calculateResponseStats(attendees)
 
    return (
-      <VStack align='start' spacing={2} mb={3} w='full'>
-         {/* Dropdown Header */}
-         <Button
-            variant='ghost'
-            size='sm'
-            onClick={onToggle}
-            justifyContent='flex-start'
-            p={2}
-            h='auto'
-            w='full'
-            leftIcon={<PiUsers size={16} />}
-            rightIcon={
-               isOpen ? <PiCaretUp size={14} /> : <PiCaretDown size={14} />
-            }
-         >
-            <VStack align='start' spacing={1}>
-               <Text fontSize='sm' fontWeight='medium' color='text.primary'>
-                  {t('event-attendees')} ({attendees.length})
-               </Text>
+      <VStack align='start' spacing={2} w='full'>
+         <HStack spacing={3} w='full'>
+            <PiUsers size={16} />
+            <Button
+               variant='ghost'
+               size='sm'
+               onClick={onToggle}
+               justifyContent='space-between'
+               flexDirection='row'
+               p={0}
+               h='auto'
+               w='full'
+               rightIcon={
+                  isOpen ? <PiCaretUp size={14} /> : <PiCaretDown size={14} />
+               }
+               _hover={{ bg: 'transparent' }}
+               _active={{ bg: 'transparent' }}
+               _focus={{ bg: 'transparent' }}
+            >
+               <VStack align='start' spacing={1} w='full'>
+                  <Text fontSize='sm' fontWeight='medium' color='text.primary'>
+                     {t('event-attendees')} ({attendees.length})
+                  </Text>
 
-               {/* Response Summary */}
-               <HStack spacing={3} fontSize='xs'>
-                  {responseStats.accepted > 0 && (
-                     <HStack spacing={1}>
-                        <Badge size='xs' colorScheme='green'>
-                           {responseStats.accepted}
-                        </Badge>
+                  {/* Response Summary */}
+                  <HStack spacing={2} fontSize='xs'>
+                     {responseStats.accepted > 0 && (
                         <Text color='text.secondary'>
-                           {t('attendee-accepted')}
+                           {responseStats.accepted} {t('attendee-accepted')}
                         </Text>
-                     </HStack>
-                  )}
-                  {responseStats.declined > 0 && (
-                     <HStack spacing={1}>
-                        <Badge size='xs' colorScheme='red'>
-                           {responseStats.declined}
-                        </Badge>
+                     )}
+                     {responseStats.declined > 0 && (
                         <Text color='text.secondary'>
-                           {t('attendee-declined')}
+                           {responseStats.declined} {t('attendee-declined')}
                         </Text>
-                     </HStack>
-                  )}
-                  {responseStats.tentative > 0 && (
-                     <HStack spacing={1}>
-                        <Badge size='xs' colorScheme='yellow'>
-                           {responseStats.tentative}
-                        </Badge>
+                     )}
+                     {responseStats.tentative > 0 && (
                         <Text color='text.secondary'>
-                           {t('attendee-tentative')}
+                           {responseStats.tentative} {t('attendee-tentative')}
                         </Text>
-                     </HStack>
-                  )}
-                  {responseStats.awaiting > 0 && (
-                     <HStack spacing={1}>
-                        <Badge size='xs' colorScheme='gray'>
-                           {responseStats.awaiting}
-                        </Badge>
+                     )}
+                     {responseStats.awaiting > 0 && (
                         <Text color='text.secondary'>
-                           {t('attendee-pending')}
+                           {responseStats.awaiting} {t('attendee-pending')}
                         </Text>
-                     </HStack>
-                  )}
-               </HStack>
-            </VStack>
-         </Button>
+                     )}
+                  </HStack>
+               </VStack>
+            </Button>
+         </HStack>
 
          {/* Collapsible Detailed Attendee List */}
          <Collapse in={isOpen} animateOpacity style={{ width: '100%' }}>
-            <VStack align='start' spacing={3} pl={4} w='full'>
+            <VStack align='start' spacing={3} pl={6} w='full'>
                {/* Detailed Attendee List */}
                <VStack align='start' spacing={2} w='full'>
                   {attendees.map((attendee, index) => (
@@ -122,13 +104,9 @@ const EventAttendees = ({ attendees }) => {
                               </Text>
 
                               {attendee.isOrganizer && (
-                                 <Badge
-                                    size='sm'
-                                    colorScheme='purple'
-                                    flexShrink={0}
-                                 >
+                                 <Text fontSize='sm' color='text.secondary'>
                                     {t('attendee-organizer')}
-                                 </Badge>
+                                 </Text>
                               )}
                            </VStack>
                         </HStack>

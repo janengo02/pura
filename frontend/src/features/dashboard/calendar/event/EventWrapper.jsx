@@ -28,19 +28,17 @@ import {
 
 // Icons & Components
 import { PiTrash } from 'react-icons/pi'
-import EventWrapperTitle from '../../../../components/typography/EventWrapperTitle'
-import EventTimeText from './EventTimeText'
 
 // Event Components
+import EventWrapperTitle from './EventWrapperTitle'
+import EventTimeText from './EventTimeText'
 import EventDescription from './EventDescription'
 import EventLocation from './EventLocation'
 import EventConference from './EventConference'
 import EventAttendees from './EventAttendees'
 import EventReminders from './EventReminders'
-import EventOrganizer from './EventOrganizer'
 import EventVisibility from './EventVisibility'
 import EventCalendarInfo from './EventCalendarInfo'
-import EventMetadata from './EventMetadata'
 
 // Actions & Hooks
 import { deleteGoogleEventAction } from '../../../../actions/googleAccountActions'
@@ -77,7 +75,7 @@ const POPOVER_STYLES = {
       {
          name: 'flip',
          options: {
-            fallbackPlacements: ['top', 'bottom', 'left', 'right']
+            fallbackPlacements: ['top', 'bottom', 'right', 'left']
          }
       }
    ]
@@ -85,9 +83,8 @@ const POPOVER_STYLES = {
 
 const POPOVER_CONTENT_STYLES = {
    boxShadow: 'md',
-   maxW: '400px',
+   w: '400px',
    maxH: '80vh',
-   w: 'full',
    overflow: 'hidden'
 }
 
@@ -99,6 +96,13 @@ const POPOVER_HEADER_STYLES = {
    paddingTop: 1,
    paddingBottom: 0,
    border: 'none'
+}
+
+const POPOVER_BODY_STYLES = {
+   p: 4,
+   maxW: '100%',
+   maxH: 'calc(80vh - 60px)',
+   overflowY: 'auto'
 }
 
 // =============================================================================
@@ -131,7 +135,6 @@ const EventWrapper = React.memo(
       // -------------------------------------------------------------------------
 
       const taskId = useMemo(() => {
-         // For 'task' and 'synced' eventTypes, use pura_task_id
          if (event.eventType === 'task' || event.eventType === 'synced') {
             return event.pura_task_id
          }
@@ -270,43 +273,22 @@ const EventWrapper = React.memo(
                {renderSyncStatusTag()}
                {renderActionButton(onClose)}
             </PopoverHeader>
-            <PopoverBody
-               p={4}
-               maxW='100%'
-               maxH='calc(80vh - 60px)'
-               overflowY='auto'
-               css={{
-                  '&::-webkit-scrollbar': {
-                     width: '4px'
-                  },
-                  '&::-webkit-scrollbar-track': {
-                     background: 'transparent'
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                     background: '#CBD5E0',
-                     borderRadius: '2px'
-                  },
-                  '&::-webkit-scrollbar-thumb:hover': {
-                     background: '#A0AEC0'
-                  }
-               }}
-            >
+            <PopoverBody {...POPOVER_BODY_STYLES}>
                <VStack align='start' spacing={3} w='full'>
-                  <EventWrapperTitle text={event.title} />
+                  <EventWrapperTitle text={event.title} color={event.color} />
                   <EventTimeText start={event.start} end={event.end} />
+                  <EventConference conferenceData={event.conferenceData} />
+                  <EventLocation location={event.location} />
+                  <EventAttendees attendees={event.attendees} />
+                  <EventDescription description={event.description} />
+                  <EventReminders
+                     reminders={event.reminders}
+                     eventStart={event.start}
+                  />
+
+                  <EventVisibility visibility={event.visibility} />
 
                   <EventCalendarInfo calendar={event.calendar} />
-                  <EventDescription description={event.description} />
-                  <EventLocation location={event.location} />
-                  <EventConference conferenceData={event.conferenceData} />
-                  <EventOrganizer organizer={event.organizer} />
-                  <EventAttendees attendees={event.attendees} />
-                  <EventReminders reminders={event.reminders} />
-                  <EventVisibility visibility={event.visibility} />
-                  <EventMetadata
-                     createdDate={event.createdDate}
-                     updatedDate={event.updatedDate}
-                  />
                </VStack>
             </PopoverBody>
          </PopoverContent>
@@ -352,14 +334,12 @@ EventWrapper.propTypes = {
       pura_task_id: PropTypes.string,
       pura_schedule_index: PropTypes.number,
       syncStatus: PropTypes.string,
+      color: PropTypes.string,
       description: PropTypes.string,
       location: PropTypes.shape({
          raw: PropTypes.string,
          displayName: PropTypes.string,
-         address: PropTypes.shape({
-            full: PropTypes.string,
-            parts: PropTypes.array
-         })
+         address: PropTypes.string
       }),
       attendees: PropTypes.arrayOf(
          PropTypes.shape({

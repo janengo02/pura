@@ -205,16 +205,15 @@ const extractLocation = (event) => {
    // Try to parse structured location data if available
    const location = {
       raw: event.location,
-      displayName: event.location
+      displayName: event.location,
+      address: null
    }
 
    // Check if location contains additional structured data
    if (event.location.includes(',')) {
-      const parts = event.location.split(',').map((part) => part.trim())
-      location.address = {
-         full: event.location,
-         parts: parts
-      }
+      const [main, rest] = event.location.split(/,(.+)/)
+      location.displayName = main.trim()
+      location.address = rest ? rest.trim() : ''
    }
 
    return location

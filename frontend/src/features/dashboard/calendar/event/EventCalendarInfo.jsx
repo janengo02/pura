@@ -11,9 +11,9 @@ const EventCalendarInfo = ({ calendar }) => {
    if (!calendar) return null
 
    return (
-      <HStack spacing={2} mb={2}>
+      <HStack spacing={3}>
          <PiCalendar size={16} />
-         <Text fontSize="sm" color="text.primary">
+         <Text fontSize='sm' color='text.primary'>
             {calendar}
          </Text>
       </HStack>

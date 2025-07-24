@@ -21,7 +21,9 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const TEXT_STYLES = {
-   fontSize: 'sm'
+   fontSize: 'sm',
+   mb: 2,
+   ml: 7
 }
 
 // Language-specific datetime format configurations

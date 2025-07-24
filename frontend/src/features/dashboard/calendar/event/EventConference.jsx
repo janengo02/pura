@@ -39,8 +39,8 @@ const EventConference = ({ conferenceData }) => {
    return (
       <>
          {conferenceData.joinUrl && (
-            <VStack align='start' spacing={2} mb={3} w='full'>
-               <HStack spacing={2} w='full'>
+            <VStack align='start' spacing={2} w='full'>
+               <HStack spacing={3} w='full'>
                   <PiVideoCamera size={16} />
                   <HStack justifyContent='space-between' w='full'>
                      <Button
@@ -62,7 +62,7 @@ const EventConference = ({ conferenceData }) => {
                      </Tooltip>
                   </HStack>
                </HStack>
-               <Text fontSize='xs' color='text.secondary' ml={6}>
+               <Text fontSize='xs' color='text.secondary' ml={7}>
                   {t('meet-id')}: {conferenceData.id}
                </Text>
             </VStack>

@@ -5,7 +5,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { HStack, Text } from '@chakra-ui/react'
-import { PiEye, PiLock, PiGlobeHemisphereWest } from 'react-icons/pi'
+import { PiLock } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 const EventVisibility = ({ visibility }) => {
@@ -13,25 +13,19 @@ const EventVisibility = ({ visibility }) => {
 
    if (!visibility) return null
 
-   let visibilityIcon = PiEye
    let visibilityText = t('visibility-default')
-   let visibilityColor = 'gray'
 
    switch (visibility.visibility) {
       case 'private':
-         visibilityIcon = PiLock
          visibilityText = t('visibility-private')
-         visibilityColor = 'red'
          break
       case 'public':
-         visibilityIcon = PiGlobeHemisphereWest
          visibilityText = t('visibility-public')
-         visibilityColor = 'green'
          break
       case 'confidential':
-         visibilityIcon = PiLock
          visibilityText = t('visibility-confidential')
-         visibilityColor = 'orange'
+         break
+      case 'default':
          break
       default:
          // Keep default values for 'default' or unknown visibility
@@ -41,11 +35,8 @@ const EventVisibility = ({ visibility }) => {
    if (visibility.visibility === 'default') return null
 
    return (
-      <HStack spacing={2} mb={2}>
-         {React.createElement(visibilityIcon, {
-            size: 16,
-            color: `${visibilityColor}.500`
-         })}
+      <HStack spacing={3}>
+         <PiLock size={16} />
          <Text fontSize='sm' color='text.primary'>
             {visibilityText}
          </Text>
