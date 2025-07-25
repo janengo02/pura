@@ -7,13 +7,7 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 // UI Components
-import {
-   useColorMode,
-   Switch,
-   Flex,
-   Text,
-   MenuItem
-} from '@chakra-ui/react'
+import { useColorMode, Switch, Flex, Text, MenuItem } from '@chakra-ui/react'
 
 // Utils & Icons
 import { PiMoon, PiSun } from 'react-icons/pi'
@@ -63,7 +57,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
       return (
          <MenuItem
             onClick={handleToggle}
-            icon={isDark ? <PiSun size={20} /> : <PiMoon size={20} />}
+            icon={isDark ? <PiMoon size={20} /> : <PiSun size={20} />}
             {...MENU_ITEM_STYLES}
          >
             {content}
@@ -72,16 +66,16 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
    }
 
    return (
-      <Flex 
+      <Flex
          onClick={handleToggle}
-         cursor="pointer"
-         align="center"
+         cursor='pointer'
+         align='center'
          gap={3}
          p={2}
-         borderRadius="md"
+         borderRadius='md'
          _hover={{ bg: 'gray.100', _dark: { bg: 'gray.700' } }}
       >
-         {isDark ? <PiSun size={20} /> : <PiMoon size={20} />}
+         {isDark ? <PiMoon size={20} /> : <PiSun size={20} />}
          {content}
       </Flex>
    )

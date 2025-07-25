@@ -157,20 +157,20 @@ const FEATURES = [
    {
       title: 'Kanban Board',
       description:
-         'Organize tasks with drag-and-drop functionality across customizable columns',
+         'Organize tasks with drag-and-drop functionality across customizable columns and groups',
       icon: PiKanban,
       color: 'blue'
    },
    {
       title: 'Calendar Integration',
-      description: 'View tasks in calendar format with scheduling capabilities',
+      description:
+         'View tasks in a calendar format, schedule deadlines, and manage timelines',
       icon: PiCalendar,
       color: 'green'
    },
    {
-      title: 'Team Collaboration',
-      description:
-         'Share projects and collaborate with team members in real-time',
+      title: 'Google Calendar Integration',
+      description: 'Sync tasks with Google Calendar for seamless scheduling',
       icon: PiUsers,
       color: 'purple'
    },
@@ -191,11 +191,11 @@ const DEMO_FEATURES = [
       description:
          'Experience seamless task management with our intuitive Kanban board. Create custom columns, drag tasks between stages, and track progress in real-time. Perfect for agile workflows and project management.',
       features: [
-         'Drag & drop task cards between columns',
+         'Drag & drop task cards seamlessly',
          'Customizable column colors and names',
-         'Real-time updates across team members',
-         'Task priorities and due dates',
-         'Progress tracking and analytics'
+         'Orgnanize tasks into groups',
+         'Add multiple schedules for one task',
+         'Easy filtering and searching'
       ],
       mediaType: 'video',
       mediaSrc: '/assets/videos/kanban-demo.mp4',
@@ -204,16 +204,15 @@ const DEMO_FEATURES = [
    },
    {
       id: 'calendar-demo',
-      title: 'Integrated Calendar View',
+      title: 'Integrated Calendar View & Google Calendar Synchronization',
       subtitle: 'Schedule and Timeline Management',
       description:
          'Switch seamlessly between Kanban and Calendar views to see your tasks in a timeline format. Schedule deadlines, view upcoming tasks, and manage your workflow with powerful calendar integration.',
       features: [
-         'Multiple calendar views (month, week, day)',
-         'Task scheduling with drag & drop',
-         'Deadline notifications and reminders',
-         'Integration with external calendars',
-         'Multi-language date formatting'
+         'Flexible calendar views (month, week, day)',
+         'Sync multiple Google calendars',
+         'Edit Google event directly from PURA',
+         'Resolve conflicts with ease'
       ],
       mediaType: 'image',
       mediaSrc: '/assets/images/calendar-view.png',
@@ -222,39 +221,15 @@ const DEMO_FEATURES = [
    },
    {
       id: 'themes-demo',
-      title: 'Beautiful Dark & Light Themes',
+      title: 'Themes and Languages',
       subtitle: 'Customize Your Experience',
       description:
          'Work comfortably in any environment with our carefully crafted dark and light themes. Automatic theme switching, custom color schemes, and accessibility-focused design ensure the perfect viewing experience.',
-      features: [
-         'Automatic dark/light mode detection',
-         'Custom color schemes for projects',
-         'High contrast accessibility options',
-         'Smooth theme transitions',
-         'Per-user theme preferences'
-      ],
+      features: ['Dark and light themes', 'English and Japanese support'],
       mediaType: 'image',
       mediaSrc: '/assets/images/theme-comparison.png',
       mediaAlt: 'Side-by-side comparison of dark and light themes',
       reversed: false
-   },
-   {
-      id: 'collaboration-demo',
-      title: 'Real-time Team Collaboration',
-      subtitle: 'Work Together, Achieve More',
-      description:
-         'Collaborate with your team in real-time. Share projects, assign tasks, track progress, and communicate effectively. Built for modern distributed teams with multilingual support.',
-      features: [
-         'Real-time collaborative editing',
-         'Team member assignments and notifications',
-         'Project sharing and permissions',
-         'Activity feeds and updates',
-         'Multi-language interface (EN/JP)'
-      ],
-      mediaType: 'video',
-      mediaSrc: '/assets/videos/collaboration-demo.mp4',
-      mediaAlt: 'Team collaboration features demonstration',
-      reversed: true
    }
 ]
 
@@ -297,10 +272,10 @@ const LandingHeader = React.memo(() => {
             <ThemeToggle asMenuItem={false} />
             <LanguageSwitcher />
             <Button variant='ghost' onClick={() => navigate('/login')}>
-               {t('nav-login')}
+               Log In
             </Button>
             <Button colorScheme='purple' onClick={() => navigate('/register')}>
-               {t('nav-get-started')}
+               Get Started
             </Button>
          </HStack>
       </Flex>
@@ -327,7 +302,7 @@ const HeroSection = React.memo(() => {
                borderRadius='full'
                fontSize='md'
             >
-               🚀 Modern Task Management
+               🚀 Modern Timeboxing Tool
             </Badge>
 
             <Heading
@@ -337,16 +312,12 @@ const HeroSection = React.memo(() => {
                bgGradient='linear(to-r, purple.400, blue.500)'
                bgClip='text'
             >
-               {t('hero-title')}
+               PURA
             </Heading>
 
-            <Text
-               fontSize='xl'
-               color='text.secondary'
-               maxW='2xl'
-               lineHeight='tall'
-            >
-               {t('hero-description')}
+            <Text fontSize='xl' color='text.secondary' lineHeight='tall'>
+               Combine the power of Kanban and Calendar to manage your tasks
+               effortlessly.
             </Text>
 
             <HStack spacing={4} pt={4}>
@@ -356,14 +327,14 @@ const HeroSection = React.memo(() => {
                   rightIcon={<PiArrowRight />}
                   onClick={() => navigate('/register')}
                >
-                  {t('btn-start-free')}
+                  Get Started
                </Button>
                <Button
                   size='lg'
                   variant='outline'
                   onClick={() => navigate('/login')}
                >
-                  {t('btn-sign-in')}
+                  Log In
                </Button>
             </HStack>
          </VStack>
@@ -411,9 +382,9 @@ const FeaturesSection = React.memo(() => {
       <Container maxW='7xl' py={20}>
          <VStack spacing={12}>
             <VStack spacing={4} textAlign='center'>
-               <Heading size='2xl'>{t('features-title')}</Heading>
+               <Heading size='2xl'>Features</Heading>
                <Text fontSize='lg' color='text.secondary' maxW='2xl'>
-                  {t('features-description')}
+                  Boost your productivity with PURA
                </Text>
             </VStack>
 
