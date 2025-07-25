@@ -66,88 +66,77 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 const TECH_STACK = [
    {
-      category: 'Frontend',
+      category: 'Frontend Technologies',
       technologies: [
          {
-            name: 'React 18',
-            description: 'Modern UI library with hooks',
+            name: 'React 18 + Hooks',
+            description: 'Modern functional components with custom hooks',
             icon: PiCode
          },
          {
-            name: 'Chakra UI',
-            description: 'Component library for styling',
-            icon: PiPalette
-         },
-         {
-            name: 'Redux Toolkit',
-            description: 'State management',
+            name: 'Redux + Thunk',
+            description: 'State management with async action handling',
             icon: PiDatabase
          },
          {
-            name: 'React Router',
-            description: 'Client-side routing',
-            icon: PiDevices
-         },
-         {
-            name: 'React Hook Form',
-            description: 'Form validation & handling',
-            icon: PiCheckCircle
-         }
-      ]
-   },
-   {
-      category: 'Backend & Tools',
-      technologies: [
-         {
-            name: 'Node.js',
-            description: 'Server-side JavaScript runtime',
-            icon: PiGear
-         },
-         {
-            name: 'Express.js',
-            description: 'Web application framework',
-            icon: PiRocket
-         },
-         { name: 'MongoDB', description: 'NoSQL database', icon: PiDatabase },
-         {
-            name: 'JWT Auth',
-            description: 'Secure authentication',
-            icon: PiShield
-         },
-         {
-            name: 'i18next',
-            description: 'Internationalization support',
-            icon: PiGlobe
-         }
-      ]
-   },
-   {
-      category: 'Features',
-      technologies: [
-         {
-            name: 'Drag & Drop',
-            description: 'Intuitive task management',
-            icon: PiKanban
-         },
-         {
-            name: 'Calendar View',
-            description: 'Schedule & timeline view',
-            icon: PiCalendar
-         },
-         {
-            name: 'Dark/Light Mode',
-            description: 'Theme customization',
+            name: 'Chakra UI + Theming',
+            description: 'Component library with dark/light theme system',
             icon: PiPalette
          },
          {
-            name: 'Multi-language',
-            description: 'English & Japanese support',
-            icon: PiGlobe
+            name: 'React Hook Form + Yup',
+            description: 'Form handling with schema validation',
+            icon: PiCheckCircle
          },
          {
-            name: 'Responsive Design',
-            description: 'Works on all devices',
-            icon: PiDevices
+            name: '@hello-pangea/dnd',
+            description: 'Drag and drop functionality for Kanban board',
+            icon: PiKanban
+         },
+         {
+            name: 'React Big Calendar',
+            description: 'Calendar component for task scheduling',
+            icon: PiCalendar
+         },
+         {
+            name: 'Internationalization',
+            description: 'i18next for English and Japanese support',
+            icon: PiGlobe
+         }
+      ]
+   },
+   {
+      category: 'Backend & APIs',
+      technologies: [
+         {
+            name: 'Node.js + Express',
+            description: 'RESTful API server with middleware',
+            icon: PiGear
+         },
+         {
+            name: 'MongoDB + Mongoose',
+            description: 'NoSQL database with ODM for data modeling',
+            icon: PiDatabase
+         },
+         {
+            name: 'JWT Authentication',
+            description: 'Token-based auth with bcrypt password hashing',
+            icon: PiShield
+         },
+         {
+            name: 'Google Calendar API',
+            description: 'OAuth 2.0 integration for calendar sync',
+            icon: PiCalendar
+         },
+         {
+            name: 'Google OAuth',
+            description: 'Secure authentication with Google accounts',
+            icon: PiUsers
+         },
+         {
+            name: 'Protected Routes',
+            description: 'React Router v6 with authentication guards',
+            icon: PiShield
          }
       ]
    }
@@ -155,29 +144,30 @@ const TECH_STACK = [
 
 const FEATURES = [
    {
-      title: 'Kanban Board',
+      title: 'Drag & Drop Kanban Board',
       description:
-         'Organize tasks with drag-and-drop functionality across customizable columns and groups',
+         'Interactive task management with @hello-pangea/dnd, supporting drag between columns and groups with Redux state management',
       icon: PiKanban,
       color: 'blue'
    },
    {
-      title: 'Calendar Integration',
+      title: 'Google Calendar Integration',
       description:
-         'View tasks in a calendar format, schedule deadlines, and manage timelines',
+         'OAuth 2.0 authentication with Google Calendar API for viewing, creating, and editing calendar events directly in the app',
       icon: PiCalendar,
       color: 'green'
    },
    {
-      title: 'Google Calendar Integration',
-      description: 'Sync tasks with Google Calendar for seamless scheduling',
+      title: 'Task & Project Management',
+      description:
+         'Create tasks, organize into groups, set schedules, and track progress with filtering and search capabilities',
       icon: PiUsers,
       color: 'purple'
    },
    {
-      title: 'Customizable Themes',
+      title: 'Multi-language Support',
       description:
-         'Switch between dark and light modes with beautiful color schemes',
+         'Internationalization with i18next supporting English and Japanese languages with theme switching',
       icon: PiPalette,
       color: 'orange'
    }
@@ -186,49 +176,123 @@ const FEATURES = [
 const DEMO_FEATURES = [
    {
       id: 'kanban-demo',
-      title: 'Powerful Kanban Board',
-      subtitle: 'Drag, Drop, and Organize with Ease',
+      title: 'Interactive Kanban Board',
+      subtitle: 'Drag & Drop Task Management',
       description:
-         'Experience seamless task management with our intuitive Kanban board. Create custom columns, drag tasks between stages, and track progress in real-time. Perfect for agile workflows and project management.',
+         'Built with @hello-pangea/dnd library, the Kanban board allows users to drag tasks between different columns and groups. Tasks can be organized by progress status, with real-time updates to the Redux store and MongoDB backend.',
       features: [
-         'Drag & drop task cards seamlessly',
-         'Customizable column colors and names',
-         'Orgnanize tasks into groups',
-         'Add multiple schedules for one task',
-         'Easy filtering and searching'
+         {
+            title: 'Drag & Drop Tasks',
+            description:
+               'Drag tasks between columns and groups with smooth animations',
+            mediaType: 'video',
+            mediaSrc: '/assets/videos/kanban-drag-drop.mp4',
+            mediaAlt: 'Kanban board drag and drop demonstration'
+         },
+         {
+            title: 'Customizable colors and titles',
+            description:
+               'Easily customize colors and titles for each column and group',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/mobile-kanban.png',
+            mediaAlt: 'Customizable Kanban board'
+         },
+         {
+            title: 'Task Scheduling',
+            description: 'Add multiple schedules and deadlines to each task',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/task-scheduling.png',
+            mediaAlt: 'Task creation modal with scheduling options'
+         },
+         {
+            title: 'Search & Filter',
+            description: 'Filter and search tasks across all groups',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/task-filtering.png',
+            mediaAlt: 'Task filtering and search interface'
+         }
       ],
-      mediaType: 'video',
-      mediaSrc: '/assets/videos/kanban-demo.mp4',
-      mediaAlt: 'Kanban board drag and drop demonstration',
       reversed: false
    },
    {
       id: 'calendar-demo',
-      title: 'Integrated Calendar View & Google Calendar Synchronization',
-      subtitle: 'Schedule and Timeline Management',
+      title: 'Google Calendar Integration',
+      subtitle: 'Calendar Sync & Event Management',
       description:
-         'Switch seamlessly between Kanban and Calendar views to see your tasks in a timeline format. Schedule deadlines, view upcoming tasks, and manage your workflow with powerful calendar integration.',
+         'Connect your Google account to sync calendar events with tasks. View your Google Calendar events alongside PURA tasks, create new events, and edit existing ones directly from the application using the Google Calendar API.',
       features: [
-         'Flexible calendar views (month, week, day)',
-         'Sync multiple Google calendars',
-         'Edit Google event directly from PURA',
-         'Resolve conflicts with ease'
+         {
+            title: 'OAuth Authentication',
+            description: 'OAuth 2.0 authentication with Google accounts',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/google-oauth.png',
+            mediaAlt: 'Google OAuth authentication flow'
+         },
+         {
+            title: 'Calendar Views',
+            description: 'Split pane interface with month, week, and day views',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/calendar-views.png',
+            mediaAlt: 'Different calendar view options'
+         },
+         {
+            title: 'Multi-Calendar Sync & Direct Editing',
+            description:
+               'Sync multiple Google calendars and edit Google Calendar events from within PURA',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/multi-calendar.png',
+            mediaAlt: 'Multiple Google calendars synchronized'
+         },
+         {
+            title: 'Conflict Resolution',
+            description: 'Handle calendar conflicts and overlapping events',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/conflict-resolution.png',
+            mediaAlt: 'Calendar conflict resolution interface'
+         }
       ],
-      mediaType: 'image',
-      mediaSrc: '/assets/images/calendar-view.png',
-      mediaAlt: 'Calendar view showing scheduled tasks',
       reversed: true
    },
    {
-      id: 'themes-demo',
-      title: 'Themes and Languages',
-      subtitle: 'Customize Your Experience',
+      id: 'ux-demo',
+      title: 'Polished User Experience',
+      subtitle: 'Accessibility, Themes & User Feedback',
       description:
-         'Work comfortably in any environment with our carefully crafted dark and light themes. Automatic theme switching, custom color schemes, and accessibility-focused design ensure the perfect viewing experience.',
-      features: ['Dark and light themes', 'English and Japanese support'],
-      mediaType: 'image',
-      mediaSrc: '/assets/images/theme-comparison.png',
-      mediaAlt: 'Side-by-side comparison of dark and light themes',
+         'PURA demonstrates comprehensive UX design with internationalization, theme switching, error handling, and responsive design. Every interaction is crafted to provide smooth, accessible, and user-friendly experience across all devices.',
+      features: [
+         {
+            title: 'Theme System',
+            description:
+               'Complete dark/light theme system with Chakra UI integration',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/theme-switching.png',
+            mediaAlt: 'Dark and light theme comparison'
+         },
+         {
+            title: 'Internationalization',
+            description:
+               'English & Japanese language support with reactive translations',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/language-switching.png',
+            mediaAlt: 'Language switching between English and Japanese'
+         },
+         {
+            title: 'Optimistic UI',
+            description:
+               'Optimistic updates for a seamless user experience with graceful fallbacks',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/optimistic-ui.png',
+            mediaAlt: 'Optimistic UI updates in action'
+         },
+         {
+            title: 'Error Handling & Form Validation',
+            description:
+               'Comprehensive error handling and form validation with user-friendly messages',
+            mediaType: 'image',
+            mediaSrc: '/assets/images/error-handling.png',
+            mediaAlt: 'Error alerts and validation messages'
+         }
+      ],
       reversed: false
    }
 ]
@@ -302,7 +366,7 @@ const HeroSection = React.memo(() => {
                borderRadius='full'
                fontSize='md'
             >
-               🚀 Modern Timeboxing Tool
+               💻 Full-Stack Engineering Portfolio
             </Badge>
 
             <Heading
@@ -312,12 +376,19 @@ const HeroSection = React.memo(() => {
                bgGradient='linear(to-r, purple.400, blue.500)'
                bgClip='text'
             >
-               PURA
+               PURA Timeboxing Tool
             </Heading>
 
-            <Text fontSize='xl' color='text.secondary' lineHeight='tall'>
-               Combine the power of Kanban and Calendar to manage your tasks
-               effortlessly.
+            <Text
+               fontSize='xl'
+               color='text.secondary'
+               lineHeight='tall'
+               maxW='3xl'
+            >
+               A full-stack task management application built with React,
+               Node.js, and MongoDB. Features drag-and-drop Kanban boards,
+               Google Calendar integration, and multi-language support to
+               demonstrate modern web development skills.
             </Text>
 
             <HStack spacing={4} pt={4}>
@@ -327,14 +398,16 @@ const HeroSection = React.memo(() => {
                   rightIcon={<PiArrowRight />}
                   onClick={() => navigate('/register')}
                >
-                  Get Started
+                  Try the Demo
                </Button>
                <Button
                   size='lg'
                   variant='outline'
-                  onClick={() => navigate('/login')}
+                  onClick={() =>
+                     window.open('https://github.com/janengo02/pura', '_blank')
+                  }
                >
-                  Log In
+                  View Source Code
                </Button>
             </HStack>
          </VStack>
@@ -382,9 +455,10 @@ const FeaturesSection = React.memo(() => {
       <Container maxW='7xl' py={20}>
          <VStack spacing={12}>
             <VStack spacing={4} textAlign='center'>
-               <Heading size='2xl'>Features</Heading>
-               <Text fontSize='lg' color='text.secondary' maxW='2xl'>
-                  Boost your productivity with PURA
+               <Heading size='2xl'>Technical Highlights</Heading>
+               <Text fontSize='lg' color='text.secondary' maxW='3xl'>
+                  Key engineering implementations that demonstrate modern web
+                  development expertise and problem-solving capabilities.
                </Text>
             </VStack>
 
@@ -401,17 +475,25 @@ const FeaturesSection = React.memo(() => {
 })
 
 /**
- * Demo feature section with media
+ * Demo feature section with interactive media selection
  */
 const DemoFeatureSection = React.memo(({ feature, index }) => {
+   const [selectedFeature, setSelectedFeature] = useState(0)
    const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+
+   const currentFeature = feature.features[selectedFeature]
+
+   const handleFeatureSelect = useCallback((featureIndex) => {
+      setSelectedFeature(featureIndex)
+      setIsVideoPlaying(false) // Reset video playing state when switching features
+   }, [])
 
    const handleVideoPlay = useCallback(() => {
       setIsVideoPlaying(true)
    }, [])
 
    const mediaContent = useMemo(() => {
-      if (feature.mediaType === 'video') {
+      if (currentFeature.mediaType === 'video') {
          return (
             <Box
                position='relative'
@@ -428,11 +510,11 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                      transition='transform 0.3s'
                   >
                      <Image
-                        src={`${feature.mediaSrc.replace(
+                        src={`${currentFeature.mediaSrc.replace(
                            '.mp4',
                            '-thumbnail.jpg'
                         )}`}
-                        alt={feature.mediaAlt}
+                        alt={currentFeature.mediaAlt}
                         w='full'
                         h='400px'
                         objectFit='cover'
@@ -456,7 +538,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                   </Box>
                ) : (
                   <Box as='video' w='full' h='400px' controls autoPlay>
-                     <source src={feature.mediaSrc} type='video/mp4' />
+                     <source src={currentFeature.mediaSrc} type='video/mp4' />
                      Your browser does not support the video tag.
                   </Box>
                )}
@@ -466,8 +548,8 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
 
       return (
          <Image
-            src={feature.mediaSrc}
-            alt={feature.mediaAlt}
+            src={currentFeature.mediaSrc}
+            alt={currentFeature.mediaAlt}
             w='full'
             h='400px'
             objectFit='cover'
@@ -478,16 +560,16 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Demo'
          />
       )
-   }, [feature, isVideoPlaying, handleVideoPlay])
+   }, [currentFeature, isVideoPlaying, handleVideoPlay])
 
    const content = (
       <VStack align='start' spacing={6} flex={1}>
          <Badge colorScheme='purple' variant='subtle' px={3} py={1}>
             <Icon
-               as={feature.mediaType === 'video' ? PiVideo : PiImage}
+               as={currentFeature.mediaType === 'video' ? PiVideo : PiImage}
                mr={2}
             />
-            {feature.mediaType === 'video'
+            {currentFeature.mediaType === 'video'
                ? 'Interactive Demo'
                : 'Feature Preview'}
          </Badge>
@@ -504,20 +586,45 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             </Text>
          </VStack>
 
-         <VStack align='start' spacing={3} w='full'>
-            {feature.features.map((item, idx) => (
-               <HStack key={idx} spacing={3} align='start'>
-                  <Icon
-                     as={PiCheckCircle}
-                     color='green.500'
-                     mt={1}
-                     flexShrink={0}
-                  />
-                  <Text fontSize='sm' color='text.primary'>
-                     {item}
-                  </Text>
-               </HStack>
-            ))}
+         <VStack align='start' spacing={4} w='full'>
+            <Text fontSize='sm' fontWeight='semibold' color='text.primary'>
+               Explore Features:
+            </Text>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w='full'>
+               {feature.features.map((item, idx) => (
+                  <Button
+                     key={idx}
+                     variant={selectedFeature === idx ? 'solid' : 'outline'}
+                     colorScheme={selectedFeature === idx ? 'purple' : 'gray'}
+                     size='sm'
+                     onClick={() => handleFeatureSelect(idx)}
+                     leftIcon={
+                        <Icon
+                           as={PiCheckCircle}
+                           color={
+                              selectedFeature === idx ? 'white' : 'green.500'
+                           }
+                        />
+                     }
+                     justifyContent='flex-start'
+                     textAlign='left'
+                     h='auto'
+                     py={3}
+                     px={4}
+                     whiteSpace='normal'
+                     fontWeight='normal'
+                  >
+                     <VStack align='start' spacing={1}>
+                        <Text fontSize='xs' fontWeight='bold'>
+                           {item.title}
+                        </Text>
+                        <Text fontSize='xs' opacity={0.8}>
+                           {item.description}
+                        </Text>
+                     </VStack>
+                  </Button>
+               ))}
+            </SimpleGrid>
          </VStack>
       </VStack>
    )
@@ -553,10 +660,15 @@ DemoFeatureSection.propTypes = {
       title: PropTypes.string.isRequired,
       subtitle: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
-      features: PropTypes.arrayOf(PropTypes.string).isRequired,
-      mediaType: PropTypes.oneOf(['image', 'video']).isRequired,
-      mediaSrc: PropTypes.string.isRequired,
-      mediaAlt: PropTypes.string.isRequired,
+      features: PropTypes.arrayOf(
+         PropTypes.shape({
+            title: PropTypes.string.isRequired,
+            description: PropTypes.string.isRequired,
+            mediaType: PropTypes.oneOf(['image', 'video']).isRequired,
+            mediaSrc: PropTypes.string.isRequired,
+            mediaAlt: PropTypes.string.isRequired
+         })
+      ).isRequired,
       reversed: PropTypes.bool.isRequired
    }).isRequired,
    index: PropTypes.number.isRequired
@@ -640,15 +752,18 @@ const TechStackSection = React.memo(() => {
                <VStack spacing={4} textAlign='center'>
                   <Badge colorScheme='purple' variant='subtle' px={3} py={1}>
                      <Icon as={PiLightning} mr={2} />
-                     {t('tech-badge')}
+                     Technical Implementation
                   </Badge>
-                  <Heading size='2xl'>{t('tech-title')}</Heading>
-                  <Text fontSize='lg' color='text.secondary' maxW='2xl'>
-                     {t('tech-description')}
+                  <Heading size='2xl'>Engineering & Architecture</Heading>
+                  <Text fontSize='lg' color='text.secondary' maxW='3xl'>
+                     This project demonstrates modern full-stack development
+                     practices, clean architecture patterns, and scalable code
+                     organization. Each technology choice was made to showcase
+                     specific engineering skills.
                   </Text>
                </VStack>
 
-               <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={12} w='full'>
+               <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={12} w='full'>
                   {techCategories}
                </SimpleGrid>
             </VStack>
@@ -671,23 +786,43 @@ const CTASection = React.memo(() => {
          <Card variant='filled' bg='accent.primary' color='white'>
             <CardBody p={12}>
                <VStack spacing={8} textAlign='center'>
-                  <Icon as={PiStar} boxSize={16} color='yellow.400' />
+                  <Icon as={PiCode} boxSize={16} color='yellow.400' />
                   <Heading size='xl' color='white'>
-                     {t('cta-title')}
+                     Ready to Explore?
                   </Heading>
                   <Text fontSize='lg' opacity={0.9} maxW='2xl'>
-                     {t('cta-description')}
+                     This project showcases full-stack development skills with
+                     modern technologies. Feel free to explore the application,
+                     examine the code, or reach out to discuss the
+                     implementation.
                   </Text>
-                  <Button
-                     size='lg'
-                     bg='white'
-                     color='purple.600'
-                     _hover={{ bg: 'gray.100' }}
-                     rightIcon={<PiArrowRight />}
-                     onClick={() => navigate('/register')}
-                  >
-                     {t('btn-start-now')}
-                  </Button>
+                  <HStack spacing={4}>
+                     <Button
+                        size='lg'
+                        bg='white'
+                        color='purple.600'
+                        _hover={{ bg: 'gray.100' }}
+                        rightIcon={<PiArrowRight />}
+                        onClick={() => navigate('/register')}
+                     >
+                        Try the Demo
+                     </Button>
+                     <Button
+                        size='lg'
+                        variant='outline'
+                        color='white'
+                        borderColor='white'
+                        _hover={{ bg: 'whiteAlpha.200' }}
+                        onClick={() =>
+                           window.open(
+                              'https://github.com/janengo02/pura',
+                              '_blank'
+                           )
+                        }
+                     >
+                        View Source
+                     </Button>
+                  </HStack>
                </VStack>
             </CardBody>
          </Card>
@@ -713,7 +848,6 @@ const Footer = React.memo(() => {
       >
          <Container maxW='7xl'>
             <VStack spacing={8}>
-               <Divider />
                <Flex
                   w='full'
                   justifyContent='space-between'
@@ -723,7 +857,7 @@ const Footer = React.memo(() => {
                >
                   <HStack spacing={2}>
                      <Heading size='md' color='accent.primary'>
-                        TaskFlow Pro
+                        PURA
                      </Heading>
                      <Badge variant='outline'>v1.0</Badge>
                   </HStack>
