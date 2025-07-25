@@ -15,6 +15,9 @@ import { logoutAction } from '../../../actions/authActions'
 import { changeLanguageAction } from '../../../actions/languageActions'
 import { toggleThemeAction } from '../../../actions/themeActions'
 
+// Components
+import ThemeToggle from '../../../components/ThemeToggle'
+
 // UI Components
 import {
    Avatar,
@@ -97,44 +100,6 @@ ProfileAvatar.propTypes = {
    user: PropTypes.object
 }
 
-/**
- * Theme toggle section
- */
-const ThemeToggle = React.memo(({ onThemeToggle }) => {
-   const { t } = useReactiveTranslation()
-   const { colorMode, toggleColorMode } = useColorMode()
-
-   const isDark = colorMode === 'dark'
-
-   const handleToggle = useCallback(() => {
-      toggleColorMode() // This toggles Chakra's color mode
-      onThemeToggle() // This updates Redux state
-   }, [toggleColorMode, onThemeToggle])
-
-   return (
-      <MenuItem
-         onClick={handleToggle}
-         icon={isDark ? <PiSun size={20} /> : <PiMoon size={20} />}
-         {...MENU_ITEM_STYLES}
-      >
-         <Flex justify='space-between' align='center' w='full'>
-            <Text>{t('label-settings-theme')}</Text>
-            <Switch
-               isChecked={isDark}
-               size='sm'
-               colorScheme='purple'
-               pointerEvents='none'
-            />
-         </Flex>
-      </MenuItem>
-   )
-})
-
-ThemeToggle.displayName = 'ThemeToggle'
-
-ThemeToggle.propTypes = {
-   onThemeToggle: PropTypes.func.isRequired
-}
 
 /**
  * Language selection section with Redux state management

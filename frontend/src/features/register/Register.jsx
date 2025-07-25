@@ -33,6 +33,7 @@ import { MultiInput } from '../../components/MultiInput'
 import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 import LanguageSwitcher from '../../components/LanguageSwitcher'
+import ThemeToggle from '../../components/ThemeToggle'
 
 // Actions & Schema
 import { registerAction } from '../../actions/authActions'
@@ -46,12 +47,15 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 // =============================================================================
 
 /**
- * Register page header with language switcher
+ * Register page header with theme toggle and language switcher
  */
 const RegisterPageHeader = React.memo(() => (
    <Flex w='full' justifyContent='space-between' alignItems='flex-start' mb={4}>
       <Box flex={1} /> {/* Spacer for center alignment */}
-      <LanguageSwitcher />
+      <Flex gap={4} alignItems="center">
+         <ThemeToggle asMenuItem={false} />
+         <LanguageSwitcher />
+      </Flex>
    </Flex>
 ))
 

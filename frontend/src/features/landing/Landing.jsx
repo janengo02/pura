@@ -55,6 +55,7 @@ import {
 
 // Internal Components
 import LanguageSwitcher from '../../components/LanguageSwitcher'
+import ThemeToggle from '../../components/ThemeToggle'
 
 // Utils
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
@@ -293,6 +294,7 @@ const LandingHeader = React.memo(() => {
          </Heading>
 
          <HStack spacing={4}>
+            <ThemeToggle asMenuItem={false} />
             <LanguageSwitcher />
             <Button variant='ghost' onClick={() => navigate('/login')}>
                {t('nav-login')}
