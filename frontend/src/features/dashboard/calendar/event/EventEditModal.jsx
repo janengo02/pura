@@ -14,10 +14,7 @@ import {
    Card,
    CardHeader,
    CardBody,
-   IconButton,
    Button,
-   FormControl,
-   FormLabel,
    Input,
    VStack,
    HStack,
@@ -28,7 +25,10 @@ import {
 
 // Actions
 import { updateGoogleEventAction } from '../../../../actions/googleAccountActions'
-import { updateTaskScheduleAction } from '../../../../actions/taskActions'
+import {
+   showTaskModalAction,
+   updateTaskScheduleAction
+} from '../../../../actions/taskActions'
 import { clearEventEditModalAction } from '../../../../actions/eventActions'
 
 // Utils
@@ -45,9 +45,12 @@ const EventEditModal = React.memo(
       rightWidth = '100%',
       // Redux props
       event,
+      taskData: { task, pageId },
+
       updateGoogleEventAction,
       updateTaskScheduleAction,
-      clearEventEditModalAction
+      clearEventEditModalAction,
+      showTaskModalAction
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS
@@ -81,6 +84,18 @@ const EventEditModal = React.memo(
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
+
+      const refetchTaskModalIfOpen = useCallback(async () => {
+         // Check if task modal is displayed (task exists in state)
+         if (task && pageId) {
+            const formData = {
+               page_id: pageId,
+               task_id: task._id,
+               target_event_index: event.pura_schedule_index
+            }
+            await showTaskModalAction(formData)
+         }
+      }, [task, pageId, showTaskModalAction, event.pura_schedule_index])
 
       const handleStartTimeChange = useCallback((e) => {
          setStartTime(e.target.value)
@@ -129,7 +144,7 @@ const EventEditModal = React.memo(
                   ...updates
                })
             }
-
+            await refetchTaskModalIfOpen()
             handleCloseModal()
          } catch (error) {
             console.error('Error updating event:', error)
@@ -141,7 +156,8 @@ const EventEditModal = React.memo(
          event,
          updateTaskScheduleAction,
          updateGoogleEventAction,
-         handleCloseModal
+         handleCloseModal,
+         refetchTaskModalIfOpen
       ])
 
       // -------------------------------------------------------------------------
@@ -196,20 +212,26 @@ const EventEditModal = React.memo(
          []
       )
 
-      const startTimeInput = useMemo(() => {
-         ;<Input
-            {...timeInputProps}
-            value={startTime}
-            onChange={handleStartTimeChange}
-         />
-      }, [startTime, handleStartTimeChange, timeInputProps])
-      const endTimeInput = useMemo(() => {
-         ;<Input
-            {...timeInputProps}
-            value={endTime}
-            onChange={handleEndTimeChange}
-         />
-      }, [endTime, handleEndTimeChange, timeInputProps])
+      const startTimeInput = useMemo(
+         () => (
+            <Input
+               {...timeInputProps}
+               value={startTime}
+               onChange={handleStartTimeChange}
+            />
+         ),
+         [startTime, handleStartTimeChange, timeInputProps]
+      )
+      const endTimeInput = useMemo(
+         () => (
+            <Input
+               {...timeInputProps}
+               value={endTime}
+               onChange={handleEndTimeChange}
+            />
+         ),
+         [endTime, handleEndTimeChange, timeInputProps]
+      )
 
       const renderModalBody = () => (
          <CardBody h='full'>
@@ -219,7 +241,9 @@ const EventEditModal = React.memo(
                spacing={2}
                color={isTimeValid ? undefined : 'danger.secondary'}
             >
-               {startTimeInput}-{endTimeInput}
+               <Box spacing={2} w='full'>
+                  {startTimeInput} - {endTimeInput}
+               </Box>
                <HStack spacing={3} justifyContent='flex-end' paddingTop={2}>
                   <Button variant='ghost' onClick={handleCloseModal}>
                      {t('btn-cancel')}
@@ -298,9 +322,14 @@ EventEditModal.propTypes = {
       pura_schedule_index: PropTypes.number,
       pageId: PropTypes.string
    }).isRequired,
+   taskData: PropTypes.shape({
+      task: PropTypes.object,
+      pageId: PropTypes.string
+   }).isRequired,
    updateGoogleEventAction: PropTypes.func.isRequired,
    clearEventEditModalAction: PropTypes.func.isRequired,
-   updateTaskScheduleAction: PropTypes.func.isRequired
+   updateTaskScheduleAction: PropTypes.func.isRequired,
+   showTaskModalAction: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -323,18 +352,28 @@ const selectEventData = createSelector(
    })
 )
 
+const selectTaskData = createSelector(
+   [(state) => state.task.task, (state) => state.page._id],
+   (task, pageId) => ({
+      task,
+      pageId
+   })
+)
+
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   event: selectEventData(state)
+   event: selectEventData(state),
+   taskData: selectTaskData(state)
 })
 
 const mapDispatchToProps = {
    updateGoogleEventAction,
    updateTaskScheduleAction,
-   clearEventEditModalAction
+   clearEventEditModalAction,
+   showTaskModalAction
 }
 
 // =============================================================================

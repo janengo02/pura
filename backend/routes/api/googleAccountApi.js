@@ -203,7 +203,7 @@ router.get('/default', auth, async (req, res) => {
 })
 
 // @route   POST api/google-account/update-event/:eventId
-// @desc    Update an event in the user's Google Calendar (handles bi-directional sync)
+// @desc    Update an event in the user's Google Calendar (only used for google events, not synced Pura tasks).
 // @params  eventId (params) - ID of the event to update.
 //          accountEmail (body) - Email of the Google account to use.
 //          calendarId (body) - ID of the calendar containing the event.
@@ -212,7 +212,16 @@ router.get('/default', auth, async (req, res) => {
 router.post('/update-event/:eventId', auth, async (req, res) => {
    try {
       const { eventId } = req.params
-      const { accountEmail, calendarId, eventData } = req.body
+      const {
+         accountEmail,
+         calendarId,
+         start,
+         end,
+         summary,
+         location,
+         description,
+         color
+      } = req.body
 
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
@@ -222,16 +231,34 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
 
+      const originalEvent = await calendar.events.get({
+         auth: oath2Client,
+         calendarId: calendarId || 'primary',
+         eventId: eventId
+      })
+      const eventData = originalEvent.data
+
+      const updatedEventData = {
+         ...eventData, // Preserve other existing properties
+         start: {
+            dateTime: start
+         },
+         end: {
+            dateTime: end
+         },
+         colorId: color || eventData.colorId,
+         summary: summary || eventData.summary,
+         description: description || eventData.description,
+         location: location || eventData.location
+      }
+
       // Update Google Calendar event
       const event = await calendar.events.update({
          auth: oath2Client,
          calendarId: calendarId || 'primary',
          eventId: eventId,
-         requestBody: eventData
+         requestBody: updatedEventData
       })
-
-      // Update corresponding task if this is a Pura task event
-      await updateTaskFromGoogleEvent(eventId, event.data)
 
       res.json({ event: event.data })
    } catch (err) {
@@ -240,7 +267,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
 })
 
 // @route   DELETE api/google-account/delete-event/:eventId
-// @desc    Delete an event from the user's Google Calendar.
+// @desc    Delete an event from the user's Google Calendar (only used for google events, not synced Pura tasks).
 // @params  eventId (params) - ID of the event to delete.
 //          accountEmail (body) - Email of the Google account to use.
 //          calendarId (body) - ID of the calendar containing the event.
@@ -278,26 +305,6 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
          calendarId: calendarId || 'primary',
          eventId: eventId
       })
-
-      // Update task to remove Google event ID if this was a Pura task
-      if (eventData?.extendedProperties?.private?.pura_task_id) {
-         const taskId = eventData.extendedProperties.private.pura_task_id
-
-         const task = await Task.findById(taskId)
-
-         if (task) {
-            const slotIndex = task.schedule.findIndex(
-               (slot) => slot.google_event_id === eventId
-            )
-            if (slotIndex !== -1) {
-               task.schedule[slotIndex].google_event_id = null
-               task.schedule[slotIndex].google_account_email = null
-               task.schedule[slotIndex].google_calendar_id = null
-               task.update_date = new Date()
-               await task.save()
-            }
-         }
-      }
 
       res.json({ event: { id: eventId, deleted: true } })
    } catch (err) {

@@ -22,14 +22,14 @@ const parseGoogleEventTime = (startData, endData) => {
       // All-day event - use local timezone approach like frontend
       const startDate = new Date(startRaw)
       startDate.setHours(0, 0, 0, 0) // Set to local midnight
-      
+
       const endDate = new Date(endRaw)
       endDate.setHours(0, 0, 0, 0) // Set to local midnight
-      
+
       // Apply frontend's processAllDayEndTime logic
       const timeDifferenceMs = endDate.getTime() - startDate.getTime()
       const daysDifference = timeDifferenceMs / (1000 * 60 * 60 * 24)
-      
+
       if (daysDifference > 1) {
          // Multi-day event: keep original end time
          eventEnd = endDate.toISOString()
@@ -40,7 +40,7 @@ const parseGoogleEventTime = (startData, endData) => {
          adjustedEnd.setHours(23, 59, 59, 999)
          eventEnd = adjustedEnd.toISOString()
       }
-      
+
       eventStart = startDate.toISOString()
    } else {
       // Timed event - normalize to ISO string
@@ -137,7 +137,12 @@ const syncTaskSlotWithGoogle = async (
 
       const oauth2Client = setOAuthCredentials(account.refresh_token)
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
-
+      const originalEvent = await calendar.events.get({
+         auth: oauth2Client,
+         calendarId: calendarId || 'primary',
+         eventId: slot.google_event_id
+      })
+      const eventData = originalEvent.data
       try {
          let event
 
@@ -147,7 +152,7 @@ const syncTaskSlotWithGoogle = async (
                calendarId: calendarId || 'primary',
                eventId: slot.google_event_id,
                requestBody: {
-                  summary: taskTitle,
+                  ...eventData,
                   start: {
                      dateTime: new Date(slot.start).toISOString()
                   },
@@ -359,9 +364,12 @@ const calculateSlotSyncStatus = async (slot, userId) => {
    // Compare slot schedule with event schedule
    const slotStart = new Date(slot.start).toISOString()
    const slotEnd = new Date(slot.end).toISOString()
-   
+
    // Parse Google event times properly (handles both timed and all-day events)
-   const { eventStart, eventEnd } = parseGoogleEventTime(event.data.start, event.data.end)
+   const { eventStart, eventEnd } = parseGoogleEventTime(
+      event.data.start,
+      event.data.end
+   )
 
    if (slotStart === eventStart && slotEnd === eventEnd) {
       // SYNCED = synced normally

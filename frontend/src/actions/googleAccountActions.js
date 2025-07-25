@@ -224,15 +224,6 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
             type: GOOGLE_CALENDAR_UPDATE_EVENT,
             payload: res.data.event
          })
-
-         // Show success alert
-         dispatch(
-            setAlertAction(
-               'alert-success',
-               'Event updated successfully',
-               'success'
-            )
-         )
       } else {
          throw new Error(
             'Unexpected response format from /google-account/update-event'

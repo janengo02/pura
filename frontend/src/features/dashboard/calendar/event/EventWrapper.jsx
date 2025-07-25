@@ -257,6 +257,7 @@ const EventWrapper = React.memo(
                onClick={async (e) => {
                   e.preventDefault()
                   await handleShowEvent()
+                  onClose()
                }}
             />
          )
