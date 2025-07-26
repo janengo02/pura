@@ -21,6 +21,7 @@ import ProfileMenu from './navbar/ProfileMenu'
 // Context & Utils
 import SplitPaneContext from '../../context/SplitPaneContext'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
+import { clearEventEditModalAction } from '../../actions/eventActions'
 
 export const NAVBAR_HEIGHT = 20
 // =============================================================================
@@ -66,7 +67,7 @@ NavbarLeft.propTypes = {
 /**
  * Right section of navbar containing calendar toggle and profile menu
  */
-const NavbarRight = React.memo(() => {
+const NavbarRight = React.memo(({ clearEventEditModalAction }) => {
    const { viewCalendar, setViewCalendar } = useContext(SplitPaneContext)
 
    return (
@@ -76,7 +77,10 @@ const NavbarRight = React.memo(() => {
             variant={viewCalendar ? 'solid' : 'outline'}
             colorScheme='purple'
             icon={<PiCalendarFill size={22} />}
-            onClick={() => setViewCalendar((prev) => !prev)}
+            onClick={() => {
+               setViewCalendar((prev) => !prev)
+               clearEventEditModalAction()
+            }}
          />
          <ProfileMenu />
       </Flex>
@@ -89,7 +93,7 @@ NavbarRight.displayName = 'NavbarRight'
 // MAIN COMPONENT
 // =============================================================================
 
-const Navbar = React.memo(({ title = '' }) => {
+const Navbar = React.memo(({ clearEventEditModalAction }) => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
@@ -104,7 +108,9 @@ const Navbar = React.memo(({ title = '' }) => {
          <NavbarWrapper>
             <NavbarLeft title={t('label-page-title')} />
             <Spacer />
-            <NavbarRight />
+            <NavbarRight
+               clearEventEditModalAction={clearEventEditModalAction}
+            />
          </NavbarWrapper>
       </>
    )
@@ -119,7 +125,8 @@ Navbar.displayName = 'Navbar'
 
 // PropTypes validation
 Navbar.propTypes = {
-   title: PropTypes.string
+   title: PropTypes.string,
+   clearEventEditModalAction: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -130,8 +137,11 @@ const mapStateToProps = (state) => ({
    title: state.page.title
 })
 
+const mapDispatchToProps = {
+   clearEventEditModalAction
+}
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps)(Navbar)
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar)
