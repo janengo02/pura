@@ -22,6 +22,7 @@ import ProfileMenu from './navbar/ProfileMenu'
 import SplitPaneContext from '../../context/SplitPaneContext'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
+export const NAVBAR_HEIGHT = 20
 // =============================================================================
 // UTILITY COMPONENTS
 // =============================================================================
@@ -31,7 +32,7 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
  */
 const NavbarWrapper = ({ children }) => (
    <Flex
-      h={20}
+      h={NAVBAR_HEIGHT}
       w='full'
       p={10}
       alignItems='center'

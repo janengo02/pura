@@ -33,7 +33,7 @@ const SplitPaneRight = React.memo(() => {
    return (
       <Box ref={rightRef} w='full' h='full' overflow='auto'>
          <Calendar />
-         <EventEditModal rightWidth={`${100 - leftWidth}%`} />
+         <EventEditModal rightWidth={`calc(${100 - leftWidth}% - 0.375rem)`} />
       </Box>
    )
 })

@@ -20,11 +20,20 @@ import {
    HStack,
    Text,
    Box,
-   ScaleFade
+   ScaleFade,
+   IconButton,
+   Menu,
+   useDisclosure,
+   MenuButton,
+   MenuList,
+   MenuItem
 } from '@chakra-ui/react'
 
 // Actions
-import { updateGoogleEventAction } from '../../../../actions/googleAccountActions'
+import {
+   deleteGoogleEventAction,
+   updateGoogleEventAction
+} from '../../../../actions/googleAccountActions'
 import {
    showTaskModalAction,
    updateTaskScheduleAction
@@ -35,6 +44,9 @@ import { clearEventEditModalAction } from '../../../../actions/eventActions'
 import { stringToDateTimeLocal } from '../../../../utils/dates'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import { createSelector } from 'reselect'
+import { NAVBAR_HEIGHT } from '../../Navbar'
+import { PiDotsThreeBold, PiTrash, PiX } from 'react-icons/pi'
+import useLoading from '../../../../hooks/useLoading'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -50,7 +62,8 @@ const EventEditModal = React.memo(
       updateGoogleEventAction,
       updateTaskScheduleAction,
       clearEventEditModalAction,
-      showTaskModalAction
+      showTaskModalAction,
+      deleteGoogleEventAction
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS
@@ -68,6 +81,7 @@ const EventEditModal = React.memo(
       const [endTime, setEndTime] = useState(() =>
          stringToDateTimeLocal(event.end)
       )
+      const modalMenu = useDisclosure()
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -159,6 +173,22 @@ const EventEditModal = React.memo(
          handleCloseModal,
          refetchTaskModalIfOpen
       ])
+      const handleDelete = useCallback(async () => {
+         const reqData = {
+            eventId: event.id,
+            calendarId: event.calendarId,
+            accountEmail: event.accountEmail
+         }
+         await deleteGoogleEventAction(reqData)
+      }, [
+         deleteGoogleEventAction,
+         event.id,
+         event.calendarId,
+         event.accountEmail
+      ])
+      // -------------------------------------------------------------------------
+      // LOADING HOOKS
+      // -------------------------------------------------------------------------
 
       // -------------------------------------------------------------------------
       // EFFECTS
@@ -176,28 +206,63 @@ const EventEditModal = React.memo(
       // RENDER
       // -------------------------------------------------------------------------
 
-      const renderModalOverlay = () => (
-         <Box
-            position='fixed'
-            w={rightWidth}
-            h='95%'
-            top={20}
-            right={0}
-            bg='text.primary'
-            opacity={0.3}
-            onClick={handleCloseModal}
-         />
-      )
       const renderModalHeader = () => (
          <CardHeader
             padding={0}
             display='flex'
             justifyContent='space-between'
             alignItems='center'
+            w='full'
          >
-            <Text fontSize='lg' fontWeight='semibold'>
-               {event.title}
-            </Text>
+            <HStack spacing={2} w='full'>
+               <IconButton
+                  icon={<PiX />}
+                  variant='ghost'
+                  borderRadius='full'
+                  onClick={handleCloseModal}
+               />
+
+               <Text fontSize='lg' flexGrow={1} fontWeight='semibold'>
+                  {event.title}
+               </Text>
+               <Button
+                  colorScheme='blue'
+                  borderRadius='full'
+                  onClick={handleSave}
+                  isDisabled={!isTimeValid}
+               >
+                  {t('btn-save')}
+               </Button>
+               <Menu
+                  isLazy
+                  isOpen={modalMenu.isOpen}
+                  onClose={modalMenu.onClose}
+               >
+                  <MenuButton
+                     as={IconButton}
+                     icon={<PiDotsThreeBold size={20} />}
+                     variant='ghost'
+                     size='xs'
+                     colorScheme='gray'
+                     color='text.primary'
+                     onClick={modalMenu.onOpen}
+                  />
+                  <MenuList>
+                     <MenuItem
+                        icon={<PiTrash size={18} />}
+                        fontSize='sm'
+                        color='danger.primary'
+                        onClick={async (e) => {
+                           e.preventDefault()
+                           await handleDelete()
+                           handleCloseModal()
+                        }}
+                     >
+                        {t('btn-delete-event')}
+                     </MenuItem>
+                  </MenuList>
+               </Menu>
+            </HStack>
          </CardHeader>
       )
       const timeInputProps = useMemo(
@@ -244,36 +309,8 @@ const EventEditModal = React.memo(
                <Box spacing={2} w='full'>
                   {startTimeInput} - {endTimeInput}
                </Box>
-               <HStack spacing={3} justifyContent='flex-end' paddingTop={2}>
-                  <Button variant='ghost' onClick={handleCloseModal}>
-                     {t('btn-cancel')}
-                  </Button>
-                  <Button
-                     colorScheme='blue'
-                     onClick={handleSave}
-                     isDisabled={!isTimeValid}
-                  >
-                     {t('btn-save')}
-                  </Button>
-               </HStack>
             </VStack>
          </CardBody>
-      )
-      const renderModalCard = () => (
-         <ScaleFade initialScale={0.9} in={isModalOpen}>
-            <Card
-               paddingX={6}
-               paddingY={4}
-               borderRadius={8}
-               boxShadow='xl'
-               w='500px'
-               minW='fit-content'
-               maxW='80vw'
-            >
-               {renderModalHeader()}
-               {renderModalBody()}
-            </Card>
-         </ScaleFade>
       )
 
       if (!isModalOpen) {
@@ -281,20 +318,21 @@ const EventEditModal = React.memo(
       }
 
       return (
-         <Box
-            position='fixed'
-            w={rightWidth}
-            h='95%'
-            top={20}
-            right={0}
-            display='flex'
-            justifyContent='center'
-            alignItems='center'
-            overflow='hidden'
-         >
-            {renderModalOverlay()}
-            {renderModalCard()}
-         </Box>
+         <ScaleFade initialScale={0.9} in={isModalOpen}>
+            <Card
+               paddingY={6}
+               paddingX={4}
+               borderRadius={0}
+               w={rightWidth}
+               h='full'
+               position='fixed'
+               top={NAVBAR_HEIGHT}
+               right={0}
+            >
+               {renderModalHeader()}
+               {renderModalBody()}
+            </Card>
+         </ScaleFade>
       )
    }
 )
@@ -329,7 +367,8 @@ EventEditModal.propTypes = {
    updateGoogleEventAction: PropTypes.func.isRequired,
    clearEventEditModalAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
-   showTaskModalAction: PropTypes.func.isRequired
+   showTaskModalAction: PropTypes.func.isRequired,
+   deleteGoogleEventAction: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -373,7 +412,8 @@ const mapDispatchToProps = {
    updateGoogleEventAction,
    updateTaskScheduleAction,
    clearEventEditModalAction,
-   showTaskModalAction
+   showTaskModalAction,
+   deleteGoogleEventAction
 }
 
 // =============================================================================

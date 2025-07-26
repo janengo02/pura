@@ -101,8 +101,8 @@ const POPOVER_HEADER_STYLES = {
    display: 'flex',
    justifyContent: 'space-between',
    alignItems: 'center',
-   paddingX: 1,
-   paddingTop: 1,
+   paddingX: 2,
+   paddingTop: 2,
    paddingBottom: 0,
    border: 'none'
 }

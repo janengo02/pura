@@ -48,6 +48,7 @@ import ScheduleSelect from './ScheduleSelect'
 // Utils & Icons
 import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
+import { NAVBAR_HEIGHT } from '../../Navbar'
 
 // =============================================================================
 // CONSTANTS
@@ -239,8 +240,7 @@ const TaskModal = React.memo(
          <Box
             position='fixed'
             w={leftWidth}
-            h='95%'
-            top={20}
+            h='full'
             left={0}
             bg='text.primary'
             opacity={0.3}
@@ -354,8 +354,8 @@ const TaskModal = React.memo(
          <Box
             position='fixed'
             w={leftWidth}
-            h='95%'
-            top={20}
+            h='full'
+            top={NAVBAR_HEIGHT}
             left={0}
             display='flex'
             justifyContent='center'
