@@ -219,6 +219,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          reqData
       )
 
+      // @todo: Optimistic transform state
       if (res.data?.event) {
          dispatch({
             type: GOOGLE_CALENDAR_UPDATE_EVENT,

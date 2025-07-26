@@ -15,7 +15,6 @@ import {
    CardHeader,
    CardBody,
    Button,
-   Input,
    VStack,
    HStack,
    Box,
@@ -26,7 +25,10 @@ import {
    MenuButton,
    MenuList,
    MenuItem,
-   Textarea
+   Circle,
+   Text,
+   Flex,
+   SimpleGrid
 } from '@chakra-ui/react'
 
 // Actions
@@ -49,8 +51,7 @@ import { NAVBAR_HEIGHT } from '../../Navbar'
 import { PiDotsThreeBold, PiTrash, PiX } from 'react-icons/pi'
 import { EventTimeInput } from './EventTime'
 import { EventDescriptionInput } from './EventDescription'
-import { MultiInput } from '../../../../components/MultiInput'
-import EventWrapperTitle, { EventTitleInput } from './EventTitle'
+import { EventTitleInput } from './EventTitle'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -128,19 +129,15 @@ const EventEditModal = React.memo(
             newStartTime.setSeconds(0, 0)
             newEndTime.setSeconds(0, 0)
 
-            const timeUpdates = {
-               start: newStartTime.toISOString(),
-               end: newEndTime.toISOString()
-            }
-
             // Update based on event type
-            if (event.eventType === 'task' || event.eventType === 'synced') {
+            if (event.eventType === 'task') {
                // Update task schedule slot for time changes
                await updateTaskScheduleAction({
                   page_id: event.pageId,
                   task_id: event.pura_task_id,
                   slot_index: event.pura_schedule_index,
-                  ...timeUpdates
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString()
                })
 
                // Update task title and content if changed
@@ -152,16 +149,34 @@ const EventEditModal = React.memo(
                      content: description
                   })
                }
-            } else if (event.eventType === 'google') {
-               // Update Google event with both time and title
+            } else if (
+               event.eventType === 'google' ||
+               event.eventType === 'synced'
+            ) {
                await updateGoogleEventAction({
                   eventId: event.id,
                   calendarId: event.calendarId,
                   accountEmail: event.accountEmail,
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString(),
                   summary: title,
-                  description: description,
-                  ...timeUpdates
+                  description: description
                })
+
+               if (event.eventType === 'synced') {
+                  // Update task title and content if changed
+                  if (
+                     title !== event.title ||
+                     description !== event.description
+                  ) {
+                     await updateTaskBasicInfoAction({
+                        page_id: event.pageId,
+                        task_id: event.pura_task_id,
+                        title: title,
+                        content: description
+                     })
+                  }
+               }
             }
             await refetchTaskModalIfOpen()
          } catch (error) {
@@ -325,6 +340,7 @@ EventEditModal.propTypes = {
       id: PropTypes.string,
       title: PropTypes.string,
       description: PropTypes.string,
+      color: PropTypes.string,
       start: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
       end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
       eventType: PropTypes.oneOf(['task', 'google', 'synced']),
@@ -332,6 +348,7 @@ EventEditModal.propTypes = {
       accountEmail: PropTypes.string,
       pura_task_id: PropTypes.string,
       pura_schedule_index: PropTypes.number,
+      google_event_id: PropTypes.string,
       pageId: PropTypes.string
    }).isRequired,
    taskData: PropTypes.shape({
@@ -356,6 +373,7 @@ const selectEventData = createSelector(
       id: eventState.id,
       title: eventState.title,
       description: eventState.description,
+      color: eventState.color,
       start: eventState.start,
       end: eventState.end,
       eventType: eventState.eventType,
@@ -363,6 +381,7 @@ const selectEventData = createSelector(
       accountEmail: eventState.accountEmail,
       pura_task_id: eventState.pura_task_id,
       pura_schedule_index: eventState.pura_schedule_index,
+      google_event_id: eventState.google_event_id,
       pageId: _id
    })
 )

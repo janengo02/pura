@@ -203,7 +203,7 @@ router.get('/default', auth, async (req, res) => {
 })
 
 // @route   POST api/google-account/update-event/:eventId
-// @desc    Update an event in the user's Google Calendar (only used for google events, not synced Pura tasks).
+// @desc    Update an event in the user's Google Calendar & synced Pura task if it exists.
 // @params  eventId (params) - ID of the event to update.
 //          accountEmail (body) - Email of the Google account to use.
 //          calendarId (body) - ID of the calendar containing the event.
@@ -259,6 +259,12 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          eventId: eventId,
          requestBody: updatedEventData
       })
+
+      // Update Pura task if it exists
+      const updateTaskResult = await updateTaskFromGoogleEvent(
+         eventId,
+         updatedEventData
+      )
 
       res.json({ event: event.data })
    } catch (err) {

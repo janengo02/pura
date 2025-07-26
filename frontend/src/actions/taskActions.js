@@ -28,32 +28,6 @@ export const createTaskAction = (reqData) => async (dispatch) => {
    }
 }
 
-// Update a task
-export const updateTaskAction = (formData) => async (dispatch) => {
-   try {
-      const res = await api.post(
-         `/task/update/${formData.page_id}/${formData.task_id}`,
-         formData
-      )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
-      if (formData.task_detail_flg) {
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      }
-   } catch (err) {
-      pageActionErrorHandler(
-         dispatch,
-         err,
-         formData.page_id,
-         formData.task_detail_flg ? formData.task_id : null
-      )
-   }
-}
 // Delete a task
 export const deleteTaskAction = (reqData) => async (dispatch) => {
    dispatch({
@@ -157,17 +131,11 @@ export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
          }
       )
 
+      // @todo: Optimistic update instead of refetching page
       dispatch({
          type: GET_PAGE,
          payload: res.data.page
       })
-
-      if (formData.task_detail_flg) {
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      }
    } catch (err) {
       pageActionErrorHandler(
          dispatch,
@@ -195,6 +163,7 @@ export const moveTaskAction = (formData) => async (dispatch) => {
       })
 
       if (formData.task_detail_flg) {
+         // @todo: Optimistic update instead of waiting for api
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task
@@ -225,6 +194,8 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
          payload: res.data.page
       })
       if (formData.task_detail_flg) {
+         // @todo: Optimistic update instead of waiting for api
+
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task
@@ -283,6 +254,8 @@ export const removeTaskScheduleSlotAction = (formData) => async (dispatch) => {
          payload: res.data.page
       })
       if (formData.task_detail_flg) {
+         // @todo: Optimistic update instead of waiting for api
+
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task

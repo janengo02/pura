@@ -415,16 +415,11 @@ export const addGoogleAccountEventListHelper = (
                     pura_schedule_index: existingTaskEvent.pura_schedule_index,
                     eventType: 'synced',
                     title: existingTaskEvent.title, // Use task title for synced events
-                    color: '#8B5CF6', // Purple color for synced events
                     syncStatus: syncStatus // Calculate sync status from time comparison
                  }
                : {
                     eventType: 'google',
-                    title: event.summary || 'Untitled Event',
-                    color: event.colorId
-                       ? GOOGLE_CALENDAR_COLORS[event.colorId] ||
-                         calendar.backgroundColor
-                       : calendar.backgroundColor // Use event color if available, fallback to calendar color
+                    title: event.summary || 'Untitled Event'
                  }
 
             newEvents.push({
@@ -439,6 +434,10 @@ export const addGoogleAccountEventListHelper = (
                calendarVisible: calendar.selected || false,
                accountEmail: newGoogleAccountEvents.account_email,
                googleEventTitle: event.summary || 'Untitled Event',
+               color: event.colorId
+                  ? GOOGLE_CALENDAR_COLORS[event.colorId] ||
+                    calendar.backgroundColor
+                  : calendar.backgroundColor, // Use event color if available, fallback to calendar color
                ...syncedInfo
             })
          }
@@ -677,7 +676,6 @@ const createEnhancedEventObject = (
          ...baseEvent,
          title: syncedTaskInfo.taskTitle, // Use task title for synced events
          description: syncedTaskInfo.taskContent,
-         color: '#8B5CF6', // Purple color to indicate synced event
          eventType: 'synced',
          syncStatus: syncStatus,
          pura_task_id: syncedTaskInfo.taskId,

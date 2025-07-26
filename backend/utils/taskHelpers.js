@@ -171,7 +171,6 @@ const syncTaskSlotWithGoogle = async (
                requestBody: {
                   summary: taskTitle,
                   description: taskContent,
-                  colorId: '3', // Purple color for task events
                   start: {
                      dateTime: new Date(slot.start).toISOString()
                   },
@@ -275,6 +274,7 @@ const updateTaskFromGoogleEvent = async (eventId, eventData) => {
          return { success: false, message: 'Task not found' }
       }
 
+      // Find the schedule slot by eventId
       const slotIndex = task.schedule.findIndex(
          (slot) => slot.google_event_id === eventId
       )
@@ -282,6 +282,10 @@ const updateTaskFromGoogleEvent = async (eventId, eventData) => {
       if (!task.schedule[slotIndex]) {
          return { success: false, message: 'Schedule slot not found' }
       }
+
+      // Update task title and content from event data
+      task.title = eventData.summary || task.title
+      task.content = eventData.description || task.content
 
       // Update the schedule slot
       task.schedule[slotIndex].start = new Date(
