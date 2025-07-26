@@ -170,7 +170,11 @@ router.post('/sync-google-event', auth, async (req, res) => {
       }
 
       // Use the enhanced formatTaskResponse with sync status calculation
-      const response = await formatTaskResponse(result.task, result.page, req.user.id)
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
       res.json({
          ...response,
          event: result.event
@@ -200,6 +204,7 @@ router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
       const result = await updateTaskBasicInfo(
          req.params.task_id,
          req.params.page_id,
+         req.user.id,
          {
             title,
             content

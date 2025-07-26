@@ -153,6 +153,7 @@ const syncTaskSlotWithGoogle = async (
                eventId: slot.google_event_id,
                requestBody: {
                   ...eventData,
+                  summary: taskTitle,
                   start: {
                      dateTime: new Date(slot.start).toISOString()
                   },
@@ -425,7 +426,12 @@ const formatTaskResponse = async (task, page, userId = null) => {
 /**
  * Update task basic info (title, content)
  */
-const updateTaskBasicInfo = async (taskId, pageId, { title, content }) => {
+const updateTaskBasicInfo = async (
+   taskId,
+   pageId,
+   userId,
+   { title, content }
+) => {
    const task = await Task.findById(taskId)
 
    if (!task) {
@@ -447,7 +453,7 @@ const updateTaskBasicInfo = async (taskId, pageId, { title, content }) => {
                slot,
                slot.google_account_email,
                slot.google_calendar_id,
-               task.user_id,
+               userId,
                'update'
             )
 

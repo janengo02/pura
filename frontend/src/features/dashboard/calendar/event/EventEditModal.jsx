@@ -18,7 +18,6 @@ import {
    Input,
    VStack,
    HStack,
-   Text,
    Box,
    ScaleFade,
    IconButton,
@@ -26,7 +25,8 @@ import {
    useDisclosure,
    MenuButton,
    MenuList,
-   MenuItem
+   MenuItem,
+   Textarea
 } from '@chakra-ui/react'
 
 // Actions
@@ -36,7 +36,8 @@ import {
 } from '../../../../actions/googleAccountActions'
 import {
    showTaskModalAction,
-   updateTaskScheduleAction
+   updateTaskScheduleAction,
+   updateTaskBasicInfoAction
 } from '../../../../actions/taskActions'
 import { clearEventEditModalAction } from '../../../../actions/eventActions'
 
@@ -46,7 +47,6 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import { createSelector } from 'reselect'
 import { NAVBAR_HEIGHT } from '../../Navbar'
 import { PiDotsThreeBold, PiTrash, PiX } from 'react-icons/pi'
-import useLoading from '../../../../hooks/useLoading'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -61,6 +61,7 @@ const EventEditModal = React.memo(
 
       updateGoogleEventAction,
       updateTaskScheduleAction,
+      updateTaskBasicInfoAction,
       clearEventEditModalAction,
       showTaskModalAction,
       deleteGoogleEventAction
@@ -81,6 +82,7 @@ const EventEditModal = React.memo(
       const [endTime, setEndTime] = useState(() =>
          stringToDateTimeLocal(event.end)
       )
+      const [title, setTitle] = useState(event.title || '')
       const modalMenu = useDisclosure()
 
       // -------------------------------------------------------------------------
@@ -119,6 +121,10 @@ const EventEditModal = React.memo(
          setEndTime(e.target.value)
       }, [])
 
+      const handleTitleChange = useCallback((e) => {
+         setTitle(e.target.value)
+      }, [])
+
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
          clearEventEditModalAction()
@@ -135,27 +141,37 @@ const EventEditModal = React.memo(
             newStartTime.setSeconds(0, 0)
             newEndTime.setSeconds(0, 0)
 
-            const updates = {
+            const timeUpdates = {
                start: newStartTime.toISOString(),
                end: newEndTime.toISOString()
             }
 
             // Update based on event type
             if (event.eventType === 'task' || event.eventType === 'synced') {
-               // Update only the task schedule slot
+               // Update task schedule slot for time changes
                await updateTaskScheduleAction({
                   page_id: event.pageId,
                   task_id: event.pura_task_id,
                   slot_index: event.pura_schedule_index,
-                  ...updates
+                  ...timeUpdates
                })
+
+               // Update task title if changed
+               if (title !== event.title) {
+                  await updateTaskBasicInfoAction({
+                     page_id: event.pageId,
+                     task_id: event.pura_task_id,
+                     title: title
+                  })
+               }
             } else if (event.eventType === 'google') {
-               // Update only the Google event
+               // Update Google event with both time and title
                await updateGoogleEventAction({
                   eventId: event.id,
                   calendarId: event.calendarId,
                   accountEmail: event.accountEmail,
-                  ...updates
+                  summary: title,
+                  ...timeUpdates
                })
             }
             await refetchTaskModalIfOpen()
@@ -167,8 +183,10 @@ const EventEditModal = React.memo(
          isTimeValid,
          startTime,
          endTime,
+         title,
          event,
          updateTaskScheduleAction,
+         updateTaskBasicInfoAction,
          updateGoogleEventAction,
          handleCloseModal,
          refetchTaskModalIfOpen
@@ -199,6 +217,7 @@ const EventEditModal = React.memo(
          if (event) {
             setStartTime(stringToDateTimeLocal(event.start))
             setEndTime(stringToDateTimeLocal(event.end))
+            setTitle(event.title || '')
          }
       }, [event])
 
@@ -222,9 +241,18 @@ const EventEditModal = React.memo(
                   onClick={handleCloseModal}
                />
 
-               <Text fontSize='lg' flexGrow={1} fontWeight='semibold'>
-                  {event.title}
-               </Text>
+               <Textarea
+                  value={title}
+                  onChange={handleTitleChange}
+                  fontSize='lg'
+                  fontWeight='semibold'
+                  flexGrow={1}
+                  variant='flushed'
+                  resize='none'
+                  minH='auto'
+                  rows={1}
+                  placeholder='Event title'
+               />
                <Button
                   colorScheme='blue'
                   borderRadius='full'
@@ -365,6 +393,7 @@ EventEditModal.propTypes = {
       pageId: PropTypes.string
    }).isRequired,
    updateGoogleEventAction: PropTypes.func.isRequired,
+   updateTaskBasicInfoAction: PropTypes.func.isRequired,
    clearEventEditModalAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
@@ -411,6 +440,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    updateGoogleEventAction,
    updateTaskScheduleAction,
+   updateTaskBasicInfoAction,
    clearEventEditModalAction,
    showTaskModalAction,
    deleteGoogleEventAction
