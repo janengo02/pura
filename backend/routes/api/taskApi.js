@@ -119,14 +119,6 @@ router.post(
             },
             { new: true }
          )
-            .populate('progress_order', [
-               'title',
-               'title_color',
-               'color',
-               'visibility'
-            ])
-            .populate('group_order', ['title', 'color', 'visibility'])
-            .populate('tasks', ['title', 'schedule'])
 
          // Data: Update page's task_map
          newPage.task_map = newTaskMap

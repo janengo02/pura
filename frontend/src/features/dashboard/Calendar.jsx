@@ -283,13 +283,11 @@ const Calendar = React.memo(
 
             // Handle week/day view range change
             if (!inRange(newRange[0], range[0], range[1], 'day')) {
-               loadCalendarAction(
-                  [
-                     firstVisibleDay(newRange[0], localizer),
-                     lastVisibleDay(newRange[0], localizer)
-                  ],
-                  tasks
-               )
+               const weekRange = [
+                  firstVisibleDay(newRange[0], localizer),
+                  lastVisibleDay(newRange[0], localizer)
+               ]
+               loadCalendarAction(weekRange, tasks)
             }
          },
          [loadCalendarAction, localizer, range, tasks]

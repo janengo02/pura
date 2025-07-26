@@ -378,6 +378,7 @@ EventEditModal.propTypes = {
    event: PropTypes.shape({
       id: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
+      description: PropTypes.string,
       start: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
          .isRequired,
       end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
@@ -409,6 +410,7 @@ const selectEventData = createSelector(
    (eventState, _id) => ({
       id: eventState.id,
       title: eventState.title,
+      description: eventState.description,
       start: eventState.start,
       end: eventState.end,
       eventType: eventState.eventType,

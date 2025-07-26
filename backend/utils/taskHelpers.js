@@ -116,6 +116,7 @@ const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
 const syncTaskSlotWithGoogle = async (
    taskId,
    taskTitle,
+   taskContent,
    slot,
    accountEmail,
    calendarId,
@@ -154,6 +155,7 @@ const syncTaskSlotWithGoogle = async (
                requestBody: {
                   ...eventData,
                   summary: taskTitle,
+                  description: taskContent,
                   start: {
                      dateTime: new Date(slot.start).toISOString()
                   },
@@ -168,6 +170,7 @@ const syncTaskSlotWithGoogle = async (
                calendarId: calendarId || 'primary',
                requestBody: {
                   summary: taskTitle,
+                  description: taskContent,
                   colorId: '3', // Purple color for task events
                   start: {
                      dateTime: new Date(slot.start).toISOString()
@@ -442,14 +445,15 @@ const updateTaskBasicInfo = async (
    if (content !== undefined) task.content = content
    task.update_date = new Date()
 
-   if (title !== undefined) {
-      // Sync title with Google Calendar if it has schedule slots
+   if (title !== undefined || content !== undefined) {
+      // Sync title and/or content with Google Calendar if it has schedule slots
       for (let i = 0; i < task.schedule.length; i++) {
          const slot = task.schedule[i]
          if (slot.google_event_id) {
             const result = await syncTaskSlotWithGoogle(
                task._id,
-               title,
+               task.title,
+               task.content,
                slot,
                slot.google_account_email,
                slot.google_calendar_id,
@@ -480,7 +484,7 @@ const updateTaskBasicInfo = async (
          'visibility'
       ])
       .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule'])
+      .populate('tasks', ['title', 'schedule', 'content'])
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
@@ -530,7 +534,7 @@ const moveTask = async (taskId, pageId, { group_id, progress_id }) => {
          'visibility'
       ])
       .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule'])
+      .populate('tasks', ['title', 'schedule', 'content'])
    // Data: Update page's task_map
    updatedPage.task_map = newTaskMap
    await updatedPage.save()
@@ -573,6 +577,7 @@ const updateTaskSchedule = async (
       const result = await syncTaskSlotWithGoogle(
          task._id,
          task.title,
+         task.content,
          slot,
          slot.google_account_email,
          slot.google_calendar_id,
@@ -602,7 +607,7 @@ const updateTaskSchedule = async (
          'visibility'
       ])
       .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule'])
+      .populate('tasks', ['title', 'schedule', 'content'])
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
@@ -642,7 +647,7 @@ const addTaskScheduleSlot = async (taskId, pageId, { start, end }) => {
          'visibility'
       ])
       .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule'])
+      .populate('tasks', ['title', 'schedule', 'content'])
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
@@ -695,7 +700,7 @@ const removeTaskScheduleSlot = async (
          'visibility'
       ])
       .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule'])
+      .populate('tasks', ['title', 'schedule', 'content'])
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
@@ -762,6 +767,7 @@ const syncTaskSlotWithGoogleHelper = async (
          result = await syncTaskSlotWithGoogle(
             taskId,
             task.title,
+            task.content,
             slot,
             accountEmail,
             calendarId,
@@ -795,7 +801,7 @@ const syncTaskSlotWithGoogleHelper = async (
             'visibility'
          ])
          .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule'])
+         .populate('tasks', ['title', 'schedule', 'content'])
 
       if (!page) {
          return { success: false, message: 'Page not found', statusCode: 404 }

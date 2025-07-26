@@ -676,6 +676,7 @@ const createEnhancedEventObject = (
       return {
          ...baseEvent,
          title: syncedTaskInfo.taskTitle, // Use task title for synced events
+         description: syncedTaskInfo.taskContent,
          color: '#8B5CF6', // Purple color to indicate synced event
          eventType: 'synced',
          syncStatus: syncStatus,
@@ -722,6 +723,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
             syncedEventMap.set(slot.google_event_id, {
                taskId: task._id,
                taskTitle: task.title,
+               taskContent: task.content,
                slotIndex,
                slot
             })
@@ -759,7 +761,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                googleEventTitle: null,
 
                // Initialize enhanced fields for task events
-               description: task.content || null,
+               description: task.content,
                location: null,
                attendees: [],
                conferenceData: null,

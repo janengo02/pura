@@ -7,6 +7,7 @@ import { SHOW_EVENT_EDIT_MODAL, CLEAR_EVENT_EDIT_MODAL } from '../actions/types'
 const initialState = {
    id: null,
    title: null,
+   description: null,
    start: null,
    end: null,
    eventType: null,
@@ -31,6 +32,7 @@ function eventReducer(state = initialState, action) {
             ...state,
             id: null,
             title: null,
+            description: null,
             start: null,
             end: null,
             eventType: null,
