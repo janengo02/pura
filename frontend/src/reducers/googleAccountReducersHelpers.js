@@ -820,10 +820,6 @@ export const loadGoogleCalendar = ({ googleAccounts, tasks }) => {
    const events = loadEventListHelper(googleAccounts, tasks)
    const defaultAccount = accounts.find((account) => account.isDefault) || null
 
-   console.log('Loaded Google Calebdar=============================')
-   console.log('Loaded Google accounts:', accounts)
-   console.log('Loaded Google calendars:', calendars)
-   console.log('Loaded Google events:', events)
    return {
       googleAccounts: accounts,
       googleCalendars: calendars,

@@ -376,13 +376,12 @@ EventEditModal.displayName = 'EventEditModal'
 EventEditModal.propTypes = {
    rightWidth: PropTypes.string,
    event: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
+      id: PropTypes.string,
+      title: PropTypes.string,
       description: PropTypes.string,
-      start: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
-         .isRequired,
-      end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
-      eventType: PropTypes.oneOf(['task', 'google', 'synced']).isRequired,
+      start: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      eventType: PropTypes.oneOf(['task', 'google', 'synced']),
       calendarId: PropTypes.string,
       accountEmail: PropTypes.string,
       pura_task_id: PropTypes.string,
