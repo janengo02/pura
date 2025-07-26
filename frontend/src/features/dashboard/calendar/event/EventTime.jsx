@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 
 // External Libraries
@@ -11,7 +11,7 @@ import moment from 'moment'
 import 'moment/locale/ja'
 
 // UI Components
-import { Text } from '@chakra-ui/react'
+import { Box, Flex, HStack, Input, Text } from '@chakra-ui/react'
 
 // Utils & Hooks
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
@@ -174,12 +174,82 @@ const EventTimeText = React.memo(({ start, end }) => {
    return <Text {...TEXT_STYLES}>{eventTimeString}</Text>
 })
 
+const EventTimeInput = React.memo(
+   ({ startTime, setStartTime, endTime, setEndTime }) => {
+      const handleStartTimeChange = useCallback(
+         (e) => {
+            setStartTime(e.target.value)
+         },
+         [setStartTime]
+      )
+
+      const handleEndTimeChange = useCallback(
+         (e) => {
+            setEndTime(e.target.value)
+         },
+         [setEndTime]
+      )
+
+      const timeInputProps = useMemo(
+         () => ({
+            size: 'sm',
+            type: 'datetime-local',
+            variant: 'filled',
+            width: 'auto',
+            fontSize: 'xs',
+            borderRadius: 5,
+            bg: 'bg.canvas'
+         }),
+         []
+      )
+      const startTimeInput = useMemo(
+         () => (
+            <Input
+               {...timeInputProps}
+               value={startTime}
+               onChange={handleStartTimeChange}
+            />
+         ),
+         [startTime, handleStartTimeChange, timeInputProps]
+      )
+      const isTimeValid = useMemo(() => {
+         if (!startTime || !endTime) return false
+         const start = new Date(startTime)
+         const end = new Date(endTime)
+         return start < end && !isNaN(start.getTime()) && !isNaN(end.getTime())
+      }, [startTime, endTime])
+
+      const endTimeInput = useMemo(
+         () => (
+            <Input
+               {...timeInputProps}
+               value={endTime}
+               onChange={handleEndTimeChange}
+            />
+         ),
+         [endTime, handleEndTimeChange, timeInputProps]
+      )
+
+      return (
+         <Flex
+            w='full'
+            gap={2}
+            pl={7}
+            color={!isTimeValid ? 'danger.secondary' : undefined}
+         >
+            {startTimeInput} - {endTimeInput} (GMT+09:00) Japan Standard Time
+         </Flex>
+      )
+   }
+)
+
 // =============================================================================
 // COMPONENT CONFIGURATION
 // =============================================================================
 
 // Display name for debugging
 EventTimeText.displayName = 'EventTimeText'
+EventTimeInput.displayName = 'EventTimeInput'
 
 // PropTypes validation
 EventTimeText.propTypes = {
@@ -188,9 +258,16 @@ EventTimeText.propTypes = {
    end: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
       .isRequired
 }
+EventTimeInput.propTypes = {
+   startTime: PropTypes.string.isRequired,
+   setStartTime: PropTypes.func.isRequired,
+   endTime: PropTypes.string.isRequired,
+   setEndTime: PropTypes.func.isRequired
+}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
 export default EventTimeText
+export { EventTimeInput }

@@ -2,9 +2,9 @@
 // EVENT DESCRIPTION COMPONENT
 // =============================================================================
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { HStack, Text } from '@chakra-ui/react'
+import { HStack, Text, Textarea } from '@chakra-ui/react'
 import { PiTextAlignLeft } from 'react-icons/pi'
 
 const EventDescription = ({ description }) => {
@@ -30,4 +30,37 @@ EventDescription.propTypes = {
    description: PropTypes.string
 }
 
+const EventDescriptionInput = ({ description, setDescription }) => {
+   const handleDescriptionChange = useCallback(
+      (e) => {
+         setDescription(e.target.value)
+      },
+      [setDescription]
+   )
+
+   return (
+      <HStack align='start' spacing={3} w='full'>
+         <PiTextAlignLeft size={16} />
+         <Textarea
+            value={description}
+            onChange={handleDescriptionChange}
+            placeholder='Event description'
+            variant='filled'
+            minH='100px'
+            resize='none'
+            bg='bg.canvas'
+            rows={10}
+            _hover={{ bg: 'bg.canvas' }}
+            _active={{ bg: 'bg.canvas' }}
+            _focusVisible={{ bg: 'bg.canvas', borderColor: 'transparent' }}
+         />
+      </HStack>
+   )
+}
+EventDescriptionInput.propTypes = {
+   description: PropTypes.string.isRequired,
+   setDescription: PropTypes.func.isRequired
+}
+
 export default EventDescription
+export { EventDescriptionInput }

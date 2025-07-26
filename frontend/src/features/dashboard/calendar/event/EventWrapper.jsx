@@ -30,8 +30,8 @@ import {
 import { PiPencilFill, PiTrash } from 'react-icons/pi'
 
 // Event Components
-import EventWrapperTitle from './EventWrapperTitle'
-import EventTimeText from './EventTimeText'
+import EventWrapperTitle from './EventTitle'
+import EventTimeText from './EventTime'
 import EventDescription from './EventDescription'
 import EventLocation from './EventLocation'
 import EventConference from './EventConference'

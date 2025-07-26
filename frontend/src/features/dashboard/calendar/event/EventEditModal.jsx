@@ -47,6 +47,10 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import { createSelector } from 'reselect'
 import { NAVBAR_HEIGHT } from '../../Navbar'
 import { PiDotsThreeBold, PiTrash, PiX } from 'react-icons/pi'
+import { EventTimeInput } from './EventTime'
+import { EventDescriptionInput } from './EventDescription'
+import { MultiInput } from '../../../../components/MultiInput'
+import EventWrapperTitle, { EventTitleInput } from './EventTitle'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -83,19 +87,13 @@ const EventEditModal = React.memo(
          stringToDateTimeLocal(event.end)
       )
       const [title, setTitle] = useState(event.title || '')
+      const [description, setDescription] = useState(event.description || '')
       const modalMenu = useDisclosure()
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
       const isModalOpen = useMemo(() => Boolean(event.id), [event.id])
-
-      const isTimeValid = useMemo(() => {
-         if (!startTime || !endTime) return false
-         const start = new Date(startTime)
-         const end = new Date(endTime)
-         return start < end && !isNaN(start.getTime()) && !isNaN(end.getTime())
-      }, [startTime, endTime])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -113,25 +111,14 @@ const EventEditModal = React.memo(
          }
       }, [task, pageId, showTaskModalAction, event.pura_schedule_index])
 
-      const handleStartTimeChange = useCallback((e) => {
-         setStartTime(e.target.value)
-      }, [])
-
-      const handleEndTimeChange = useCallback((e) => {
-         setEndTime(e.target.value)
-      }, [])
-
-      const handleTitleChange = useCallback((e) => {
-         setTitle(e.target.value)
-      }, [])
-
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
          clearEventEditModalAction()
       }, [clearEventEditModalAction])
 
       const handleSave = useCallback(async () => {
-         if (!isTimeValid) return
+         // @todo: Validate time inputs before proceeding
+         handleCloseModal()
 
          try {
             const newStartTime = new Date(startTime)
@@ -156,12 +143,13 @@ const EventEditModal = React.memo(
                   ...timeUpdates
                })
 
-               // Update task title if changed
-               if (title !== event.title) {
+               // Update task title and content if changed
+               if (title !== event.title || description !== event.description) {
                   await updateTaskBasicInfoAction({
                      page_id: event.pageId,
                      task_id: event.pura_task_id,
-                     title: title
+                     title: title,
+                     content: description
                   })
                }
             } else if (event.eventType === 'google') {
@@ -171,19 +159,19 @@ const EventEditModal = React.memo(
                   calendarId: event.calendarId,
                   accountEmail: event.accountEmail,
                   summary: title,
+                  description: description,
                   ...timeUpdates
                })
             }
             await refetchTaskModalIfOpen()
-            handleCloseModal()
          } catch (error) {
             console.error('Error updating event:', error)
          }
       }, [
-         isTimeValid,
          startTime,
          endTime,
          title,
+         description,
          event,
          updateTaskScheduleAction,
          updateTaskBasicInfoAction,
@@ -212,12 +200,13 @@ const EventEditModal = React.memo(
       // EFFECTS
       // -------------------------------------------------------------------------
 
-      // Initialize task data when task changes
+      // Initialize event data when event changes
       useEffect(() => {
          if (event) {
             setStartTime(stringToDateTimeLocal(event.start))
             setEndTime(stringToDateTimeLocal(event.end))
             setTitle(event.title || '')
+            setDescription(event.description || '')
          }
       }, [event])
 
@@ -233,31 +222,18 @@ const EventEditModal = React.memo(
             alignItems='center'
             w='full'
          >
-            <HStack spacing={2} w='full'>
+            <HStack spacing={3} w='full'>
                <IconButton
                   icon={<PiX />}
                   variant='ghost'
                   borderRadius='full'
                   onClick={handleCloseModal}
                />
-
-               <Textarea
-                  value={title}
-                  onChange={handleTitleChange}
-                  fontSize='lg'
-                  fontWeight='semibold'
-                  flexGrow={1}
-                  variant='flushed'
-                  resize='none'
-                  minH='auto'
-                  rows={1}
-                  placeholder='Event title'
-               />
+               <EventTitleInput title={title} setTitle={setTitle} />
                <Button
                   colorScheme='blue'
                   borderRadius='full'
                   onClick={handleSave}
-                  isDisabled={!isTimeValid}
                >
                   {t('btn-save')}
                </Button>
@@ -293,50 +269,20 @@ const EventEditModal = React.memo(
             </HStack>
          </CardHeader>
       )
-      const timeInputProps = useMemo(
-         () => ({
-            size: 'sm',
-            type: 'datetime-local',
-            variant: 'filled',
-            width: 'auto',
-            fontSize: 'xs',
-            borderRadius: 5
-         }),
-         []
-      )
-
-      const startTimeInput = useMemo(
-         () => (
-            <Input
-               {...timeInputProps}
-               value={startTime}
-               onChange={handleStartTimeChange}
-            />
-         ),
-         [startTime, handleStartTimeChange, timeInputProps]
-      )
-      const endTimeInput = useMemo(
-         () => (
-            <Input
-               {...timeInputProps}
-               value={endTime}
-               onChange={handleEndTimeChange}
-            />
-         ),
-         [endTime, handleEndTimeChange, timeInputProps]
-      )
 
       const renderModalBody = () => (
          <CardBody h='full'>
-            <VStack
-               w='full'
-               alignItems='flex-start'
-               spacing={2}
-               color={isTimeValid ? undefined : 'danger.secondary'}
-            >
-               <Box spacing={2} w='full'>
-                  {startTimeInput} - {endTimeInput}
-               </Box>
+            <VStack w='full' alignItems='flex-start' spacing={2}>
+               <EventTimeInput
+                  startTime={startTime}
+                  setStartTime={setStartTime}
+                  endTime={endTime}
+                  setEndTime={setEndTime}
+               />
+               <EventDescriptionInput
+                  description={description}
+                  setDescription={setDescription}
+               />
             </VStack>
          </CardBody>
       )

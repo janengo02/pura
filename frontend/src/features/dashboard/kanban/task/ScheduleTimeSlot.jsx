@@ -334,51 +334,34 @@ const ScheduleTimeSlot = React.memo(
             variant: 'filled',
             width: 'auto',
             fontSize: 'xs',
-            borderRadius: 5
+            borderRadius: 5,
+            bg: timeSlotState.isViewingCalendarEvent
+               ? 'accent.subtle'
+               : 'bg.canvas'
          }),
-         []
+         [timeSlotState.isViewingCalendarEvent]
       )
 
       const startTimeInput = useMemo(
          () => (
             <Input
                {...timeInputProps}
-               bg={
-                  timeSlotState.isViewingCalendarEvent
-                     ? 'accent.subtle'
-                     : 'bg.canvas'
-               }
                value={timeSlotState.startTime}
                onChange={handleStartTimeChange}
             />
          ),
-         [
-            timeInputProps,
-            timeSlotState.isViewingCalendarEvent,
-            timeSlotState.startTime,
-            handleStartTimeChange
-         ]
+         [timeInputProps, timeSlotState.startTime, handleStartTimeChange]
       )
 
       const endTimeInput = useMemo(
          () => (
             <Input
                {...timeInputProps}
-               bg={
-                  timeSlotState.isViewingCalendarEvent
-                     ? 'accent.subtle'
-                     : 'bg.canvas'
-               }
                value={timeSlotState.endTime}
                onChange={handleEndTimeChange}
             />
          ),
-         [
-            timeInputProps,
-            timeSlotState.isViewingCalendarEvent,
-            timeSlotState.endTime,
-            handleEndTimeChange
-         ]
+         [timeInputProps, timeSlotState.endTime, handleEndTimeChange]
       )
 
       const deleteButton = useMemo(

@@ -224,7 +224,6 @@ const Calendar = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
-      console.log(googleEvents)
       const { currentLanguage: reactiveLanguage } = useReactiveTranslation()
 
       // Use reactive language to ensure updates when language changes
