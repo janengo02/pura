@@ -258,7 +258,7 @@ const deleteGoogleEventsForRemovedSlots = async (
  * Handle Google Calendar event updates from calendar UI
  * Updates the corresponding task schedule slot
  */
-const updateTaskFromGoogleEvent = async (eventId, eventData) => {
+const updateTaskFromGoogleEvent = async (eventId, eventData, originalEventId = null) => {
    try {
       // Check if this is a Pura task event using extendedProperties
       if (!eventData.extendedProperties?.private?.pura_task_id) {
@@ -274,12 +274,19 @@ const updateTaskFromGoogleEvent = async (eventId, eventData) => {
          return { success: false, message: 'Task not found' }
       }
 
-      // Find the schedule slot by eventId
-      const slotIndex = task.schedule.findIndex(
+      // Find the schedule slot by eventId (try both current and original event ID)
+      let slotIndex = task.schedule.findIndex(
          (slot) => slot.google_event_id === eventId
       )
+      
+      // If not found with current event ID and we have an original event ID, try that
+      if (slotIndex === -1 && originalEventId) {
+         slotIndex = task.schedule.findIndex(
+            (slot) => slot.google_event_id === originalEventId
+         )
+      }
 
-      if (!task.schedule[slotIndex]) {
+      if (slotIndex === -1 || !task.schedule[slotIndex]) {
          return { success: false, message: 'Schedule slot not found' }
       }
 
@@ -294,6 +301,11 @@ const updateTaskFromGoogleEvent = async (eventId, eventData) => {
       task.schedule[slotIndex].end = new Date(
          eventData.end.dateTime || eventData.end.date
       )
+      
+      // Update the event ID if it changed (event was moved to different calendar)
+      if (originalEventId && eventId !== originalEventId) {
+         task.schedule[slotIndex].google_event_id = eventId
+      }
 
       task.update_date = new Date()
       await task.save()

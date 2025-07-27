@@ -214,13 +214,14 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
       const { eventId } = req.params
       const {
          accountEmail,
+         originalCalendarId,
          calendarId,
          start,
          end,
          summary,
          location,
          description,
-         color
+         colorId
       } = req.body
 
       const user = await User.findById(req.user.id)
@@ -233,11 +234,10 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
 
       const originalEvent = await calendar.events.get({
          auth: oath2Client,
-         calendarId: calendarId || 'primary',
+         calendarId: originalCalendarId || 'primary',
          eventId: eventId
       })
       const eventData = originalEvent.data
-
       const updatedEventData = {
          ...eventData, // Preserve other existing properties
          start: {
@@ -246,24 +246,54 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          end: {
             dateTime: end
          },
-         colorId: color || eventData.colorId,
+         colorId: colorId,
          summary: summary || eventData.summary,
          description: description || eventData.description,
          location: location || eventData.location
       }
 
-      // Update Google Calendar event
-      const event = await calendar.events.update({
-         auth: oath2Client,
-         calendarId: calendarId || 'primary',
-         eventId: eventId,
-         requestBody: updatedEventData
-      })
+      let event
+
+      // Check if calendar is changing
+      if (
+         originalCalendarId &&
+         calendarId &&
+         originalCalendarId !== calendarId
+      ) {
+         // Create a copy in the new calendar
+         event = await calendar.events.insert({
+            auth: oath2Client,
+            calendarId: calendarId,
+            requestBody: updatedEventData
+         })
+
+         // Delete the original event
+         await calendar.events.delete({
+            auth: oath2Client,
+            calendarId: originalCalendarId,
+            eventId: eventId
+         })
+      } else {
+         // Update event in the same calendar
+         event = await calendar.events.update({
+            auth: oath2Client,
+            calendarId: originalCalendarId || 'primary',
+            eventId: eventId,
+            requestBody: updatedEventData
+         })
+      }
 
       // Update Pura task if it exists
-      const updateTaskResult = await updateTaskFromGoogleEvent(
-         eventId,
-         updatedEventData
+      // Use the new event ID if the event was moved to a different calendar
+      const finalEventId =
+         originalCalendarId && calendarId && originalCalendarId !== calendarId
+            ? event.data.id
+            : eventId
+
+      await updateTaskFromGoogleEvent(
+         finalEventId,
+         updatedEventData,
+         eventId // Pass original event ID in case we need to update task references
       )
 
       res.json({ event: event.data })
@@ -292,14 +322,12 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
       const calendar = google.calendar('v3')
 
       // First get the event to check if it's a Pura task
-      let eventData
       try {
-         const event = await calendar.events.get({
+         await calendar.events.get({
             auth: oath2Client,
             calendarId: calendarId || 'primary',
             eventId: eventId
          })
-         eventData = event.data
       } catch (err) {
          // Event might already be deleted
          console.log('Event not found, might already be deleted')

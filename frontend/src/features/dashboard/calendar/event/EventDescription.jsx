@@ -30,7 +30,7 @@ EventDescription.propTypes = {
    description: PropTypes.string
 }
 
-const EventDescriptionInput = ({ description, setDescription }) => {
+const EventDescriptionInput = React.memo(({ description, setDescription }) => {
    const handleDescriptionChange = useCallback(
       (e) => {
          setDescription(e.target.value)
@@ -56,7 +56,7 @@ const EventDescriptionInput = ({ description, setDescription }) => {
          />
       </HStack>
    )
-}
+})
 EventDescriptionInput.propTypes = {
    description: PropTypes.string.isRequired,
    setDescription: PropTypes.func.isRequired

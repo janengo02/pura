@@ -24,11 +24,7 @@ import {
    useDisclosure,
    MenuButton,
    MenuList,
-   MenuItem,
-   Circle,
-   Text,
-   Flex,
-   SimpleGrid
+   MenuItem
 } from '@chakra-ui/react'
 
 // Actions
@@ -52,6 +48,8 @@ import { PiDotsThreeBold, PiTrash, PiX } from 'react-icons/pi'
 import { EventTimeInput } from './EventTime'
 import { EventDescriptionInput } from './EventDescription'
 import { EventTitleInput } from './EventTitle'
+import { EventCalendarSelect } from './EventCalendarInfo'
+import { GOOGLE_CALENDAR_COLORS } from '../../../../components/data/defaultColor'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -62,6 +60,7 @@ const EventEditModal = React.memo(
       rightWidth = '100%',
       // Redux props
       event,
+      googleCalendars,
       taskData: { task, pageId },
 
       updateGoogleEventAction,
@@ -87,8 +86,10 @@ const EventEditModal = React.memo(
       const [endTime, setEndTime] = useState(() =>
          stringToDateTimeLocal(event.end)
       )
-      const [title, setTitle] = useState(event.title || '')
-      const [description, setDescription] = useState(event.description || '')
+      const [title, setTitle] = useState('')
+      const [description, setDescription] = useState('')
+      const [selectedCalendar, setSelectedCalendar] = useState({})
+      const [selectedColorId, setSelectedColorId] = useState(null)
       const modalMenu = useDisclosure()
 
       // -------------------------------------------------------------------------
@@ -155,12 +156,14 @@ const EventEditModal = React.memo(
             ) {
                await updateGoogleEventAction({
                   eventId: event.id,
-                  calendarId: event.calendarId,
+                  originalCalendarId: event.calendarId,
+                  calendarId: selectedCalendar.calendarId || event.calendarId,
                   accountEmail: event.accountEmail,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   summary: title,
-                  description: description
+                  description: description,
+                  colorId: selectedColorId
                })
 
                if (event.eventType === 'synced') {
@@ -187,6 +190,8 @@ const EventEditModal = React.memo(
          endTime,
          title,
          description,
+         selectedCalendar,
+         selectedColorId,
          event,
          updateTaskScheduleAction,
          updateTaskBasicInfoAction,
@@ -222,8 +227,24 @@ const EventEditModal = React.memo(
             setEndTime(stringToDateTimeLocal(event.end))
             setTitle(event.title || '')
             setDescription(event.description || '')
+            setSelectedCalendar(
+               googleCalendars.find(
+                  (cal) => cal.calendarId === event.calendarId
+               ) || {
+                  calendarId: event.calendarId || '',
+                  title: '',
+                  accountEmail: event.accountEmail || '',
+                  accessRole: '',
+                  color: ''
+               }
+            )
+            setSelectedColorId(
+               Object.keys(GOOGLE_CALENDAR_COLORS).includes(event.color)
+                  ? GOOGLE_CALENDAR_COLORS[event.color]
+                  : null
+            )
          }
-      }, [event])
+      }, [event, googleCalendars])
 
       // -------------------------------------------------------------------------
       // RENDER
@@ -294,6 +315,19 @@ const EventEditModal = React.memo(
                   endTime={endTime}
                   setEndTime={setEndTime}
                />
+
+               {/* Calendar selection for google and synced events */}
+               {(event.eventType === 'google' ||
+                  event.eventType === 'synced') && (
+                  <EventCalendarSelect
+                     selectedCalendar={selectedCalendar}
+                     setSelectedCalendar={setSelectedCalendar}
+                     selectedColorId={selectedColorId}
+                     setSelectedColorId={setSelectedColorId}
+                     calendars={googleCalendars || []}
+                     accountEmail={event.accountEmail}
+                  />
+               )}
                <EventDescriptionInput
                   description={description}
                   setDescription={setDescription}
@@ -351,6 +385,15 @@ EventEditModal.propTypes = {
       google_event_id: PropTypes.string,
       pageId: PropTypes.string
    }).isRequired,
+   googleCalendars: PropTypes.arrayOf(
+      PropTypes.shape({
+         calendarId: PropTypes.string,
+         title: PropTypes.string,
+         accountEmail: PropTypes.string,
+         accessRole: PropTypes.string,
+         color: PropTypes.string
+      })
+   ).isRequired,
    taskData: PropTypes.shape({
       task: PropTypes.object,
       pageId: PropTypes.string
@@ -386,6 +429,16 @@ const selectEventData = createSelector(
    })
 )
 
+const selectGoogleCalendars = createSelector(
+   (state) => state.googleAccount.googleCalendars,
+   (googleCalendars) => {
+      // Filter out calendars that are not writable
+      return googleCalendars.filter(
+         (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
+      )
+   }
+)
+
 const selectTaskData = createSelector(
    [(state) => state.task.task, (state) => state.page._id],
    (task, pageId) => ({
@@ -400,6 +453,7 @@ const selectTaskData = createSelector(
 
 const mapStateToProps = (state) => ({
    event: selectEventData(state),
+   googleCalendars: selectGoogleCalendars(state),
    taskData: selectTaskData(state)
 })
 

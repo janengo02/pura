@@ -334,7 +334,7 @@ const ScheduleTimeSlot = React.memo(
             variant: 'filled',
             width: 'auto',
             fontSize: 'xs',
-            borderRadius: 5,
+            borderRadius: 'md',
             bg: timeSlotState.isViewingCalendarEvent
                ? 'accent.subtle'
                : 'bg.canvas'

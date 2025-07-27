@@ -13,7 +13,7 @@ const EventWrapperTitle = ({ text, color, ...props }) => {
    )
 }
 
-const EventTitleInput = ({ title, setTitle }) => {
+const EventTitleInput = React.memo(({ title, setTitle }) => {
    const handleTitleChange = useCallback(
       (e) => {
          setTitle(e.target.value)
@@ -34,7 +34,7 @@ const EventTitleInput = ({ title, setTitle }) => {
          placeholder='Event title'
       />
    )
-}
+})
 EventWrapperTitle.propTypes = {
    text: PropTypes.string.isRequired,
    color: PropTypes.string.isRequired

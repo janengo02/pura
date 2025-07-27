@@ -192,12 +192,11 @@ const EventTimeInput = React.memo(
 
       const timeInputProps = useMemo(
          () => ({
-            size: 'sm',
+            size: 'md',
             type: 'datetime-local',
             variant: 'filled',
             width: 'auto',
-            fontSize: 'xs',
-            borderRadius: 5,
+            borderRadius: 'md',
             bg: 'bg.canvas'
          }),
          []
