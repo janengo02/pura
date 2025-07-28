@@ -6,6 +6,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
 
+// Rich Text Editor
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.bubble.css'
+
 // Redux
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
@@ -151,14 +155,12 @@ const TaskModal = React.memo(
          setTaskTitle(e.target.value)
       }, [])
 
-      const handleContentChange = useCallback((e) => {
-         e.preventDefault()
-         setTaskContent(e.target.value)
+      const handleContentChange = useCallback((content) => {
+         setTaskContent(content)
       }, [])
 
-      const handleContentBlur = useCallback((e) => {
-         e.preventDefault()
-         setTaskContent(e.target.value)
+      const handleContentBlur = useCallback(() => {
+         // ReactQuill doesn't need event handling for blur
       }, [])
 
       const handleMenuDelete = useCallback(
@@ -298,19 +300,19 @@ const TaskModal = React.memo(
       const renderTaskContent = () => (
          <>
             <TaskCardLabel icon={<PiNote />} text={t('label-note')} />
-            <FormProvider {...methods} h='fit-content' w='full'>
-               <form noValidate autoComplete='on' style={{ width: '100%' }}>
-                  <MultiInput
-                     name='content'
-                     type='textarea'
-                     variant='unstyled'
-                     value={taskContent}
-                     borderRadius={0}
-                     onChange={handleContentChange}
-                     onBlur={handleContentBlur}
-                  />
-               </form>
-            </FormProvider>
+            <Box w='full'>
+               <ReactQuill
+                  theme='bubble'
+                  value={taskContent}
+                  onChange={handleContentChange}
+                  onBlur={handleContentBlur}
+                  placeholder={t('placeholder-add-note')}
+                  style={{
+                     width: '100%',
+                     minHeight: '100px'
+                  }}
+               />
+            </Box>
          </>
       )
 
