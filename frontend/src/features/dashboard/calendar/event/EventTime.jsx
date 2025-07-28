@@ -176,6 +176,7 @@ const EventTimeText = React.memo(({ start, end }) => {
 
 const EventTimeInput = React.memo(
    ({ startTime, setStartTime, endTime, setEndTime }) => {
+      const { t } = useReactiveTranslation()
       const handleStartTimeChange = useCallback(
          (e) => {
             setStartTime(e.target.value)
@@ -236,7 +237,7 @@ const EventTimeInput = React.memo(
             pl={7}
             color={!isTimeValid ? 'danger.secondary' : undefined}
          >
-            {startTimeInput} - {endTimeInput} (GMT+09:00) Japan Standard Time
+            {startTimeInput} - {endTimeInput} {t('timezone-jst')}
          </Flex>
       )
    }

@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { HStack, Square, Text, Textarea } from '@chakra-ui/react'
 import PropTypes from 'prop-types'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 const EventWrapperTitle = ({ text, color, ...props }) => {
    return (
@@ -14,6 +15,7 @@ const EventWrapperTitle = ({ text, color, ...props }) => {
 }
 
 const EventTitleInput = React.memo(({ title, setTitle }) => {
+   const { t } = useReactiveTranslation()
    const handleTitleChange = useCallback(
       (e) => {
          setTitle(e.target.value)
@@ -31,7 +33,7 @@ const EventTitleInput = React.memo(({ title, setTitle }) => {
          variant='flushed'
          resize='none'
          rows={1}
-         placeholder='Event title'
+         placeholder={t('placeholder-event-title')}
       />
    )
 })

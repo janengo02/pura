@@ -8,6 +8,7 @@ import { HStack, Box } from '@chakra-ui/react'
 import { PiTextAlignLeft } from 'react-icons/pi'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
+import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 const EventDescription = ({ description }) => {
    if (!description) return null
@@ -52,6 +53,7 @@ EventDescription.propTypes = {
 }
 
 const EventDescriptionInput = React.memo(({ description, setDescription }) => {
+   const { t } = useReactiveTranslation()
    const handleDescriptionChange = useCallback(
       (content) => {
          setDescription(content)
@@ -102,7 +104,7 @@ const EventDescriptionInput = React.memo(({ description, setDescription }) => {
                onChange={handleDescriptionChange}
                modules={modules}
                formats={formats}
-               placeholder='Event description...'
+               placeholder={t('placeholder-event-description')}
                theme='snow'
             />
          </Box>

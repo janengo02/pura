@@ -40,27 +40,27 @@ const Sort = () => {
 
    return (
       <Menu isLazy>
-         <ControlMenuButton leftIcon={<PiArrowDown />}>Name</ControlMenuButton>
+         <ControlMenuButton leftIcon={<PiArrowDown />}>{t('sort-name')}</ControlMenuButton>
 
          <MenuList>
             <Flex gap={2} paddingX={2} alignItems='flex-end'>
                {/* Sort By Dropdown */}
-               <DropdownMenu label='Sort by'>
+               <DropdownMenu label={t('sort-by')}>
                   <DropdownMenuButton leftIcon={<PiTextTFill size={20} />}>
-                     Name
+                     {t('sort-name')}
                   </DropdownMenuButton>
                   <DropdownMenuList>
-                     <MenuItem icon={<PiTextTFill size={20} />}>Name</MenuItem>
+                     <MenuItem icon={<PiTextTFill size={20} />}>{t('sort-name')}</MenuItem>
                      <MenuItem icon={<PiCalendar size={20} />}>
-                        Schedule
+                        {t('sort-schedule')}
                      </MenuItem>
                   </DropdownMenuList>
                </DropdownMenu>
 
                {/* Order Dropdown */}
-               <DropdownMenu label='Order'>
+               <DropdownMenu label={t('sort-order')}>
                   <DropdownMenuButton leftIcon={<PiArrowDown size={20} />}>
-                     Descending
+                     {t('sort-descending')}
                   </DropdownMenuButton>
                   <DropdownMenuList>
                      <MenuItem icon={<PiArrowUp size={20} />}>

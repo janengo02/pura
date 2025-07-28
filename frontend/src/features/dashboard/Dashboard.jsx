@@ -9,6 +9,7 @@ import { Flex } from '@chakra-ui/react'
 // Context & Hooks
 import SplitPaneContext from '../../context/SplitPaneContext'
 import useWindowDimensions from '../../hooks/useWindowDimensions'
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // Internal Components
 import Navbar from './Navbar'
@@ -29,6 +30,7 @@ const STORAGE_KEY = 'dashboard.viewCalendar'
 // =============================================================================
 
 const Dashboard = React.memo(({}) => {
+   const { t } = useReactiveTranslation()
    // -------------------------------------------------------------------------
    // STATE & REFS
    // -------------------------------------------------------------------------
@@ -162,7 +164,7 @@ const Dashboard = React.memo(({}) => {
          h='100vh'
          overflow='hidden'
          role='main'
-         aria-label='Dashboard'
+         aria-label={t('aria-dashboard')}
       >
          <ToastAlert />
          <SplitPaneContext.Provider value={contextValue}>

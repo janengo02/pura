@@ -184,7 +184,7 @@ const Kanban = React.memo(
                            <Flex gap={3} paddingX={3} alignItems='center'>
                               {progressHeaders}
                               <IconButton
-                                 aria-label='Options'
+                                 aria-label={t('aria-options')}
                                  icon={<PiPlusBold />}
                                  variant='ghost'
                                  colorScheme='gray'
