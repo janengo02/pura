@@ -16,6 +16,7 @@ app.use('/api/group', require('./routes/api/groupApi'))
 app.use('/api/progress', require('./routes/api/progressApi'))
 app.use('/api/task', require('./routes/api/taskApi'))
 app.use('/api/google-account', require('./routes/api/googleAccountApi'))
+app.use('/api/google-meet', require('./routes/api/googleMeetApi'))
 
 app.get('/', (req, res) => res.send('API Running'))
 

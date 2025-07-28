@@ -304,3 +304,33 @@ export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
       googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
 }
+
+/**
+ * Create Google Meet Space Action
+ * Creates a new Google Meet space using the Google Meet API
+ * @param {Object} reqData - Request data for Meet space creation
+ * @param {string} reqData.accountEmail - Google account email to use
+ * @param {Object} reqData.config - Optional Meet space configuration
+ */
+export const createGoogleMeetSpaceAction = (reqData) => async (dispatch) => {
+   try {
+      const res = await api.post('/google-meet/create-space', reqData)
+
+      if (res.data?.success) {
+         return res.data
+      } else {
+         throw new Error(
+            'Unexpected response format from /google-meet/create-space'
+         )
+      }
+   } catch (err) {
+      dispatch(
+         setAlertAction(
+            'Oops!',
+            'Failed to generate Google Meet link. Please try again.',
+            'error'
+         )
+      )
+      return null
+   }
+}

@@ -49,6 +49,7 @@ import { EventTimeInput } from './EventTime'
 import { EventDescriptionInput } from './EventDescription'
 import { EventTitleInput } from './EventTitle'
 import { EventCalendarSelect } from './EventCalendarInfo'
+import { EventConferenceInput } from './EventConference'
 import { GOOGLE_CALENDAR_COLORS } from '../../../../components/data/defaultColor'
 
 // =============================================================================
@@ -90,6 +91,7 @@ const EventEditModal = React.memo(
       const [description, setDescription] = useState('')
       const [selectedCalendar, setSelectedCalendar] = useState({})
       const [selectedColorId, setSelectedColorId] = useState(null)
+      const [conferenceData, setConferenceData] = useState(null)
       const modalMenu = useDisclosure()
 
       // -------------------------------------------------------------------------
@@ -163,7 +165,8 @@ const EventEditModal = React.memo(
                   end: newEndTime.toISOString(),
                   summary: title,
                   description: description,
-                  colorId: selectedColorId
+                  colorId: selectedColorId,
+                  conferenceData: conferenceData
                })
 
                if (event.eventType === 'synced') {
@@ -192,6 +195,7 @@ const EventEditModal = React.memo(
          description,
          selectedCalendar,
          selectedColorId,
+         conferenceData,
          event,
          updateTaskScheduleAction,
          updateTaskBasicInfoAction,
@@ -243,6 +247,7 @@ const EventEditModal = React.memo(
                   ? GOOGLE_CALENDAR_COLORS[event.color]
                   : null
             )
+            setConferenceData(event.conferenceData || null)
          }
       }, [event, googleCalendars])
 
@@ -262,15 +267,10 @@ const EventEditModal = React.memo(
                <IconButton
                   icon={<PiX />}
                   variant='ghost'
-                  borderRadius='full'
                   onClick={handleCloseModal}
                />
                <EventTitleInput title={title} setTitle={setTitle} />
-               <Button
-                  colorScheme='blue'
-                  borderRadius='full'
-                  onClick={handleSave}
-               >
+               <Button colorScheme='blue' size='lg' onClick={handleSave}>
                   {t('btn-save')}
                </Button>
                <Menu
@@ -282,7 +282,7 @@ const EventEditModal = React.memo(
                      as={IconButton}
                      icon={<PiDotsThreeBold size={20} />}
                      variant='ghost'
-                     size='xs'
+                     size='md'
                      colorScheme='gray'
                      color='text.primary'
                      onClick={modalMenu.onOpen}
@@ -319,14 +319,21 @@ const EventEditModal = React.memo(
                {/* Calendar selection for google and synced events */}
                {(event.eventType === 'google' ||
                   event.eventType === 'synced') && (
-                  <EventCalendarSelect
-                     selectedCalendar={selectedCalendar}
-                     setSelectedCalendar={setSelectedCalendar}
-                     selectedColorId={selectedColorId}
-                     setSelectedColorId={setSelectedColorId}
-                     calendars={googleCalendars || []}
-                     accountEmail={event.accountEmail}
-                  />
+                  <>
+                     <EventCalendarSelect
+                        selectedCalendar={selectedCalendar}
+                        setSelectedCalendar={setSelectedCalendar}
+                        selectedColorId={selectedColorId}
+                        setSelectedColorId={setSelectedColorId}
+                        calendars={googleCalendars || []}
+                        accountEmail={event.accountEmail}
+                     />
+                     <EventConferenceInput
+                        conferenceData={conferenceData}
+                        setConferenceData={setConferenceData}
+                        accountEmail={event.accountEmail}
+                     />
+                  </>
                )}
                <EventDescriptionInput
                   description={description}
@@ -377,6 +384,12 @@ EventEditModal.propTypes = {
       color: PropTypes.string,
       start: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
       end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      conferenceData: PropTypes.shape({
+         type: PropTypes.string,
+         id: PropTypes.string,
+         joinUrl: PropTypes.string,
+         phoneNumbers: PropTypes.array
+      }),
       eventType: PropTypes.oneOf(['task', 'google', 'synced']),
       calendarId: PropTypes.string,
       accountEmail: PropTypes.string,
@@ -419,6 +432,7 @@ const selectEventData = createSelector(
       color: eventState.color,
       start: eventState.start,
       end: eventState.end,
+      conferenceData: eventState.conferenceData,
       eventType: eventState.eventType,
       calendarId: eventState.calendarId,
       accountEmail: eventState.accountEmail,

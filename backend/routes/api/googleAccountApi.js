@@ -221,7 +221,8 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          summary,
          location,
          description,
-         colorId
+         colorId,
+         conferenceData
       } = req.body
 
       const user = await User.findById(req.user.id)
@@ -249,7 +250,8 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          colorId: colorId,
          summary: summary || eventData.summary,
          description: description || eventData.description,
-         location: location || eventData.location
+         location: location || eventData.location,
+         conferenceData: conferenceData || eventData.conferenceData
       }
 
       let event

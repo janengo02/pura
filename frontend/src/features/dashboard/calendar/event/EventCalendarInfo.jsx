@@ -71,6 +71,7 @@ const EventCalendarSelect = React.memo(
                   as={Button}
                   w='fit-content'
                   bg='bg.canvas'
+                  fontWeight='normal'
                   rightIcon={<PiCaretDown size={16} />}
                >
                   {selectedCalendar.title}
