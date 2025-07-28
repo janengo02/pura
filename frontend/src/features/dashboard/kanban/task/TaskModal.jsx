@@ -40,6 +40,7 @@ import {
 
 // Internal Components
 import { MultiInput } from '../../../../components/MultiInput'
+import NovelEditor from '../../../../components/NovelEditor'
 import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import ProgressSelect from './ProgressSelect'
 import GroupSelect from './GroupSelect'
@@ -298,19 +299,11 @@ const TaskModal = React.memo(
       const renderTaskContent = () => (
          <>
             <TaskCardLabel icon={<PiNote />} text={t('label-note')} />
-            <FormProvider {...methods} h='fit-content' w='full'>
-               <form noValidate autoComplete='on' style={{ width: '100%' }}>
-                  <MultiInput
-                     name='content'
-                     type='textarea'
-                     variant='unstyled'
-                     value={taskContent}
-                     borderRadius={0}
-                     onChange={handleContentChange}
-                     onBlur={handleContentBlur}
-                  />
-               </form>
-            </FormProvider>
+            <NovelEditor
+               value={taskContent}
+               onChange={handleContentChange}
+               onBlur={handleContentBlur}
+            />
          </>
       )
 

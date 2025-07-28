@@ -826,3 +826,150 @@
 .chakra-ui-dark .quill-editor-container .ql-editor a {
    color: #63b3ed !important;
 }
+
+/* =============================================================================
+      TIPTAP RICH TEXT EDITOR STYLING
+      ============================================================================= */
+
+/* TipTap editor container styling */
+.novel-editor-container {
+   background-color: var(--bg-secondary) !important;
+   border-radius: 6px !important;
+   transition: background-color 0.2s ease;
+}
+
+/* TipTap editor content area */
+.novel-editor-container .ProseMirror {
+   background-color: var(--bg-secondary) !important;
+   color: var(--text-primary) !important;
+   border: none !important;
+   outline: none !important;
+   padding: 12px !important;
+   font-size: 14px !important;
+   line-height: 1.5 !important;
+   min-height: 100px !important;
+   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* TipTap editor content wrapper */
+.novel-editor-content {
+   width: 100%;
+}
+
+/* TipTap editor placeholder */
+.novel-editor-container .ProseMirror[data-placeholder]::before {
+   content: attr(data-placeholder);
+   color: var(--text-muted) !important;
+   float: left;
+   height: 0;
+   pointer-events: none;
+}
+
+.novel-editor-container .ProseMirror p.is-editor-empty:first-child::before {
+   color: var(--text-muted) !important;
+   content: attr(data-placeholder);
+   float: left;
+   height: 0;
+   pointer-events: none;
+}
+
+/* TipTap editor text formatting */
+.novel-editor-container .ProseMirror h1,
+.novel-editor-container .ProseMirror h2,
+.novel-editor-container .ProseMirror h3 {
+   color: var(--text-primary) !important;
+   font-weight: 600 !important;
+   margin-top: 1em !important;
+   margin-bottom: 0.5em !important;
+}
+
+.novel-editor-container .ProseMirror h1 {
+   font-size: 1.5em !important;
+}
+
+.novel-editor-container .ProseMirror h2 {
+   font-size: 1.25em !important;
+}
+
+.novel-editor-container .ProseMirror h3 {
+   font-size: 1.125em !important;
+}
+
+.novel-editor-container .ProseMirror p {
+   margin-bottom: 0.5em !important;
+   color: var(--text-primary) !important;
+}
+
+.novel-editor-container .ProseMirror ul,
+.novel-editor-container .ProseMirror ol {
+   padding-left: 1.5em !important;
+   margin-bottom: 0.5em !important;
+}
+
+.novel-editor-container .ProseMirror li {
+   margin-bottom: 0.25em !important;
+   color: var(--text-primary) !important;
+}
+
+.novel-editor-container .ProseMirror a {
+   color: #3182ce !important;
+   text-decoration: underline !important;
+}
+
+.novel-editor-container .ProseMirror strong {
+   font-weight: bold !important;
+   color: var(--text-primary) !important;
+}
+
+.novel-editor-container .ProseMirror em {
+   font-style: italic !important;
+   color: var(--text-primary) !important;
+}
+
+/* Basic editor menu styling (for future enhancements) */
+.novel-editor-container .editor-menu {
+   background-color: var(--bg-primary) !important;
+   border: 1px solid var(--border-light) !important;
+   border-radius: 6px !important;
+   box-shadow: 0 4px 12px var(--shadow-color) !important;
+   color: var(--text-primary) !important;
+}
+
+/* Dark mode adjustments for TipTap editor */
+[data-theme='dark'] .novel-editor-container .ProseMirror a,
+.chakra-ui-dark .novel-editor-container .ProseMirror a {
+   color: #63b3ed !important;
+}
+
+/* Focus state for TipTap editor */
+.novel-editor-container .ProseMirror:focus {
+   outline: none !important;
+   box-shadow: none !important;
+}
+
+/* Code block styling for TipTap editor */
+.novel-editor-container .ProseMirror code {
+   background-color: var(--bg-tertiary) !important;
+   color: var(--text-primary) !important;
+   padding: 2px 4px !important;
+   border-radius: 3px !important;
+   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+   font-size: 0.875em !important;
+}
+
+.novel-editor-container .ProseMirror pre {
+   background-color: var(--bg-tertiary) !important;
+   color: var(--text-primary) !important;
+   padding: 12px !important;
+   border-radius: 6px !important;
+   overflow-x: auto !important;
+   margin: 1em 0 !important;
+}
+
+.novel-editor-container .ProseMirror blockquote {
+   border-left: 4px solid var(--border-light) !important;
+   padding-left: 16px !important;
+   margin: 1em 0 !important;
+   font-style: italic !important;
+   color: var(--text-secondary) !important;
+}
