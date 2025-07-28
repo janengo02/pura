@@ -21,7 +21,7 @@ const EventReminders = ({ reminders, eventStart }) => {
 
    return (
       <HStack spacing={3}>
-         <PiBell size={16} color='gray.500' />
+         <PiBell size={18} color='gray.500' />
          <VStack align='start' spacing={1}>
             {reminders.overrides.map((reminder, index) => {
                const getTimeText = (minutes) => {
@@ -145,11 +145,11 @@ const EventReminders = ({ reminders, eventStart }) => {
 
                return (
                   <HStack key={index} spacing={2}>
-                     <Text fontSize='sm' color='text.primary'>
+                     <Text fontSize='md' color='text.primary'>
                         {timeText}
                      </Text>
                      {reminder.method === 'email' && (
-                        <Badge size='sm' colorScheme='blue'>
+                        <Badge size='md' colorScheme='blue'>
                            {t('reminder-email')}
                         </Badge>
                      )}

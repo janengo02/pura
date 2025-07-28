@@ -329,11 +329,10 @@ const ScheduleTimeSlot = React.memo(
 
       const timeInputProps = useMemo(
          () => ({
-            size: 'sm',
+            size: 'md',
             type: 'datetime-local',
             variant: 'filled',
             width: 'auto',
-            fontSize: 'xs',
             borderRadius: 'md',
             bg: timeSlotState.isViewingCalendarEvent
                ? 'accent.subtle'
@@ -367,11 +366,11 @@ const ScheduleTimeSlot = React.memo(
       const deleteButton = useMemo(
          () => (
             <IconButton
-               icon={<PiTrash size={16} />}
+               icon={<PiTrash size={18} />}
                variant='ghost'
                colorScheme='gray'
                color='text.primary'
-               size='sm'
+               size='md'
                isLoading={deleteSlotLoading}
                onClick={handleDeleteClick}
             />
@@ -411,7 +410,7 @@ const ScheduleTimeSlot = React.memo(
                      boxSize={3}
                      alt='Google'
                   />
-                  <Text fontSize='sm' fontWeight='semibold' color={textColor}>
+                  <Text fontSize='md' fontWeight='semibold' color={textColor}>
                      {account?.accountEmail}
                   </Text>
                </HStack>
@@ -424,7 +423,7 @@ const ScheduleTimeSlot = React.memo(
                         bg={calendar?.color || 'blue.500'}
                         flexShrink={0}
                      />
-                     <Text fontSize='sm' color={textColor}>
+                     <Text fontSize='md' color={textColor}>
                         {calendar?.title}
                      </Text>
                   </HStack>
@@ -437,7 +436,7 @@ const ScheduleTimeSlot = React.memo(
       // Centered message component
       const StatusMessage = useCallback(
          ({ children, color = 'text.primary' }) => (
-            <Text fontSize='sm' color={color}>
+            <Text fontSize='md' color={color}>
                {children}
             </Text>
          ),
@@ -448,8 +447,8 @@ const ScheduleTimeSlot = React.memo(
       const SyncableCalendarList = useMemo(() => {
          if (googleAccounts.length === 0) {
             return (
-               <MenuItem size='sm' isDisabled>
-                  <Text fontSize='sm' color='text.secondary'>
+               <MenuItem size='md' isDisabled>
+                  <Text fontSize='md' color='text.secondary'>
                      {t('sync-no-accounts-connected')}
                   </Text>
                </MenuItem>
@@ -467,7 +466,7 @@ const ScheduleTimeSlot = React.memo(
                <MenuOptionGroup
                   key={account.accountEmail}
                   title={account.accountEmail}
-                  fontSize='sm'
+                  fontSize='md'
                   type='button'
                >
                   {accountCalendars.map((calendar) => (
@@ -490,7 +489,7 @@ const ScheduleTimeSlot = React.memo(
                               flexShrink={0}
                            />
                            <VStack spacing={0} align='start' flex={1}>
-                              <Text fontSize='sm' fontWeight='medium'>
+                              <Text fontSize='md' fontWeight='medium'>
                                  {calendar.title}
                               </Text>
                            </VStack>
@@ -544,14 +543,17 @@ const ScheduleTimeSlot = React.memo(
                      </StatusBox>
                   ),
                   actions: (
-                     <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
+                     <MenuItem
+                        icon={<PiPlugs size={18} />}
+                        onClick={unsyncFromGoogle}
+                     >
                         {t('sync-unsync-action')}
                      </MenuItem>
                   )
                },
                [SCHEDULE_SYNCE_STATUS.NONE]: {
                   colorScheme: 'gray',
-                  icon: <PiCalendarPlus size={16} color='text.primary' />,
+                  icon: <PiCalendarPlus size={18} color='text.primary' />,
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
                         <StatusMessage>
@@ -587,12 +589,15 @@ const ScheduleTimeSlot = React.memo(
                   actions: (
                      <>
                         <MenuItem
-                           icon={<PiArrowClockwise />}
+                           icon={<PiArrowClockwise size={18} />}
                            onClick={googleReconnectLogin}
                         >
                            {t('sync-reconnect-action')}
                         </MenuItem>
-                        <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
+                        <MenuItem
+                           icon={<PiPlugs size={18} />}
+                           onClick={unsyncFromGoogle}
+                        >
                            {t('sync-unsync-action')}
                         </MenuItem>
                      </>
@@ -622,7 +627,10 @@ const ScheduleTimeSlot = React.memo(
                      </StatusBox>
                   ),
                   actions: (
-                     <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
+                     <MenuItem
+                        icon={<PiPlugs size={18} />}
+                        onClick={unsyncFromGoogle}
+                     >
                         {t('sync-unsync-action')}
                      </MenuItem>
                   )
@@ -657,7 +665,7 @@ const ScheduleTimeSlot = React.memo(
                            isDisabled={useTaskTimeLoading}
                         >
                            <VStack spacing={1} align='start'>
-                              <Text fontSize='sm' fontWeight='medium'>
+                              <Text fontSize='md' fontWeight='medium'>
                                  {t('sync-use-task-time')}
                               </Text>
                               <Text fontSize='xs' color='text.secondary'>
@@ -672,7 +680,7 @@ const ScheduleTimeSlot = React.memo(
                               isDisabled={useGoogleTimeLoading}
                            >
                               <VStack spacing={1} align='start'>
-                                 <Text fontSize='sm' fontWeight='medium'>
+                                 <Text fontSize='md' fontWeight='medium'>
                                     {t('sync-use-google-time')}
                                  </Text>
                                  <Text fontSize='xs' color='text.secondary'>
@@ -683,7 +691,10 @@ const ScheduleTimeSlot = React.memo(
                            </MenuItem>
                         )}
 
-                        <MenuItem icon={<PiPlugs />} onClick={unsyncFromGoogle}>
+                        <MenuItem
+                           icon={<PiPlugs size={18} />}
+                           onClick={unsyncFromGoogle}
+                        >
                            {t('sync-unsync-action')}
                         </MenuItem>
                      </>
@@ -753,7 +764,7 @@ const ScheduleTimeSlot = React.memo(
                <Menu>
                   <MenuButton
                      as={Button}
-                     size='sm'
+                     size='md'
                      variant='ghost'
                      colorScheme={syncProps.colorScheme}
                      isLoading={

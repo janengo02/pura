@@ -12,12 +12,12 @@ import { PiCaretDown } from 'react-icons/pi'
 export const ControlMenuButton = ({ isActive, children, ...props }) => (
    <MenuButton
       as={Button}
-      size='sm'
+      size='md'
       colorScheme={isActive ? 'purple' : 'gray'}
       color={isActive ? 'accent.primary' : 'text.primary'}
       variant='outline'
       borderRadius='full'
-      rightIcon={<PiCaretDown size={8} />}
+      rightIcon={<PiCaretDown size={12} />}
       {...props}
    >
       {children}
@@ -26,10 +26,10 @@ export const ControlMenuButton = ({ isActive, children, ...props }) => (
 export const DropdownMenuButton = ({ children, ...props }) => (
    <MenuButton
       as={Button}
-      size='sm'
+      size='md'
       colorScheme='gray'
       variant='outline'
-      rightIcon={<PiCaretDown size={8} />}
+      rightIcon={<PiCaretDown size={12} />}
       {...props}
    >
       {children}

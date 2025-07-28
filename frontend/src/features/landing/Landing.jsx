@@ -322,7 +322,7 @@ const LandingHeader = React.memo(() => {
          borderColor='border.default'
          zIndex={10}
       >
-         <Heading size='lg' color='accent.primary'>
+         <Heading size='md' color='accent.primary'>
             <Image
                src='/assets/img/pura-logo.png'
                alt='Pura Logo'
@@ -393,15 +393,15 @@ const HeroSection = React.memo(() => {
 
             <HStack spacing={4} pt={4}>
                <Button
-                  size='lg'
+                  size='md'
                   colorScheme='purple'
-                  rightIcon={<PiArrowRight />}
+                  rightIcon={<PiArrowRight size={18} />}
                   onClick={() => navigate('/register')}
                >
                   Try the Demo
                </Button>
                <Button
-                  size='lg'
+                  size='md'
                   variant='outline'
                   onClick={() =>
                      window.open('https://github.com/janengo02/pura', '_blank')
@@ -587,7 +587,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
          </VStack>
 
          <VStack align='start' spacing={4} w='full'>
-            <Text fontSize='sm' fontWeight='semibold' color='text.primary'>
+            <Text fontSize='md' fontWeight='semibold' color='text.primary'>
                Explore Features:
             </Text>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w='full'>
@@ -596,7 +596,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                      key={idx}
                      variant={selectedFeature === idx ? 'solid' : 'outline'}
                      colorScheme={selectedFeature === idx ? 'purple' : 'gray'}
-                     size='sm'
+                     size='md'
                      onClick={() => handleFeatureSelect(idx)}
                      leftIcon={
                         <Icon
@@ -710,7 +710,7 @@ const TechStackSection = React.memo(() => {
       () =>
          TECH_STACK.map((category, categoryIndex) => (
             <Box key={categoryIndex}>
-               <Heading size='lg' mb={6} color='accent.primary'>
+               <Heading size='md' mb={6} color='accent.primary'>
                   {category.category}
                </Heading>
                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
@@ -718,7 +718,7 @@ const TechStackSection = React.memo(() => {
                      <Card
                         key={techIndex}
                         variant='filled'
-                        size='sm'
+                        size='md'
                         transition='all 0.2s'
                         _hover={{ bg: 'accent.subtle' }}
                      >
@@ -731,7 +731,7 @@ const TechStackSection = React.memo(() => {
                               />
                               <Box>
                                  <Text fontWeight='bold'>{tech.name}</Text>
-                                 <Text fontSize='sm' color='text.muted'>
+                                 <Text fontSize='md' color='text.muted'>
                                     {tech.description}
                                  </Text>
                               </Box>
@@ -798,17 +798,17 @@ const CTASection = React.memo(() => {
                   </Text>
                   <HStack spacing={4}>
                      <Button
-                        size='lg'
+                        size='md'
                         bg='white'
                         color='purple.600'
                         _hover={{ bg: 'gray.100' }}
-                        rightIcon={<PiArrowRight />}
+                        rightIcon={<PiArrowRight size={18} />}
                         onClick={() => navigate('/register')}
                      >
                         Try the Demo
                      </Button>
                      <Button
-                        size='lg'
+                        size='md'
                         variant='outline'
                         color='white'
                         borderColor='white'
@@ -862,7 +862,7 @@ const Footer = React.memo(() => {
                      <Badge variant='outline'>v1.0</Badge>
                   </HStack>
 
-                  <Text color='text.muted' fontSize='sm'>
+                  <Text color='text.muted' fontSize='md'>
                      {t('footer-copyright')}
                   </Text>
                </Flex>

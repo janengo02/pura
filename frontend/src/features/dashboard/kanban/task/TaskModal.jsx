@@ -255,9 +255,9 @@ const TaskModal = React.memo(
             <Menu isLazy isOpen={modalMenu.isOpen} onClose={modalMenu.onClose}>
                <MenuButton
                   as={IconButton}
-                  icon={<PiDotsThreeBold size={20} />}
+                  icon={<PiDotsThreeBold size={18} />}
                   variant='ghost'
-                  size='xs'
+                  size='md'
                   colorScheme='gray'
                   color='text.primary'
                   onClick={modalMenu.onOpen}
@@ -265,7 +265,7 @@ const TaskModal = React.memo(
                <MenuList>
                   <MenuItem
                      icon={<PiTrash size={18} />}
-                     fontSize='sm'
+                     fontSize='md'
                      color='danger.primary'
                      onClick={handleMenuDelete}
                   >
@@ -299,8 +299,22 @@ const TaskModal = React.memo(
 
       const renderTaskContent = () => (
          <>
-            <TaskCardLabel icon={<PiNote />} text={t('label-note')} />
-            <Box w='full'>
+            <TaskCardLabel icon={<PiNote size={18} />} text={t('label-note')} />
+            <Box
+               w='full'
+               sx={{
+                  '& .ql-editor.ql-blank::before': {
+                     color: 'text.secondary',
+                     opacity: 0.7,
+                     fontStyle: 'italic'
+                  },
+                  '& .ql-editor': {
+                     padding: '8px 0',
+                     fontSize: '14px',
+                     lineHeight: '1.5'
+                  }
+               }}
+            >
                <ReactQuill
                   theme='bubble'
                   value={taskContent}

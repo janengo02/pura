@@ -127,7 +127,7 @@ const Login = React.memo(
                         label={t('label-email')}
                         placeholder={t('placeholder-email')}
                         validation={s.email}
-                        size='lg'
+                        size='md'
                         required
                      />
                   </GridItem>
@@ -139,14 +139,14 @@ const Login = React.memo(
                         label={t('label-password')}
                         helpertext={t('helpertext-password')}
                         validation={s.password}
-                        size='lg'
+                        size='md'
                         required
                      />
                   </GridItem>
 
                   <GridItem colSpan={1}>
                      <Button
-                        size='lg'
+                        size='md'
                         w='full'
                         colorScheme='purple'
                         isLoading={isLoading}

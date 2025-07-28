@@ -21,7 +21,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const TEXT_STYLES = {
-   fontSize: 'sm',
+   fontSize: 'md',
    mb: 2,
    ml: 7
 }
@@ -233,6 +233,7 @@ const EventTimeInput = React.memo(
       return (
          <Flex
             w='full'
+            alignItems='center'
             gap={2}
             pl={7}
             color={!isTimeValid ? 'danger.secondary' : undefined}

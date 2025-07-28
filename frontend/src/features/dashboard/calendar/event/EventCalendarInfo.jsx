@@ -23,8 +23,8 @@ const EventCalendarInfo = ({ calendar }) => {
 
    return (
       <HStack spacing={3}>
-         <PiCalendar size={16} />
-         <Text fontSize='sm' color='text.primary'>
+         <PiCalendar size={18} />
+         <Text fontSize='md' color='text.primary'>
             {calendar}
          </Text>
       </HStack>
@@ -64,7 +64,7 @@ const EventCalendarSelect = React.memo(
 
       return (
          <HStack align='start' spacing={3} w='full'>
-            <PiCalendar size={16} />
+            <PiCalendar size={18} />
 
             <Menu>
                <MenuButton
@@ -72,7 +72,7 @@ const EventCalendarSelect = React.memo(
                   w='fit-content'
                   bg='bg.canvas'
                   fontWeight='normal'
-                  rightIcon={<PiCaretDown size={16} />}
+                  rightIcon={<PiCaretDown size={12} />}
                >
                   {selectedCalendar.title}
                </MenuButton>
@@ -92,7 +92,7 @@ const EventCalendarSelect = React.memo(
                   as={Button}
                   w='fit-content'
                   bg='bg.canvas'
-                  rightIcon={<PiCaretDown size={16} />}
+                  rightIcon={<PiCaretDown size={12} />}
                >
                   <Circle
                      size='20px'

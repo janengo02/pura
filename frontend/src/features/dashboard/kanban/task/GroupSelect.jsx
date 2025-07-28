@@ -100,7 +100,10 @@ const GroupSelect = React.memo(
 
       return (
          <Flex w='full' gap={3}>
-            <TaskCardLabel icon={<PiCirclesFour />} text={t('label-group')} />
+            <TaskCardLabel
+               icon={<PiCirclesFour size={18} />}
+               text={t('label-group')}
+            />
 
             <Menu isLazy isOpen={tagSelect.isOpen} onClose={tagSelect.onClose}>
                <MenuButton

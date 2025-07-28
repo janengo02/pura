@@ -46,7 +46,7 @@ const EventConference = ({ conferenceData }) => {
          {conferenceData.joinUrl && (
             <VStack align='start' spacing={2} w='full'>
                <HStack spacing={3} w='full'>
-                  <PiVideoCamera size={16} />
+                  <PiVideoCamera size={18} />
                   <Button colorScheme='blue' onClick={handleJoinMeeting}>
                      {t('event-join-meeting')}
                   </Button>
@@ -55,11 +55,11 @@ const EventConference = ({ conferenceData }) => {
                      <IconButton
                         variant='ghost'
                         onClick={handleCopyUrl}
-                        icon={<PiCopy size={16} />}
+                        icon={<PiCopy size={18} />}
                      />
                   </Tooltip>
                </HStack>
-               <Text fontSize='xs' color='text.secondary' ml={7}>
+               <Text fontSize='sm' color='text.secondary' ml={8}>
                   {t('meet-id')}: {conferenceData.id}
                </Text>
             </VStack>
@@ -129,18 +129,18 @@ const EventConferenceInput = ({
                <Tooltip label={t('remove-conference')} placement='top'>
                   <IconButton
                      variant='ghost'
-                     icon={<PiX size={16} />}
+                     icon={<PiX size={18} />}
                      onClick={handleRemoveConference}
                   />
                </Tooltip>
             </HStack>
          ) : (
             <HStack spacing={3} w='full'>
-               <PiVideoCamera size={16} />
+               <PiVideoCamera size={18} />
                <Button
                   size='md'
                   leftIcon={
-                     createGoogleMeetLoading ? <Spinner size='xs' /> : null
+                     createGoogleMeetLoading ? <Spinner size='md' /> : null
                   }
                   variant='ghost'
                   onClick={createGoogleMeet}

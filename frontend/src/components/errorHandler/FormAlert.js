@@ -27,7 +27,7 @@ const FormAlert = ({ alerts, removeAlertAction, ...props }) => {
                   bg='bg.surface'
                   {...props}
                >
-                  <Spinner size='sm' marginInlineEnd={3} />
+                  <Spinner size='md' marginInlineEnd={3} />
                   <AlertTitle>{t(alert.title)}</AlertTitle>
                   <AlertDescription>{t(alert.msg)}</AlertDescription>
                </Alert>

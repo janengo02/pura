@@ -56,7 +56,7 @@ import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
 
 const BUTTON_STYLES = {
    variant: 'ghost',
-   size: 'sm',
+   size: 'md',
    colorScheme: 'gray',
    color: 'text.primary'
 }
@@ -211,12 +211,12 @@ const EventWrapper = React.memo(
          if (syncStatus === SCHEDULE_SYNCE_STATUS.SYNCED) {
             tagProps = {
                colorScheme: 'green',
-               size: 'sm'
+               size: 'md'
             }
          } else if (syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED) {
             tagProps = {
                colorScheme: 'orange',
-               size: 'sm'
+               size: 'md'
             }
          } else {
             return <Box w='full'></Box>
@@ -239,7 +239,7 @@ const EventWrapper = React.memo(
          let googleCalendarIcon = null
          const deleteIcon = (
             <IconButton
-               icon={<PiTrash size={16} />}
+               icon={<PiTrash size={18} />}
                {...BUTTON_STYLES}
                ref={initRef}
                isLoading={deleteLoading}
@@ -252,7 +252,7 @@ const EventWrapper = React.memo(
          )
          const editIcon = (
             <IconButton
-               icon={<PiPencilFill size={16} />}
+               icon={<PiPencilFill size={18} />}
                {...BUTTON_STYLES}
                onClick={async (e) => {
                   e.preventDefault()

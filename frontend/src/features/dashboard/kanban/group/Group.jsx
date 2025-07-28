@@ -236,17 +236,17 @@ const Group = React.memo(
             >
                <MenuButton
                   as={IconButton}
-                  icon={<PiDotsThreeBold />}
+                  icon={<PiDotsThreeBold size={18} />}
                   variant='ghost'
-                  size='xs'
+                  size='sm'
                   colorScheme={colorMode === 'dark' ? 'white' : 'blackAlpha'}
                   opacity={menuButtonOpacity}
                   onClick={dropdownMenu.onOpen}
                />
                <MenuList>
                   <MenuItem
-                     icon={<PiPencilLine size={14} />}
-                     fontSize='sm'
+                     icon={<PiPencilLine size={18} />}
+                     fontSize='md'
                      onClick={titleEditing.start}
                   >
                      {t('btn-edit-name')}
@@ -259,8 +259,8 @@ const Group = React.memo(
                      <>
                         <MenuDivider />
                         <MenuItem
-                           icon={<PiTrash size={14} />}
-                           fontSize='sm'
+                           icon={<PiTrash size={18} />}
+                           fontSize='md'
                            color='danger.primary'
                            onClick={handleDeleteGroup}
                         >

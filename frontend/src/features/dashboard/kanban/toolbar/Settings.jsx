@@ -34,15 +34,15 @@ const Settings = () => {
       <Menu isLazy>
          <MenuButton
             as={IconButton}
-            icon={<PiSlidersHorizontalFill size={22} />}
+            icon={<PiSlidersHorizontalFill size={18} />}
             variant='ghost'
-            size='sm'
+            size='md'
             colorScheme='gray'
             color='text.primary'
          />
 
          <MenuList>
-            <MenuItem icon={<PiLayout size={20} />}>{t('btn-layout')}</MenuItem>
+            <MenuItem icon={<PiLayout size={18} />}>{t('btn-layout')}</MenuItem>
          </MenuList>
       </Menu>
    )

@@ -265,12 +265,12 @@ const EventEditModal = React.memo(
          >
             <HStack spacing={3} w='full'>
                <IconButton
-                  icon={<PiX />}
+                  icon={<PiX size={18} />}
                   variant='ghost'
                   onClick={handleCloseModal}
                />
                <EventTitleInput title={title} setTitle={setTitle} />
-               <Button colorScheme='blue' size='lg' onClick={handleSave}>
+               <Button colorScheme='blue' size='md' onClick={handleSave}>
                   {t('btn-save')}
                </Button>
                <Menu
@@ -280,7 +280,7 @@ const EventEditModal = React.memo(
                >
                   <MenuButton
                      as={IconButton}
-                     icon={<PiDotsThreeBold size={20} />}
+                     icon={<PiDotsThreeBold size={18} />}
                      variant='ghost'
                      size='md'
                      colorScheme='gray'
@@ -290,7 +290,7 @@ const EventEditModal = React.memo(
                   <MenuList>
                      <MenuItem
                         icon={<PiTrash size={18} />}
-                        fontSize='sm'
+                        fontSize='md'
                         color='danger.primary'
                         onClick={async (e) => {
                            e.preventDefault()

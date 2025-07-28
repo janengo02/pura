@@ -22,13 +22,13 @@ const NotFound = ({ auth: { isAuthenticated } }) => {
 
             {isAuthenticated ? (
                <Link as={ReactRouterLink} to='/dashboard'>
-                  <Button size='lg' variant='solid'>
+                  <Button size='md' variant='solid'>
                      {t('btn-dashboard-page')}
                   </Button>
                </Link>
             ) : (
                <Link as={ReactRouterLink} to='/login'>
-                  <Button size='lg' variant='solid'>
+                  <Button size='md' variant='solid'>
                      {t('btn-login-page')}
                   </Button>
                </Link>

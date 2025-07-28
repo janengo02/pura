@@ -112,7 +112,7 @@ const Filter = React.memo(
             <Menu isLazy>
                <ControlMenuButton
                   isActive={nameFilter}
-                  leftIcon={<PiTextTFill size={20} />}
+                  leftIcon={<PiTextTFill size={18} />}
                >
                   {t('label-name')}
                </ControlMenuButton>
@@ -142,7 +142,7 @@ const Filter = React.memo(
             {/* Schedule Filter */}
             <Menu isLazy>
                <ControlMenuButton
-                  leftIcon={<PiCalendar size={20} />}
+                  leftIcon={<PiCalendar size={18} />}
                   isActive={filter.schedule.length < 2}
                >
                   {t('label-schedule')}
@@ -151,13 +151,13 @@ const Filter = React.memo(
                   <MenuOptionGroup
                      defaultValue={filter.schedule || []}
                      title=''
-                     fontSize='sm'
+                     fontSize='md'
                      type='checkbox'
                   >
                      <MenuItemOption
                         key='1'
                         value='1'
-                        fontSize='sm'
+                        fontSize='md'
                         onClick={(e) => handleScheduleFilter(e, '1')}
                      >
                         {t('schedule_status-true')}
@@ -165,7 +165,7 @@ const Filter = React.memo(
                      <MenuItemOption
                         key='2'
                         value='2'
-                        fontSize='sm'
+                        fontSize='md'
                         onClick={(e) => handleScheduleFilter(e, '2')}
                      >
                         {t('schedule_status-false')}

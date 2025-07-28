@@ -82,7 +82,7 @@ const ScheduleSelect = React.memo(
       return (
          <Flex w='full' gap={3} alignItems='flex-start' paddingTop={1}>
             <TaskCardLabel
-               icon={<PiCalendar />}
+               icon={<PiCalendar size={18} />}
                paddingTop={1}
                text={t('label-schedule')}
             />
@@ -91,12 +91,12 @@ const ScheduleSelect = React.memo(
                {scheduleTimeSlots}
 
                <Button
-                  size='xs'
+                  size='md'
                   colorScheme='gray'
                   onClick={handleAddSlot}
                   opacity={0.3}
                   variant='ghost'
-                  leftIcon={<PiPlus />}
+                  leftIcon={<PiPlus size={18} />}
                >
                   {t('btn-add-schedule')}
                </Button>

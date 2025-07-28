@@ -275,7 +275,7 @@ const TaskCard = React.memo(
          >
             <MenuButton
                as={IconButton}
-               icon={<PiDotsThreeBold />}
+               icon={<PiDotsThreeBold size={18} />}
                variant='ghost'
                size='xs'
                colorScheme='gray'
@@ -286,14 +286,14 @@ const TaskCard = React.memo(
             <MenuList>
                <MenuItem
                   icon={<PiPencilLine size={18} />}
-                  fontSize='sm'
+                  fontSize='md'
                   onClick={handleEditClick}
                >
                   {t('btn-edit-name')}
                </MenuItem>
                <MenuItem
                   icon={<PiTrash size={18} />}
-                  fontSize='sm'
+                  fontSize='md'
                   color='danger.primary'
                   onClick={handleDeleteClick}
                >

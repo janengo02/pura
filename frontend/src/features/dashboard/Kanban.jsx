@@ -185,21 +185,21 @@ const Kanban = React.memo(
                               {progressHeaders}
                               <IconButton
                                  aria-label={t('aria-options')}
-                                 icon={<PiPlusBold />}
+                                 icon={<PiPlusBold size={18} />}
                                  variant='ghost'
                                  colorScheme='gray'
                                  color='text.secondary'
-                                 size='sm'
+                                 size='md'
                                  onClick={handleCreateProgress}
                               />
                            </Flex>
                            {groupComponents}
                            <Button
-                              size='sm'
+                              size='md'
                               colorScheme='gray'
                               color='text.secondary'
                               variant='ghost'
-                              leftIcon={<PiPlus />}
+                              leftIcon={<PiPlus size={18} />}
                               onClick={handleCreateGroup}
                            >
                               {t('btn-add-group')}
@@ -211,11 +211,11 @@ const Kanban = React.memo(
                   <Text color='text.secondary'>
                      {t('guide-no_page')}
                      <Button
-                        size='sm'
+                        size='md'
                         colorScheme='gray'
                         opacity={0.3}
                         variant='ghost'
-                        leftIcon={<PiPlus />}
+                        leftIcon={<PiPlus size={18} />}
                      >
                         {t('btn-new_page')}
                      </Button>

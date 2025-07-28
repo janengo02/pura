@@ -18,7 +18,7 @@ import { useReactiveTranslation } from '../hooks/useReactiveTranslation'
 // =============================================================================
 
 const MENU_ITEM_STYLES = {
-   fontSize: 'sm'
+   fontSize: 'md'
 }
 
 // =============================================================================
@@ -46,7 +46,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
          <Text>{t('label-settings-theme')}</Text>
          <Switch
             isChecked={isDark}
-            size='sm'
+            size='md'
             colorScheme='purple'
             pointerEvents='none'
          />
@@ -57,7 +57,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
       return (
          <MenuItem
             onClick={handleToggle}
-            icon={isDark ? <PiMoon size={20} /> : <PiSun size={20} />}
+            icon={isDark ? <PiMoon size={18} /> : <PiSun size={18} />}
             {...MENU_ITEM_STYLES}
          >
             {content}
@@ -75,7 +75,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
          borderRadius='md'
          _hover={{ bg: 'gray.100', _dark: { bg: 'gray.700' } }}
       >
-         {isDark ? <PiMoon size={20} /> : <PiSun size={20} />}
+         {isDark ? <PiMoon size={18} /> : <PiSun size={18} />}
          {content}
       </Flex>
    )

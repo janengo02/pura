@@ -64,7 +64,7 @@ const ToastItem = React.memo(({ alert, onRemove }) => {
       if (alert.alertType === 'loading') {
          return (
             <Alert {...TOAST_STYLES} bg='bg.surface'>
-               <Spinner size='sm' marginInlineEnd={3} />
+               <Spinner size='md' marginInlineEnd={3} />
                <AlertTitle>{t(alert.title)}</AlertTitle>
                <AlertDescription>{t(alert.msg)}</AlertDescription>
             </Alert>

@@ -24,7 +24,7 @@ export const PasswordInput = ({
             {...props}
          />
          <InputRightElement width='4.5rem'>
-            <Button h='1.75rem' size='sm' onClick={handleClick}>
+            <Button h='1.75rem' size='md' onClick={handleClick}>
                {show ? t('btn-hide') : t('btn-show')}
             </Button>
          </InputRightElement>

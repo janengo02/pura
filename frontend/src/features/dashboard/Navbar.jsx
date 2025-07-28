@@ -53,7 +53,7 @@ NavbarWrapper.propTypes = {
  * Left section of navbar containing menu and title
  */
 const NavbarLeft = React.memo(({ title }) => (
-   <Heading as='h3' size='lg' color='text.primary'>
+   <Heading as='h2' size='lg' color='text.primary'>
       {title}
    </Heading>
 ))
@@ -76,7 +76,7 @@ const NavbarRight = React.memo(({ clearEventEditModalAction }) => {
             isRound
             variant={viewCalendar ? 'solid' : 'outline'}
             colorScheme='purple'
-            icon={<PiCalendarFill size={22} />}
+            icon={<PiCalendarFill size={18} />}
             onClick={() => {
                setViewCalendar((prev) => !prev)
                clearEventEditModalAction()

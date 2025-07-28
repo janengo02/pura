@@ -98,7 +98,10 @@ const ProgressSelect = React.memo(
 
       return (
          <Flex w='full' gap={3}>
-            <TaskCardLabel icon={<PiFlagBanner />} text={t('label-progress')} />
+            <TaskCardLabel
+               icon={<PiFlagBanner size={18} />}
+               text={t('label-progress')}
+            />
 
             <Menu isLazy isOpen={tagSelect.isOpen} onClose={tagSelect.onClose}>
                <MenuButton

@@ -50,12 +50,12 @@ const LANGUAGE_OPTIONS = [
 
 const BUTTON_STYLES = {
    variant: 'ghost',
-   size: 'sm',
+   size: 'md',
    colorScheme: 'gray'
 }
 
 const MENU_ITEM_STYLES = {
-   fontSize: 'sm'
+   fontSize: 'md'
 }
 
 // =============================================================================
@@ -90,8 +90,8 @@ const LanguageMenuButton = React.memo(({ currentLanguage }) => {
          rightIcon={<PiCaretDown size={12} />}
       >
          <HStack spacing={2}>
-            <Text fontSize='sm'>{currentLangInfo.flag}</Text>
-            <Text fontSize='sm'>{t(currentLangInfo.labelKey)}</Text>
+            <Text fontSize='md'>{currentLangInfo.flag}</Text>
+            <Text fontSize='md'>{t(currentLangInfo.labelKey)}</Text>
          </HStack>
       </MenuButton>
    )
@@ -120,7 +120,7 @@ const LanguageMenuOptions = React.memo(
                   onClick={() => onLanguageChange(value)}
                >
                   <HStack spacing={3}>
-                     <Text fontSize='sm'>{flag}</Text>
+                     <Text fontSize='md'>{flag}</Text>
                      <Text>{t(labelKey)}</Text>
                   </HStack>
                </MenuItemOption>

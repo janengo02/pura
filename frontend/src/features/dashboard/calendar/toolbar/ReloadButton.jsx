@@ -30,7 +30,7 @@ import useLoading from '../../../../hooks/useLoading'
 const BUTTON_STYLES = {
    'aria-label': 'Reload Calendar',
    variant: 'ghost',
-   size: 'sm',
+   size: 'md',
    colorScheme: 'gray',
    color: 'text.primary'
 }
@@ -88,7 +88,7 @@ const ReloadButton = React.memo(
       return (
          <IconButton
             {...BUTTON_STYLES}
-            icon={<PiArrowClockwise size={22} />}
+            icon={<PiArrowClockwise size={18} />}
             onClick={handleReloadClick}
             isLoading={isLoading}
          />

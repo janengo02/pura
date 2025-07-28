@@ -28,9 +28,9 @@ const EventDescription = ({ description }) => {
 
    return (
       <HStack align='start' spacing={3} w='full'>
-         <PiTextAlignLeft size={16} />
+         <PiTextAlignLeft size={18} />
          <Box
-            fontSize='sm'
+            fontSize='md'
             color='text.primary'
             flex={1}
             dangerouslySetInnerHTML={{ __html: getDisplayContent() }}
@@ -97,7 +97,7 @@ const EventDescriptionInput = React.memo(({ description, setDescription }) => {
 
    return (
       <HStack align='start' spacing={3} w='full'>
-         <PiTextAlignLeft size={16} />
+         <PiTextAlignLeft size={18} />
          <Box flex={1} w='full' className='quill-editor-container'>
             <ReactQuill
                value={getEditorContent()}

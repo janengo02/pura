@@ -39,7 +39,7 @@ const VIEW_LABELS = {
 
 const BUTTON_STYLES = {
    variant: 'ghost',
-   size: 'sm',
+   size: 'md',
    colorScheme: 'gray'
 }
 
@@ -135,10 +135,10 @@ const formatDateRange = (date, view, localizer, currentLanguage = 'en') => {
 const NavigationControls = React.memo(({ onNavigate, onToday }) => {
    const { t } = useReactiveTranslation()
    return (
-      <ButtonGroup size='sm' variant='ghost' colorScheme='gray'>
+      <ButtonGroup size='md' variant='ghost' colorScheme='gray'>
          <IconButton
             {...NAVIGATION_BUTTON_STYLES}
-            icon={<PiCaretLeft />}
+            icon={<PiCaretLeft size={18} />}
             onClick={() => onNavigate('PREV')}
          />
          <Button {...TODAY_BUTTON_STYLES} onClick={onToday}>
@@ -146,7 +146,7 @@ const NavigationControls = React.memo(({ onNavigate, onToday }) => {
          </Button>
          <IconButton
             {...NAVIGATION_BUTTON_STYLES}
-            icon={<PiCaretRight />}
+            icon={<PiCaretRight size={18} />}
             onClick={() => onNavigate('NEXT')}
          />
       </ButtonGroup>
@@ -204,7 +204,7 @@ const ViewSelector = React.memo(({ view, views, onView }) => {
          <MenuButton
             as={Button}
             {...BUTTON_STYLES}
-            rightIcon={<PiCaretDown />}
+            rightIcon={<PiCaretDown size={12} />}
             minW='100px'
          >
             {currentViewLabel}

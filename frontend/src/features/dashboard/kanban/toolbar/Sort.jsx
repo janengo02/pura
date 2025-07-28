@@ -40,18 +40,22 @@ const Sort = () => {
 
    return (
       <Menu isLazy>
-         <ControlMenuButton leftIcon={<PiArrowDown />}>{t('sort-name')}</ControlMenuButton>
+         <ControlMenuButton leftIcon={<PiArrowDown size={18} />}>
+            {t('sort-name')}
+         </ControlMenuButton>
 
          <MenuList>
             <Flex gap={2} paddingX={2} alignItems='flex-end'>
                {/* Sort By Dropdown */}
                <DropdownMenu label={t('sort-by')}>
-                  <DropdownMenuButton leftIcon={<PiTextTFill size={20} />}>
+                  <DropdownMenuButton leftIcon={<PiTextTFill size={18} />}>
                      {t('sort-name')}
                   </DropdownMenuButton>
                   <DropdownMenuList>
-                     <MenuItem icon={<PiTextTFill size={20} />}>{t('sort-name')}</MenuItem>
-                     <MenuItem icon={<PiCalendar size={20} />}>
+                     <MenuItem icon={<PiTextTFill size={18} />}>
+                        {t('sort-name')}
+                     </MenuItem>
+                     <MenuItem icon={<PiCalendar size={18} />}>
                         {t('sort-schedule')}
                      </MenuItem>
                   </DropdownMenuList>
@@ -59,14 +63,14 @@ const Sort = () => {
 
                {/* Order Dropdown */}
                <DropdownMenu label={t('sort-order')}>
-                  <DropdownMenuButton leftIcon={<PiArrowDown size={20} />}>
+                  <DropdownMenuButton leftIcon={<PiArrowDown size={18} />}>
                      {t('sort-descending')}
                   </DropdownMenuButton>
                   <DropdownMenuList>
-                     <MenuItem icon={<PiArrowUp size={20} />}>
+                     <MenuItem icon={<PiArrowUp size={18} />}>
                         {t('label-ascending')}
                      </MenuItem>
-                     <MenuItem icon={<PiArrowDown size={20} />}>
+                     <MenuItem icon={<PiArrowDown size={18} />}>
                         {t('label-descending')}
                      </MenuItem>
                   </DropdownMenuList>
@@ -76,8 +80,8 @@ const Sort = () => {
                <IconButton
                   variant='ghost'
                   color='text.secondary'
-                  size='sm'
-                  icon={<PiTrash />}
+                  size='md'
+                  icon={<PiTrash size={18} />}
                />
             </Flex>
          </MenuList>

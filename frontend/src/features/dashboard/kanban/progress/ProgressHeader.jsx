@@ -220,7 +220,7 @@ const ProgressHeader = React.memo(
                <MenuItemOption
                   key={colorOption.title_color}
                   value={colorOption.title_color}
-                  fontSize='sm'
+                  fontSize='md'
                   onClick={(e) => handleColorOptionClick(e, colorOption)}
                >
                   <Flex alignItems='center' gap={2}>
@@ -281,9 +281,9 @@ const ProgressHeader = React.memo(
             >
                <MenuButton
                   as={IconButton}
-                  icon={<PiDotsThreeBold />}
+                  icon={<PiDotsThreeBold size={18} />}
                   variant='ghost'
-                  size='xs'
+                  size='sm'
                   colorScheme={colorMode === 'dark' ? 'white' : 'blackAlpha'}
                   opacity={menuButtonOpacity}
                   onClick={dropdownMenu.onOpen}
@@ -291,7 +291,7 @@ const ProgressHeader = React.memo(
                <MenuList>
                   <MenuItem
                      icon={<PiPencilLine size={18} />}
-                     fontSize='sm'
+                     fontSize='md'
                      onClick={handleEditClick}
                   >
                      {t('btn-edit-name')}
@@ -301,7 +301,7 @@ const ProgressHeader = React.memo(
                   <MenuOptionGroup
                      defaultValue={progress.title_color}
                      title={t('label-color')}
-                     fontSize='sm'
+                     fontSize='md'
                      type='radio'
                   >
                      {colorOptions}
@@ -311,7 +311,7 @@ const ProgressHeader = React.memo(
                         <MenuDivider />
                         <MenuItem
                            icon={<PiTrash size={18} />}
-                           fontSize='sm'
+                           fontSize='md'
                            color='danger.primary'
                            onClick={handleDeleteClick}
                         >
@@ -333,14 +333,14 @@ const ProgressHeader = React.memo(
             variant='filled'
             bg={progress.color}
             paddingLeft={3}
-            paddingRight={2}
+            paddingRight={1}
             w={250}
-            h={8}
+            h={10}
             justifyContent='center'
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
          >
-            <Flex marginBottom={flexMarginBottom}>
+            <Flex marginBottom={flexMarginBottom} alignItems='center'>
                {titleEditing.isEditing || isNew
                   ? renderTitleInput()
                   : renderTitleDisplay()}

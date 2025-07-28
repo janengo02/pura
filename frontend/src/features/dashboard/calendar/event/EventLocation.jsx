@@ -12,9 +12,9 @@ const EventLocation = ({ location }) => {
 
    return (
       <HStack spacing={3}>
-         <PiMapPin size={16} />
+         <PiMapPin size={18} />
          <VStack align='start' spacing={0} maxW='full'>
-            <Text fontSize='sm' color='text.primary' isTruncated maxW='340px'>
+            <Text fontSize='md' color='text.primary' isTruncated maxW='340px'>
                {location.displayName}
             </Text>
             {location.address && (

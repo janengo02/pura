@@ -36,8 +36,8 @@ const EventVisibility = ({ visibility }) => {
 
    return (
       <HStack spacing={3}>
-         <PiLock size={16} />
-         <Text fontSize='sm' color='text.primary'>
+         <PiLock size={18} />
+         <Text fontSize='md' color='text.primary'>
             {visibilityText}
          </Text>
       </HStack>

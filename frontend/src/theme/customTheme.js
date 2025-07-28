@@ -470,7 +470,7 @@ const components = {
    Tooltip: {
       baseStyle: {
          fontFamily: fonts.body,
-         fontSize: 'sm'
+         fontSize: 'md'
       }
    },
 

@@ -133,7 +133,7 @@ const Register = React.memo(
                         label={t('label-name')}
                         placeholder={t('placeholder-name')}
                         validation={s.name}
-                        size='lg'
+                        size='md'
                         required
                      />
                   </GridItem>
@@ -145,7 +145,7 @@ const Register = React.memo(
                         label={t('label-email')}
                         placeholder={t('placeholder-email')}
                         validation={s.email}
-                        size='lg'
+                        size='md'
                         required
                      />
                   </GridItem>
@@ -157,7 +157,7 @@ const Register = React.memo(
                         label={t('label-password')}
                         helpertext={t('helpertext-password')}
                         validation={s.password}
-                        size='lg'
+                        size='md'
                         required
                      />
                   </GridItem>
@@ -168,14 +168,14 @@ const Register = React.memo(
                         type='password'
                         label={t('label-confirm_password')}
                         validation={s.confirm_password}
-                        size='lg'
+                        size='md'
                         required
                      />
                   </GridItem>
 
                   <GridItem colSpan={1}>
                      <Button
-                        size='lg'
+                        size='md'
                         w='full'
                         colorScheme='purple'
                         isLoading={isLoading}

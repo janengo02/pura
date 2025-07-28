@@ -29,10 +29,10 @@ const EventAttendees = ({ attendees }) => {
    return (
       <VStack align='start' spacing={2} w='full'>
          <HStack spacing={3} w='full'>
-            <PiUsers size={16} />
+            <PiUsers size={18} />
             <Button
                variant='ghost'
-               size='sm'
+               size='md'
                onClick={onToggle}
                justifyContent='space-between'
                flexDirection='row'
@@ -40,14 +40,14 @@ const EventAttendees = ({ attendees }) => {
                h='auto'
                w='full'
                rightIcon={
-                  isOpen ? <PiCaretUp size={14} /> : <PiCaretDown size={14} />
+                  isOpen ? <PiCaretUp size={12} /> : <PiCaretDown size={12} />
                }
                _hover={{ bg: 'transparent' }}
                _active={{ bg: 'transparent' }}
                _focus={{ bg: 'transparent' }}
             >
                <VStack align='start' spacing={1} w='full'>
-                  <Text fontSize='sm' fontWeight='medium' color='text.primary'>
+                  <Text fontSize='md' fontWeight='medium' color='text.primary'>
                      {t('event-attendees')} ({attendees.length})
                   </Text>
 
@@ -94,7 +94,7 @@ const EventAttendees = ({ attendees }) => {
                            <AttendeeAvatar attendee={attendee} />
                            <VStack align='start' spacing={0} flex={1} minW={0}>
                               <Text
-                                 fontSize='sm'
+                                 fontSize='md'
                                  color='text.primary'
                                  wordBreak='break-word'
                                  flex={1}
@@ -104,7 +104,7 @@ const EventAttendees = ({ attendees }) => {
                               </Text>
 
                               {attendee.isOrganizer && (
-                                 <Text fontSize='sm' color='text.secondary'>
+                                 <Text fontSize='md' color='text.secondary'>
                                     {t('attendee-organizer')}
                                  </Text>
                               )}

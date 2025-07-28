@@ -147,7 +147,7 @@ const Column = ({
                      colorScheme={colorMode === 'dark' ? 'white' : 'blackAlpha'}
                      color='text.muted'
                      justifyContent='flex-start'
-                     leftIcon={<PiPlus />}
+                     leftIcon={<PiPlus size={18} />}
                      onClick={handleCreateTask}
                   >
                      {t('btn-new')}

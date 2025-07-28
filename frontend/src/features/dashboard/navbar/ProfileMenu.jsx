@@ -64,7 +64,7 @@ const LANGUAGE_OPTIONS = [
 ]
 
 const MENU_ITEM_STYLES = {
-   fontSize: 'sm'
+   fontSize: 'md'
 }
 
 const DEFAULT_AVATAR = 'assets/img/no-avatar.svg'
@@ -100,7 +100,6 @@ ProfileAvatar.propTypes = {
    user: PropTypes.object
 }
 
-
 /**
  * Language selection section with Redux state management
  */
@@ -130,7 +129,7 @@ const LanguageSelection = React.memo(
          <MenuOptionGroup
             title={t('label-settings-language')}
             value={currentLanguage}
-            fontSize='sm'
+            fontSize='md'
             type='radio'
          >
             {languageMenuItems}
@@ -155,7 +154,7 @@ const ProfileActions = React.memo(({ onLogout }) => {
    const actionItems = useMemo(
       () => [
          {
-            icon: <PiSignOut size={20} />,
+            icon: <PiSignOut size={18} />,
             label: t('btn-logout'),
             onClick: onLogout,
             key: 'logout'

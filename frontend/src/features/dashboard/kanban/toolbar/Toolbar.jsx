@@ -87,9 +87,9 @@ const Toolbar = React.memo(
             <Flex gap={5} alignItems='center'>
                <Settings />
                <Button
-                  size='sm'
+                  size='md'
                   colorScheme='purple'
-                  leftIcon={<PiPlusCircleFill />}
+                  leftIcon={<PiPlusCircleFill size={18} />}
                   onClick={handleCreateTaskModal}
                >
                   {t('btn-new')}

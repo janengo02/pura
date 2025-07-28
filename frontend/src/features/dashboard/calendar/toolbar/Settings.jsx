@@ -55,7 +55,7 @@ import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 // =============================================================================
 
 const ACCOUNT_BUTTON_BASE_STYLES = {
-   size: 'sm',
+   size: 'md',
    px: 4,
    variant: 'outline'
 }
@@ -200,7 +200,7 @@ const Settings = React.memo(
                justifyContent='center'
                borderRadius='full'
             >
-               <PiStarFill size={10} />
+               <PiStarFill size={12} />
             </Badge>
          )
       }
@@ -212,7 +212,7 @@ const Settings = React.memo(
             <>
                <Divider />
                <MenuItem
-                  icon={<PiStar />}
+                  icon={<PiStar size={18} />}
                   onClick={() => handleSetDefaultAccount(account.accountEmail)}
                   isDisabled={isSettingDefault || !account.accountSyncStatus}
                >
@@ -243,7 +243,7 @@ const Settings = React.memo(
                      size={10}
                      alt='Google Calendar Status'
                   />
-                  <Text fontSize='sm'>{account.accountEmail}</Text>
+                  <Text fontSize='md'>{account.accountEmail}</Text>
                   {renderDefaultAccountBadge(account.isDefault)}
                </Box>
             </MenuButton>
@@ -260,13 +260,13 @@ const Settings = React.memo(
             <MenuList zIndex={10}>
                <MenuOptionGroup
                   title={t('label-my-calendars')}
-                  fontSize='sm'
+                  fontSize='md'
                   type='checkbox'
                   defaultValue={visibleCalendars}
                >
                   {!account.accountSyncStatus && (
                      <MenuItem
-                        icon={<PiPlugs />}
+                        icon={<PiPlugs size={18} />}
                         onClick={handleGoogleReconnect}
                      >
                         {t('btn-re_connect-google_calendar')}
@@ -292,7 +292,7 @@ const Settings = React.memo(
                                     color={calendar.color}
                                     size={18}
                                  />
-                                 <Text fontSize='sm'>{calendar.title}</Text>
+                                 <Text fontSize='md'>{calendar.title}</Text>
                               </Flex>
                            </MenuItemOption>
                         ))}
@@ -300,7 +300,7 @@ const Settings = React.memo(
                         {!account.isDefault && renderSetDefaultButton(account)}
                         {account.accountSyncStatus && (
                            <MenuItem
-                              icon={<PiPlugs />}
+                              icon={<PiPlugs size={18} />}
                               onClick={(e) => {
                                  e.preventDefault()
                                  handleGoogleDisconnect(account.accountEmail)
@@ -317,9 +317,9 @@ const Settings = React.memo(
       }
 
       const GoogleCalendarGroupTitle = () => (
-         <Button size='sm' colorScheme='gray' onClick={googleLogin}>
+         <Button size='md' colorScheme='gray' onClick={googleLogin}>
             <Flex w='max-content' gap={3}>
-               <PiCalendarPlus size={16} />
+               <PiCalendarPlus size={18} />
                {t('btn-connect-calendar')}
             </Flex>
          </Button>
