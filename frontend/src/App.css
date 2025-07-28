@@ -6,7 +6,7 @@
    /* Light mode colors */
    --bg-primary: #ffffff;
    --bg-secondary: #f7fafc;
-   --bg-tertiary: #edf2f7;
+   --bg-tertiary: #e2e8f0;
    --text-primary: #1a202c;
    --text-secondary: #4a5568;
    --text-muted: #718096;
@@ -638,8 +638,8 @@
 }
 
 /* Force popover to appear on top of everything */
-[role="dialog"].event-wrapper-popover,
-[role="dialog"] .event-wrapper-popover {
+[role='dialog'].event-wrapper-popover,
+[role='dialog'] .event-wrapper-popover {
    z-index: 10000 !important;
 }
 
@@ -664,7 +664,10 @@
 
 /* Force all calendar elements to have lower z-index than popover */
 .rbc-calendar,
-.rbc-calendar *:not(.chakra-popover__content):not(.chakra-popover__popper):not([data-popper-placement]) {
+.rbc-calendar
+   *:not(.chakra-popover__content):not(.chakra-popover__popper):not(
+      [data-popper-placement]
+   ) {
    z-index: auto !important;
 }
 
@@ -689,10 +692,10 @@
 }
 
 /* Nuclear option: force all popover elements to highest z-index */
-[class*="chakra-popover"],
-[class*="popover"],
-[role="dialog"],
-[role="tooltip"] {
+[class*='chakra-popover'],
+[class*='popover'],
+[role='dialog'],
+[role='tooltip'] {
    z-index: 10000 !important;
 }
 
@@ -700,4 +703,126 @@
 .event-wrapper-popover,
 .event-wrapper-popover * {
    z-index: 10000 !important;
+}
+
+/* =============================================================================
+      REACT QUILL RICH TEXT EDITOR STYLING
+      ============================================================================= */
+
+/* Quill editor container styling */
+.quill-editor-container .ql-editor {
+   background-color: var(--bg-secondary) !important;
+   border: none !important;
+   font-size: 14px !important;
+   min-height: 100px !important;
+   padding: 12px !important;
+   color: var(--text-primary) !important;
+   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Quill toolbar styling */
+.quill-editor-container .ql-toolbar {
+   background-color: var(--bg-secondary) !important;
+   border: none !important;
+   border-bottom: none !important;
+   border-top-left-radius: 6px !important;
+   border-top-right-radius: 6px !important;
+   padding: 8px 12px !important;
+   transition: background-color 0.2s ease;
+}
+
+/* Quill container styling */
+.quill-editor-container .ql-container {
+   background-color: var(--bg-secondary) !important;
+   border: none !important;
+   border-top: none !important;
+   border-bottom-left-radius: 6px !important;
+   border-bottom-right-radius: 6px !important;
+   font-size: 14px !important;
+   transition: background-color 0.2s ease;
+}
+
+/* Quill toolbar button styling */
+.quill-editor-container .ql-toolbar .ql-stroke {
+   stroke: var(--text-primary) !important;
+   transition: stroke 0.2s ease;
+}
+
+.quill-editor-container .ql-toolbar .ql-fill {
+   fill: var(--text-primary) !important;
+   transition: fill 0.2s ease;
+}
+
+.quill-editor-container .ql-toolbar .ql-picker-label {
+   color: var(--text-primary) !important;
+   transition: color 0.2s ease;
+}
+.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+   border: 'none' !important;
+}
+
+/* Quill placeholder styling */
+.quill-editor-container .ql-editor.ql-blank::before {
+   color: var(--text-muted) !important;
+   font-style: normal !important;
+   transition: color 0.2s ease;
+}
+
+/* Quill toolbar button hover effects */
+.quill-editor-container .ql-toolbar button:hover {
+   background-color: var(--bg-tertiary) !important;
+   border-radius: 4px !important;
+}
+
+.quill-editor-container .ql-toolbar button.ql-active {
+   background-color: var(--bg-tertiary) !important;
+   color: white !important;
+   border-radius: 4px !important;
+}
+
+/* Quill snow theme border override */
+.quill-editor-container .ql-toolbar.ql-snow {
+   border: none !important;
+}
+
+.quill-editor-container .ql-container.ql-snow {
+   border: none !important;
+}
+
+/* Quill content formatting */
+.quill-editor-container .ql-editor p {
+   margin-bottom: 0.5em !important;
+}
+
+.quill-editor-container .ql-editor ul,
+.quill-editor-container .ql-editor ol {
+   padding-left: 1.5em !important;
+   margin-bottom: 0.5em !important;
+}
+
+.quill-editor-container .ql-editor li {
+   margin-bottom: 0.25em !important;
+}
+
+.quill-editor-container .ql-editor a {
+   color: #3182ce !important;
+   text-decoration: underline !important;
+}
+
+.quill-editor-container .ql-editor strong {
+   font-weight: bold !important;
+}
+
+.quill-editor-container .ql-editor em {
+   font-style: italic !important;
+}
+
+.quill-editor-container .ql-editor u {
+   text-decoration: underline !important;
+}
+
+/* Dark mode adjustments for Quill editor */
+[data-theme='dark'] .quill-editor-container .ql-editor a,
+.chakra-ui-dark .quill-editor-container .ql-editor a {
+   color: #63b3ed !important;
 }

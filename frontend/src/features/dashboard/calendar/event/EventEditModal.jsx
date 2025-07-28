@@ -308,7 +308,7 @@ const EventEditModal = React.memo(
 
       const renderModalBody = () => (
          <CardBody h='full'>
-            <VStack w='full' alignItems='flex-start' spacing={2}>
+            <VStack w='full' alignItems='flex-start' spacing={3}>
                <EventTimeInput
                   startTime={startTime}
                   setStartTime={setStartTime}

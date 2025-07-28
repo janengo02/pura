@@ -2,26 +2,47 @@
 // EVENT DESCRIPTION COMPONENT
 // =============================================================================
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { HStack, Text, Textarea } from '@chakra-ui/react'
+import { HStack, Box } from '@chakra-ui/react'
 import { PiTextAlignLeft } from 'react-icons/pi'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 
 const EventDescription = ({ description }) => {
    if (!description) return null
 
+   // Check if description contains HTML tags
+   const isHTML = /<[^>]*>/g.test(description)
+
+   // Convert plain text line breaks to HTML if needed
+   const getDisplayContent = () => {
+      if (isHTML) {
+         return description
+      } else {
+         // Convert plain text line breaks to HTML <br> tags
+         return description.replace(/\n/g, '<br>')
+      }
+   }
+
    return (
       <HStack align='start' spacing={3} w='full'>
          <PiTextAlignLeft size={16} />
-         <Text
+         <Box
             fontSize='sm'
             color='text.primary'
-            whiteSpace='pre-wrap'
-            wordBreak='break-word'
             flex={1}
-         >
-            {description}
-         </Text>
+            dangerouslySetInnerHTML={{ __html: getDisplayContent() }}
+            sx={{
+               '& p': { margin: 0, marginBottom: '0.5em' },
+               '& ul, & ol': { paddingLeft: '1.5em', marginBottom: '0.5em' },
+               '& li': { marginBottom: '0.25em' },
+               '& a': { color: 'blue.500', textDecoration: 'underline' },
+               '& strong': { fontWeight: 'bold' },
+               '& em': { fontStyle: 'italic' },
+               '& u': { textDecoration: 'underline' }
+            }}
+         />
       </HStack>
    )
 }
@@ -32,28 +53,59 @@ EventDescription.propTypes = {
 
 const EventDescriptionInput = React.memo(({ description, setDescription }) => {
    const handleDescriptionChange = useCallback(
-      (e) => {
-         setDescription(e.target.value)
+      (content) => {
+         setDescription(content)
       },
       [setDescription]
+   )
+
+   // Convert plain text line breaks to HTML for the editor
+   const getEditorContent = useCallback(() => {
+      if (!description) return ''
+
+      // Check if description contains HTML tags
+      const isHTML = /<[^>]*>/g.test(description)
+
+      if (isHTML) {
+         return description
+      } else {
+         // Convert plain text line breaks to HTML <br> tags for the editor
+         return description.replace(/\n/g, '<br>')
+      }
+   }, [description])
+
+   // Quill editor configuration
+   const modules = useMemo(
+      () => ({
+         toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link'],
+            ['clean']
+         ]
+      }),
+      []
+   )
+
+   const formats = useMemo(
+      () => ['header', 'bold', 'italic', 'underline', 'list', 'bullet', 'link'],
+      []
    )
 
    return (
       <HStack align='start' spacing={3} w='full'>
          <PiTextAlignLeft size={16} />
-         <Textarea
-            value={description}
-            onChange={handleDescriptionChange}
-            placeholder='Event description'
-            variant='filled'
-            minH='100px'
-            resize='none'
-            bg='bg.canvas'
-            rows={10}
-            _hover={{ bg: 'bg.canvas' }}
-            _active={{ bg: 'bg.canvas' }}
-            _focusVisible={{ bg: 'bg.canvas', borderColor: 'transparent' }}
-         />
+         <Box flex={1} w='full' className='quill-editor-container'>
+            <ReactQuill
+               value={getEditorContent()}
+               onChange={handleDescriptionChange}
+               modules={modules}
+               formats={formats}
+               placeholder='Event description...'
+               theme='snow'
+            />
+         </Box>
       </HStack>
    )
 })
