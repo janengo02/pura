@@ -40,17 +40,15 @@ import {
    PiPalette,
    PiGlobe,
    PiShield,
-   PiRocket,
    PiCode,
    PiDatabase,
-   PiDevices,
    PiLightning,
    PiArrowRight,
    PiCheckCircle,
-   PiStar,
    PiPlay,
    PiImage,
-   PiVideo
+   PiClock,
+   PiTarget
 } from 'react-icons/pi'
 
 // Internal Components
@@ -66,76 +64,72 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 const TECH_STACK = [
    {
-      category: 'Frontend Technologies',
+      category: 'Frontend Implementation',
       technologies: [
          {
             name: 'React 18 + Hooks',
-            description: 'Modern functional components with custom hooks',
+            description: 'Functional components with custom hooks architecture',
             icon: PiCode
          },
          {
-            name: 'Redux + Thunk',
-            description: 'State management with async action handling',
+            name: 'Redux',
+            description: 'Centralized state management with optimistic updates',
             icon: PiDatabase
          },
          {
             name: 'Chakra UI + Theming',
-            description: 'Component library with dark/light theme system',
+            description: 'Component library with custom theme system',
             icon: PiPalette
          },
          {
             name: 'React Hook Form + Yup',
-            description: 'Form handling with schema validation',
+            description: 'Form validation with schema-based validation',
             icon: PiCheckCircle
          },
          {
-            name: '@hello-pangea/dnd',
-            description: 'Drag and drop functionality for Kanban board',
+            name: 'Modern libraries',
+            description:
+               'Utilizing the power of hello-pangea/dnd and react-big-calendar',
             icon: PiKanban
          },
          {
-            name: 'React Big Calendar',
-            description: 'Calendar component for task scheduling',
-            icon: PiCalendar
-         },
-         {
-            name: 'Internationalization',
-            description: 'i18next for English and Japanese support',
+            name: 'i18next Integration',
+            description: 'Internationalization with reactive translations',
             icon: PiGlobe
          }
       ]
    },
    {
-      category: 'Backend & APIs',
+      category: 'Backend Architecture',
       technologies: [
          {
             name: 'Node.js + Express',
-            description: 'RESTful API server with middleware',
+            description: 'RESTful API with middleware architecture',
             icon: PiGear
          },
          {
             name: 'MongoDB + Mongoose',
-            description: 'NoSQL database with ODM for data modeling',
+            description: 'Document database with ODM integration',
             icon: PiDatabase
          },
          {
             name: 'JWT Authentication',
-            description: 'Token-based auth with bcrypt password hashing',
+            description: 'Token-based auth with refresh token rotation',
             icon: PiShield
          },
          {
-            name: 'Google Calendar API',
-            description: 'OAuth 2.0 integration for calendar sync',
+            name: 'Google APIs',
+            description: 'Google Calendar, Meet and Map API integration',
             icon: PiCalendar
          },
          {
-            name: 'Google OAuth',
-            description: 'Secure authentication with Google accounts',
+            name: 'Google OAuth 2.0',
+            description: 'Secure authentication flow implementation',
             icon: PiUsers
          },
          {
             name: 'Protected Routes',
-            description: 'React Router v6 with authentication guards',
+            description: 'Route-level authentication guards',
             icon: PiShield
          }
       ]
@@ -144,31 +138,31 @@ const TECH_STACK = [
 
 const FEATURES = [
    {
-      title: 'Drag & Drop Kanban Board',
+      title: 'Interactive Kanban Board',
       description:
-         'Interactive task management with @hello-pangea/dnd, supporting drag between columns and groups with Redux state management',
+         'Drag-and-drop task management with real-time state synchronization. Features custom drag previews, drop zones, and smooth animations.',
       icon: PiKanban,
       color: 'blue'
    },
    {
-      title: 'Google Calendar Integration',
+      title: 'Google Calendar Sync',
       description:
-         'OAuth 2.0 authentication with Google Calendar API for viewing, creating, and editing calendar events directly in the app',
+         'Bidirectional calendar integration with OAuth 2.0 authentication. View, create, and edit Google Calendar events within the application.',
       icon: PiCalendar,
       color: 'green'
    },
    {
-      title: 'Task & Project Management',
+      title: 'Task Management System',
       description:
-         'Create tasks, organize into groups, set schedules, and track progress with filtering and search capabilities',
-      icon: PiUsers,
+         'Comprehensive task organization with groups, scheduling, and progress tracking. Includes search and filtering capabilities.',
+      icon: PiClock,
       color: 'purple'
    },
    {
-      title: 'Multi-language Support',
+      title: 'Internationalization',
       description:
-         'Internationalization with i18next supporting English and Japanese languages with theme switching',
-      icon: PiPalette,
+         'Full i18n support with English and Japanese locales. Theme switching with persistent user preferences.',
+      icon: PiGlobe,
       color: 'orange'
    }
 ]
@@ -176,37 +170,39 @@ const FEATURES = [
 const DEMO_FEATURES = [
    {
       id: 'kanban-demo',
-      title: 'Interactive Kanban Board',
+      title: 'Kanban Board Implementation',
       subtitle: 'Drag & Drop Task Management',
       description:
-         'Built with @hello-pangea/dnd library, the Kanban board allows users to drag tasks between different columns and groups. Tasks can be organized by progress status, with real-time updates to the Redux store and MongoDB backend.',
+         'Tasks can be moved between columns and groups with real-time Redux state updates and MongoDB persistence. The implementation includes custom drag previews, drop animations, and optimistic UI updates.',
       features: [
          {
-            title: 'Drag & Drop Tasks',
+            title: 'Drag & Drop Interface',
             description:
-               'Drag tasks between columns and groups with smooth animations',
+               'Smooth drag interactions with visual feedback and accessibility support',
             mediaType: 'video',
             mediaSrc: '/assets/videos/kanban-drag-drop.mp4',
-            mediaAlt: 'Kanban board drag and drop demonstration'
+            mediaAlt: 'Kanban board drag and drop functionality demonstration'
          },
          {
-            title: 'Customizable colors and titles',
+            title: 'Customizable Layouts',
             description:
-               'Easily customize colors and titles for each column and group',
+               'Dynamic column and group creation with color customization',
             mediaType: 'image',
             mediaSrc: '/assets/images/mobile-kanban.png',
-            mediaAlt: 'Customizable Kanban board'
+            mediaAlt: 'Customizable Kanban board layout options'
          },
          {
             title: 'Task Scheduling',
-            description: 'Add multiple schedules and deadlines to each task',
+            description:
+               'Multiple schedules per task are supported for flexible timeboxing',
             mediaType: 'image',
             mediaSrc: '/assets/images/task-scheduling.png',
-            mediaAlt: 'Task creation modal with scheduling options'
+            mediaAlt: 'Task creation modal with scheduling interface'
          },
          {
-            title: 'Search & Filter',
-            description: 'Filter and search tasks across all groups',
+            title: 'Advanced Filtering',
+            description:
+               'Real-time search and filter functionality across tasks',
             mediaType: 'image',
             mediaSrc: '/assets/images/task-filtering.png',
             mediaAlt: 'Task filtering and search interface'
@@ -216,85 +212,101 @@ const DEMO_FEATURES = [
    },
    {
       id: 'calendar-demo',
-      title: 'Google Calendar Integration',
-      subtitle: 'Calendar Sync & Event Management',
+      title: 'Calendar Integration',
+      subtitle: 'Google Calendar API Implementation',
       description:
-         'Connect your Google account to sync calendar events with tasks. View your Google Calendar events alongside PURA tasks, create new events, and edit existing ones directly from the application using the Google Calendar API.',
+         'OAuth 2.0 integration with Google Calendar API enables seamless calendar synchronization. The implementation supports multiple Google calendars, event creation/editing, and conflict detection. Calendar data is cached locally with background sync for optimal performance.',
       features: [
          {
             title: 'OAuth Authentication',
-            description: 'OAuth 2.0 authentication with Google accounts',
+            description:
+               'Secure Google OAuth 2.0 implementation with token management',
             mediaType: 'image',
             mediaSrc: '/assets/images/google-oauth.png',
             mediaAlt: 'Google OAuth authentication flow'
          },
          {
-            title: 'Calendar Views',
-            description: 'Split pane interface with month, week, and day views',
+            title: 'Multiple View Modes',
+            description: 'Month, week, and day views with responsive design',
             mediaType: 'image',
             mediaSrc: '/assets/images/calendar-views.png',
-            mediaAlt: 'Different calendar view options'
+            mediaAlt: 'Calendar application with multiple view options'
          },
          {
-            title: 'Multi-Calendar Sync & Direct Editing',
+            title: 'Event Management',
             description:
-               'Sync multiple Google calendars and edit Google Calendar events from within PURA',
+               'Create, edit, and delete Google Calendar events directly',
             mediaType: 'image',
             mediaSrc: '/assets/images/multi-calendar.png',
-            mediaAlt: 'Multiple Google calendars synchronized'
+            mediaAlt: 'Google Calendar event management interface'
          },
          {
-            title: 'Conflict Resolution',
-            description: 'Handle calendar conflicts and overlapping events',
+            title: 'Conflict Detection',
+            description:
+               'Automatic detection and handling of scheduling conflicts',
             mediaType: 'image',
             mediaSrc: '/assets/images/conflict-resolution.png',
-            mediaAlt: 'Calendar conflict resolution interface'
+            mediaAlt: 'Calendar conflict detection and resolution system'
          }
       ],
       reversed: true
    },
    {
       id: 'ux-demo',
-      title: 'Polished User Experience',
-      subtitle: 'Accessibility, Themes & User Feedback',
+      title: 'User Experience Design',
+      subtitle: 'Accessibility & Internationalization',
       description:
-         'PURA demonstrates comprehensive UX design with internationalization, theme switching, error handling, and responsive design. Every interaction is crafted to provide smooth, accessible, and user-friendly experience across all devices.',
+         'The application implements comprehensive UX patterns including theme switching, internationalization, error handling, and responsive design. All interactions include proper loading states, error boundaries, and accessibility features for screen readers.',
       features: [
          {
             title: 'Theme System',
             description:
-               'Complete dark/light theme system with Chakra UI integration',
+               'Dynamic theme switching with Chakra UI integration and persistence',
             mediaType: 'image',
             mediaSrc: '/assets/images/theme-switching.png',
-            mediaAlt: 'Dark and light theme comparison'
+            mediaAlt: 'Dark and light theme switching demonstration'
          },
          {
             title: 'Internationalization',
             description:
-               'English & Japanese language support with reactive translations',
+               'React i18next implementation with English and Japanese support',
             mediaType: 'image',
             mediaSrc: '/assets/images/language-switching.png',
-            mediaAlt: 'Language switching between English and Japanese'
+            mediaAlt:
+               'Language switching interface between English and Japanese'
          },
          {
-            title: 'Optimistic UI',
+            title: 'Optimistic Updates',
             description:
-               'Optimistic updates for a seamless user experience with graceful fallbacks',
+               'Immediate UI feedback with graceful error handling and rollback',
             mediaType: 'image',
             mediaSrc: '/assets/images/optimistic-ui.png',
-            mediaAlt: 'Optimistic UI updates in action'
+            mediaAlt: 'Optimistic UI updates with error handling'
          },
          {
-            title: 'Error Handling & Form Validation',
+            title: 'Form Validation',
             description:
-               'Comprehensive error handling and form validation with user-friendly messages',
+               'Real-time validation with React Hook Form and Yup schemas',
             mediaType: 'image',
             mediaSrc: '/assets/images/error-handling.png',
-            mediaAlt: 'Error alerts and validation messages'
+            mediaAlt: 'Form validation and error handling interface'
          }
       ],
       reversed: false
    }
+]
+
+const HASHTAGS = [
+   { text: 'ReactJS', colorScheme: 'blue' },
+   { text: 'Redux', colorScheme: 'purple' },
+   { text: 'NodeJS', colorScheme: 'teal' },
+   { text: 'ExpressJS', colorScheme: 'yellow' },
+   { text: 'MongoDB', colorScheme: 'green' },
+   { text: 'Yup', colorScheme: 'gray' },
+   { text: 'ChakraUI', colorScheme: 'cyan' },
+   { text: 'Google APIs', colorScheme: 'red' },
+   { text: 'i18next', colorScheme: 'pink' },
+   { text: 'JWT Authentication', colorScheme: 'orange' }
 ]
 
 // =============================================================================
@@ -317,7 +329,7 @@ const LandingHeader = React.memo(() => {
          p={6}
          position='sticky'
          top={0}
-         bg='bg.surface'
+         bg='bg.canvas'
          borderBottom='1px'
          borderColor='border.default'
          zIndex={10}
@@ -336,10 +348,10 @@ const LandingHeader = React.memo(() => {
             <ThemeToggle asMenuItem={false} />
             <LanguageSwitcher />
             <Button variant='ghost' onClick={() => navigate('/login')}>
-               Log In
+               Demo Login
             </Button>
             <Button colorScheme='purple' onClick={() => navigate('/register')}>
-               Get Started
+               View Demo
             </Button>
          </HStack>
       </Flex>
@@ -366,7 +378,7 @@ const HeroSection = React.memo(() => {
                borderRadius='full'
                fontSize='md'
             >
-               💻 Full-Stack Engineering Portfolio
+               📋 Task Management Application
             </Badge>
 
             <Heading
@@ -385,24 +397,40 @@ const HeroSection = React.memo(() => {
                lineHeight='tall'
                maxW='3xl'
             >
-               A full-stack task management application built with React,
-               Node.js, and MongoDB. Features drag-and-drop Kanban boards,
-               Google Calendar integration, and multi-language support to
-               demonstrate modern web development skills.
+               A full-stack task management application featuring Kanban boards
+               with drag-and-drop functionality, Google Calendar integration,
+               and comprehensive internationalization. Built with React,
+               Node.js, and MongoDB.
             </Text>
 
+            <HStack spacing={4} wrap='wrap' justifyContent='center' maxW='3xl'>
+               {HASHTAGS.map((tag, index) => (
+                  <Badge
+                     key={index}
+                     colorScheme={tag.colorScheme}
+                     variant='outline'
+                     px={4}
+                     py={2}
+                     borderRadius='full'
+                     fontSize='sm'
+                  >
+                     {tag.text}
+                  </Badge>
+               ))}
+            </HStack>
             <HStack spacing={4} pt={4}>
                <Button
-                  size='md'
+                  size='lg'
                   colorScheme='purple'
-                  rightIcon={<PiArrowRight size={18} />}
+                  rightIcon={<PiArrowRight size={20} />}
                   onClick={() => navigate('/register')}
                >
-                  Try the Demo
+                  Explore Application
                </Button>
                <Button
-                  size='md'
+                  size='lg'
                   variant='outline'
+                  leftIcon={<PiCode size={20} />}
                   onClick={() =>
                      window.open('https://github.com/janengo02/pura', '_blank')
                   }
@@ -410,6 +438,10 @@ const HeroSection = React.memo(() => {
                   View Source Code
                </Button>
             </HStack>
+
+            <Text fontSize='sm' color='text.secondary' mt={4}>
+               Interactive demo available • Full source code on GitHub
+            </Text>
          </VStack>
       </Container>
    )
@@ -430,20 +462,31 @@ const FeaturesSection = React.memo(() => {
                key={index}
                variant='outline'
                transition='all 0.3s'
+               borderRadius={6}
                _hover={{
                   transform: 'translateY(-4px)',
-                  shadow: 'lg'
+                  shadow: '2xl',
+                  borderColor: `${feature.color}.200`
                }}
             >
                <CardBody p={8}>
-                  <VStack spacing={4} align='center' textAlign='center'>
-                     <Icon
-                        as={feature.icon}
-                        boxSize={12}
+                  <VStack spacing={6} align='center' textAlign='center'>
+                     <Flex
+                        boxSize={16}
+                        borderRadius='full'
+                        justifyContent='center'
+                        alignItems='center'
+                        bg={`${feature.color}.100`}
                         color={`${feature.color}.500`}
-                     />
-                     <Heading size='md'>{feature.title}</Heading>
-                     <Text color='text.secondary'>{feature.description}</Text>
+                     >
+                        <Icon as={feature.icon} boxSize={8} />
+                     </Flex>
+                     <Heading size='md' color='text.primary'>
+                        {feature.title}
+                     </Heading>
+                     <Text color='text.secondary' lineHeight='tall'>
+                        {feature.description}
+                     </Text>
                   </VStack>
                </CardBody>
             </Card>
@@ -455,10 +498,23 @@ const FeaturesSection = React.memo(() => {
       <Container maxW='7xl' py={20}>
          <VStack spacing={12}>
             <VStack spacing={4} textAlign='center'>
-               <Heading size='2xl'>Technical Highlights</Heading>
+               <Badge
+                  colorScheme='blue'
+                  variant='subtle'
+                  px={3}
+                  py={1}
+                  borderRadius={4}
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+               >
+                  <Icon as={PiTarget} mr={2} />
+                  Key Features
+               </Badge>
+               <Heading size='2xl'>Application Overview</Heading>
                <Text fontSize='lg' color='text.secondary' maxW='3xl'>
-                  Key engineering implementations that demonstrate modern web
-                  development expertise and problem-solving capabilities.
+                  Core functionality implemented in this application experience
+                  design.
                </Text>
             </VStack>
 
@@ -474,6 +530,8 @@ const FeaturesSection = React.memo(() => {
    )
 })
 
+FeaturesSection.displayName = 'FeaturesSection'
+
 /**
  * Demo feature section with interactive media selection
  */
@@ -485,7 +543,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
 
    const handleFeatureSelect = useCallback((featureIndex) => {
       setSelectedFeature(featureIndex)
-      setIsVideoPlaying(false) // Reset video playing state when switching features
+      setIsVideoPlaying(false)
    }, [])
 
    const handleVideoPlay = useCallback(() => {
@@ -518,7 +576,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                         w='full'
                         h='400px'
                         objectFit='cover'
-                        fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Video+Demo'
+                        fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Demo'
                      />
                      <Center
                         position='absolute'
@@ -528,12 +586,15 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                         bg='blackAlpha.700'
                         color='white'
                         borderRadius='full'
-                        w={16}
-                        h={16}
-                        _hover={{ bg: 'blackAlpha.800' }}
-                        transition='background 0.2s'
+                        w={20}
+                        h={20}
+                        _hover={{
+                           bg: 'blackAlpha.800',
+                           transform: 'translate(-50%, -50%) scale(1.1)'
+                        }}
+                        transition='all 0.2s'
                      >
-                        <Icon as={PiPlay} boxSize={8} />
+                        <Icon as={PiPlay} boxSize={10} />
                      </Center>
                   </Box>
                ) : (
@@ -557,21 +618,25 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             shadow='2xl'
             _hover={{ transform: 'scale(1.02)' }}
             transition='transform 0.3s'
-            fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Demo'
+            fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Preview'
          />
       )
    }, [currentFeature, isVideoPlaying, handleVideoPlay])
 
    const content = (
       <VStack align='start' spacing={6} flex={1}>
-         <Badge colorScheme='purple' variant='subtle' px={3} py={1}>
-            <Icon
-               as={currentFeature.mediaType === 'video' ? PiVideo : PiImage}
-               mr={2}
-            />
-            {currentFeature.mediaType === 'video'
-               ? 'Interactive Demo'
-               : 'Feature Preview'}
+         <Badge
+            colorScheme='purple'
+            variant='subtle'
+            px={3}
+            py={1}
+            borderRadius={4}
+            display='flex'
+            alignItems='center'
+            justifyContent='center'
+         >
+            <Icon as={PiImage} mr={2} />
+            Implementation Preview
          </Badge>
 
          <VStack align='start' spacing={4}>
@@ -581,14 +646,14 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             <Text fontSize='lg' color='accent.primary' fontWeight='semibold'>
                {feature.subtitle}
             </Text>
-            <Text fontSize='md' color='text.secondary' lineHeight='tall'>
+            <Text fontSize='md' color='text.primary' lineHeight='tall'>
                {feature.description}
             </Text>
          </VStack>
 
          <VStack align='start' spacing={4} w='full'>
             <Text fontSize='md' fontWeight='semibold' color='text.primary'>
-               Explore Features:
+               Implementation Details:
             </Text>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w='full'>
                {feature.features.map((item, idx) => (
@@ -602,23 +667,40 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                         <Icon
                            as={PiCheckCircle}
                            color={
-                              selectedFeature === idx ? 'white' : 'green.500'
+                              selectedFeature === idx
+                                 ? 'accent.subtle'
+                                 : 'success.secondary'
                            }
                         />
                      }
                      justifyContent='flex-start'
                      textAlign='left'
                      h='auto'
-                     py={3}
+                     py={4}
                      px={4}
                      whiteSpace='normal'
                      fontWeight='normal'
                   >
                      <VStack align='start' spacing={1}>
-                        <Text fontSize='xs' fontWeight='bold'>
+                        <Text
+                           fontWeight='bold'
+                           color={
+                              selectedFeature === idx
+                                 ? 'text.highlight'
+                                 : 'text.primary'
+                           }
+                        >
                            {item.title}
                         </Text>
-                        <Text fontSize='xs' opacity={0.8}>
+                        <Text
+                           fontSize='sm'
+                           opacity={0.8}
+                           color={
+                              selectedFeature === idx
+                                 ? 'text.highlight'
+                                 : 'text.primary'
+                           }
+                        >
                            {item.description}
                         </Text>
                      </VStack>
@@ -630,7 +712,11 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
    )
 
    return (
-      <Container maxW='7xl' py={20}>
+      <Container
+         maxW='7xl'
+         py={20}
+         id={index === 0 ? 'demo-section' : undefined}
+      >
          <SimpleGrid
             columns={{ base: 1, lg: 2 }}
             spacing={12}
@@ -681,12 +767,12 @@ const DemoFeaturesShowcase = React.memo(() => {
    const { t } = useReactiveTranslation()
 
    return (
-      <Box>
+      <Box bg='bg.canvas'>
          {DEMO_FEATURES.map((feature, index) => (
             <Box key={feature.id}>
                <DemoFeatureSection feature={feature} index={index} />
                {index < DEMO_FEATURES.length - 1 && (
-                  <Box bg='bg.canvas' py={1}>
+                  <Box py={1}>
                      <Container maxW='7xl'>
                         <Divider opacity={0.3} />
                      </Container>
@@ -720,7 +806,10 @@ const TechStackSection = React.memo(() => {
                         variant='filled'
                         size='md'
                         transition='all 0.2s'
-                        _hover={{ bg: 'accent.subtle' }}
+                        _hover={{
+                           bg: 'accent.subtle',
+                           transform: 'translateY(-2px)'
+                        }}
                      >
                         <CardBody>
                            <HStack spacing={3}>
@@ -731,7 +820,7 @@ const TechStackSection = React.memo(() => {
                               />
                               <Box>
                                  <Text fontWeight='bold'>{tech.name}</Text>
-                                 <Text fontSize='md' color='text.muted'>
+                                 <Text fontSize='sm' color='text.secondary'>
                                     {tech.description}
                                  </Text>
                               </Box>
@@ -746,29 +835,34 @@ const TechStackSection = React.memo(() => {
    )
 
    return (
-      <Box bg='bg.canvas' py={20}>
-         <Container maxW='7xl'>
-            <VStack spacing={12}>
-               <VStack spacing={4} textAlign='center'>
-                  <Badge colorScheme='purple' variant='subtle' px={3} py={1}>
-                     <Icon as={PiLightning} mr={2} />
-                     Technical Implementation
-                  </Badge>
-                  <Heading size='2xl'>Engineering & Architecture</Heading>
-                  <Text fontSize='lg' color='text.secondary' maxW='3xl'>
-                     This project demonstrates modern full-stack development
-                     practices, clean architecture patterns, and scalable code
-                     organization. Each technology choice was made to showcase
-                     specific engineering skills.
-                  </Text>
-               </VStack>
-
-               <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={12} w='full'>
-                  {techCategories}
-               </SimpleGrid>
+      <Container maxW='7xl' py={20}>
+         <VStack spacing={12}>
+            <VStack spacing={4} textAlign='center'>
+               <Badge
+                  colorScheme='green'
+                  variant='subtle'
+                  px={3}
+                  py={1}
+                  borderRadius={4}
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+               >
+                  <Icon as={PiLightning} mr={2} />
+                  Technical Implementation
+               </Badge>
+               <Heading size='2xl'>Technology Stack</Heading>
+               <Text fontSize='lg' color='text.secondary' maxW='3xl'>
+                  Modern web development stack with focus on performance,
+                  scalability, and maintainable code architecture.
+               </Text>
             </VStack>
-         </Container>
-      </Box>
+
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={12} w='full'>
+               {techCategories}
+            </SimpleGrid>
+         </VStack>
+      </Container>
    )
 })
 
@@ -783,32 +877,59 @@ const CTASection = React.memo(() => {
 
    return (
       <Container maxW='7xl' py={20}>
-         <Card variant='filled' bg='accent.primary' color='white'>
-            <CardBody p={12}>
+         <Card
+            variant='elevated'
+            bg='purple.700'
+            color='white'
+            overflow='hidden'
+            position='relative'
+         >
+            <Box
+               position='absolute'
+               top='-50%'
+               right='-20%'
+               w='400px'
+               h='400px'
+               borderRadius='full'
+               bg='whiteAlpha.100'
+            />
+            <Box
+               position='absolute'
+               bottom='-30%'
+               left='-10%'
+               w='300px'
+               h='300px'
+               borderRadius='full'
+               bg='whiteAlpha.50'
+            />
+            <CardBody p={12} position='relative'>
                <VStack spacing={8} textAlign='center'>
-                  <Icon as={PiCode} boxSize={16} color='yellow.400' />
+                  <Icon as={PiCode} boxSize={16} color='yellow.300' />
                   <Heading size='xl' color='white'>
-                     Ready to Explore?
+                     Explore the Application
                   </Heading>
-                  <Text fontSize='lg' opacity={0.9} maxW='2xl'>
-                     This project showcases full-stack development skills with
-                     modern technologies. Feel free to explore the application,
-                     examine the code, or reach out to discuss the
-                     implementation.
+                  <Text fontSize='lg' opacity={0.9} maxW='2xl' color='gray.200'>
+                     Experience the full application with interactive demos, or
+                     review the complete source code to explore the
+                     implementation details and architecture decisions.
                   </Text>
                   <HStack spacing={4}>
                      <Button
-                        size='md'
+                        size='lg'
                         bg='white'
                         color='purple.600'
-                        _hover={{ bg: 'gray.100' }}
-                        rightIcon={<PiArrowRight size={18} />}
+                        _hover={{
+                           bg: 'purple.50',
+                           transform: 'translateY(-2px)'
+                        }}
+                        rightIcon={<PiArrowRight size={20} />}
                         onClick={() => navigate('/register')}
+                        shadow='lg'
                      >
-                        Try the Demo
+                        Try Demo
                      </Button>
                      <Button
-                        size='md'
+                        size='lg'
                         variant='outline'
                         color='white'
                         borderColor='white'
@@ -823,6 +944,10 @@ const CTASection = React.memo(() => {
                         View Source
                      </Button>
                   </HStack>
+                  <Text fontSize='sm' opacity={0.8} color='white'>
+                     • Interactive application demo • Complete source code
+                     available • Documentation included
+                  </Text>
                </VStack>
             </CardBody>
          </Card>
@@ -859,11 +984,20 @@ const Footer = React.memo(() => {
                      <Heading size='md' color='accent.primary'>
                         PURA
                      </Heading>
-                     <Badge variant='outline'>v1.0</Badge>
+                     <Badge
+                        variant='outline'
+                        colorScheme='purple'
+                        borderRadius={4}
+                        display='flex'
+                        alignItems='center'
+                        justifyContent='center'
+                     >
+                        Demo Application
+                     </Badge>
                   </HStack>
 
-                  <Text color='text.muted' fontSize='md'>
-                     {t('footer-copyright')}
+                  <Text color='text.secondary' fontSize='sm'>
+                     Full-stack task management application demonstration
                   </Text>
                </Flex>
             </VStack>

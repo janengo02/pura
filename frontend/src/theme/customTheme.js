@@ -58,11 +58,15 @@ const semanticTokens = {
       },
       'text.secondary': {
          default: 'gray.500',
-         _dark: 'gray.400'
+         _dark: 'gray.300'
       },
       'text.muted': {
          default: 'gray.400',
          _dark: 'gray.400'
+      },
+      'text.highlight': {
+         default: 'white',
+         _dark: 'gray.800'
       },
 
       // Accent colors

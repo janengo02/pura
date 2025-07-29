@@ -49,6 +49,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
             size='md'
             colorScheme='purple'
             pointerEvents='none'
+            pl={1}
          />
       </Flex>
    )
@@ -70,7 +71,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
          onClick={handleToggle}
          cursor='pointer'
          align='center'
-         gap={3}
+         gap={2}
          p={2}
          borderRadius='md'
          _hover={{ bg: 'gray.100', _dark: { bg: 'gray.700' } }}
