@@ -32,8 +32,6 @@ import {
 import { MultiInput } from '../../components/MultiInput'
 import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
-import LanguageSwitcher from '../../components/LanguageSwitcher'
-import ThemeToggle from '../../components/ThemeToggle'
 
 // Actions & Schema
 import { loginAction } from '../../actions/authActions'
@@ -41,25 +39,7 @@ import { loginSchema as s } from './LoginSchema'
 
 // Utils
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
-
-// =============================================================================
-// COMPONENT SECTIONS
-// =============================================================================
-
-/**
- * Login page header with theme toggle and language switcher
- */
-const LoginPageHeader = React.memo(() => (
-   <Flex w='full' justifyContent='space-between' alignItems='flex-start' mb={4}>
-      <Box flex={1} /> {/* Spacer for center alignment */}
-      <Flex gap={4} alignItems="center">
-         <ThemeToggle asMenuItem={false} />
-         <LanguageSwitcher />
-      </Flex>
-   </Flex>
-))
-
-LoginPageHeader.displayName = 'LoginPageHeader'
+import { LandingHeader } from '../landing/Landing'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -180,8 +160,17 @@ const Login = React.memo(
       // -------------------------------------------------------------------------
 
       return (
-         <Container maxW='container.xl' p={0}>
-            <Flex minH='100vh' alignItems='center'>
+         <Container
+            minW='100vw'
+            h='100vh'
+            p={0}
+            display='flex'
+            flexDir='column'
+            justifyContent='center'
+            alignItems='center'
+         >
+            <LandingHeader />
+            <Flex h='100%' w='full' maxW='container.xl' alignItems='center'>
                <VStack
                   w='full'
                   h='full'
@@ -200,7 +189,6 @@ const Login = React.memo(
                   alignItems='flex-start'
                   justifyContent='center'
                >
-                  <LoginPageHeader />
                   <LoginHeader />
                   <LoginForm />
                </VStack>

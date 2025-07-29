@@ -243,7 +243,7 @@
       "landing-internationalization": "Internationalization",
       "landing-internationalization-desc": "Full i18n support with English and Japanese locales. Theme switching with persistent user preferences.",
       "landing-demo-login": "Demo Login",
-      "landing-view-demo": "View Demo",
+      "landing-register": "Demo Registrer",
       "landing-implementation-preview": "Implementation Preview",
       "landing-kanban-implementation": "Kanban Board Implementation",
       "landing-kanban-subtitle": "Drag & Drop Task Management",

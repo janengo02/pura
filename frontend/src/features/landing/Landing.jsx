@@ -297,7 +297,7 @@ const HASHTAGS = [
 /**
  * Landing page header with navigation
  */
-const LandingHeader = React.memo(() => {
+export const LandingHeader = React.memo(() => {
    const navigate = useNavigate()
    const { t } = useReactiveTranslation()
 
