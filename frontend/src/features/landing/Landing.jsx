@@ -64,72 +64,71 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 const TECH_STACK = [
    {
-      category: 'Frontend Implementation',
+      categoryKey: 'landing-frontend-implementation',
       technologies: [
          {
-            name: 'React 18 + Hooks',
-            description: 'Functional components with custom hooks architecture',
+            nameKey: 'landing-react-hooks',
+            descriptionKey: 'landing-react-hooks-desc',
             icon: PiCode
          },
          {
-            name: 'Redux',
-            description: 'Centralized state management with optimistic updates',
+            nameKey: 'landing-redux',
+            descriptionKey: 'landing-redux-desc',
             icon: PiDatabase
          },
          {
-            name: 'Chakra UI + Theming',
-            description: 'Component library with custom theme system',
+            nameKey: 'landing-chakra-ui',
+            descriptionKey: 'landing-chakra-ui-desc',
             icon: PiPalette
          },
          {
-            name: 'React Hook Form + Yup',
-            description: 'Form validation with schema-based validation',
+            nameKey: 'landing-react-hook-form',
+            descriptionKey: 'landing-react-hook-form-desc',
             icon: PiCheckCircle
          },
          {
-            name: 'Modern libraries',
-            description:
-               'Utilizing the power of hello-pangea/dnd and react-big-calendar',
+            nameKey: 'landing-modern-libraries',
+            descriptionKey: 'landing-modern-libraries-desc',
             icon: PiKanban
          },
          {
-            name: 'i18next Integration',
-            description: 'Internationalization with reactive translations',
+            nameKey: 'landing-i18next-integration',
+            descriptionKey: 'landing-i18next-integration-desc',
             icon: PiGlobe
          }
       ]
    },
    {
-      category: 'Backend Architecture',
+      categoryKey: 'landing-backend-architecture',
       technologies: [
          {
-            name: 'Node.js + Express',
-            description: 'RESTful API with middleware architecture',
+            nameKey: 'landing-nodejs-express',
+            descriptionKey: 'landing-nodejs-express-desc',
             icon: PiGear
          },
          {
-            name: 'MongoDB + Mongoose',
-            description: 'Document database with ODM integration',
+            nameKey: 'landing-mongodb-mongoose',
+            descriptionKey: 'landing-mongodb-mongoose-desc',
             icon: PiDatabase
          },
          {
-            name: 'JWT Authentication',
-            description: 'Token-based auth with refresh token rotation',
+            nameKey: 'landing-jwt-authentication',
+            descriptionKey: 'landing-jwt-authentication-desc',
             icon: PiShield
          },
          {
-            name: 'Google APIs',
-            description: 'Google Calendar, Meet and Map API integration',
+            nameKey: 'landing-google-apis',
+            descriptionKey: 'landing-google-apis-desc',
             icon: PiCalendar
          },
          {
-            name: 'Google OAuth 2.0',
-            description: 'Secure authentication flow implementation',
+            nameKey: 'landing-google-oauth',
+            descriptionKey: 'landing-google-oauth-desc',
             icon: PiUsers
          },
          {
-            name: 'Protected Routes',
-            description: 'Route-level authentication guards',
+            nameKey: 'landing-protected-routes',
+            descriptionKey: 'landing-protected-routes-desc',
             icon: PiShield
          }
       ]
@@ -138,30 +137,26 @@ const TECH_STACK = [
 
 const FEATURES = [
    {
-      title: 'Interactive Kanban Board',
-      description:
-         'Drag-and-drop task management with real-time state synchronization. Features custom drag previews, drop zones, and smooth animations.',
+      titleKey: 'landing-interactive-kanban',
+      descriptionKey: 'landing-interactive-kanban-desc',
       icon: PiKanban,
       color: 'blue'
    },
    {
-      title: 'Google Calendar Sync',
-      description:
-         'Bidirectional calendar integration with OAuth 2.0 authentication. View, create, and edit Google Calendar events within the application.',
+      titleKey: 'landing-google-calendar-sync',
+      descriptionKey: 'landing-google-calendar-sync-desc',
       icon: PiCalendar,
       color: 'green'
    },
    {
-      title: 'Task Management System',
-      description:
-         'Comprehensive task organization with groups, scheduling, and progress tracking. Includes search and filtering capabilities.',
+      titleKey: 'landing-task-management-system',
+      descriptionKey: 'landing-task-management-system-desc',
       icon: PiClock,
       color: 'purple'
    },
    {
-      title: 'Internationalization',
-      description:
-         'Full i18n support with English and Japanese locales. Theme switching with persistent user preferences.',
+      titleKey: 'landing-internationalization',
+      descriptionKey: 'landing-internationalization-desc',
       icon: PiGlobe,
       color: 'orange'
    }
@@ -170,39 +165,34 @@ const FEATURES = [
 const DEMO_FEATURES = [
    {
       id: 'kanban-demo',
-      title: 'Kanban Board Implementation',
-      subtitle: 'Drag & Drop Task Management',
-      description:
-         'Tasks can be moved between columns and groups with real-time Redux state updates and MongoDB persistence. The implementation includes custom drag previews, drop animations, and optimistic UI updates.',
+      titleKey: 'landing-kanban-implementation',
+      subtitleKey: 'landing-kanban-subtitle',
+      descriptionKey: 'landing-kanban-description',
       features: [
          {
-            title: 'Drag & Drop Interface',
-            description:
-               'Smooth drag interactions with visual feedback and accessibility support',
+            titleKey: 'landing-drag-drop-interface',
+            descriptionKey: 'landing-drag-drop-interface-desc',
             mediaType: 'video',
             mediaSrc: '/assets/videos/kanban-drag-drop.mp4',
             mediaAlt: 'Kanban board drag and drop functionality demonstration'
          },
          {
-            title: 'Customizable Layouts',
-            description:
-               'Dynamic column and group creation with color customization',
+            titleKey: 'landing-customizable-layouts',
+            descriptionKey: 'landing-customizable-layouts-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/mobile-kanban.png',
             mediaAlt: 'Customizable Kanban board layout options'
          },
          {
-            title: 'Task Scheduling',
-            description:
-               'Multiple schedules per task are supported for flexible timeboxing',
+            titleKey: 'landing-task-scheduling',
+            descriptionKey: 'landing-task-scheduling-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/task-scheduling.png',
             mediaAlt: 'Task creation modal with scheduling interface'
          },
          {
-            title: 'Advanced Filtering',
-            description:
-               'Real-time search and filter functionality across tasks',
+            titleKey: 'landing-advanced-filtering',
+            descriptionKey: 'landing-advanced-filtering-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/task-filtering.png',
             mediaAlt: 'Task filtering and search interface'
@@ -212,38 +202,34 @@ const DEMO_FEATURES = [
    },
    {
       id: 'calendar-demo',
-      title: 'Calendar Integration',
-      subtitle: 'Google Calendar API Implementation',
-      description:
-         'OAuth 2.0 integration with Google Calendar API enables seamless calendar synchronization. The implementation supports multiple Google calendars, event creation/editing, and conflict detection. Calendar data is cached locally with background sync for optimal performance.',
+      titleKey: 'landing-calendar-integration',
+      subtitleKey: 'landing-calendar-integration-subtitle',
+      descriptionKey: 'landing-calendar-integration-description',
       features: [
          {
-            title: 'OAuth Authentication',
-            description:
-               'Secure Google OAuth 2.0 implementation with token management',
+            titleKey: 'landing-oauth-authentication',
+            descriptionKey: 'landing-oauth-authentication-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/google-oauth.png',
             mediaAlt: 'Google OAuth authentication flow'
          },
          {
-            title: 'Multiple View Modes',
-            description: 'Month, week, and day views with responsive design',
+            titleKey: 'landing-multiple-view-modes',
+            descriptionKey: 'landing-multiple-view-modes-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/calendar-views.png',
             mediaAlt: 'Calendar application with multiple view options'
          },
          {
-            title: 'Event Management',
-            description:
-               'Create, edit, and delete Google Calendar events directly',
+            titleKey: 'landing-event-management',
+            descriptionKey: 'landing-event-management-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/multi-calendar.png',
             mediaAlt: 'Google Calendar event management interface'
          },
          {
-            title: 'Conflict Detection',
-            description:
-               'Automatic detection and handling of scheduling conflicts',
+            titleKey: 'landing-conflict-detection',
+            descriptionKey: 'landing-conflict-detection-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/conflict-resolution.png',
             mediaAlt: 'Calendar conflict detection and resolution system'
@@ -253,40 +239,35 @@ const DEMO_FEATURES = [
    },
    {
       id: 'ux-demo',
-      title: 'User Experience Design',
-      subtitle: 'Accessibility & Internationalization',
-      description:
-         'The application implements comprehensive UX patterns including theme switching, internationalization, error handling, and responsive design. All interactions include proper loading states, error boundaries, and accessibility features for screen readers.',
+      titleKey: 'landing-ux-design',
+      subtitleKey: 'landing-ux-design-subtitle',
+      descriptionKey: 'landing-ux-design-description',
       features: [
          {
-            title: 'Theme System',
-            description:
-               'Dynamic theme switching with Chakra UI integration and persistence',
+            titleKey: 'landing-theme-system',
+            descriptionKey: 'landing-theme-system-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/theme-switching.png',
             mediaAlt: 'Dark and light theme switching demonstration'
          },
          {
-            title: 'Internationalization',
-            description:
-               'React i18next implementation with English and Japanese support',
+            titleKey: 'landing-internationalization-feature',
+            descriptionKey: 'landing-internationalization-feature-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/language-switching.png',
             mediaAlt:
                'Language switching interface between English and Japanese'
          },
          {
-            title: 'Optimistic Updates',
-            description:
-               'Immediate UI feedback with graceful error handling and rollback',
+            titleKey: 'landing-optimistic-updates',
+            descriptionKey: 'landing-optimistic-updates-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/optimistic-ui.png',
             mediaAlt: 'Optimistic UI updates with error handling'
          },
          {
-            title: 'Form Validation',
-            description:
-               'Real-time validation with React Hook Form and Yup schemas',
+            titleKey: 'landing-form-validation',
+            descriptionKey: 'landing-form-validation-desc',
             mediaType: 'image',
             mediaSrc: '/assets/images/error-handling.png',
             mediaAlt: 'Form validation and error handling interface'
@@ -348,10 +329,10 @@ const LandingHeader = React.memo(() => {
             <ThemeToggle asMenuItem={false} />
             <LanguageSwitcher />
             <Button variant='ghost' onClick={() => navigate('/login')}>
-               Demo Login
+               {t('landing-demo-login')}
             </Button>
             <Button colorScheme='purple' onClick={() => navigate('/register')}>
-               View Demo
+               {t('landing-view-demo')}
             </Button>
          </HStack>
       </Flex>
@@ -378,7 +359,7 @@ const HeroSection = React.memo(() => {
                borderRadius='full'
                fontSize='md'
             >
-               📋 Task Management Application
+               {t('landing-task-management-app')}
             </Badge>
 
             <Heading
@@ -388,7 +369,7 @@ const HeroSection = React.memo(() => {
                bgGradient='linear(to-r, purple.400, blue.500)'
                bgClip='text'
             >
-               PURA Timeboxing Tool
+               {t('landing-pura-timeboxing-tool')}
             </Heading>
 
             <Text
@@ -397,10 +378,7 @@ const HeroSection = React.memo(() => {
                lineHeight='tall'
                maxW='3xl'
             >
-               A full-stack task management application featuring Kanban boards
-               with drag-and-drop functionality, Google Calendar integration,
-               and comprehensive internationalization. Built with React,
-               Node.js, and MongoDB.
+               {t('landing-hero-description')}
             </Text>
 
             <HStack spacing={4} wrap='wrap' justifyContent='center' maxW='3xl'>
@@ -425,7 +403,7 @@ const HeroSection = React.memo(() => {
                   rightIcon={<PiArrowRight size={20} />}
                   onClick={() => navigate('/register')}
                >
-                  Explore Application
+                  {t('landing-explore-application')}
                </Button>
                <Button
                   size='lg'
@@ -435,12 +413,12 @@ const HeroSection = React.memo(() => {
                      window.open('https://github.com/janengo02/pura', '_blank')
                   }
                >
-                  View Source Code
+                  {t('landing-view-source')}
                </Button>
             </HStack>
 
             <Text fontSize='sm' color='text.secondary' mt={4}>
-               Interactive demo available • Full source code on GitHub
+               {t('landing-interactive-demo-available')}
             </Text>
          </VStack>
       </Container>
@@ -482,16 +460,16 @@ const FeaturesSection = React.memo(() => {
                         <Icon as={feature.icon} boxSize={8} />
                      </Flex>
                      <Heading size='md' color='text.primary'>
-                        {feature.title}
+                        {t(feature.titleKey)}
                      </Heading>
                      <Text color='text.secondary' lineHeight='tall'>
-                        {feature.description}
+                        {t(feature.descriptionKey)}
                      </Text>
                   </VStack>
                </CardBody>
             </Card>
          )),
-      []
+      [t]
    )
 
    return (
@@ -509,12 +487,11 @@ const FeaturesSection = React.memo(() => {
                   justifyContent='center'
                >
                   <Icon as={PiTarget} mr={2} />
-                  Key Features
+                  {t('landing-key-features')}
                </Badge>
-               <Heading size='2xl'>Application Overview</Heading>
+               <Heading size='2xl'>{t('landing-application-overview')}</Heading>
                <Text fontSize='lg' color='text.secondary' maxW='3xl'>
-                  Core functionality implemented in this application experience
-                  design.
+                  {t('landing-core-functionality')}
                </Text>
             </VStack>
 
@@ -536,6 +513,8 @@ FeaturesSection.displayName = 'FeaturesSection'
  * Demo feature section with interactive media selection
  */
 const DemoFeatureSection = React.memo(({ feature, index }) => {
+   const { t } = useReactiveTranslation()
+
    const [selectedFeature, setSelectedFeature] = useState(0)
    const [isVideoPlaying, setIsVideoPlaying] = useState(false)
 
@@ -636,24 +615,24 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             justifyContent='center'
          >
             <Icon as={PiImage} mr={2} />
-            Implementation Preview
+            {t('landing-implementation-preview')}
          </Badge>
 
          <VStack align='start' spacing={4}>
             <Heading size='xl' color='text.primary'>
-               {feature.title}
+               {t(feature.titleKey)}
             </Heading>
             <Text fontSize='lg' color='accent.primary' fontWeight='semibold'>
-               {feature.subtitle}
+               {t(feature.subtitleKey)}
             </Text>
             <Text fontSize='md' color='text.primary' lineHeight='tall'>
-               {feature.description}
+               {t(feature.descriptionKey)}
             </Text>
          </VStack>
 
          <VStack align='start' spacing={4} w='full'>
             <Text fontSize='md' fontWeight='semibold' color='text.primary'>
-               Implementation Details:
+               {t('landing-implementation-details')}
             </Text>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w='full'>
                {feature.features.map((item, idx) => (
@@ -690,7 +669,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                                  : 'text.primary'
                            }
                         >
-                           {item.title}
+                           {t(item.titleKey)}
                         </Text>
                         <Text
                            fontSize='sm'
@@ -701,7 +680,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                                  : 'text.primary'
                            }
                         >
-                           {item.description}
+                           {t(item.descriptionKey)}
                         </Text>
                      </VStack>
                   </Button>
@@ -743,13 +722,13 @@ DemoFeatureSection.displayName = 'DemoFeatureSection'
 DemoFeatureSection.propTypes = {
    feature: PropTypes.shape({
       id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      subtitle: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
+      titleKey: PropTypes.string.isRequired,
+      subtitleKey: PropTypes.string.isRequired,
+      descriptionKey: PropTypes.string.isRequired,
       features: PropTypes.arrayOf(
          PropTypes.shape({
-            title: PropTypes.string.isRequired,
-            description: PropTypes.string.isRequired,
+            titleKey: PropTypes.string.isRequired,
+            descriptionKey: PropTypes.string.isRequired,
             mediaType: PropTypes.oneOf(['image', 'video']).isRequired,
             mediaSrc: PropTypes.string.isRequired,
             mediaAlt: PropTypes.string.isRequired
@@ -797,7 +776,7 @@ const TechStackSection = React.memo(() => {
          TECH_STACK.map((category, categoryIndex) => (
             <Box key={categoryIndex}>
                <Heading size='md' mb={6} color='accent.primary'>
-                  {category.category}
+                  {t(category.categoryKey)}
                </Heading>
                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                   {category.technologies.map((tech, techIndex) => (
@@ -819,9 +798,11 @@ const TechStackSection = React.memo(() => {
                                  color='accent.primary'
                               />
                               <Box>
-                                 <Text fontWeight='bold'>{tech.name}</Text>
+                                 <Text fontWeight='bold'>
+                                    {t(tech.nameKey)}
+                                 </Text>
                                  <Text fontSize='sm' color='text.secondary'>
-                                    {tech.description}
+                                    {t(tech.descriptionKey)}
                                  </Text>
                               </Box>
                            </HStack>
@@ -831,7 +812,7 @@ const TechStackSection = React.memo(() => {
                </SimpleGrid>
             </Box>
          )),
-      []
+      [t]
    )
 
    return (
@@ -849,12 +830,11 @@ const TechStackSection = React.memo(() => {
                   justifyContent='center'
                >
                   <Icon as={PiLightning} mr={2} />
-                  Technical Implementation
+                  {t('landing-technical-implementation')}
                </Badge>
-               <Heading size='2xl'>Technology Stack</Heading>
+               <Heading size='2xl'>{t('landing-technology-stack')}</Heading>
                <Text fontSize='lg' color='text.secondary' maxW='3xl'>
-                  Modern web development stack with focus on performance,
-                  scalability, and maintainable code architecture.
+                  {t('landing-tech-stack-description')}
                </Text>
             </VStack>
 
@@ -906,12 +886,10 @@ const CTASection = React.memo(() => {
                <VStack spacing={8} textAlign='center'>
                   <Icon as={PiCode} boxSize={16} color='yellow.300' />
                   <Heading size='xl' color='white'>
-                     Explore the Application
+                     {t('landing-explore-application-cta')}
                   </Heading>
                   <Text fontSize='lg' opacity={0.9} maxW='2xl' color='gray.200'>
-                     Experience the full application with interactive demos, or
-                     review the complete source code to explore the
-                     implementation details and architecture decisions.
+                     {t('landing-cta-description')}
                   </Text>
                   <HStack spacing={4}>
                      <Button
@@ -926,7 +904,7 @@ const CTASection = React.memo(() => {
                         onClick={() => navigate('/register')}
                         shadow='lg'
                      >
-                        Try Demo
+                        {t('landing-try-demo')}
                      </Button>
                      <Button
                         size='lg'
@@ -941,12 +919,11 @@ const CTASection = React.memo(() => {
                            )
                         }
                      >
-                        View Source
+                        {t('landing-view-source')}
                      </Button>
                   </HStack>
                   <Text fontSize='sm' opacity={0.8} color='white'>
-                     • Interactive application demo • Complete source code
-                     available • Documentation included
+                     {t('landing-cta-features')}
                   </Text>
                </VStack>
             </CardBody>
@@ -997,7 +974,7 @@ const Footer = React.memo(() => {
                   </HStack>
 
                   <Text color='text.secondary' fontSize='sm'>
-                     Full-stack task management application demonstration
+                     {t('landing-footer-description')}
                   </Text>
                </Flex>
             </VStack>
