@@ -127,6 +127,7 @@
       "sync-status-tooltip": "Google Calendar sync status",
       "sync-status-synced": "Synced",
       "sync-status-conflicted": "Conflicted",
+      "syncing": "Syncing...",
       "event-description": "Description",
       "event-conference": "Conference",
       "event-join-meeting": "Join with Google Meet",

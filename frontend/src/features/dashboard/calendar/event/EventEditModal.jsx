@@ -24,7 +24,8 @@ import {
    useDisclosure,
    MenuButton,
    MenuList,
-   MenuItem
+   MenuItem,
+   useToast
 } from '@chakra-ui/react'
 
 // Actions
@@ -76,6 +77,7 @@ const EventEditModal = React.memo(
       // -------------------------------------------------------------------------
 
       const { t } = useReactiveTranslation()
+      const toast = useToast()
 
       // -------------------------------------------------------------------------
       // STATE
@@ -123,6 +125,18 @@ const EventEditModal = React.memo(
       const handleSave = useCallback(async () => {
          // @todo: Validate time inputs before proceeding
          handleCloseModal()
+
+         // Show loading toast for task and synced events
+         let loadingToast = null
+         if (event.eventType === 'task' || event.eventType === 'synced') {
+            loadingToast = toast({
+               title: null,
+               description: t('syncing'),
+               status: 'loading',
+               duration: null, // Keep it open until we close it
+               isClosable: false
+            })
+         }
 
          try {
             const newStartTime = new Date(startTime)
@@ -189,6 +203,11 @@ const EventEditModal = React.memo(
             await refetchTaskModalIfOpen()
          } catch (error) {
             console.error('Error updating event:', error)
+         } finally {
+            // Remove loading toast
+            if (loadingToast) {
+               toast.close(loadingToast)
+            }
          }
       }, [
          startTime,
@@ -203,7 +222,9 @@ const EventEditModal = React.memo(
          updateTaskBasicInfoAction,
          updateGoogleEventAction,
          handleCloseModal,
-         refetchTaskModalIfOpen
+         refetchTaskModalIfOpen,
+         toast,
+         t
       ])
       const handleDelete = useCallback(async () => {
          const reqData = {

@@ -128,6 +128,7 @@
       "sync-status-tooltip": "Googleカレンダー同期ステータス",
       "sync-status-synced": "同期済み",
       "sync-status-conflicted": "競合",
+      "syncing": "同期中...",
       "event-description": "説明",
       "event-conference": "会議",
       "event-join-meeting": "Google Meetで参加",
