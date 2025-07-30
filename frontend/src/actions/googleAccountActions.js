@@ -12,7 +12,8 @@ import {
    GOOGLE_CALENDAR_ADD_ACCOUNT,
    GOOGLE_CALENDAR_REMOVE_ACCOUNT,
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
-   GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT
+   GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT,
+   GOOGLE_CALENDAR_DELETE_EVENT
 } from './types'
 
 // =============================================================================
@@ -292,6 +293,13 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
  * @param {string} reqData.accountEmail - Google account ID
  */
 export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
+   // Optimistically dispatch delete event action
+   dispatch({
+      type: GOOGLE_CALENDAR_DELETE_EVENT,
+      payload: {
+         id: reqData.eventId
+      }
+   })
    try {
       const res = await api.delete(
          `/google-account/delete-event/${reqData.eventId}`,
@@ -300,12 +308,7 @@ export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
          }
       )
 
-      if (res.data?.event) {
-         dispatch({
-            type: GOOGLE_CALENDAR_UPDATE_EVENT,
-            payload: res.data.event
-         })
-      } else {
+      if (!res.data?.event?.deleted) {
          throw new Error(
             'Unexpected response format from /google-account/delete-event'
          )
@@ -339,16 +342,15 @@ export const changeCalendarVisibilityAction =
  * @param {string} reqData.account_email - Google account ID to disconnect
  */
 export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
+   // Clear calendar state
+   dispatch({
+      type: GOOGLE_CALENDAR_REMOVE_ACCOUNT,
+      payload: {
+         accountEmail: reqData.account_email
+      }
+   })
    try {
       await api.delete(`/google-account/disconnect/${reqData.account_email}`)
-
-      // Clear calendar state
-      dispatch({
-         type: GOOGLE_CALENDAR_REMOVE_ACCOUNT,
-         payload: {
-            accountEmail: reqData.account_email
-         }
-      })
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }

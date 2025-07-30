@@ -42,7 +42,10 @@ import EventCalendarInfo from './EventCalendarInfo'
 
 // Actions & Hooks
 import { deleteGoogleEventAction } from '../../../../actions/googleAccountActions'
-import { showTaskModalAction } from '../../../../actions/taskActions'
+import {
+   removeTaskScheduleSlotAction,
+   showTaskModalAction
+} from '../../../../actions/taskActions'
 import { showEventEditModalAction } from '../../../../actions/eventActions'
 import useLoading from '../../../../hooks/useLoading'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
@@ -124,6 +127,7 @@ const EventWrapper = React.memo(
       event,
       // Redux props
       deleteGoogleEventAction,
+      removeTaskScheduleSlotAction,
       showTaskModalAction,
       showEventEditModalAction,
       eventData: { pageId }
@@ -156,17 +160,31 @@ const EventWrapper = React.memo(
       // -------------------------------------------------------------------------
 
       const handleDelete = useCallback(async () => {
-         const reqData = {
-            eventId: event.id,
-            calendarId: event.calendarId,
-            accountEmail: event.accountEmail
+         if (event.eventType === 'google') {
+            const reqData = {
+               eventId: event.id,
+               calendarId: event.calendarId,
+               accountEmail: event.accountEmail
+            }
+            await deleteGoogleEventAction(reqData)
+         } else {
+            const reqData = {
+               page_id: pageId,
+               task_id: taskId,
+               slot_index: event.pura_schedule_index
+            }
+            await removeTaskScheduleSlotAction(reqData)
          }
-         await deleteGoogleEventAction(reqData)
       }, [
          deleteGoogleEventAction,
+         removeTaskScheduleSlotAction,
          event.id,
          event.calendarId,
-         event.accountEmail
+         event.accountEmail,
+         event.eventType,
+         pageId,
+         taskId,
+         event.pura_schedule_index
       ])
 
       const handleShowTask = useCallback(async () => {
@@ -431,6 +449,7 @@ EventWrapper.propTypes = {
       updatedDate: PropTypes.instanceOf(Date)
    }).isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired,
+   removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
    showEventEditModalAction: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
@@ -459,6 +478,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    deleteGoogleEventAction,
+   removeTaskScheduleSlotAction,
    showTaskModalAction,
    showEventEditModalAction
 }

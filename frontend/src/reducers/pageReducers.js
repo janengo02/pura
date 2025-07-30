@@ -11,6 +11,7 @@ import {
    CREATE_TASK,
    UPDATE_TASK,
    DELETE_TASK,
+   REMOVE_PAGE_TASK_SCHEDULE_SLOT,
    FILTER_SCHEDULE,
    FILTER_NAME
 } from '../actions/types'
@@ -169,6 +170,21 @@ function pageReducer(state = initialState, action) {
                        ...task,
                        title: payload.title !== undefined ? payload.title : task.title,
                        content: payload.content !== undefined ? payload.content : task.content,
+                       update_date: payload.update_date || task.update_date
+                    }
+                  : task
+            ),
+            loading: false,
+            error: false
+         }
+      case REMOVE_PAGE_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            tasks: state.tasks.map(task => 
+               task._id === payload.task_id 
+                  ? {
+                       ...task,
+                       schedule: task.schedule?.filter((slot, index) => index !== payload.slot_index),
                        update_date: payload.update_date || task.update_date
                     }
                   : task

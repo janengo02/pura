@@ -457,7 +457,9 @@ const ScheduleTimeSlot = React.memo(
 
          return googleAccounts.map((account) => {
             const accountCalendars = googleCalendars.filter(
-               (cal) => cal.accountEmail === account.accountEmail
+               (cal) =>
+                  cal.accountEmail === account.accountEmail &&
+                  (cal.accessRole === 'owner' || cal.accessRole === 'writer')
             )
 
             if (accountCalendars.length === 0) return null

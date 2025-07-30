@@ -8,6 +8,7 @@ import {
    UPDATE_TASK,
    UPDATE_TASK_SCHEDULE,
    REMOVE_TASK_SCHEDULE_SLOT,
+   REMOVE_PAGE_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
    GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
    GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT
@@ -42,6 +43,7 @@ export const deleteTaskAction = (reqData) => async (dispatch) => {
          task_id: reqData.task_id
       }
    })
+   // @todo: Optimistic update for googleEvents
    dispatch({
       type: CLEAR_TASK
    })
@@ -151,13 +153,10 @@ export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
    })
 
    try {
-      const res = await api.put(
-         `/task/basic/${formData.page_id}/${formData.task_id}`,
-         {
-            title: formData.title,
-            content: formData.content
-         }
-      )
+      await api.put(`/task/basic/${formData.page_id}/${formData.task_id}`, {
+         title: formData.title,
+         content: formData.content
+      })
    } catch (err) {
       // On error, we could revert the optimistic update here
       // For now, let the page refresh handle it
@@ -172,6 +171,7 @@ export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
 
 // Move task to different group/progress
 export const moveTaskAction = (formData) => async (dispatch) => {
+   // @todo: Optimistic update for task state
    try {
       const res = await api.put(
          `/task/move/${formData.page_id}/${formData.task_id}`,
@@ -230,7 +230,7 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
    })
 
    try {
-      const res = await api.put(
+      await api.put(
          `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`,
          {
             start: formData.start,
@@ -281,17 +281,24 @@ export const addTaskScheduleSlotAction = (formData) => async (dispatch) => {
 
 // Remove schedule slot from task
 export const removeTaskScheduleSlotAction = (formData) => async (dispatch) => {
-   // Optimistic update for task modal if open
-   if (formData.task_detail_flg) {
-      dispatch({
-         type: REMOVE_TASK_SCHEDULE_SLOT,
-         payload: {
-            task_id: formData.task_id,
-            slot_index: formData.slot_index,
-            update_date: new Date().toISOString()
-         }
-      })
-   }
+   // Optimistic update for page state
+   dispatch({
+      type: REMOVE_PAGE_TASK_SCHEDULE_SLOT,
+      payload: {
+         task_id: formData.task_id,
+         slot_index: formData.slot_index,
+         update_date: new Date().toISOString()
+      }
+   })
+
+   dispatch({
+      type: REMOVE_TASK_SCHEDULE_SLOT,
+      payload: {
+         task_id: formData.task_id,
+         slot_index: formData.slot_index,
+         update_date: new Date().toISOString()
+      }
+   })
 
    // Remove Google calendar events optimistically
    dispatch({
@@ -303,7 +310,7 @@ export const removeTaskScheduleSlotAction = (formData) => async (dispatch) => {
    })
 
    try {
-      const res = await api.delete(
+      await api.delete(
          `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`
       )
    } catch (err) {
