@@ -211,15 +211,62 @@ export const getDefaultGoogleAccountAction = () => async (dispatch) => {
  * @param {Object} reqData - Request data for event update
  * @param {string} reqData.eventId - Event ID to update
  * @param {string} reqData.accountEmail - Google account ID
+ * @param {string} reqData.calendarId - Target calendar ID (for moves)
+ * @param {string} reqData.originalCalendarId - Original calendar ID
+ * @param {string} reqData.calendarSummary - Target calendar summary/name for optimistic updates
+ * @param {string} reqData.calendarBackgroundColor - Target calendar background color for optimistic updates
  */
 export const updateGoogleEventAction = (reqData) => async (dispatch) => {
    try {
+      // Create optimistic update payload
+      const optimisticEventData = {
+         id: reqData.eventId,
+         summary: reqData.summary,
+         description: reqData.description,
+         location: reqData.location,
+         colorId: reqData.colorId,
+         start: reqData.start ? { dateTime: reqData.start } : undefined,
+         end: reqData.end ? { dateTime: reqData.end } : undefined,
+         conferenceData: {
+            conferenceSolution: {
+               key: {
+                  type: 'hangoutsMeet'
+               }
+            },
+            conferenceId: reqData.conferenceData?.id,
+            entryPoints: [
+               {
+                  entryPointType: 'video',
+                  uri: reqData.conferenceData?.joinUrl
+               }
+            ]
+         }
+      }
+
+      // Get target calendar for optimistic update
+      const optimisticCalendar = {
+         id: reqData.calendarId || reqData.originalCalendarId,
+         summary: reqData.calendarSummary || 'Calendar',
+         backgroundColor: reqData.calendarBackgroundColor || '#3174ad'
+      }
+
+      // Dispatch optimistic update
+      dispatch({
+         type: GOOGLE_CALENDAR_UPDATE_EVENT,
+         payload: {
+            event: optimisticEventData,
+            calendar: optimisticCalendar,
+            originalEventId: reqData.eventId
+         }
+      })
+
+      // Make API call
       const res = await api.post(
          `/google-account/update-event/${reqData.eventId}`,
          reqData
       )
 
-      // @todo: Optimistic transform state
+      // Dispatch actual update with server response
       if (res.data?.event) {
          dispatch({
             type: GOOGLE_CALENDAR_UPDATE_EVENT,
@@ -231,6 +278,8 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          )
       }
    } catch (err) {
+      // On error, we might want to revert the optimistic update
+      // For now, just show the error - the next calendar refresh will correct the state
       googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
    }
 }

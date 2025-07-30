@@ -166,7 +166,9 @@ const EventEditModal = React.memo(
                   summary: title,
                   description: description,
                   colorId: selectedColorId,
-                  conferenceData: conferenceData
+                  conferenceData: conferenceData,
+                  calendarSummary: selectedCalendar.title,
+                  calendarBackgroundColor: selectedCalendar.color
                })
 
                if (event.eventType === 'synced') {

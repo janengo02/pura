@@ -914,13 +914,13 @@ export const updateGoogleEvent = ({
             end: endTime,
             allDay: isAllDay,
             description: updatedEvent.description,
-            location: extractLocation(updatedEvent),
-            attendees: extractAttendees(updatedEvent),
+            // location: extractLocation(updatedEvent),
+            // attendees: extractAttendees(updatedEvent),
             conferenceData: extractConferenceData(updatedEvent),
-            reminders: extractReminders(updatedEvent),
-            visibility: extractVisibilityInfo(updatedEvent),
-            extendedProperties: extractExtendedProperties(updatedEvent),
-            recurrence: extractRecurrence(updatedEvent),
+            // reminders: extractReminders(updatedEvent),
+            // visibility: extractVisibilityInfo(updatedEvent),
+            // extendedProperties: extractExtendedProperties(updatedEvent),
+            // recurrence: extractRecurrence(updatedEvent),
 
             // Event metadata
             createdDate: updatedEvent.created
@@ -932,14 +932,19 @@ export const updateGoogleEvent = ({
 
             // Creator and organizer information
             creator: {
-               email: updatedEvent.creator?.email,
-               displayName: updatedEvent.creator?.displayName,
-               self: updatedEvent.creator?.self || false
+               email: updatedEvent.creator?.email || event.creator?.email,
+               displayName:
+                  updatedEvent.creator?.displayName ||
+                  event.creator?.displayName,
+               self: updatedEvent.creator?.self || event.creator?.self || false
             },
             organizer: {
-               email: updatedEvent.organizer?.email,
-               displayName: updatedEvent.organizer?.displayName,
-               self: updatedEvent.organizer?.self || false
+               email: updatedEvent.organizer?.email || event.organizer?.email,
+               displayName:
+                  updatedEvent.organizer?.displayName ||
+                  event.organizer?.displayName,
+               self:
+                  updatedEvent.organizer?.self || event.organizer?.self || false
             },
 
             // Event URLs and links
@@ -966,7 +971,7 @@ export const updateGoogleEvent = ({
                updatedEvent.sequence !== undefined
                   ? updatedEvent.sequence
                   : event.sequence || 0,
-            source: updatedEvent.source,
+            source: updatedEvent.source || event.source,
 
             // Update color: use colorId if provided, otherwise use calendar.backgroundColor
             color: updatedEvent.colorId
