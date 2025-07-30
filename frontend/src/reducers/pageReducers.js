@@ -9,6 +9,7 @@ import {
    UPDATE_GROUP,
    DELETE_GROUP,
    CREATE_TASK,
+   UPDATE_TASK,
    DELETE_TASK,
    FILTER_SCHEDULE,
    FILTER_NAME
@@ -156,6 +157,22 @@ function pageReducer(state = initialState, action) {
                task_map: state.task_map,
                tasks: state.tasks
             }),
+            loading: false,
+            error: false
+         }
+      case UPDATE_TASK:
+         return {
+            ...state,
+            tasks: state.tasks.map(task => 
+               task._id === payload.task_id 
+                  ? {
+                       ...task,
+                       title: payload.title !== undefined ? payload.title : task.title,
+                       content: payload.content !== undefined ? payload.content : task.content,
+                       update_date: payload.update_date || task.update_date
+                    }
+                  : task
+            ),
             loading: false,
             error: false
          }

@@ -4,7 +4,13 @@ import {
    CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
-   SHOW_TASK
+   SHOW_TASK,
+   UPDATE_TASK,
+   UPDATE_TASK_SCHEDULE,
+   REMOVE_TASK_SCHEDULE_SLOT,
+   GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
+   GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
+   GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT
 } from './types'
 import {
    pageActionErrorHandler,
@@ -122,6 +128,28 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
 
 // Update task basic info (title, content)
 export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
+   // Optimistic update - update state before API call
+   dispatch({
+      type: UPDATE_TASK,
+      payload: {
+         task_id: formData.task_id,
+         title: formData.title,
+         content: formData.content,
+         update_date: new Date().toISOString()
+      }
+   })
+
+   // Update Google calendar events optimistically for task and synced events
+   dispatch({
+      type: GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
+      payload: {
+         task_id: formData.task_id,
+         title: formData.title,
+         description: formData.content,
+         update_date: new Date().toISOString()
+      }
+   })
+
    try {
       const res = await api.put(
          `/task/basic/${formData.page_id}/${formData.task_id}`,
@@ -130,13 +158,9 @@ export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
             content: formData.content
          }
       )
-
-      // @todo: Optimistic update instead of refetching page
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
    } catch (err) {
+      // On error, we could revert the optimistic update here
+      // For now, let the page refresh handle it
       pageActionErrorHandler(
          dispatch,
          err,
@@ -163,7 +187,6 @@ export const moveTaskAction = (formData) => async (dispatch) => {
       })
 
       if (formData.task_detail_flg) {
-         // @todo: Optimistic update instead of waiting for api
          dispatch({
             type: SHOW_TASK,
             payload: res.data.task
@@ -181,6 +204,31 @@ export const moveTaskAction = (formData) => async (dispatch) => {
 
 // Update task schedule slot time
 export const updateTaskScheduleAction = (formData) => async (dispatch) => {
+   // Optimistic update for task modal if open
+   if (formData.task_detail_flg) {
+      dispatch({
+         type: UPDATE_TASK_SCHEDULE,
+         payload: {
+            task_id: formData.task_id,
+            slot_index: formData.slot_index,
+            start: formData.start,
+            end: formData.end,
+            update_date: new Date().toISOString()
+         }
+      })
+   }
+
+   // Update Google calendar events optimistically
+   dispatch({
+      type: GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
+      payload: {
+         task_id: formData.task_id,
+         slot_index: formData.slot_index,
+         start: formData.start,
+         end: formData.end
+      }
+   })
+
    try {
       const res = await api.put(
          `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`,
@@ -189,18 +237,6 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
             end: formData.end
          }
       )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
-      if (formData.task_detail_flg) {
-         // @todo: Optimistic update instead of waiting for api
-
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      }
    } catch (err) {
       pageActionErrorHandler(
          dispatch,
@@ -245,22 +281,31 @@ export const addTaskScheduleSlotAction = (formData) => async (dispatch) => {
 
 // Remove schedule slot from task
 export const removeTaskScheduleSlotAction = (formData) => async (dispatch) => {
+   // Optimistic update for task modal if open
+   if (formData.task_detail_flg) {
+      dispatch({
+         type: REMOVE_TASK_SCHEDULE_SLOT,
+         payload: {
+            task_id: formData.task_id,
+            slot_index: formData.slot_index,
+            update_date: new Date().toISOString()
+         }
+      })
+   }
+
+   // Remove Google calendar events optimistically
+   dispatch({
+      type: GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
+      payload: {
+         task_id: formData.task_id,
+         slot_index: formData.slot_index
+      }
+   })
+
    try {
       const res = await api.delete(
          `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`
       )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
-      if (formData.task_detail_flg) {
-         // @todo: Optimistic update instead of waiting for api
-
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      }
    } catch (err) {
       pageActionErrorHandler(
          dispatch,

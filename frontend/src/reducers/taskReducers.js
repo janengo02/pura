@@ -2,7 +2,7 @@
 // TASK REDUCER
 // =============================================================================
 
-import { SHOW_TASK, CLEAR_TASK } from '../actions/types'
+import { SHOW_TASK, CLEAR_TASK, UPDATE_TASK, UPDATE_TASK_SCHEDULE, REMOVE_TASK_SCHEDULE_SLOT } from '../actions/types'
 
 const initialState = {
    task: null
@@ -16,6 +16,63 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task: payload
+         }
+
+      case UPDATE_TASK:
+         return {
+            ...state,
+            task:
+               state.task && state.task._id === payload.task_id
+                  ? {
+                       ...state.task,
+                       title:
+                          payload.title !== undefined
+                             ? payload.title
+                             : state.task.title,
+                       content:
+                          payload.content !== undefined
+                             ? payload.content
+                             : state.task.content,
+                       update_date:
+                          payload.update_date || state.task.update_date
+                    }
+                  : state.task
+         }
+
+      case UPDATE_TASK_SCHEDULE:
+         return {
+            ...state,
+            task:
+               state.task && state.task._id === payload.task_id
+                  ? {
+                       ...state.task,
+                       schedule: state.task.schedule?.map((slot, index) =>
+                          index === payload.slot_index
+                             ? {
+                                  ...slot,
+                                  start: payload.start || slot.start,
+                                  end: payload.end || slot.end
+                               }
+                             : slot
+                       ),
+                       update_date: payload.update_date || state.task.update_date
+                    }
+                  : state.task
+         }
+
+      case REMOVE_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            task:
+               state.task && state.task._id === payload.task_id
+                  ? {
+                       ...state.task,
+                       schedule: state.task.schedule?.filter(
+                          (slot, index) => index !== payload.slot_index
+                       ),
+                       update_date: payload.update_date || state.task.update_date
+                    }
+                  : state.task
          }
 
       case CLEAR_TASK:

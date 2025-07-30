@@ -1097,3 +1097,100 @@ export const removeGoogleAccount = ({
          updatedAccounts.find((account) => account.isDefault) || null
    }
 }
+
+// =============================================================================
+// TASK EVENT UPDATE STATE TRANSFORMERS
+// =============================================================================
+
+/**
+ * Update task-related Google calendar events (task and synced events)
+ * @param {Object} params - Current events and task update data
+ * @param {Array} params.googleEvents - Current Google events list
+ * @param {Object} params.taskUpdateData - Task update data with task_id, title, description
+ * @returns {Object} Updated state with modified events
+ */
+export const updateTaskEvents = ({ googleEvents, taskUpdateData }) => {
+   const updatedEvents = googleEvents.map((event) => {
+      // Update task events (eventType === 'task') or synced events (eventType === 'synced')
+      // that match the task_id
+      if (
+         (event.eventType === 'task' || event.eventType === 'synced') &&
+         event.pura_task_id === taskUpdateData.task_id
+      ) {
+         return {
+            ...event,
+            title:
+               taskUpdateData.title !== undefined
+                  ? taskUpdateData.title
+                  : event.title,
+            description:
+               taskUpdateData.description !== undefined
+                  ? taskUpdateData.description
+                  : event.description
+         }
+      }
+      return event
+   })
+
+   return { googleEvents: updatedEvents }
+}
+
+/**
+ * Update task schedule times in Google calendar events (task and synced events)
+ * @param {Object} params - Current events and schedule update data
+ * @param {Array} params.googleEvents - Current Google events list
+ * @param {Object} params.scheduleUpdateData - Schedule update data with task_id, slot_index, start, end
+ * @returns {Object} Updated state with modified events
+ */
+export const updateTaskSchedule = ({ googleEvents, scheduleUpdateData }) => {
+   const updatedEvents = googleEvents.map(event => {
+      // Update task events (eventType === 'task') or synced events (eventType === 'synced')
+      // that match the task_id and schedule slot index
+      if ((event.eventType === 'task' || event.eventType === 'synced') && 
+          event.pura_task_id === scheduleUpdateData.task_id &&
+          event.pura_schedule_index === scheduleUpdateData.slot_index) {
+         return {
+            ...event,
+            start: scheduleUpdateData.start ? new Date(scheduleUpdateData.start) : event.start,
+            end: scheduleUpdateData.end ? new Date(scheduleUpdateData.end) : event.end
+         }
+      }
+      return event
+   })
+
+   return { googleEvents: updatedEvents }
+}
+
+/**
+ * Remove task schedule slot from Google calendar events (task and synced events)
+ * @param {Object} params - Current events and removal data
+ * @param {Array} params.googleEvents - Current Google events list
+ * @param {Object} params.removalData - Removal data with task_id, slot_index
+ * @returns {Object} Updated state with events removed or updated
+ */
+export const removeTaskScheduleSlot = ({ googleEvents, removalData }) => {
+   const updatedEvents = googleEvents.filter(event => {
+      // Remove task events (eventType === 'task') or synced events (eventType === 'synced')
+      // that match the task_id and schedule slot index
+      if ((event.eventType === 'task' || event.eventType === 'synced') && 
+          event.pura_task_id === removalData.task_id &&
+          event.pura_schedule_index === removalData.slot_index) {
+         return false // Remove this event
+      }
+      return true // Keep this event
+   }).map(event => {
+      // For remaining events with the same task_id and higher slot indexes, 
+      // decrement their slot index since we removed a slot
+      if ((event.eventType === 'task' || event.eventType === 'synced') && 
+          event.pura_task_id === removalData.task_id &&
+          event.pura_schedule_index > removalData.slot_index) {
+         return {
+            ...event,
+            pura_schedule_index: event.pura_schedule_index - 1
+         }
+      }
+      return event
+   })
+
+   return { googleEvents: updatedEvents }
+}

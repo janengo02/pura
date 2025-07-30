@@ -3,6 +3,9 @@ import {
    GOOGLE_CALENDAR_AUTH_ERROR,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
+   GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
+   GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
+   GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_ADD_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT,
    GOOGLE_CALENDAR_REMOVE_ACCOUNT,
@@ -17,7 +20,10 @@ import {
    createGoogleEvent,
    setDefaultGoogleAccount,
    getDefaultGoogleAccount,
-   removeGoogleAccount
+   removeGoogleAccount,
+   updateTaskEvents,
+   updateTaskSchedule,
+   removeTaskScheduleSlot
 } from './googleAccountReducersHelpers'
 
 const initialState = {
@@ -90,6 +96,33 @@ function googleAccountReducer(state = initialState, action) {
                googleEvents: state.googleEvents,
                updatedEvent: payload.event,
                updatedCalendar: payload.calendar
+            })
+         }
+
+      case GOOGLE_CALENDAR_UPDATE_TASK_EVENT:
+         return {
+            ...state,
+            ...updateTaskEvents({
+               googleEvents: state.googleEvents,
+               taskUpdateData: payload
+            })
+         }
+
+      case GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE:
+         return {
+            ...state,
+            ...updateTaskSchedule({
+               googleEvents: state.googleEvents,
+               scheduleUpdateData: payload
+            })
+         }
+
+      case GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            ...removeTaskScheduleSlot({
+               googleEvents: state.googleEvents,
+               removalData: payload
             })
          }
 

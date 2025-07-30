@@ -148,15 +148,6 @@ const EventEditModal = React.memo(
 
             // Update based on event type
             if (event.eventType === 'task') {
-               // Update task schedule slot for time changes
-               await updateTaskScheduleAction({
-                  page_id: event.pageId,
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
-                  start: newStartTime.toISOString(),
-                  end: newEndTime.toISOString()
-               })
-
                // Update task title and content if changed
                if (title !== event.title || description !== event.description) {
                   await updateTaskBasicInfoAction({
@@ -166,6 +157,14 @@ const EventEditModal = React.memo(
                      content: description
                   })
                }
+               // Update task schedule slot for time changes
+               await updateTaskScheduleAction({
+                  page_id: event.pageId,
+                  task_id: event.pura_task_id,
+                  slot_index: event.pura_schedule_index,
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString()
+               })
             } else if (
                event.eventType === 'google' ||
                event.eventType === 'synced'
