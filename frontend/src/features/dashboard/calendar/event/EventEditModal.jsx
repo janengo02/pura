@@ -242,11 +242,10 @@ const EventEditModal = React.memo(
                   color: ''
                }
             )
-            setSelectedColorId(
-               Object.keys(GOOGLE_CALENDAR_COLORS).includes(event.color)
-                  ? GOOGLE_CALENDAR_COLORS[event.color]
-                  : null
+            const foundColor = Object.entries(GOOGLE_CALENDAR_COLORS).find(
+               ([, hex]) => hex === event.color
             )
+            setSelectedColorId(foundColor ? foundColor[0] : null)
             setConferenceData(event.conferenceData || null)
          }
       }, [event, googleCalendars])

@@ -58,10 +58,6 @@ const EventCalendarSelect = React.memo(
          (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
       )
 
-      useEffect(() => {
-         setSelectedColorId(null) // Reset color to the calendar's default color
-      }, [selectedCalendar, setSelectedColorId])
-
       return (
          <HStack align='start' spacing={3} w='full'>
             <PiCalendar size={18} />

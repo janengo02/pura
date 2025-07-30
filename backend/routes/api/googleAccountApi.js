@@ -239,6 +239,63 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          eventId: eventId
       })
       const eventData = originalEvent.data
+
+      // Handle conferenceData updates properly
+      let updatedConferenceData = eventData.conferenceData
+      if (conferenceData !== undefined) {
+         if (conferenceData === null) {
+            // Explicitly remove conference data
+            updatedConferenceData = null
+         } else if (conferenceData.createRequest) {
+            // Creating new conference (Google Meet) - raw API format
+            updatedConferenceData = {
+               createRequest: {
+                  requestId:
+                     conferenceData.createRequest.requestId ||
+                     `req_${Date.now()}`,
+                  conferenceSolutionKey: {
+                     type:
+                        conferenceData.createRequest.conferenceSolutionKey
+                           ?.type || 'hangoutsMeet'
+                  }
+               }
+            }
+         } else if (
+            conferenceData.type === 'google_meet' &&
+            conferenceData.id
+         ) {
+            // Frontend format - convert to Google Calendar API format
+            updatedConferenceData = {
+               conferenceId: conferenceData.id,
+               conferenceSolution: {
+                  key: {
+                     type: 'hangoutsMeet'
+                  },
+                  name: 'Google Meet',
+                  iconUri:
+                     'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-512dp/logo_meet_2020q4_color_2x_web_512dp.png'
+               },
+               entryPoints: [
+                  {
+                     entryPointType: 'video',
+                     uri: conferenceData.joinUrl,
+                     label: conferenceData.joinUrl
+                  },
+                  ...(conferenceData.phoneNumbers || []).map((phone) => ({
+                     entryPointType: 'phone',
+                     uri: `tel:${phone.number}`,
+                     label: phone.number,
+                     pin: phone.pin,
+                     regionCode: phone.regionCode
+                  }))
+               ]
+            }
+         } else {
+            // Raw Google Calendar API format or other format
+            updatedConferenceData = conferenceData
+         }
+      }
+
       const updatedEventData = {
          ...eventData, // Preserve other existing properties
          start: {
@@ -251,7 +308,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          summary: summary || eventData.summary,
          description: description || eventData.description,
          location: location || eventData.location,
-         conferenceData: conferenceData || eventData.conferenceData
+         conferenceData: updatedConferenceData
       }
 
       let event
@@ -262,11 +319,23 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          calendarId &&
          originalCalendarId !== calendarId
       ) {
-         // Create a copy in the new calendar
+         // Create a copy in the new calendar - remove properties that cause conflicts
+         const {
+            id,
+            etag,
+            htmlLink,
+            iCalUID,
+            created,
+            updated,
+            creator,
+            organizer,
+            ...eventDataForInsert
+         } = updatedEventData
          event = await calendar.events.insert({
             auth: oath2Client,
             calendarId: calendarId,
-            requestBody: updatedEventData
+            conferenceDataVersion: 1, // Required for conference data support
+            requestBody: eventDataForInsert
          })
 
          // Delete the original event
@@ -281,6 +350,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
             auth: oath2Client,
             calendarId: originalCalendarId || 'primary',
             eventId: eventId,
+            conferenceDataVersion: 1, // Required for conference data support
             requestBody: updatedEventData
          })
       }
@@ -295,10 +365,16 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
       await updateTaskFromGoogleEvent(
          finalEventId,
          updatedEventData,
-         eventId // Pass original event ID in case we need to update task references
+         eventId, // Pass original event ID in case we need to update task references
+         calendarId // Pass new calendar ID for calendar moves
       )
 
-      res.json({ event: event.data })
+      const updatedCalendar = await calendar.calendarList.get({
+         auth: oath2Client,
+         calendarId: calendarId
+      })
+
+      res.json({ event: event.data, calendar: updatedCalendar.data })
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }

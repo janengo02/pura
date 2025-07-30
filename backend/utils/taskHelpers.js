@@ -258,7 +258,12 @@ const deleteGoogleEventsForRemovedSlots = async (
  * Handle Google Calendar event updates from calendar UI
  * Updates the corresponding task schedule slot
  */
-const updateTaskFromGoogleEvent = async (eventId, eventData, originalEventId = null) => {
+const updateTaskFromGoogleEvent = async (
+   eventId,
+   eventData,
+   originalEventId = null,
+   newCalendarId = null
+) => {
    try {
       // Check if this is a Pura task event using extendedProperties
       if (!eventData.extendedProperties?.private?.pura_task_id) {
@@ -278,7 +283,7 @@ const updateTaskFromGoogleEvent = async (eventId, eventData, originalEventId = n
       let slotIndex = task.schedule.findIndex(
          (slot) => slot.google_event_id === eventId
       )
-      
+
       // If not found with current event ID and we have an original event ID, try that
       if (slotIndex === -1 && originalEventId) {
          slotIndex = task.schedule.findIndex(
@@ -301,10 +306,15 @@ const updateTaskFromGoogleEvent = async (eventId, eventData, originalEventId = n
       task.schedule[slotIndex].end = new Date(
          eventData.end.dateTime || eventData.end.date
       )
-      
+
       // Update the event ID if it changed (event was moved to different calendar)
       if (originalEventId && eventId !== originalEventId) {
          task.schedule[slotIndex].google_event_id = eventId
+      }
+
+      // Update the calendar ID if it changed (event was moved to different calendar)
+      if (newCalendarId && newCalendarId !== task.schedule[slotIndex].google_calendar_id) {
+         task.schedule[slotIndex].google_calendar_id = newCalendarId
       }
 
       task.update_date = new Date()
@@ -347,7 +357,6 @@ const calculateSlotSyncStatus = async (slot, userId) => {
          sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
       }
    }
-   console.log(account)
 
    let oauth2Client, calendar, event
    try {

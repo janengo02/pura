@@ -223,7 +223,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
       if (res.data?.event) {
          dispatch({
             type: GOOGLE_CALENDAR_UPDATE_EVENT,
-            payload: res.data.event
+            payload: { ...res.data, originalEventId: reqData.eventId }
          })
       } else {
          throw new Error(

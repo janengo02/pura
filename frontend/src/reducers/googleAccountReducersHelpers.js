@@ -874,10 +874,15 @@ export const changeGoogleCalendarVisibility = ({
 
 /**
  * Update or delete Google event with full date support
- * @param {Object} params - Event list and updated event data
+ * @param {Object} params - Event list, updated event data, and calendar data
  * @returns {Object} Updated state with modified event
  */
-export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
+export const updateGoogleEvent = ({
+   originalEventId,
+   googleEvents,
+   updatedEvent,
+   updatedCalendar
+}) => {
    // Handle event deletion
    if (updatedEvent.deleted) {
       return {
@@ -887,7 +892,7 @@ export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
 
    // Update existing event with enhanced data
    const updatedEventList = googleEvents.map((event) => {
-      if (event.id === updatedEvent.id) {
+      if (event.id === originalEventId) {
          const startTime = parseEventDateTime(updatedEvent.start)
          let endTime = parseEventDateTime(updatedEvent.end)
          const isAllDay = isAllDayEvent(updatedEvent)
@@ -896,24 +901,78 @@ export const updateGoogleEvent = ({ googleEvents, updatedEvent }) => {
             endTime = processAllDayEndTime(startTime, endTime)
          }
 
+         console.log(event)
+         console.log(updatedCalendar)
+
          return {
             ...event,
-            title: updatedEvent.summary || event.title,
+            id: updatedEvent.id,
+            calendarId: updatedCalendar.id,
+            calendar: updatedCalendar.summary,
+            title: updatedEvent.summary,
             start: startTime,
             end: endTime,
             allDay: isAllDay,
-            description: updatedEvent.description || event.description,
-            location: extractLocation(updatedEvent) || event.location,
+            description: updatedEvent.description,
+            location: extractLocation(updatedEvent),
             attendees: extractAttendees(updatedEvent),
-            conferenceData:
-               extractConferenceData(updatedEvent) || event.conferenceData,
+            conferenceData: extractConferenceData(updatedEvent),
             reminders: extractReminders(updatedEvent),
             visibility: extractVisibilityInfo(updatedEvent),
             extendedProperties: extractExtendedProperties(updatedEvent),
-            recurrence: extractRecurrence(updatedEvent) || event.recurrence,
+            recurrence: extractRecurrence(updatedEvent),
+
+            // Event metadata
+            createdDate: updatedEvent.created
+               ? new Date(updatedEvent.created)
+               : event.createdDate,
             updatedDate: updatedEvent.updated
                ? new Date(updatedEvent.updated)
-               : new Date()
+               : new Date(),
+
+            // Creator and organizer information
+            creator: {
+               email: updatedEvent.creator?.email,
+               displayName: updatedEvent.creator?.displayName,
+               self: updatedEvent.creator?.self || false
+            },
+            organizer: {
+               email: updatedEvent.organizer?.email,
+               displayName: updatedEvent.organizer?.displayName,
+               self: updatedEvent.organizer?.self || false
+            },
+
+            // Event URLs and links
+            htmlLink: updatedEvent.htmlLink,
+            hangoutLink: updatedEvent.hangoutLink,
+
+            // Guest management
+            guestsCanInviteOthers:
+               updatedEvent.guestsCanInviteOthers !== undefined
+                  ? updatedEvent.guestsCanInviteOthers
+                  : event.guestsCanInviteOthers !== false,
+            guestsCanModify:
+               updatedEvent.guestsCanModify !== undefined
+                  ? updatedEvent.guestsCanModify
+                  : event.guestsCanModify || false,
+            guestsCanSeeOtherGuests:
+               updatedEvent.guestsCanSeeOtherGuests !== undefined
+                  ? updatedEvent.guestsCanSeeOtherGuests
+                  : event.guestsCanSeeOtherGuests !== false,
+
+            // Additional metadata
+            etag: updatedEvent.etag,
+            sequence:
+               updatedEvent.sequence !== undefined
+                  ? updatedEvent.sequence
+                  : event.sequence || 0,
+            source: updatedEvent.source,
+
+            // Update color: use colorId if provided, otherwise use calendar.backgroundColor
+            color: updatedEvent.colorId
+               ? GOOGLE_CALENDAR_COLORS[updatedEvent.colorId] ||
+                 updatedCalendar.backgroundColor
+               : updatedCalendar.backgroundColor
          }
       }
       return event

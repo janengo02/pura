@@ -86,8 +86,10 @@ function googleAccountReducer(state = initialState, action) {
          return {
             ...state,
             ...updateGoogleEvent({
+               originalEventId: payload.originalEventId,
                googleEvents: state.googleEvents,
-               updatedEvent: payload
+               updatedEvent: payload.event,
+               updatedCalendar: payload.calendar
             })
          }
 
