@@ -1,6 +1,6 @@
 import {
    GET_PAGE,
-   MOVE_TASK,
+   DROP_TASK,
    PAGE_ERROR,
    CREATE_PROGRESS,
    UPDATE_PROGRESS,
@@ -61,7 +61,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case MOVE_TASK:
+      case DROP_TASK:
          return {
             ...state,
             ...moveTask({
@@ -164,12 +164,18 @@ function pageReducer(state = initialState, action) {
       case UPDATE_TASK:
          return {
             ...state,
-            tasks: state.tasks.map(task => 
-               task._id === payload.task_id 
+            tasks: state.tasks.map((task) =>
+               task._id === payload.task_id
                   ? {
                        ...task,
-                       title: payload.title !== undefined ? payload.title : task.title,
-                       content: payload.content !== undefined ? payload.content : task.content,
+                       title:
+                          payload.title !== undefined
+                             ? payload.title
+                             : task.title,
+                       content:
+                          payload.content !== undefined
+                             ? payload.content
+                             : task.content,
                        update_date: payload.update_date || task.update_date
                     }
                   : task
@@ -180,11 +186,13 @@ function pageReducer(state = initialState, action) {
       case REMOVE_PAGE_TASK_SCHEDULE_SLOT:
          return {
             ...state,
-            tasks: state.tasks.map(task => 
-               task._id === payload.task_id 
+            tasks: state.tasks.map((task) =>
+               task._id === payload.task_id
                   ? {
                        ...task,
-                       schedule: task.schedule?.filter((slot, index) => index !== payload.slot_index),
+                       schedule: task.schedule?.filter(
+                          (slot, index) => index !== payload.slot_index
+                       ),
                        update_date: payload.update_date || task.update_date
                     }
                   : task

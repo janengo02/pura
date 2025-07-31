@@ -12,7 +12,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { getFirstPageAction, moveTaskAction } from '../../actions/pageActions'
+import { getFirstPageAction, dropTaskAction } from '../../actions/pageActions'
 import { createGroupAction } from '../../actions/groupActions'
 import { createProgressAction } from '../../actions/progressActions'
 
@@ -47,7 +47,7 @@ const Kanban = React.memo(
    ({
       // Redux props
       getFirstPageAction,
-      moveTaskAction,
+      dropTaskAction,
       createGroupAction,
       createProgressAction,
       pageData: { _id, group_order, progress_order, errors, error, loading }
@@ -112,9 +112,9 @@ const Kanban = React.memo(
                page_id: _id,
                result: result
             }
-            moveTaskAction(reqData)
+            dropTaskAction(reqData)
          },
-         [_id, moveTaskAction]
+         [_id, dropTaskAction]
       )
 
       const handleCreateProgress = useCallback(
@@ -237,7 +237,7 @@ Kanban.displayName = 'Kanban'
 // PropTypes validation
 Kanban.propTypes = {
    getFirstPageAction: PropTypes.func.isRequired,
-   moveTaskAction: PropTypes.func.isRequired,
+   dropTaskAction: PropTypes.func.isRequired,
    createGroupAction: PropTypes.func.isRequired,
    createProgressAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
@@ -283,7 +283,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    getFirstPageAction,
-   moveTaskAction,
+   dropTaskAction,
    createGroupAction,
    createProgressAction
 }

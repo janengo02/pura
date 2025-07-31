@@ -5,6 +5,7 @@ import {
    DELETE_TASK,
    GET_PAGE,
    SHOW_TASK,
+   MOVE_TASK,
    UPDATE_TASK,
    UPDATE_TASK_SCHEDULE,
    REMOVE_TASK_SCHEDULE_SLOT,
@@ -178,13 +179,25 @@ export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
 
 // Move task to different group/progress
 export const moveTaskAction = (formData) => async (dispatch) => {
-   // @todo: Optimistic update for task state
+   // Optimistic update for task modal if open
+   if (formData.task_detail_flg) {
+      dispatch({
+         type: MOVE_TASK,
+         payload: {
+            task_id: formData.task_id,
+            group: formData.group,
+            progress: formData.progress,
+            update_date: new Date().toISOString()
+         }
+      })
+   }
+
    try {
       const res = await api.put(
          `/task/move/${formData.page_id}/${formData.task_id}`,
          {
-            group_id: formData.group_id,
-            progress_id: formData.progress_id
+            group_id: formData.group?._id,
+            progress_id: formData.progress?._id
          }
       )
 
@@ -192,14 +205,8 @@ export const moveTaskAction = (formData) => async (dispatch) => {
          type: GET_PAGE,
          payload: res.data.page
       })
-
-      if (formData.task_detail_flg) {
-         dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
-         })
-      }
    } catch (err) {
+      console.error('Error moving task:', err)
       pageActionErrorHandler(
          dispatch,
          err,

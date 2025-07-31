@@ -5,7 +5,7 @@ import {
    FILTER_SCHEDULE,
    FILTER_NAME,
    GET_PAGE,
-   MOVE_TASK,
+   DROP_TASK,
    PAGE_ERROR
 } from './types'
 
@@ -56,9 +56,9 @@ export const getFirstPageAction = () => async (dispatch) => {
    }
 }
 
-export const moveTaskAction = (reqData) => async (dispatch) => {
+export const dropTaskAction = (reqData) => async (dispatch) => {
    dispatch({
-      type: MOVE_TASK,
+      type: DROP_TASK,
       payload: reqData.result
    })
    try {
