@@ -11,7 +11,8 @@ import {
    REMOVE_PAGE_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
    GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
-   GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT
+   GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
+   GOOGLE_CALENDAR_DELETE_TASK_EVENTS
 } from './types'
 import {
    pageActionErrorHandler,
@@ -43,7 +44,13 @@ export const deleteTaskAction = (reqData) => async (dispatch) => {
          task_id: reqData.task_id
       }
    })
-   // @todo: Optimistic update for googleEvents
+   dispatch({
+      type: GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
+      payload: {
+         task_id: reqData.task_id
+      }
+   })
+
    dispatch({
       type: CLEAR_TASK
    })

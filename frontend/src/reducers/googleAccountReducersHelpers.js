@@ -1208,3 +1208,24 @@ export const removeTaskScheduleSlot = ({ googleEvents, removalData }) => {
 
    return { googleEvents: updatedEvents }
 }
+
+/**
+ * Delete all task-related Google calendar events (task and synced events)
+ * @param {Object} params - Current events and task deletion data
+ * @param {Array} params.googleEvents - Current Google events list
+ * @param {Object} params.taskDeletionData - Deletion data with task_id
+ * @returns {Object} Updated state with task events removed
+ */
+export const deleteTaskEvents = ({ googleEvents, taskDeletionData }) => {
+   const updatedEvents = googleEvents.filter(event => {
+      // Remove task events (eventType === 'task') or synced events (eventType === 'synced')
+      // that match the task_id
+      if ((event.eventType === 'task' || event.eventType === 'synced') && 
+          event.pura_task_id === taskDeletionData.task_id) {
+         return false // Remove this event
+      }
+      return true // Keep this event
+   })
+
+   return { googleEvents: updatedEvents }
+}

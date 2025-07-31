@@ -340,14 +340,21 @@ const Calendar = React.memo(
          return () => clearTimeout(timer)
       }, [activeLanguage])
 
+      useEffect(() => {
+         if (range && range.length) {
+            loadCalendarAction(range, tasks)
+         }
+      }, [range, loadCalendarAction, tasks])
+
       // Initialize calendar with default date range on mount
       useEffect(() => {
          const initialRange = [
             firstVisibleDay(calendarConfig.defaultDate, localizer),
             lastVisibleDay(calendarConfig.defaultDate, localizer)
          ]
-         loadCalendarAction(initialRange, tasks)
-      }, [calendarConfig.defaultDate, loadCalendarAction, localizer, tasks])
+         loadCalendarAction(initialRange, [])
+      }, [calendarConfig.defaultDate, loadCalendarAction, localizer])
+      // @todo reload with visible range when tasks change
 
       // -------------------------------------------------------------------------
       // RENDER
@@ -373,6 +380,7 @@ const Calendar = React.memo(
                   views={calendarConfig.views}
                   scrollToTime={calendarConfig.scrollToTime}
                   onRangeChange={onRangeChange}
+                  on
                   eventPropGetter={eventPropGetter}
                   popup
                   culture={activeLanguage}

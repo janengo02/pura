@@ -6,6 +6,7 @@ import {
    GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
    GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
    GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
+   GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
    GOOGLE_CALENDAR_ADD_EVENT,
    GOOGLE_CALENDAR_ADD_ACCOUNT,
    GOOGLE_CALENDAR_REMOVE_ACCOUNT,
@@ -25,6 +26,7 @@ import {
    updateTaskEvents,
    updateTaskSchedule,
    removeTaskScheduleSlot,
+   deleteTaskEvents,
    deleteGoogleEvent
 } from './googleAccountReducersHelpers'
 
@@ -134,6 +136,15 @@ function googleAccountReducer(state = initialState, action) {
             ...removeTaskScheduleSlot({
                googleEvents: state.googleEvents,
                removalData: payload
+            })
+         }
+
+      case GOOGLE_CALENDAR_DELETE_TASK_EVENTS:
+         return {
+            ...state,
+            ...deleteTaskEvents({
+               googleEvents: state.googleEvents,
+               taskDeletionData: payload
             })
          }
 
