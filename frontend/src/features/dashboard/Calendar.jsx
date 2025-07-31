@@ -354,7 +354,6 @@ const Calendar = React.memo(
          ]
          loadCalendarAction(initialRange, [])
       }, [calendarConfig.defaultDate, loadCalendarAction, localizer])
-      // @todo reload with visible range when tasks change
 
       // -------------------------------------------------------------------------
       // RENDER

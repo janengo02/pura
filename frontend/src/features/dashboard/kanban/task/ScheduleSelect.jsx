@@ -60,8 +60,8 @@ const ScheduleSelect = React.memo(
          if (nextHour < 24) {
             endTime.setHours(nextHour)
          } else {
-            // Set to end of the current day (23:59:59.999)
-            endTime.setHours(23, 59, 59, 999)
+            // Set to end of the current day (23:59:59.000)
+            endTime.setHours(23, 59, 59, 0)
          }
 
          const formData = {
