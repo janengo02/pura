@@ -95,6 +95,21 @@ const formatJapaneseDate = (momentDate, format) => {
 }
 
 /**
+ * Convert Date object to datetime-local input format (YYYY-MM-DDTHH:MM)
+ * @param {Date} date - Date object to convert
+ * @returns {string} Formatted datetime string for datetime-local input
+ */
+const toDateTimeLocalFormat = (date) => {
+   const year = date.getFullYear()
+   const month = String(date.getMonth() + 1).padStart(2, '0')
+   const day = String(date.getDate()).padStart(2, '0')
+   const hours = String(date.getHours()).padStart(2, '0')
+   const minutes = String(date.getMinutes()).padStart(2, '0')
+   
+   return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+/**
  * Language-aware event time formatting
  * @param {string|Date} start - Event start time
  * @param {string|Date} end - Event end time
@@ -179,16 +194,90 @@ const EventTimeInput = React.memo(
       const { t } = useReactiveTranslation()
       const handleStartTimeChange = useCallback(
          (e) => {
-            setStartTime(e.target.value)
+            e.preventDefault()
+
+            // Handle empty or invalid input
+            if (!e.target.value) {
+               return
+            }
+
+            const newStartTime = new Date(e.target.value)
+
+            // Validate that the input is a valid date
+            if (isNaN(newStartTime.getTime())) {
+               return
+            }
+
+            newStartTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+
+            const currentEndTime = new Date(endTime)
+
+            // Additional validation for end time
+            if (isNaN(currentEndTime.getTime())) {
+               setStartTime(e.target.value)
+               return
+            }
+
+            // Validate: if new start time is equal or later than end time
+            if (newStartTime >= currentEndTime) {
+               // Auto-correct: set end time to 1 hour after new start time
+               const correctedEndTime = new Date(
+                  newStartTime.getTime() + 60 * 60 * 1000
+               ) // Add 1 hour in milliseconds
+
+               // Update both start and end times
+               setStartTime(e.target.value)
+               setEndTime(toDateTimeLocalFormat(correctedEndTime))
+            } else {
+               // Only update start time
+               setStartTime(e.target.value)
+            }
          },
-         [setStartTime]
+         [setStartTime, setEndTime, endTime]
       )
 
       const handleEndTimeChange = useCallback(
          (e) => {
-            setEndTime(e.target.value)
+            e.preventDefault()
+
+            // Handle empty or invalid input
+            if (!e.target.value) {
+               return
+            }
+
+            const newEndTime = new Date(e.target.value)
+
+            // Validate that the input is a valid date
+            if (isNaN(newEndTime.getTime())) {
+               return
+            }
+
+            newEndTime.setSeconds(0, 0) // Set seconds and milliseconds to 0
+
+            const currentStartTime = new Date(startTime)
+
+            // Additional validation for start time
+            if (isNaN(currentStartTime.getTime())) {
+               setEndTime(e.target.value)
+               return
+            }
+
+            // Validate: if new end time is equal or earlier than start time
+            if (newEndTime <= currentStartTime) {
+               // Auto-correct: set start time to 1 hour before new end time
+               const correctedStartTime = new Date(
+                  newEndTime.getTime() - 60 * 60 * 1000
+               ) // Subtract 1 hour in milliseconds
+
+               // Update both start and end times
+               setStartTime(toDateTimeLocalFormat(correctedStartTime))
+               setEndTime(e.target.value)
+            } else {
+               // Only update end time
+               setEndTime(e.target.value)
+            }
          },
-         [setEndTime]
+         [setStartTime, setEndTime, startTime]
       )
 
       const timeInputProps = useMemo(

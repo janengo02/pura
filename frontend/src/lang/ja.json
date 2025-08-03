@@ -16,6 +16,8 @@
       "alert-task-notfound": "タスクを特定できません",
       "alert-user-exists": "ユーザーは既に存在します。",
       "alert-user-unauthorize": "このページを編集する権限がありません",
+      "event-invalid-time-format": "有効な開始時刻と終了時刻を入力してください",
+      "event-invalid-time-range": "開始時刻は終了時刻より前である必要があります",
       "btn-": "---------------------------------------------",
       "btn-account_settings": "アカウント設定",
       "btn-add-filter": "フィルターを追加",

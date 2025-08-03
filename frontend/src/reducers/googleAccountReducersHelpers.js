@@ -404,7 +404,7 @@ export const addGoogleAccountEventListHelper = (
                  }
                : {
                     eventType: 'google',
-                    title: event.summary || 'Untitled Event'
+                    title: event.summary
                  }
 
             newEvents.push({
@@ -418,7 +418,7 @@ export const addGoogleAccountEventListHelper = (
                accessRole: calendar.accessRole,
                calendarVisible: calendar.selected || false,
                accountEmail: newGoogleAccountEvents.account_email,
-               googleEventTitle: event.summary || 'Untitled Event',
+               googleEventTitle: event.summary,
                color: event.colorId
                   ? GOOGLE_CALENDAR_COLORS[event.colorId] ||
                     calendar.backgroundColor
@@ -592,7 +592,7 @@ const createEnhancedEventObject = (
    const baseEvent = {
       id: event.id,
       google_event_id: event.id,
-      title: event.summary || 'Untitled Event',
+      title: event.summary,
       start: startTime,
       end: endTime,
       allDay: isAllDay,
@@ -665,7 +665,7 @@ const createEnhancedEventObject = (
          syncStatus: syncStatus,
          pura_task_id: syncedTaskInfo.taskId,
          pura_schedule_index: syncedTaskInfo.slotIndex,
-         googleEventTitle: event.summary || 'Untitled Event' // Keep original Google event title
+         googleEventTitle: event.summary // Keep original Google event title
       }
    }
 
@@ -1217,11 +1217,13 @@ export const removeTaskScheduleSlot = ({ googleEvents, removalData }) => {
  * @returns {Object} Updated state with task events removed
  */
 export const deleteTaskEvents = ({ googleEvents, taskDeletionData }) => {
-   const updatedEvents = googleEvents.filter(event => {
+   const updatedEvents = googleEvents.filter((event) => {
       // Remove task events (eventType === 'task') or synced events (eventType === 'synced')
       // that match the task_id
-      if ((event.eventType === 'task' || event.eventType === 'synced') && 
-          event.pura_task_id === taskDeletionData.task_id) {
+      if (
+         (event.eventType === 'task' || event.eventType === 'synced') &&
+         event.pura_task_id === taskDeletionData.task_id
+      ) {
          return false // Remove this event
       }
       return true // Keep this event

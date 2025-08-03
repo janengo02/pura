@@ -123,7 +123,34 @@ const EventEditModal = React.memo(
       }, [clearEventEditModalAction])
 
       const handleSave = useCallback(async () => {
-         // @todo: Validate time inputs before proceeding
+         // Validate time inputs before proceeding
+         const newStartTime = new Date(startTime)
+         const newEndTime = new Date(endTime)
+
+         // Check if times are valid dates
+         if (isNaN(newStartTime.getTime()) || isNaN(newEndTime.getTime())) {
+            toast({
+               title: null,
+               description: t('event-invalid-time-format'),
+               status: 'error',
+               duration: 5000,
+               isClosable: true
+            })
+            return
+         }
+
+         // Check if start time is before end time
+         if (newStartTime >= newEndTime) {
+            toast({
+               title: null,
+               description: t('event-invalid-time-range'),
+               status: 'error',
+               duration: 5000,
+               isClosable: true
+            })
+            return
+         }
+
          handleCloseModal()
 
          // Show loading toast for task and synced events
@@ -139,9 +166,6 @@ const EventEditModal = React.memo(
          }
 
          try {
-            const newStartTime = new Date(startTime)
-            const newEndTime = new Date(endTime)
-
             // Set seconds and milliseconds to 0 for consistency
             newStartTime.setSeconds(0, 0)
             newEndTime.setSeconds(0, 0)
@@ -153,7 +177,7 @@ const EventEditModal = React.memo(
                   await updateTaskBasicInfoAction({
                      page_id: event.pageId,
                      task_id: event.pura_task_id,
-                     title: title,
+                     title: title || t('placeholder-untitled'),
                      content: description
                   })
                }
@@ -176,7 +200,7 @@ const EventEditModal = React.memo(
                   accountEmail: event.accountEmail,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
-                  summary: title,
+                  summary: title || t('placeholder-untitled'),
                   description: description,
                   colorId: selectedColorId,
                   conferenceData: conferenceData,
@@ -193,7 +217,7 @@ const EventEditModal = React.memo(
                      await updateTaskBasicInfoAction({
                         page_id: event.pageId,
                         task_id: event.pura_task_id,
-                        title: title,
+                        title: title || t('placeholder-untitled'),
                         content: description
                      })
                   }

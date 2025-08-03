@@ -224,7 +224,7 @@ const Calendar = React.memo(
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
-      const { currentLanguage: reactiveLanguage } = useReactiveTranslation()
+      const { currentLanguage: reactiveLanguage, t } = useReactiveTranslation()
 
       // Use reactive language to ensure updates when language changes
       const activeLanguage = reactiveLanguage || currentLanguage || 'en'
@@ -254,10 +254,13 @@ const Calendar = React.memo(
          []
       )
 
-      // Filter visible events based on calendar visibility
+      // Filter visible events based on calendar visibility and set placeholder for empty titles
       const visibleEvents = useMemo(
-         () => googleEvents.filter((ev) => ev.calendarVisible),
-         [googleEvents]
+         () => googleEvents.filter((ev) => ev.calendarVisible).map((ev) => ({
+            ...ev,
+            title: ev.title || t('placeholder-untitled')
+         })),
+         [googleEvents, t]
       )
 
       // -------------------------------------------------------------------------
