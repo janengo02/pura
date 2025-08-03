@@ -202,3 +202,17 @@ export const stringToTime = (dString) => {
    const d = moment(dString).format('LT') // 7:00PM
    return d
 }
+
+export function getRangeStart(date, localizer) {
+   let prevMonth = dates.add(date, -1, 'month')
+   let firstOfPrevMonth = dates.startOf(prevMonth, 'month')
+
+   return dates.startOf(firstOfPrevMonth, 'week', localizer.startOfWeek())
+}
+
+export function getRangeEnd(date, localizer) {
+   let nextMonth = dates.add(date, +1, 'month')
+   let endOfNextMonth = dates.endOf(nextMonth, 'month')
+
+   return dates.endOf(endOfNextMonth, 'week', localizer.startOfWeek())
+}

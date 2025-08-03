@@ -29,15 +29,13 @@ import CalendarNavigationToolbar from './calendar/toolbar/CalendarNavigationTool
 import EventWrapper from './calendar/event/EventWrapper'
 
 // Actions
-import { loadCalendarAction } from '../../actions/googleAccountActions'
+import {
+   loadCalendarAction,
+   changeCalendarRangeAction
+} from '../../actions/googleAccountActions'
 
 // Utils
-import {
-   firstVisibleDay,
-   neq,
-   lastVisibleDay,
-   inRange
-} from '../../utils/dates'
+import { getRangeStart, getRangeEnd } from '../../utils/dates'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // Constants
@@ -217,6 +215,7 @@ const Calendar = React.memo(
    ({
       // Redux props
       loadCalendarAction,
+      changeCalendarRangeAction,
       googleAccount: { googleEvents, loading, range },
       tasks,
       currentLanguage
@@ -256,10 +255,13 @@ const Calendar = React.memo(
 
       // Filter visible events based on calendar visibility and set placeholder for empty titles
       const visibleEvents = useMemo(
-         () => googleEvents.filter((ev) => ev.calendarVisible).map((ev) => ({
-            ...ev,
-            title: ev.title || t('placeholder-untitled')
-         })),
+         () =>
+            googleEvents
+               .filter((ev) => ev.calendarVisible)
+               .map((ev) => ({
+                  ...ev,
+                  title: ev.title || t('placeholder-untitled')
+               })),
          [googleEvents, t]
       )
 
@@ -271,28 +273,20 @@ const Calendar = React.memo(
       const onRangeChange = useCallback(
          (newRange) => {
             if (!newRange || !range || !range.length) return
-
+            let newRangeStart
+            let newRangeEnd
             // Handle month view range change
             if (!Array.isArray(newRange)) {
-               if (
-                  neq(newRange.start, range[0], 'day') ||
-                  neq(newRange.end, range[1], 'day')
-               ) {
-                  loadCalendarAction([newRange.start, newRange.end], tasks)
-               }
-               return
+               newRangeStart = getRangeStart(newRange.start, localizer)
+               newRangeEnd = getRangeEnd(newRange.end, localizer)
+            } else {
+               newRangeStart = getRangeStart(newRange[0], localizer)
+               newRangeEnd = getRangeEnd(newRange[1], localizer)
             }
 
-            // Handle week/day view range change
-            if (!inRange(newRange[0], range[0], range[1], 'day')) {
-               const weekRange = [
-                  firstVisibleDay(newRange[0], localizer),
-                  lastVisibleDay(newRange[0], localizer)
-               ]
-               loadCalendarAction(weekRange, tasks)
-            }
+            changeCalendarRangeAction([newRangeStart, newRangeEnd])
          },
-         [loadCalendarAction, localizer, range, tasks]
+         [changeCalendarRangeAction, localizer, range]
       )
 
       // Customize event appearance based on selection state
@@ -352,11 +346,11 @@ const Calendar = React.memo(
       // Initialize calendar with default date range on mount
       useEffect(() => {
          const initialRange = [
-            firstVisibleDay(calendarConfig.defaultDate, localizer),
-            lastVisibleDay(calendarConfig.defaultDate, localizer)
+            getRangeStart(calendarConfig.defaultDate, localizer),
+            getRangeEnd(calendarConfig.defaultDate, localizer)
          ]
-         loadCalendarAction(initialRange, [])
-      }, [calendarConfig.defaultDate, loadCalendarAction, localizer])
+         changeCalendarRangeAction(initialRange)
+      }, [calendarConfig.defaultDate, changeCalendarRangeAction, localizer])
 
       // -------------------------------------------------------------------------
       // RENDER
@@ -403,6 +397,7 @@ Calendar.displayName = 'Calendar'
 // PropTypes validation
 Calendar.propTypes = {
    loadCalendarAction: PropTypes.func.isRequired,
+   changeCalendarRangeAction: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired,
    tasks: PropTypes.array.isRequired,
    currentLanguage: PropTypes.string.isRequired
@@ -433,7 +428,8 @@ const selectCalendarData = createSelector(
 const mapStateToProps = (state) => selectCalendarData(state)
 
 const mapDispatchToProps = {
-   loadCalendarAction
+   loadCalendarAction,
+   changeCalendarRangeAction
 }
 
 // =============================================================================

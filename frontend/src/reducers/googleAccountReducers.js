@@ -12,7 +12,8 @@ import {
    GOOGLE_CALENDAR_REMOVE_ACCOUNT,
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
    GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT,
-   GOOGLE_CALENDAR_DELETE_EVENT
+   GOOGLE_CALENDAR_DELETE_EVENT,
+   CALENDAR_CHANGE_RANGE
 } from '../actions/types'
 import {
    addGoogleAccount,
@@ -43,6 +44,11 @@ const initialState = {
 function googleAccountReducer(state = initialState, action) {
    const { type, payload } = action
    switch (type) {
+      case CALENDAR_CHANGE_RANGE:
+         return {
+            ...state,
+            range: payload.range
+         }
       case GOOGLE_CALENDAR_ADD_ACCOUNT:
          return {
             ...state,
@@ -53,8 +59,7 @@ function googleAccountReducer(state = initialState, action) {
                googleEvents: state.googleEvents,
                newGoogleAccount: payload.data
             }),
-            loading: false,
-            range: payload.range
+            loading: false
          }
       case GOOGLE_CALENDAR_REMOVE_ACCOUNT:
          return {
@@ -67,7 +72,6 @@ function googleAccountReducer(state = initialState, action) {
                removedAccountEmail: payload.accountEmail
             }),
             loading: false
-            // Keep existing range when removing account
          }
 
       case GOOGLE_CALENDAR_LOADED:
@@ -78,8 +82,7 @@ function googleAccountReducer(state = initialState, action) {
                googleAccounts: payload.data,
                tasks: payload.tasks
             }),
-            loading: false,
-            range: payload.range
+            loading: false
          }
 
       case GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY:

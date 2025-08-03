@@ -83,7 +83,10 @@ export const googleAccountErrorHandler = (
 // =============================================================================
 // ACTION CREATORS
 // =============================================================================
-
+export const changeCalendarRangeAction = (range) => ({
+   type: 'CALENDAR_CHANGE_RANGE',
+   payload: { range }
+})
 /**
  * Load Calendar Action
  * Loads Google Calendar events for the specified date range
@@ -105,7 +108,6 @@ export const loadCalendarAction =
                type: GOOGLE_CALENDAR_LOADED,
                payload: {
                   data: res.data,
-                  range: visibleRange,
                   tasks: tasksArray
                }
             })
