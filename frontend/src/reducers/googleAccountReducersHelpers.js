@@ -443,12 +443,6 @@ export const addGoogleAccount = ({
    googleEvents,
    newGoogleAccount
 }) => {
-   console.log('Adding Google account========================')
-   console.log('Old googleAccounts:', googleAccounts)
-   console.log('Old googleCalendars:', googleCalendars)
-   console.log('Old googleEvents:', googleEvents)
-   console.log('New account data-------', newGoogleAccount)
-
    const updatedAccounts = addGoogleAccountListHelper(
       googleAccounts,
       newGoogleAccount
@@ -463,9 +457,6 @@ export const addGoogleAccount = ({
    )
    const defaultAccount =
       updatedAccounts.find((account) => account.isDefault) || null
-   console.log('New googleAccounts:', updatedAccounts)
-   console.log('New googleCalendars:', updatedCalendars)
-   console.log('New googleEvents:', newAccountEvents)
 
    return {
       googleAccounts: updatedAccounts,
@@ -903,9 +894,6 @@ export const updateGoogleEvent = ({
             endTime = processAllDayEndTime(startTime, endTime)
          }
 
-         console.log(event)
-         console.log(updatedCalendar)
-
          return {
             ...event,
             id: updatedEvent.id,
@@ -1087,10 +1075,6 @@ export const removeGoogleAccount = ({
          return event
       })
 
-   console.log('Removed Google account=============================')
-   console.log('Updated Google accounts:', updatedAccounts)
-   console.log('Updated Google calendars:', updatedCalendars)
-   console.log('Updated Google events:', updatedEvents)
    return {
       googleAccounts: updatedAccounts,
       googleCalendars: updatedCalendars,

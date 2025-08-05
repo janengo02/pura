@@ -325,7 +325,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          end: {
             dateTime: end
          },
-         colorId: colorId,
+         colorId: colorId || eventData.colorId,
          summary: summary || eventData.summary,
          description: description || eventData.description,
          location: location || eventData.location,

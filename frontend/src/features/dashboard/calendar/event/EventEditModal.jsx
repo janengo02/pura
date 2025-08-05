@@ -111,11 +111,20 @@ const EventEditModal = React.memo(
             const formData = {
                page_id: pageId,
                task_id: task._id,
-               target_event_index: event.pura_schedule_index
+               target_event_index:
+                  event.pura_task_id === task._id
+                     ? event.pura_schedule_index
+                     : undefined
             }
             await showTaskModalAction(formData)
          }
-      }, [task, pageId, showTaskModalAction, event.pura_schedule_index])
+      }, [
+         task,
+         pageId,
+         showTaskModalAction,
+         event.pura_schedule_index,
+         event.pura_task_id
+      ])
 
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
