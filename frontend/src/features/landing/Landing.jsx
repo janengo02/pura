@@ -332,7 +332,7 @@ export const LandingHeader = React.memo(() => {
                {t('landing-demo-login')}
             </Button>
             <Button colorScheme='purple' onClick={() => navigate('/register')}>
-               {t('landing-view-demo')}
+               {t('landing-register')}
             </Button>
          </HStack>
       </Flex>
