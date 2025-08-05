@@ -11,11 +11,13 @@ const { setOAuthCredentials } = require('../../utils/googleAccountHelper')
 
 dotenv.config()
 
-// @route   POST api/google-meet/create-space
-// @desc    Create a Google Meet space using the Google Meet API
-// @params  accountEmail (body) - Email of the Google account to use
-//          config (body) - Optional configuration for the Meet space
-// @access  Private
+/**
+ * @route POST api/google-meet/create-space
+ * @desc Create Google Meet space via Calendar API
+ * @access Private
+ * @body {string} accountEmail, [config]
+ * @returns {Object} {success, meetUri, spaceId, meetingCode, config, activeConference, createTime, updateTime}
+ */
 router.post('/create-space', auth, async (req, res) => {
    try {
       const { accountEmail, config = {} } = req.body
@@ -121,11 +123,14 @@ router.post('/create-space', auth, async (req, res) => {
    }
 })
 
-// @route   GET api/google-meet/space/:spaceId
-// @desc    Get Google Meet space details
-// @params  spaceId (params) - The space ID
-//          accountEmail (query) - Email of the Google account to use
-// @access  Private
+/**
+ * @route GET api/google-meet/space/:spaceId
+ * @desc Get Google Meet space details (API not available)
+ * @access Private
+ * @param {string} spaceId
+ * @query {string} accountEmail
+ * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
+ */
 router.get('/space/:spaceId', auth, async (req, res) => {
    try {
       const { spaceId } = req.params
@@ -166,12 +171,14 @@ router.get('/space/:spaceId', auth, async (req, res) => {
    }
 })
 
-// @route   PATCH api/google-meet/space/:spaceId
-// @desc    Update Google Meet space configuration
-// @params  spaceId (params) - The space ID
-//          accountEmail (body) - Email of the Google account to use
-//          config (body) - Updated configuration
-// @access  Private
+/**
+ * @route PATCH api/google-meet/space/:spaceId
+ * @desc Update Google Meet space (API not available)
+ * @access Private
+ * @param {string} spaceId
+ * @body {string} accountEmail, {Object} config
+ * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
+ */
 router.patch('/space/:spaceId', auth, async (req, res) => {
    try {
       const { spaceId } = req.params
@@ -222,11 +229,14 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
    }
 })
 
-// @route   DELETE api/google-meet/space/:spaceId
-// @desc    End Google Meet space
-// @params  spaceId (params) - The space ID
-//          accountEmail (body) - Email of the Google account to use
-// @access  Private
+/**
+ * @route DELETE api/google-meet/space/:spaceId
+ * @desc Delete Google Meet space (API not available)
+ * @access Private
+ * @param {string} spaceId
+ * @body {string} accountEmail
+ * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
+ */
 router.delete('/space/:spaceId', auth, async (req, res) => {
    try {
       const { spaceId } = req.params

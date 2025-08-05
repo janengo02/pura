@@ -991,23 +991,6 @@ Footer.displayName = 'Footer'
 
 const Landing = React.memo(() => {
    // -------------------------------------------------------------------------
-   // HOOKS & STATE
-   // -------------------------------------------------------------------------
-   const [isScrolled, setIsScrolled] = useState(false)
-
-   // -------------------------------------------------------------------------
-   // EFFECTS
-   // -------------------------------------------------------------------------
-   useEffect(() => {
-      const handleScroll = () => {
-         setIsScrolled(window.scrollY > 50)
-      }
-
-      window.addEventListener('scroll', handleScroll)
-      return () => window.removeEventListener('scroll', handleScroll)
-   }, [])
-
-   // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------
    return (

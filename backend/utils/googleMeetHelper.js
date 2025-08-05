@@ -2,10 +2,10 @@ const { google } = require('googleapis')
 const { setOAuthCredentials } = require('./googleAccountHelper')
 
 /**
- * Create a Google Meet space using the Meet API
- * @param {string} refreshToken - User's Google refresh token
- * @param {object} config - Meet space configuration
- * @returns {object} Meet space data
+ * Create Google Meet space
+ * @param {string} refreshToken - Google refresh token
+ * @param {Object} [config] - Meet configuration
+ * @returns {Object} {success, data} or {success, error, code}
  */
 const createMeetSpace = async (refreshToken, config = {}) => {
    try {
@@ -42,9 +42,9 @@ const createMeetSpace = async (refreshToken, config = {}) => {
 
 /**
  * Get Google Meet space details
- * @param {string} refreshToken - User's Google refresh token
- * @param {string} spaceId - The space ID
- * @returns {object} Meet space data
+ * @param {string} refreshToken - Google refresh token
+ * @param {string} spaceId - Space ID
+ * @returns {Object} {success, data} or {success, error, code}
  */
 const getMeetSpace = async (refreshToken, spaceId) => {
    try {
@@ -72,10 +72,10 @@ const getMeetSpace = async (refreshToken, spaceId) => {
 
 /**
  * Update Google Meet space configuration
- * @param {string} refreshToken - User's Google refresh token
- * @param {string} spaceId - The space ID
- * @param {object} config - Updated configuration
- * @returns {object} Updated Meet space data
+ * @param {string} refreshToken - Google refresh token
+ * @param {string} spaceId - Space ID
+ * @param {Object} config - Updated configuration
+ * @returns {Object} {success, data} or {success, error, code}
  */
 const updateMeetSpace = async (refreshToken, spaceId, config) => {
    try {
@@ -118,9 +118,9 @@ const updateMeetSpace = async (refreshToken, spaceId, config) => {
 
 /**
  * End active conference in Google Meet space
- * @param {string} refreshToken - User's Google refresh token
- * @param {string} spaceId - The space ID
- * @returns {object} Result of ending conference
+ * @param {string} refreshToken - Google refresh token
+ * @param {string} spaceId - Space ID
+ * @returns {Object} {success, message} or {success, error, code}
  */
 const endMeetSpace = async (refreshToken, spaceId) => {
    try {
@@ -148,8 +148,8 @@ const endMeetSpace = async (refreshToken, spaceId) => {
 
 /**
  * Format Meet space data for API response
- * @param {object} spaceData - Raw space data from Google Meet API
- * @returns {object} Formatted space data
+ * @param {Object} spaceData - Raw Google Meet API data
+ * @returns {Object} Formatted space data
  */
 const formatMeetSpaceData = (spaceData) => {
    return {
@@ -170,8 +170,8 @@ const formatMeetSpaceData = (spaceData) => {
 
 /**
  * Validate Meet space configuration
- * @param {object} config - Configuration to validate
- * @returns {object} Validation result
+ * @param {Object} config - Configuration to validate
+ * @returns {Object} {isValid, errors}
  */
 const validateMeetConfig = (config) => {
    const validAccessTypes = ['OPEN', 'TRUSTED', 'RESTRICTED']
@@ -194,9 +194,9 @@ const validateMeetConfig = (config) => {
 }
 
 /**
- * Handle Google Meet API errors with user-friendly messages
- * @param {object} error - Error from Google Meet API
- * @returns {object} Formatted error response
+ * Handle Google Meet API errors
+ * @param {Object} error - Google Meet API error
+ * @returns {Object} {code, message, details}
  */
 const handleMeetAPIError = (error) => {
    const errorMap = {

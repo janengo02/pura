@@ -1,6 +1,9 @@
 import { TOGGLE_THEME, SET_THEME, INITIALIZE_THEME } from './types'
 
-// Toggle theme action
+/**
+ * Toggle between light and dark theme
+ * @returns {Function} Redux thunk
+ */
 export const toggleThemeAction = () => (dispatch, getState) => {
    const currentTheme = getState().theme.current
    const newTheme = currentTheme === 'light' ? 'dark' : 'light'
@@ -14,7 +17,11 @@ export const toggleThemeAction = () => (dispatch, getState) => {
    })
 }
 
-// Set specific theme action
+/**
+ * Set specific theme
+ * @param {string} theme - Theme name ('light' or 'dark')
+ * @returns {Function} Redux thunk
+ */
 export const setThemeAction = (theme) => (dispatch) => {
    // Save to localStorage for persistence
    localStorage.setItem('chakra-ui-color-mode', theme)
@@ -25,7 +32,10 @@ export const setThemeAction = (theme) => (dispatch) => {
    })
 }
 
-// Initialize theme action (called on app start)
+/**
+ * Initialize theme on app start
+ * @returns {Function} Redux thunk
+ */
 export const initializeThemeAction = () => (dispatch) => {
    // Check for saved theme in localStorage (using Chakra's key)
    let savedTheme = localStorage.getItem('chakra-ui-color-mode')

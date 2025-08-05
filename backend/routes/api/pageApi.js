@@ -13,9 +13,12 @@ const { validatePage } = require('../../utils/pageHelpers')
 const Page = require('../../models/PageModel')
 const { moveTask } = require('../../../shared/utils')
 
-// @route   GET api/page
-// @desc    Get the first page of the user (temporary)
-// @access  Private
+/**
+ * @route GET api/page
+ * @desc Get first page of user
+ * @access Private
+ * @returns {Object} Page with progress_order, group_order, tasks, task_map
+ */
 router.get('/', auth, async (req, res) => {
    try {
       const page = await Page.findOne({ user: req.user.id })
@@ -33,9 +36,13 @@ router.get('/', auth, async (req, res) => {
    }
 })
 
-// @route   GET api/page/:id
-// @desc    Get page by page id
-// @access  Private
+/**
+ * @route GET api/page/:id
+ * @desc Get page by ID
+ * @access Private
+ * @param {string} id
+ * @returns {Object} Page with populated data
+ */
 router.get('/:id', auth, async (req, res) => {
    try {
       const page = await validatePage(req.params.id, req.user.id)
@@ -57,9 +64,13 @@ router.get('/:id', auth, async (req, res) => {
    }
 })
 
-// @route   POST api/page
-// @desc    Create a page
-// @access  Private
+/**
+ * @route POST api/page
+ * @desc Create new page
+ * @access Private
+ * @body {string} [title]
+ * @returns {Object} Created page object
+ */
 router.post('/', [auth], async (req, res) => {
    //   Validation: Form input
    const result = validationResult(req)
@@ -95,9 +106,14 @@ router.post('/', [auth], async (req, res) => {
    }
 })
 
-// @route   POST api/page/move-task/:id
-// @desc    Update page when move the position of a task
-// @access  Private
+/**
+ * @route POST api/page/move-task/:id
+ * @desc Move task position in page
+ * @access Private
+ * @param {string} id
+ * @body {Object} result - drag/drop result with destination, source, draggableId
+ * @returns {Object} Empty response on success
+ */
 router.post('/move-task/:id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.id, req.user.id)

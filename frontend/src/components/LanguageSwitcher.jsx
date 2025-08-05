@@ -28,26 +28,11 @@ import {
 // Utils & Icons
 import { PiCaretDown } from 'react-icons/pi'
 import { useReactiveTranslation } from '../hooks/useReactiveTranslation'
+import { LANGUAGE_OPTIONS } from './data/languages'
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
-
-const LANGUAGE_OPTIONS = [
-   {
-      value: 'en',
-      key: 'en',
-      labelKey: 'label-settings-language-english',
-      flag: '🇺🇸'
-   },
-   {
-      value: 'ja',
-      key: 'ja',
-      labelKey: 'label-settings-language-japanese',
-      flag: '🇯🇵'
-   }
-]
-
 const BUTTON_STYLES = {
    variant: 'ghost',
    size: 'md',

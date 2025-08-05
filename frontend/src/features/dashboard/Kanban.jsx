@@ -36,8 +36,10 @@ import ProgressHeader from './kanban/progress/ProgressHeader'
 import Column from './kanban/progress/Column'
 
 // Utils & Icons
-import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 import { PiPlus, PiPlusBold } from 'react-icons/pi'
+
+// Hooks
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // MAIN COMPONENT

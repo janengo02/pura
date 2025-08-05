@@ -26,6 +26,114 @@ export const updateGroup = ({ group_order, updatedGroup }) => {
    )
    return { group_order: newGroupOrder }
 }
+/**
+ * Update task basic information
+ * @param {Array} tasks - Current tasks array
+ * @param {Object} payload - Update payload
+ * @param {string} payload.task_id - Task ID to update
+ * @param {string} [payload.title] - New task title
+ * @param {string} [payload.content] - New task content
+ * @param {string} [payload.update_date] - Update timestamp
+ * @returns {Object} Updated state fragment
+ */
+export const updateTask = ({ tasks, payload }) => {
+   return {
+      tasks: tasks.map((task) =>
+         task._id === payload.task_id
+            ? {
+                 ...task,
+                 title:
+                    payload.title !== undefined
+                       ? payload.title
+                       : task.title,
+                 content:
+                    payload.content !== undefined
+                       ? payload.content
+                       : task.content,
+                 update_date: payload.update_date || task.update_date
+              }
+            : task
+      )
+   }
+}
+
+/**
+ * Remove task schedule slot from page state
+ * @param {Array} tasks - Current tasks array
+ * @param {Object} payload - Remove payload
+ * @param {string} payload.task_id - Task ID
+ * @param {number} payload.slot_index - Slot index to remove
+ * @param {string} [payload.update_date] - Update timestamp
+ * @returns {Object} Updated state fragment
+ */
+export const removePageTaskScheduleSlot = ({ tasks, payload }) => {
+   return {
+      tasks: tasks.map((task) =>
+         task._id === payload.task_id
+            ? {
+                 ...task,
+                 schedule: task.schedule?.filter(
+                    (slot, index) => index !== payload.slot_index
+                 ),
+                 update_date: payload.update_date || task.update_date
+              }
+            : task
+      )
+   }
+}
+
+/**
+ * Update filter schedule
+ * @param {Object} currentFilter - Current filter state
+ * @param {Object} payload - Filter payload
+ * @param {Array} payload.schedule - New schedule filter
+ * @returns {Object} Updated state fragment
+ */
+export const updateFilterSchedule = ({ currentFilter, payload }) => {
+   return {
+      filter: {
+         ...currentFilter,
+         schedule: payload.schedule
+      }
+   }
+}
+
+/**
+ * Update filter name
+ * @param {Object} currentFilter - Current filter state
+ * @param {Object} payload - Filter payload
+ * @param {string} payload.name - New name filter
+ * @returns {Object} Updated state fragment
+ */
+export const updateFilterName = ({ currentFilter, payload }) => {
+   return {
+      filter: {
+         ...currentFilter,
+         name: payload.name
+      }
+   }
+}
+
+/**
+ * Find progress index by ID
+ * @param {Array} progress_order - Progress order array
+ * @param {string} progress_id - Progress ID to find
+ * @returns {number} Index of progress or -1 if not found
+ */
+export const findProgressIndex = (progress_order, progress_id) => {
+   return progress_order.findIndex((p) => p && p._id === progress_id)
+}
+
+/**
+ * Find group index by ID
+ * @param {Array} group_order - Group order array
+ * @param {string} group_id - Group ID to find
+ * @returns {number} Index of group or -1 if not found
+ */
+export const findGroupIndex = (group_order, group_id) => {
+   return group_order.findIndex((g) => g && g._id === group_id)
+}
+
 export const getDefaultSchedule = () => {
    try {
       const stored = localStorage.getItem('filteredSchedule')
@@ -34,6 +142,7 @@ export const getDefaultSchedule = () => {
       return ['1', '2']
    }
 }
+
 export const getDefaultName = () => {
    try {
       const stored = localStorage.getItem('filteredName')

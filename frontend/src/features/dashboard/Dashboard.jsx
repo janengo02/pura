@@ -12,7 +12,7 @@ import useWindowDimensions from '../../hooks/useWindowDimensions'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // Internal Components
-import Navbar from './Navbar'
+import Navbar, { NAVBAR_HEIGHT } from './Navbar'
 import PageDivider from './PageDivider'
 import SplitPaneLeft from './SplitPaneLeft'
 import SplitPaneRight from './SplitPaneRight'
@@ -22,14 +22,13 @@ import ToastAlert from '../../components/errorHandler/ToastAlert'
 // CONSTANTS
 // =============================================================================
 
-const NAVBAR_HEIGHT = '5rem'
 const STORAGE_KEY = 'dashboard.viewCalendar'
 
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const Dashboard = React.memo(({}) => {
+const Dashboard = React.memo(() => {
    const { t } = useReactiveTranslation()
    // -------------------------------------------------------------------------
    // STATE & REFS

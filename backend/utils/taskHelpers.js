@@ -9,8 +9,9 @@ const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
 
 /**
  * Parse Google Calendar event times to ISO strings
- * Handles both timed events (dateTime) and all-day events (date)
- * Matches frontend logic in googleAccountReducersHelpers.js
+ * @param {Object} startData - Event start data from Google Calendar
+ * @param {Object} endData - Event end data from Google Calendar
+ * @returns {Object} {eventStart, eventEnd} in ISO format
  */
 const parseGoogleEventTime = (startData, endData) => {
    const startRaw = startData?.dateTime || startData?.date
@@ -51,6 +52,14 @@ const parseGoogleEventTime = (startData, endData) => {
    return { eventStart, eventEnd }
 }
 
+/**
+ * Calculate new task mapping when moving tasks
+ * @param {Object} page - Page object
+ * @param {string} task_id - Task ID to move
+ * @param {string} [group_id] - Target group ID
+ * @param {string} [progress_id] - Target progress ID
+ * @returns {Object} {newTaskArray, newTaskMap, newGroupIndex, newProgressIndex}
+ */
 const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
    const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
    let taskMapIndex = 0
@@ -110,8 +119,16 @@ const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
 }
 
 /**
- * Sync a specific task schedule slot with Google Calendar
- * Creates or updates a Google Calendar event for a specific schedule slot
+ * Sync task schedule slot with Google Calendar
+ * @param {string} taskId - Task ID
+ * @param {string} taskTitle - Task title
+ * @param {string} taskContent - Task content
+ * @param {Object} slot - Schedule slot object
+ * @param {string} accountEmail - Google account email
+ * @param {string} calendarId - Google calendar ID
+ * @param {string} userId - User ID
+ * @param {string} syncAction - Action ('create', 'update', 'delete')
+ * @returns {Object} {success, event} or {success, error}
  */
 const syncTaskSlotWithGoogle = async (
    taskId,
@@ -198,6 +215,10 @@ const syncTaskSlotWithGoogle = async (
 }
 /**
  * Delete Google Calendar events for removed schedule slots
+ * @param {Array} oldSchedule - Previous schedule array
+ * @param {Array} newSchedule - New schedule array
+ * @param {string} userId - User ID
+ * @returns {Promise<void>}
  */
 const deleteGoogleEventsForRemovedSlots = async (
    oldSchedule,
@@ -255,8 +276,12 @@ const deleteGoogleEventsForRemovedSlots = async (
 }
 
 /**
- * Handle Google Calendar event updates from calendar UI
- * Updates the corresponding task schedule slot
+ * Update task from Google Calendar event changes
+ * @param {string} eventId - Google Calendar event ID
+ * @param {Object} eventData - Updated event data
+ * @param {string} [originalEventId] - Original event ID if changed
+ * @param {string} [newCalendarId] - New calendar ID if moved
+ * @returns {Object} {success, task} or {success, message/error}
  */
 const updateTaskFromGoogleEvent = async (
    eventId,
@@ -328,6 +353,9 @@ const updateTaskFromGoogleEvent = async (
 }
 /**
  * Calculate sync status for a schedule slot
+ * @param {Object} slot - Schedule slot object
+ * @param {string} userId - User ID
+ * @returns {Object} Slot with sync_status and Google event data
  */
 const calculateSlotSyncStatus = async (slot, userId) => {
    // NONE = no sync event (no google_event_id)
@@ -420,7 +448,11 @@ const calculateSlotSyncStatus = async (slot, userId) => {
 }
 
 /**
- * Standardized task response formatter with sync status
+ * Format task response with sync status
+ * @param {Object} task - Task object
+ * @param {Object} page - Page object
+ * @param {string} [userId] - User ID for sync status calculation
+ * @returns {Object} {task, page} formatted response
  */
 const formatTaskResponse = async (task, page, userId = null) => {
    const { newGroupIndex, newProgressIndex } = getNewMap(page, task._id)
@@ -452,7 +484,14 @@ const formatTaskResponse = async (task, page, userId = null) => {
 }
 
 /**
- * Update task basic info (title, content)
+ * Update task basic info and sync with Google Calendar
+ * @param {string} taskId - Task ID
+ * @param {string} pageId - Page ID
+ * @param {string} userId - User ID
+ * @param {Object} data - Update data
+ * @param {string} [data.title] - New task title
+ * @param {string} [data.content] - New task content
+ * @returns {Object} {success, task, page} or {success, message, statusCode}
  */
 const updateTaskBasicInfo = async (
    taskId,
@@ -524,6 +563,12 @@ const updateTaskBasicInfo = async (
 
 /**
  * Move task to different group/progress
+ * @param {string} taskId - Task ID
+ * @param {string} pageId - Page ID
+ * @param {Object} data - Move data
+ * @param {string} [data.group_id] - Target group ID
+ * @param {string} [data.progress_id] - Target progress ID
+ * @returns {Object} {success, task, page} or {success, message, statusCode}
  */
 const moveTask = async (taskId, pageId, { group_id, progress_id }) => {
    const task = await Task.findById(taskId)
@@ -572,6 +617,14 @@ const moveTask = async (taskId, pageId, { group_id, progress_id }) => {
 
 /**
  * Update specific schedule slot time
+ * @param {string} taskId - Task ID
+ * @param {string} pageId - Page ID
+ * @param {string} userId - User ID
+ * @param {Object} data - Update data
+ * @param {number} data.slotIndex - Slot index to update
+ * @param {string} [data.start] - New start time
+ * @param {string} [data.end] - New end time
+ * @returns {Object} {success, task, page} or {success, message, statusCode}
  */
 const updateTaskSchedule = async (
    taskId,
@@ -647,6 +700,12 @@ const updateTaskSchedule = async (
 
 /**
  * Add new schedule slot to task
+ * @param {string} taskId - Task ID
+ * @param {string} pageId - Page ID
+ * @param {Object} data - Slot data
+ * @param {string} data.start - Start time
+ * @param {string} data.end - End time
+ * @returns {Object} {success, task, page, newSlotIndex} or {success, message, statusCode}
  */
 const addTaskScheduleSlot = async (taskId, pageId, { start, end }) => {
    const task = await Task.findById(taskId)
@@ -687,6 +746,12 @@ const addTaskScheduleSlot = async (taskId, pageId, { start, end }) => {
 
 /**
  * Remove schedule slot from task
+ * @param {string} taskId - Task ID
+ * @param {string} pageId - Page ID
+ * @param {string} userId - User ID
+ * @param {Object} data - Remove data
+ * @param {number} data.slotIndex - Slot index to remove
+ * @returns {Object} {success, task, page} or {success, message, statusCode}
  */
 const removeTaskScheduleSlot = async (
    taskId,
@@ -739,7 +804,14 @@ const removeTaskScheduleSlot = async (
 }
 
 /**
- * Sync task slot with Google Calendar and update task data
+ * Sync task slot with Google Calendar helper function
+ * @param {string} taskId - Task ID
+ * @param {number} slotIndex - Slot index
+ * @param {string} [accountEmail] - Google account email
+ * @param {string} [calendarId] - Google calendar ID
+ * @param {string} userId - User ID
+ * @param {string} [syncAction='create'] - Sync action
+ * @returns {Object} {success, task, page, event} or {success, message, statusCode}
  */
 const syncTaskSlotWithGoogleHelper = async (
    taskId,

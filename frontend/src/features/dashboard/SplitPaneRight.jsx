@@ -14,6 +14,7 @@ import SplitPaneContext from '../../context/SplitPaneContext'
 // Internal Components
 import Calendar from './Calendar'
 import EventEditModal from './calendar/event/EventEditModal'
+import { DIVIDER_WIDTH } from './PageDivider'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -33,7 +34,9 @@ const SplitPaneRight = React.memo(() => {
    return (
       <Box ref={rightRef} w='full' h='full' overflow='auto'>
          <Calendar />
-         <EventEditModal rightWidth={`calc(${100 - leftWidth}% - 0.375rem)`} />
+         <EventEditModal
+            rightWidth={`calc(${100 - leftWidth}% - ${DIVIDER_WIDTH})`}
+         />
       </Box>
    )
 })

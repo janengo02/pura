@@ -1,3 +1,12 @@
+/**
+ * Send standardized error response
+ * @param {Object} res - Express response object
+ * @param {number} code - HTTP status code
+ * @param {string} title - Error title key
+ * @param {string} msg - Error message key
+ * @param {Error} [error] - Optional error object for logging
+ * @returns {Object} JSON error response
+ */
 const sendErrorResponse = (res, code, title, msg, error = null) => {
    if (error) {
       console.error('---ERROR---:', error.message || error)

@@ -14,12 +14,14 @@ const { sendErrorResponse } = require('../../utils/responseHelper')
 
 const { createGroup, deleteGroup } = require('../../../shared/utils')
 
-// @route   POST api/group/new/:page_id
-// @desc    Create a new group for the specified page.
-// @param   {string} page_id - The ID of the page where the group will be created.
-// @body    {string} title - The title of the new group.
-//          {string} color - The color of the new group.
-// @access  Private
+/**
+ * @route POST api/group/new/:page_id
+ * @desc Create new group
+ * @access Private
+ * @param {string} page_id
+ * @body {string} title, color
+ * @returns {Object} {group} created group object
+ */
 router.post('/new/:page_id', [auth], async (req, res) => {
    try {
       const page = await validatePage(req.params.page_id, req.user.id)
@@ -63,13 +65,14 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    }
 })
 
-// @route   POST api/group/update/:page_id/:group_id
-// @desc    Update the specified group within the specified page.
-// @param   {string} page_id - The ID of the page containing the group.
-//          {string} group_id - The ID of the group to be updated.
-// @body    {string} title - The new title for the group (optional).
-//          {string} color - The new color for the group (optional).
-// @access  Private
+/**
+ * @route POST api/group/update/:page_id/:group_id
+ * @desc Update group properties
+ * @access Private
+ * @param {string} page_id, group_id
+ * @body {string} [title], [color]
+ * @returns {Object} Empty response on success
+ */
 router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
    try {
       const page = await validatePage(req.params.page_id, req.user.id)
@@ -114,11 +117,13 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
    }
 })
 
-// @route   DELETE api/group/:page_id/:group_id
-// @desc    Delete the specified group and its associated tasks from the specified page.
-// @param   {string} page_id - The ID of the page containing the group.
-//          {string} group_id - The ID of the group to be deleted.
-// @access  Private
+/**
+ * @route DELETE api/group/:page_id/:group_id
+ * @desc Delete group and all associated tasks
+ * @access Private
+ * @param {string} page_id, group_id
+ * @returns {Object} Empty response on success
+ */
 router.delete('/:page_id/:group_id', [auth], async (req, res) => {
    try {
       const page = await validatePage(req.params.page_id, req.user.id)

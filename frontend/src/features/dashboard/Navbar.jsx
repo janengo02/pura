@@ -9,6 +9,9 @@ import PropTypes from 'prop-types'
 // Redux
 import { connect } from 'react-redux'
 
+// Actions
+import { clearEventEditModalAction } from '../../actions/eventActions'
+
 // UI Components
 import { Flex, Heading, IconButton, Spacer } from '@chakra-ui/react'
 
@@ -20,10 +23,11 @@ import ProfileMenu from './navbar/ProfileMenu'
 
 // Context & Utils
 import SplitPaneContext from '../../context/SplitPaneContext'
-import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
-import { clearEventEditModalAction } from '../../actions/eventActions'
 
-export const NAVBAR_HEIGHT = 20
+// Hooks
+import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
+
+export const NAVBAR_HEIGHT = '5rem'
 // =============================================================================
 // UTILITY COMPONENTS
 // =============================================================================

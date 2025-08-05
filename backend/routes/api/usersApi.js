@@ -153,9 +153,11 @@ const createDefaultPage = async (user, progresses, group, task, language) => {
 // =============================================================================
 
 /**
- * @route   POST api/users
- * @desc    Register user route with language support
- * @access  Public
+ * @route POST api/users
+ * @desc Register new user with localized default content
+ * @access Public
+ * @body {string} name, email, password, [language='en']
+ * @returns {Object} {token, message} on success
  */
 router.post(
    '/',

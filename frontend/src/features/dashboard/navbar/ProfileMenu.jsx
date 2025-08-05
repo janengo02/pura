@@ -17,6 +17,7 @@ import { toggleThemeAction } from '../../../actions/themeActions'
 
 // Components
 import ThemeToggle from '../../../components/ThemeToggle'
+import { LANGUAGE_OPTIONS } from '../../../components/data/languages'
 
 // UI Components
 import {
@@ -29,43 +30,16 @@ import {
    MenuOptionGroup,
    MenuItemOption,
    HStack,
-   Text,
-   useColorMode,
-   Switch,
-   Flex
+   Text
 } from '@chakra-ui/react'
 
 // Utils & Icons
-import { PiSignOut, PiMoon, PiSun } from 'react-icons/pi'
+import { PiSignOut } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../hooks/useReactiveTranslation'
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
-
-const AVATAR_SIZE = {
-   w: 10,
-   h: 10
-}
-
-const LANGUAGE_OPTIONS = [
-   {
-      value: 'en',
-      key: 'en',
-      labelKey: 'label-settings-language-english',
-      flag: '🇺🇸'
-   },
-   {
-      value: 'ja',
-      key: 'ja',
-      labelKey: 'label-settings-language-japanese',
-      flag: '🇯🇵'
-   }
-]
-
-const MENU_ITEM_STYLES = {
-   fontSize: 'md'
-}
 
 const DEFAULT_AVATAR = 'assets/img/no-avatar.svg'
 
@@ -80,7 +54,8 @@ const ProfileAvatar = React.memo(({ user }) => {
    const avatarProps = useMemo(
       () => ({
          name: user?.name || '',
-         ...AVATAR_SIZE,
+         w: 10,
+         h: 10,
          bg: 'text.muted',
          src: user?.avatar || DEFAULT_AVATAR
       }),
@@ -113,7 +88,7 @@ const LanguageSelection = React.memo(
                <MenuItemOption
                   key={key}
                   value={value}
-                  {...MENU_ITEM_STYLES}
+                  fontSize='md'
                   onClick={() => onLanguageChange(value)}
                >
                   <HStack spacing={3}>

@@ -12,9 +12,12 @@ const User = require('../../models/UserModel')
 
 dotenv.config()
 
-// @route   GET api/auth
-// @desc    Retrieve authenticated user details including email, name, avatar, and linked Google accounts.
-// @access  Private
+/**
+ * @route GET api/auth
+ * @desc Get authenticated user details
+ * @access Private
+ * @returns {Object} User details with email, name, avatar, google_accounts
+ */
 router.get('/', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id).select('-password')
@@ -39,9 +42,14 @@ router.get('/', auth, async (req, res) => {
    }
 })
 
-// @route   POST api/auth
-// @desc    Authenticate user by email and password, and return a JSON Web Token for session management.
-// @access  Public
+/**
+ * @route POST api/auth
+ * @desc Authenticate user and return JWT token
+ * @access Public
+ * @param {string} email
+ * @param {string} password
+ * @returns {Object} {token} on success, {errors} on validation error
+ */
 router.post(
    '/',
    [

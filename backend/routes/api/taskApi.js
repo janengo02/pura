@@ -22,9 +22,13 @@ const Task = require('../../models/TaskModel')
 
 dotenv.config()
 
-// @route   GET POST api/task/:page-id/:task-id
-// @desc    Get task info
-// @access  Private
+/**
+ * @route GET api/task/:page_id/:task_id
+ * @desc Get task info
+ * @access Private
+ * @param {string} page_id, task_id
+ * @returns {Object} Task with title, content, schedule
+ */
 router.get('/:page_id/:task_id', auth, async (req, res) => {
    try {
       //   Validation: Check if page exists and user is the owner
@@ -51,9 +55,14 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }
 })
-// @route   POST api/task/new/:page-id
-// @desc    Create a new task
-// @access  Private
+/**
+ * @route POST api/task/new/:page_id
+ * @desc Create new task
+ * @access Private
+ * @param {string} page_id
+ * @body {string} group_id, progress_id, [title], [schedule], [content]
+ * @returns {Object} {task} created task object
+ */
 router.post(
    '/new/:page_id',
    [
@@ -131,13 +140,13 @@ router.post(
    }
 )
 
-// @route   POST api/task/sync-google-event
-// @desc    Create a new event in the user's Google Calendar with explicit calendar selection
-// @params  task_id (body) - Task ID for the event.
-//          slot_index (body) - Index of the time slot in the task schedule.
-//          account_email (body) - Email of the Google account to use.
-//          calendar_id (body) - ID of the specific calendar to use.
-// @access  Private
+/**
+ * @route POST api/task/sync-google-event
+ * @desc Sync task slot with Google Calendar
+ * @access Private
+ * @body {string} task_id, slot_index, account_email, calendar_id, sync_action
+ * @returns {Object} {task, event} updated task and calendar event
+ */
 router.post('/sync-google-event', auth, async (req, res) => {
    try {
       const { task_id, slot_index, account_email, calendar_id, sync_action } =
@@ -176,9 +185,14 @@ router.post('/sync-google-event', auth, async (req, res) => {
    }
 })
 
-// @route   PUT api/task/basic/:page-id/:task-id
-// @desc    Update task basic info (title, content)
-// @access  Private
+/**
+ * @route PUT api/task/basic/:page_id/:task_id
+ * @desc Update task title and content
+ * @access Private
+ * @param {string} page_id, task_id
+ * @body {string} [title], [content]
+ * @returns {Object} Updated task object
+ */
 router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
    try {
       // Validation: Check if page exists and user is the owner
@@ -223,9 +237,14 @@ router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
    }
 })
 
-// @route   PUT api/task/move/:page-id/:task-id
-// @desc    Move task to different group/progress
-// @access  Private
+/**
+ * @route PUT api/task/move/:page_id/:task_id
+ * @desc Move task to different group/progress
+ * @access Private
+ * @param {string} page_id, task_id
+ * @body {string} [group_id], [progress_id]
+ * @returns {Object} Updated task object
+ */
 router.put('/move/:page_id/:task_id', auth, async (req, res) => {
    try {
       // Validation: Check if page exists and user is the owner
@@ -274,9 +293,14 @@ router.put('/move/:page_id/:task_id', auth, async (req, res) => {
    }
 })
 
-// @route   PUT api/task/schedule/:page-id/:task-id/:slot-index
-// @desc    Update specific schedule slot time
-// @access  Private
+/**
+ * @route PUT api/task/schedule/:page_id/:task_id/:slot_index
+ * @desc Update task schedule slot time
+ * @access Private
+ * @param {string} page_id, task_id, slot_index
+ * @body {string} [start], [end]
+ * @returns {Object} Updated task object
+ */
 router.put(
    '/schedule/:page_id/:task_id/:slot_index',
    auth,
@@ -341,9 +365,14 @@ router.put(
    }
 )
 
-// @route   POST api/task/schedule/:page-id/:task-id
-// @desc    Add new schedule slot to task
-// @access  Private
+/**
+ * @route POST api/task/schedule/:page_id/:task_id
+ * @desc Add new schedule slot to task
+ * @access Private
+ * @param {string} page_id, task_id
+ * @body {string} start, end
+ * @returns {Object} {task, newSlotIndex}
+ */
 router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
    try {
       // Validation: Check if page exists and user is the owner
@@ -396,9 +425,13 @@ router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
    }
 })
 
-// @route   DELETE api/task/schedule/:page-id/:task-id/:slot-index
-// @desc    Remove schedule slot from task
-// @access  Private
+/**
+ * @route DELETE api/task/schedule/:page_id/:task_id/:slot_index
+ * @desc Remove schedule slot from task
+ * @access Private
+ * @param {string} page_id, task_id, slot_index
+ * @returns {Object} Updated task object
+ */
 router.delete(
    '/schedule/:page_id/:task_id/:slot_index',
    auth,
@@ -453,9 +486,13 @@ router.delete(
    }
 )
 
-// @route   DELETE api/task/:page-id/:task-id
-// @desc    Delete a task
-// @access  Private
+/**
+ * @route DELETE api/task/:page_id/:task_id
+ * @desc Delete task and associated Google Calendar events
+ * @access Private
+ * @param {string} page_id, task_id
+ * @returns {Object} Empty response on success
+ */
 router.delete('/:page_id/:task_id', [auth], async (req, res) => {
    const { task_id } = req.params
    //   Validation: Check if page exists and user is the owner

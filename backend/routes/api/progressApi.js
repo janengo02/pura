@@ -11,11 +11,20 @@ const {
    prepareProgressData
 } = require('../../utils/progressHelper')
 
+const Page = require('../../models/PageModel')
+const Progress = require('../../models/ProgressModel')
+const Task = require('../../models/TaskModel')
+
 const { createProgress, deleteProgress } = require('../../../shared/utils')
 
-// @route   POST api/progress/new/:page-id
-// @desc    Create a new progress
-// @access  Private
+/**
+ * @route POST api/progress/new/:page_id
+ * @desc Create new progress status
+ * @access Private
+ * @param {string} page_id
+ * @body {string} title, title_color, color
+ * @returns {Object} {progress} created progress object
+ */
 router.post('/new/:page_id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.page_id, req.user.id)
@@ -69,9 +78,14 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    }
 })
 
-// @route   POST api/progress/update/:page-id/:progress-id
-// @desc    Update progress
-// @access  Private
+/**
+ * @route POST api/progress/update/:page_id/:progress_id
+ * @desc Update progress properties
+ * @access Private
+ * @param {string} page_id, progress_id
+ * @body {string} [title], [title_color], [color]
+ * @returns {Object} Empty response on success
+ */
 router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.page_id, req.user.id)
@@ -125,9 +139,13 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    }
 })
 
-// @route   DELETE api/group/:page-id/:progress-id
-// @desc    Delete a progress
-// @access  Private
+/**
+ * @route DELETE api/progress/:page_id/:progress_id
+ * @desc Delete progress and all associated tasks
+ * @access Private
+ * @param {string} page_id, progress_id
+ * @returns {Object} Empty response on success
+ */
 router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
    try {
       //   Validation: Check if page exists and user is the owner

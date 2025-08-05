@@ -5,7 +5,6 @@ const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
 const User = require('../../models/UserModel')
-const Task = require('../../models/TaskModel')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const {
@@ -19,11 +18,14 @@ const { updateTaskFromGoogleEvent } = require('../../utils/taskHelpers')
 
 dotenv.config()
 
-// @route   GET api/google-account/list-events
-// @desc    Retrieve Google Calendar events for all linked accounts within a specified date range.
-// @params  minDate (query) - Minimum date for filtering events.
-//          maxDate (query) - Maximum date for filtering events.
-// @access  Private
+/**
+ * @route GET api/google-account/list-events
+ * @desc Get Google Calendar events for all linked accounts
+ * @access Private
+ * @param {string} minDate
+ * @param {string} maxDate
+ * @returns {Array} Google accounts with calendar events
+ */
 router.get('/list-events', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id)
@@ -57,11 +59,14 @@ router.get('/list-events', auth, async (req, res) => {
    }
 })
 
-// @route   POST api/google-account/add-account
-// @desc    Add a new Google account and retrieve its authentication tokens.
-// @params  code (body) - Authorization code from Google OAuth.
-//          range (body) - Date range for initial calendar sync.
-// @access  Private
+/**
+ * @route POST api/google-account/add-account
+ * @desc Add/update Google account via OAuth
+ * @access Private
+ * @param {string} code oAuth code from Google
+ * @param {Array} range [startDate, endDate] for fetching events
+ * @returns {Object} Account details with calendars
+ */
 router.post('/add-account', auth, async (req, res) => {
    try {
       const { code, range } = req.body
@@ -135,10 +140,13 @@ router.post('/add-account', auth, async (req, res) => {
    }
 })
 
-// @route   PUT api/google-account/set-default/:account_id
-// @desc    Set a Google account as the default account
-// @params  account_email (params) - Email of the account to set as default
-// @access  Private
+/**
+ * @route PUT api/google-account/set-default/:account_email
+ * @desc Set Google account as default
+ * @access Private
+ * @param {string} account_email
+ * @returns {Object} Updated account details
+ */
 router.put('/set-default/:account_email', auth, async (req, res) => {
    try {
       const { account_email } = req.params
@@ -174,9 +182,12 @@ router.put('/set-default/:account_email', auth, async (req, res) => {
    }
 })
 
-// @route   GET api/google-account/default
-// @desc    Get the current default Google account
-// @access  Private
+/**
+ * @route GET api/google-account/default
+ * @desc Get current default Google account
+ * @access Private
+ * @returns {Object} Default account details
+ */
 router.get('/default', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id)
@@ -202,13 +213,23 @@ router.get('/default', auth, async (req, res) => {
    }
 })
 
-// @route   POST api/google-account/update-event/:eventId
-// @desc    Update an event in the user's Google Calendar & synced Pura task if it exists.
-// @params  eventId (params) - ID of the event to update.
-//          accountEmail (body) - Email of the Google account to use.
-//          calendarId (body) - ID of the calendar containing the event.
-//          eventData (body) - Updated event data
-// @access  Private
+/**
+ * @route POST api/google-account/update-event/:eventId
+ * @desc Update Google Calendar event and sync to Pura task
+ * @access Private
+ * @param {string} eventId
+ * @param {string} accountEmail
+ * @param {string} originalCalendarId
+ * @param {string} calendarId
+ * @param {string} start
+ * @param {string} end
+ * @param {string} summary @optional
+ * @param {string} location @optional
+ * @param {string} description @optional
+ * @param {string} colorId @optional
+ * @param {Object} conferenceData @optional
+ * @returns {Object} {event: updated event, calendar: calendar of the updated event}
+ */
 router.post('/update-event/:eventId', auth, async (req, res) => {
    try {
       const { eventId } = req.params
@@ -380,12 +401,15 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
    }
 })
 
-// @route   DELETE api/google-account/delete-event/:eventId
-// @desc    Delete an event from the user's Google Calendar (only used for google events, not synced Pura tasks).
-// @params  eventId (params) - ID of the event to delete.
-//          accountEmail (body) - Email of the Google account to use.
-//          calendarId (body) - ID of the calendar containing the event.
-// @access  Private
+/**
+ * @route DELETE api/google-account/delete-event/:eventId
+ * @desc Delete Google Calendar event (non-Pura task events only)
+ * @access Private
+ * @param {string} eventId
+ * @param {string} accountEmail
+ * @param {string} calendarId
+ * @returns {Object} {event: {id, deleted: true}}
+ */
 router.delete('/delete-event/:eventId', auth, async (req, res) => {
    try {
       const { eventId } = req.params
@@ -424,10 +448,13 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
    }
 })
 
-// @route   DELETE api/google-account/disconnect/:account_email
-// @desc    Disconnect a Google account
-// @params  account_email (params) - Email of the account to disconnect
-// @access  Private
+/**
+ * @route DELETE api/google-account/disconnect/:account_email
+ * @desc Disconnect Google account
+ * @access Private
+ * @param {string} account_email
+ * @returns {Object} {message}
+ */
 router.delete('/disconnect/:account_email', auth, async (req, res) => {
    try {
       const { account_email } = req.params

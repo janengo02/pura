@@ -83,6 +83,11 @@ export const googleAccountErrorHandler = (
 // =============================================================================
 // ACTION CREATORS
 // =============================================================================
+/**
+ * Change calendar date range
+ * @param {Array} range - Date range [startDate, endDate]
+ * @returns {Object} Redux action
+ */
 export const changeCalendarRangeAction = (range) => ({
    type: 'CALENDAR_CHANGE_RANGE',
    payload: { range }
@@ -221,6 +226,7 @@ export const getDefaultGoogleAccountAction = () => async (dispatch) => {
  */
 export const updateGoogleEventAction = (reqData) => async (dispatch) => {
    try {
+      // Optimistic update - Calendar - update event in state
       // Create optimistic update payload
       const optimisticEventData = {
          id: reqData.eventId,
@@ -253,7 +259,6 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          backgroundColor: reqData.calendarBackgroundColor || '#3174ad'
       }
 
-      // Dispatch optimistic update
       dispatch({
          type: GOOGLE_CALENDAR_UPDATE_EVENT,
          payload: {
@@ -263,7 +268,6 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          }
       })
 
-      // Make API call
       const res = await api.post(
          `/google-account/update-event/${reqData.eventId}`,
          reqData
@@ -295,7 +299,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
  * @param {string} reqData.accountEmail - Google account ID
  */
 export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
-   // Optimistically dispatch delete event action
+   // Optimistic update - Calendar - remove event from state
    dispatch({
       type: GOOGLE_CALENDAR_DELETE_EVENT,
       payload: {
@@ -344,7 +348,7 @@ export const changeCalendarVisibilityAction =
  * @param {string} reqData.account_email - Google account ID to disconnect
  */
 export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
-   // Clear calendar state
+   // Optimistic update - Calendar - remove account from state
    dispatch({
       type: GOOGLE_CALENDAR_REMOVE_ACCOUNT,
       payload: {

@@ -16,7 +16,7 @@ import SplitPaneContext from '../../context/SplitPaneContext'
 // =============================================================================
 
 const FOCUS_DELAY = 200
-const DIVIDER_WIDTH = 1.5
+export const DIVIDER_WIDTH = '0.375rem'
 
 // =============================================================================
 // MAIN COMPONENT

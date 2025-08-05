@@ -1,7 +1,9 @@
-const Task = require('../models/TaskModel')
-const User = require('../models/UserModel')
 const { google } = require('googleapis')
 
+/**
+ * Create new OAuth2 client
+ * @returns {Object} Google OAuth2 client instance
+ */
 const newOath2Client = () =>
    new google.auth.OAuth2(
       process.env?.GOOGLE_CLIENT_ID,
@@ -9,12 +11,25 @@ const newOath2Client = () =>
       process.env?.APP_PATH
    )
 
+/**
+ * Set OAuth credentials with refresh token
+ * @param {string} refreshToken - Google refresh token
+ * @returns {Object} Configured OAuth2 client
+ */
 const setOAuthCredentials = (refreshToken) => {
    const oath2Client = newOath2Client()
    oath2Client.setCredentials({ refresh_token: refreshToken })
    return oath2Client
 }
 
+/**
+ * Fetch calendar events from Google Calendar
+ * @param {Object} oath2Client - OAuth2 client
+ * @param {string} calendarId - Calendar ID
+ * @param {string} minDate - Start date for events
+ * @param {string} maxDate - End date for events
+ * @returns {Object} Calendar events data
+ */
 const fetchCalendarEvents = async (
    oath2Client,
    calendarId,
@@ -37,6 +52,13 @@ const fetchCalendarEvents = async (
    return event.data
 }
 
+/**
+ * List events from all calendars for a Google account
+ * @param {string} refreshToken - Google refresh token
+ * @param {string} minDate - Start date for events
+ * @param {string} maxDate - End date for events
+ * @returns {Array} Array of calendar events
+ */
 const listEvent = async (refreshToken, minDate, maxDate) => {
    try {
       const oath2Client = setOAuthCredentials(refreshToken)
@@ -63,6 +85,12 @@ const listEvent = async (refreshToken, minDate, maxDate) => {
    }
 }
 
+/**
+ * Update sync status for Google accounts
+ * @param {Object} user - User object
+ * @param {Array} notSyncedAccounts - Array of account IDs that failed to sync
+ * @returns {void}
+ */
 const updateGoogleAccountSyncStatus = (user, notSyncedAccounts) => {
    user.google_accounts = user.google_accounts.map((acc) =>
       notSyncedAccounts.includes(acc._id)

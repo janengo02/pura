@@ -28,6 +28,12 @@ import {
 import {
    updateProgress,
    updateGroup,
+   updateTask,
+   removePageTaskScheduleSlot,
+   updateFilterSchedule,
+   updateFilterName,
+   findProgressIndex,
+   findGroupIndex,
    getDefaultSchedule,
    getDefaultName
 } from './pageReducersHelpers'
@@ -99,8 +105,9 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...deleteProgress({
-               progressIndex: state.progress_order.findIndex(
-                  (p) => p && p._id === payload.progress_id
+               progressIndex: findProgressIndex(
+                  state.progress_order,
+                  payload.progress_id
                ),
                progress_order: state.progress_order,
                group_order: state.group_order,
@@ -137,8 +144,9 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...deleteGroup({
-               groupIndex: state.group_order.findIndex(
-                  (g) => g && g._id === payload.group_id
+               groupIndex: findGroupIndex(
+                  state.group_order,
+                  payload.group_id
                ),
                progress_order: state.progress_order,
                group_order: state.group_order,
@@ -164,39 +172,20 @@ function pageReducer(state = initialState, action) {
       case UPDATE_TASK:
          return {
             ...state,
-            tasks: state.tasks.map((task) =>
-               task._id === payload.task_id
-                  ? {
-                       ...task,
-                       title:
-                          payload.title !== undefined
-                             ? payload.title
-                             : task.title,
-                       content:
-                          payload.content !== undefined
-                             ? payload.content
-                             : task.content,
-                       update_date: payload.update_date || task.update_date
-                    }
-                  : task
-            ),
+            ...updateTask({
+               tasks: state.tasks,
+               payload
+            }),
             loading: false,
             error: false
          }
       case REMOVE_PAGE_TASK_SCHEDULE_SLOT:
          return {
             ...state,
-            tasks: state.tasks.map((task) =>
-               task._id === payload.task_id
-                  ? {
-                       ...task,
-                       schedule: task.schedule?.filter(
-                          (slot, index) => index !== payload.slot_index
-                       ),
-                       update_date: payload.update_date || task.update_date
-                    }
-                  : task
-            ),
+            ...removePageTaskScheduleSlot({
+               tasks: state.tasks,
+               payload
+            }),
             loading: false,
             error: false
          }
@@ -214,20 +203,20 @@ function pageReducer(state = initialState, action) {
       case FILTER_SCHEDULE:
          return {
             ...state,
-            filter: {
-               ...state.filter,
-               schedule: payload.schedule
-            },
+            ...updateFilterSchedule({
+               currentFilter: state.filter,
+               payload
+            }),
             loading: false,
             error: false
          }
       case FILTER_NAME:
          return {
             ...state,
-            filter: {
-               ...state.filter,
-               name: payload.name
-            },
+            ...updateFilterName({
+               currentFilter: state.filter,
+               payload
+            }),
             loading: false,
             error: false
          }
