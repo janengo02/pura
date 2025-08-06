@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useRef, useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -64,40 +64,25 @@ const BUTTON_STYLES = {
    color: 'text.primary'
 }
 
-const POPOVER_STYLES = {
-   placement: 'auto',
-   isLazy: true,
-   strategy: 'fixed',
-   modifiers: [
-      {
-         name: 'preventOverflow',
-         options: {
-            boundary: 'viewport',
-            padding: 8
-         }
-      },
-      {
-         name: 'flip',
-         options: {
-            fallbackPlacements: ['top', 'bottom', 'right', 'left']
-         }
-      },
-      {
-         name: 'zIndex',
-         options: {
-            zIndex: 10000
-         }
-      }
-   ]
-}
-
 const POPOVER_CONTENT_STYLES = {
    boxShadow: 'md',
    w: '400px',
    maxH: '80vh',
    overflow: 'hidden',
    zIndex: 10000,
-   position: 'relative'
+   position: 'relative',
+   elevate: 'md',
+   animation: 'fadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+   '@keyframes fadeUp': {
+      '0%': {
+         opacity: 0,
+         transform: 'translateY(12px)'
+      },
+      '100%': {
+         opacity: 1,
+         transform: 'translateY(0px)'
+      }
+   }
 }
 
 const POPOVER_HEADER_STYLES = {
@@ -121,9 +106,9 @@ const POPOVER_BODY_STYLES = {
 // MAIN COMPONENT
 // =============================================================================
 
-const EventWrapper = React.memo(
+const EventPreview = React.memo(
    ({
-      children,
+      onClose,
       event,
       // Redux props
       deleteGoogleEventAction,
@@ -137,12 +122,6 @@ const EventWrapper = React.memo(
       // -------------------------------------------------------------------------
 
       const { t } = useReactiveTranslation()
-
-      // -------------------------------------------------------------------------
-      // REFS & STATE
-      // -------------------------------------------------------------------------
-
-      const initRef = useRef()
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -259,7 +238,6 @@ const EventWrapper = React.memo(
             <IconButton
                icon={<PiTrash size={18} />}
                {...BUTTON_STYLES}
-               ref={initRef}
                isLoading={deleteLoading}
                onClick={async (e) => {
                   e.preventDefault()
@@ -322,11 +300,12 @@ const EventWrapper = React.memo(
          )
       }
 
-      const renderPopoverContent = (onClose) => (
-         <PopoverContent
-            {...POPOVER_CONTENT_STYLES}
-            className='event-wrapper-popover'
-         >
+      // -------------------------------------------------------------------------
+      // RENDER
+      // -------------------------------------------------------------------------
+
+      return (
+         <PopoverContent {...POPOVER_CONTENT_STYLES}>
             <PopoverHeader {...POPOVER_HEADER_STYLES}>
                {renderSyncStatusTag()}
                {renderActionButton(onClose)}
@@ -351,21 +330,6 @@ const EventWrapper = React.memo(
             </PopoverBody>
          </PopoverContent>
       )
-
-      // -------------------------------------------------------------------------
-      // RENDER
-      // -------------------------------------------------------------------------
-
-      return (
-         <Popover {...POPOVER_STYLES} initialFocusRef={initRef}>
-            {({ onClose }) => (
-               <>
-                  <PopoverTrigger>{children}</PopoverTrigger>
-                  {renderPopoverContent(onClose)}
-               </>
-            )}
-         </Popover>
-      )
    }
 )
 
@@ -374,10 +338,10 @@ const EventWrapper = React.memo(
 // =============================================================================
 
 // Display name for debugging
-EventWrapper.displayName = 'EventWrapper'
+EventPreview.displayName = 'EventPreview'
 
 // PropTypes validation
-EventWrapper.propTypes = {
+EventPreview.propTypes = {
    children: PropTypes.node.isRequired,
    event: PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -487,4 +451,4 @@ const mapDispatchToProps = {
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(EventWrapper)
+export default connect(mapStateToProps, mapDispatchToProps)(EventPreview)

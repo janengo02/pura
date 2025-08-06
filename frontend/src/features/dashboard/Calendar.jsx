@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -19,12 +19,18 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 
 // UI Components
-import { Skeleton, VStack } from '@chakra-ui/react'
+import {
+   Skeleton,
+   VStack,
+   Box,
+   Popover,
+   PopoverTrigger
+} from '@chakra-ui/react'
 
 // Internal Components
 import Toolbar from './calendar/toolbar/Toolbar'
 import CalendarNavigationToolbar from './calendar/toolbar/CalendarNavigationToolbar'
-import EventWrapper from './calendar/event/EventWrapper'
+import EventPreview from './calendar/event/EventPreview'
 
 // Actions
 import {
@@ -53,6 +59,32 @@ import { GOOGLE_CALENDAR_COLORS } from '../../components/data/defaultColor'
 const EVENT_TEXT_COLOR = '#1A202C'
 const SELECTED_EVENT_SHADOW =
    '0px 6px 10px 0px rgba(0,0,0,.14),0px 1px 18px 0px rgba(0,0,0,.12),0px 3px 5px -1px rgba(0,0,0,.2)'
+const POPOVER_STYLES = {
+   placement: 'auto',
+   isLazy: true,
+   strategy: 'fixed',
+   modifiers: [
+      {
+         name: 'preventOverflow',
+         options: {
+            boundary: 'viewport',
+            padding: 8
+         }
+      },
+      {
+         name: 'flip',
+         options: {
+            fallbackPlacements: ['top', 'bottom', 'right', 'left']
+         }
+      },
+      {
+         name: 'zIndex',
+         options: {
+            zIndex: 10000
+         }
+      }
+   ]
+}
 
 // Create DnD-enabled calendar
 const DnDCalendar = withDragAndDrop(BigCalendar)
@@ -98,6 +130,13 @@ const Calendar = React.memo(
       const activeLanguage = reactiveLanguage || currentLanguage || 'en'
 
       // -------------------------------------------------------------------------
+      // STATE
+      // -------------------------------------------------------------------------
+
+      const [previewEvent, setPreviewEvent] = useState(null)
+      const [mousePosition, setMousePosition] = useState({ x: 20, y: 20 })
+
+      // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
 
@@ -112,7 +151,6 @@ const Calendar = React.memo(
          () => ({
             components: {
                timeSlotWrapper: ColoredDateCellWrapper,
-               eventWrapper: EventWrapper,
                toolbar: CalendarNavigationToolbar
             },
             defaultDate: new Date(),
@@ -179,6 +217,27 @@ const Calendar = React.memo(
                outline: 'none'
             }
          }
+      }, [])
+
+      // Handle event drag start
+      const onDragStart = useCallback(({ event }) => {
+         // Capture current mouse position immediately
+         const captureMousePosition = () => {
+            const handleMouseCapture = (mouseEvent) => {
+               setMousePosition({
+                  x: mouseEvent.clientX,
+                  y: mouseEvent.clientY
+               })
+               document.removeEventListener('click', handleMouseCapture)
+
+               // Show EventPreview after capturing position
+               setPreviewEvent(event)
+            }
+
+            document.addEventListener('click', handleMouseCapture)
+         }
+
+         captureMousePosition()
       }, [])
 
       // Handle event drag and drop
@@ -351,7 +410,8 @@ const Calendar = React.memo(
             updateGoogleEventAction,
             updateTaskScheduleAction,
             pageId,
-            currentTask
+            currentTask,
+            googleCalendars
          ]
       )
 
@@ -401,32 +461,59 @@ const Calendar = React.memo(
 
       return (
          <Skeleton isLoaded={!loading}>
-            <VStack
-               h='calc(100vh - 9rem)'
-               alignItems='center'
-               gap={2}
-               paddingBottom={10}
-            >
-               <Toolbar />
-               <DnDCalendar
-                  components={calendarConfig.components}
-                  defaultDate={calendarConfig.defaultDate}
-                  events={visibleEvents || []}
-                  defaultView='week'
-                  localizer={localizer}
-                  showMultiDayTimes
-                  step={30}
-                  views={calendarConfig.views}
-                  scrollToTime={calendarConfig.scrollToTime}
-                  onRangeChange={onRangeChange}
-                  eventPropGetter={eventPropGetter}
-                  popup
-                  culture={activeLanguage}
-                  onEventDrop={onEventDrop}
-                  onEventResize={onEventResize}
-                  resizable
-               />
-            </VStack>
+            <Box position='relative' h='calc(100vh - 9rem)'>
+               <VStack h='full' alignItems='center' gap={2} paddingBottom={10}>
+                  <Toolbar />
+                  <DnDCalendar
+                     components={calendarConfig.components}
+                     defaultDate={calendarConfig.defaultDate}
+                     events={visibleEvents || []}
+                     defaultView='week'
+                     localizer={localizer}
+                     showMultiDayTimes
+                     step={30}
+                     views={calendarConfig.views}
+                     scrollToTime={calendarConfig.scrollToTime}
+                     onRangeChange={onRangeChange}
+                     eventPropGetter={eventPropGetter}
+                     popup
+                     culture={activeLanguage}
+                     onDragStart={onDragStart}
+                     onEventDrop={onEventDrop}
+                     onEventResize={onEventResize}
+                     resizable
+                  />
+               </VStack>
+
+               {/* Event Preview Popover with Stable Transition */}
+               {!!previewEvent && (
+                  <Popover
+                     isOpen
+                     onClose={() => {
+                        setPreviewEvent(null)
+                     }}
+                     {...POPOVER_STYLES}
+                  >
+                     <PopoverTrigger>
+                        <Box
+                           position='fixed'
+                           left={`${mousePosition.x}px`}
+                           top={`${mousePosition.y}px`}
+                           width='1px'
+                           height='1px'
+                           pointerEvents='none'
+                           zIndex={9999}
+                        />
+                     </PopoverTrigger>
+                     <EventPreview
+                        event={previewEvent}
+                        onClose={() => {
+                           setPreviewEvent(null)
+                        }}
+                     />
+                  </Popover>
+               )}
+            </Box>
          </Skeleton>
       )
    }
