@@ -71,18 +71,7 @@ const POPOVER_CONTENT_STYLES = {
    overflow: 'hidden',
    zIndex: 10000,
    position: 'relative',
-   elevate: 'md',
-   animation: 'fadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-   '@keyframes fadeUp': {
-      '0%': {
-         opacity: 0,
-         transform: 'translateY(12px)'
-      },
-      '100%': {
-         opacity: 1,
-         transform: 'translateY(0px)'
-      }
-   }
+   elevate: 'md'
 }
 
 const POPOVER_HEADER_STYLES = {
@@ -305,7 +294,22 @@ const EventPreview = React.memo(
       // -------------------------------------------------------------------------
 
       return (
-         <PopoverContent {...POPOVER_CONTENT_STYLES}>
+         <PopoverContent
+            {...POPOVER_CONTENT_STYLES}
+            sx={{
+               animation: 'fadeUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+               '@keyframes fadeUp': {
+                  '0%': {
+                     opacity: 0,
+                     transform: 'translateY(12px)'
+                  },
+                  '100%': {
+                     opacity: 1,
+                     transform: 'translateY(0px)'
+                  }
+               }
+            }}
+         >
             <PopoverHeader {...POPOVER_HEADER_STYLES}>
                {renderSyncStatusTag()}
                {renderActionButton(onClose)}
