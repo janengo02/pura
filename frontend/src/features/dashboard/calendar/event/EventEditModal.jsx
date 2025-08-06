@@ -104,28 +104,6 @@ const EventEditModal = React.memo(
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
-
-      const refetchTaskModalIfOpen = useCallback(async () => {
-         // Check if task modal is displayed (task exists in state)
-         if (task && pageId) {
-            const formData = {
-               page_id: pageId,
-               task_id: task._id,
-               target_event_index:
-                  event.pura_task_id === task._id
-                     ? event.pura_schedule_index
-                     : undefined
-            }
-            await showTaskModalAction(formData)
-         }
-      }, [
-         task,
-         pageId,
-         showTaskModalAction,
-         event.pura_schedule_index,
-         event.pura_task_id
-      ])
-
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
          clearEventEditModalAction()
@@ -181,6 +159,8 @@ const EventEditModal = React.memo(
 
             // Update based on event type
             if (event.eventType === 'task') {
+               const isCurrentTask = task && task._id === event.pura_task_id
+
                // Update task title and content if changed
                if (title !== event.title || description !== event.description) {
                   await updateTaskBasicInfoAction({
@@ -196,12 +176,21 @@ const EventEditModal = React.memo(
                   task_id: event.pura_task_id,
                   slot_index: event.pura_schedule_index,
                   start: newStartTime.toISOString(),
-                  end: newEndTime.toISOString()
+                  end: newEndTime.toISOString(),
+                  ...(isCurrentTask && {
+                     task_detail_flg: true,
+                     target_event_index: event.pura_schedule_index
+                  })
                })
             } else if (
                event.eventType === 'google' ||
                event.eventType === 'synced'
             ) {
+               const isSyncedCurrentTask =
+                  event.eventType === 'synced' &&
+                  task &&
+                  task._id === event.pura_task_id
+
                await updateGoogleEventAction({
                   eventId: event.id,
                   originalCalendarId: event.calendarId,
@@ -214,7 +203,14 @@ const EventEditModal = React.memo(
                   colorId: selectedColorId,
                   conferenceData: conferenceData,
                   calendarSummary: selectedCalendar.title,
-                  calendarBackgroundColor: selectedCalendar.color
+                  calendarBackgroundColor: selectedCalendar.color,
+                  // Add task detail parameters for synced events
+                  ...(isSyncedCurrentTask && {
+                     task_detail_flg: true,
+                     task_id: event.pura_task_id,
+                     slot_index: event.pura_schedule_index,
+                     target_event_index: event.pura_schedule_index
+                  })
                })
 
                if (event.eventType === 'synced') {
@@ -232,7 +228,6 @@ const EventEditModal = React.memo(
                   }
                }
             }
-            await refetchTaskModalIfOpen()
          } catch (error) {
             console.error('Error updating event:', error)
          } finally {
@@ -254,9 +249,9 @@ const EventEditModal = React.memo(
          updateTaskBasicInfoAction,
          updateGoogleEventAction,
          handleCloseModal,
-         refetchTaskModalIfOpen,
          toast,
-         t
+         t,
+         task
       ])
       const handleDelete = useCallback(async () => {
          const reqData = {

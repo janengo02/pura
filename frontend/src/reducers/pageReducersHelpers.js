@@ -83,6 +83,39 @@ export const removePageTaskScheduleSlot = ({ tasks, payload }) => {
 }
 
 /**
+ * Update task schedule slot in page state
+ * @param {Array} tasks - Current tasks array
+ * @param {Object} payload - Update payload
+ * @param {string} payload.task_id - Task ID
+ * @param {number} payload.slot_index - Slot index to update
+ * @param {string} payload.start - New start time
+ * @param {string} payload.end - New end time
+ * @param {string} [payload.update_date] - Update timestamp
+ * @returns {Object} Updated state fragment
+ */
+export const updatePageTaskScheduleSlot = ({ tasks, payload }) => {
+   return {
+      tasks: tasks.map((task) =>
+         task._id === payload.task_id
+            ? {
+                 ...task,
+                 schedule: task.schedule?.map((slot, index) =>
+                    index === payload.slot_index
+                       ? {
+                            ...slot,
+                            start: payload.start,
+                            end: payload.end
+                         }
+                       : slot
+                 ),
+                 update_date: payload.update_date || task.update_date
+              }
+            : task
+      )
+   }
+}
+
+/**
  * Update filter schedule
  * @param {Object} currentFilter - Current filter state
  * @param {Object} payload - Filter payload

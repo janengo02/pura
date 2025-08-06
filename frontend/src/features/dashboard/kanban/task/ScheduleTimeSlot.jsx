@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -83,6 +83,11 @@ const ScheduleTimeSlot = React.memo(
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+
+      // -------------------------------------------------------------------------
+      // ANIMATION STATE
+      // -------------------------------------------------------------------------
+      const [showHighlight, setShowHighlight] = useState(false)
 
       // -------------------------------------------------------------------------
       // GOOGLE LOGIN HANDLER
@@ -327,6 +332,20 @@ const ScheduleTimeSlot = React.memo(
          }
       }, [slot.start, slot.end, task.target_event_index, index])
 
+      // -------------------------------------------------------------------------
+      // ANIMATION EFFECT
+      // -------------------------------------------------------------------------
+      useEffect(() => {
+         if (timeSlotState.isViewingCalendarEvent) {
+            setShowHighlight(true)
+            const timer = setTimeout(() => {
+               setShowHighlight(false)
+            }, 1000) // 2 seconds
+
+            return () => clearTimeout(timer)
+         }
+      }, [timeSlotState])
+
       const timeInputProps = useMemo(
          () => ({
             size: 'md',
@@ -334,11 +353,10 @@ const ScheduleTimeSlot = React.memo(
             variant: 'filled',
             width: 'auto',
             borderRadius: 'md',
-            bg: timeSlotState.isViewingCalendarEvent
-               ? 'accent.subtle'
-               : 'bg.canvas'
+            bg: showHighlight ? 'accent.subtle' : 'bg.canvas',
+            transition: 'background-color 0.3s ease'
          }),
-         [timeSlotState.isViewingCalendarEvent]
+         [showHighlight]
       )
 
       const startTimeInput = useMemo(

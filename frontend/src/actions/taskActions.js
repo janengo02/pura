@@ -13,7 +13,8 @@ import {
    GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
    GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
    GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
-   GOOGLE_CALENDAR_DELETE_TASK_EVENTS
+   GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
+   UPDATE_PAGE_TASK_SCHEDULE_SLOT
 } from './types'
 import {
    pageActionErrorHandler,
@@ -287,7 +288,8 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
             slot_index: formData.slot_index,
             start: formData.start,
             end: formData.end,
-            update_date: new Date().toISOString()
+            update_date: new Date().toISOString(),
+            target_event_index: formData.target_event_index
          }
       })
    }
@@ -301,7 +303,17 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
          end: formData.end
       }
    })
-
+   // Optimistic update - Page - update task schedule in tasks array for synced events
+   dispatch({
+      type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
+      payload: {
+         task_id: formData.task_id,
+         slot_index: formData.slot_index,
+         start: formData.start,
+         end: formData.end,
+         update_date: new Date().toISOString()
+      }
+   })
    try {
       await api.put(
          `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`,
