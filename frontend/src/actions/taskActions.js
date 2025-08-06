@@ -303,17 +303,6 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
          end: formData.end
       }
    })
-   // Optimistic update - Page - update task schedule in tasks array for synced events
-   dispatch({
-      type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
-      payload: {
-         task_id: formData.task_id,
-         slot_index: formData.slot_index,
-         start: formData.start,
-         end: formData.end,
-         update_date: new Date().toISOString()
-      }
-   })
    try {
       await api.put(
          `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`,

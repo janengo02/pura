@@ -300,10 +300,10 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
 
       // Dispatch actual update with server response
       if (res.data?.event) {
-         dispatch({
-            type: GOOGLE_CALENDAR_UPDATE_EVENT,
-            payload: { ...res.data, originalEventId: reqData.eventId }
-         })
+         // dispatch({
+         //    type: GOOGLE_CALENDAR_UPDATE_EVENT,
+         //    payload: { ...res.data, originalEventId: reqData.eventId }
+         // })
          // Optimistic update - Page - update task schedule in tasks array for synced events
          if (reqData.task_id && typeof reqData.slot_index === 'number') {
             dispatch({
