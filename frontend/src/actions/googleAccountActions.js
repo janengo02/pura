@@ -9,6 +9,7 @@ import {
    GOOGLE_CALENDAR_AUTH_ERROR,
    GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
    GOOGLE_CALENDAR_UPDATE_EVENT,
+   GOOGLE_CALENDAR_UPDATE_EVENT_TIME,
    GOOGLE_CALENDAR_ADD_ACCOUNT,
    GOOGLE_CALENDAR_REMOVE_ACCOUNT,
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
@@ -300,10 +301,10 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
 
       // Dispatch actual update with server response
       if (res.data?.event) {
-         // dispatch({
-         //    type: GOOGLE_CALENDAR_UPDATE_EVENT,
-         //    payload: { ...res.data, originalEventId: reqData.eventId }
-         // })
+         dispatch({
+            type: GOOGLE_CALENDAR_UPDATE_EVENT,
+            payload: { ...res.data, originalEventId: reqData.eventId }
+         })
          // Optimistic update - Page - update task schedule in tasks array for synced events
          if (reqData.task_id && typeof reqData.slot_index === 'number') {
             dispatch({
@@ -320,6 +321,84 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
       } else {
          throw new Error(
             'Unexpected response format from /google-account/update-event'
+         )
+      }
+   } catch (err) {
+      // On error, we might want to revert the optimistic update
+      // For now, just show the error - the next calendar refresh will correct the state
+      googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
+   }
+}
+
+/**
+ * Update Google Event Time Action (for drag/drop operations)
+ * Updates only the start and end time of an event, preserving all other data
+ * @param {Object} reqData - Request data for event time update
+ * @param {string} reqData.eventId - Event ID to update
+ * @param {string} reqData.start - New start time (ISO string)
+ * @param {string} reqData.end - New end time (ISO string)
+ * @param {string} reqData.accountEmail - Google account ID
+ * @param {string} reqData.calendarId - Calendar ID where event exists
+ * @param {string} reqData.originalCalendarId - Original calendar ID
+ * @param {boolean} [reqData.task_detail_flg] - Task detail flag for optimistic task updates
+ * @param {string} [reqData.task_id] - Task ID for synced events
+ * @param {number} [reqData.slot_index] - Slot index for synced events
+ * @param {number} [reqData.target_event_index] - Target event index for task detail updates
+ */
+export const updateGoogleEventTimeAction = (reqData) => async (dispatch) => {
+   try {
+      // Optimistic update - Calendar - update event times in state
+      dispatch({
+         type: GOOGLE_CALENDAR_UPDATE_EVENT_TIME,
+         payload: {
+            eventId: reqData.eventId,
+            start: reqData.start ? { dateTime: reqData.start } : undefined,
+            end: reqData.end ? { dateTime: reqData.end } : undefined
+         }
+      })
+      // Optimistic update - Task - update task details in state for synced events
+      if (
+         reqData.task_detail_flg &&
+         reqData.task_id &&
+         typeof reqData.slot_index === 'number'
+      ) {
+         dispatch({
+            type: UPDATE_TASK_SCHEDULE,
+            payload: {
+               task_id: reqData.task_id,
+               slot_index: reqData.slot_index,
+               start: reqData.start,
+               end: reqData.end,
+               update_date: new Date().toISOString(),
+               target_event_index: reqData.target_event_index
+            }
+         })
+      }
+
+      // API call to update event times only
+      const res = await api.post(
+         `/google-account/update-event/${reqData.eventId}`,
+         reqData
+      )
+
+      if (res.data?.event) {
+         // Optimistic update - Page - update task schedule in tasks array for synced events
+         if (reqData.task_id && typeof reqData.slot_index === 'number') {
+            console.log('Here')
+            dispatch({
+               type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
+               payload: {
+                  task_id: reqData.task_id,
+                  slot_index: reqData.slot_index,
+                  start: reqData.start,
+                  end: reqData.end,
+                  update_date: new Date().toISOString()
+               }
+            })
+         }
+      } else {
+         throw new Error(
+            'Unexpected response format from /google-account/update-event-time'
          )
       }
    } catch (err) {

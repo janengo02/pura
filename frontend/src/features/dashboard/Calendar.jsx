@@ -36,7 +36,7 @@ import EventPreview from './calendar/event/EventPreview'
 import {
    loadCalendarAction,
    changeCalendarRangeAction,
-   updateGoogleEventAction
+   updateGoogleEventTimeAction
 } from '../../actions/googleAccountActions'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
 
@@ -50,7 +50,6 @@ import {
    createLocalizedLocalizer,
    LOCALE_CONFIGS
 } from '../../utils/eventUtils'
-import { GOOGLE_CALENDAR_COLORS } from '../../components/data/defaultColor'
 
 // =============================================================================
 // CONSTANTS & CONFIGURATION
@@ -112,7 +111,7 @@ const Calendar = React.memo(
       // Redux props
       loadCalendarAction,
       changeCalendarRangeAction,
-      updateGoogleEventAction,
+      updateGoogleEventTimeAction,
       updateTaskScheduleAction,
       googleAccount: { googleEvents, loading, range },
       tasks,
@@ -277,18 +276,6 @@ const Calendar = React.memo(
                      currentTask &&
                      currentTask._id === event.pura_task_id
 
-                  const foundColor = Object.entries(
-                     GOOGLE_CALENDAR_COLORS
-                  ).find(([, hex]) => hex === event.color)
-                  const selectedCalendar = googleCalendars.find(
-                     (cal) => cal.calendarId === event.calendarId
-                  ) || {
-                     calendarId: event.calendarId || '',
-                     title: '',
-                     accountEmail: event.accountEmail || '',
-                     accessRole: '',
-                     color: ''
-                  }
                   // Update Google Calendar event
                   const updateData = {
                      eventId: event.id,
@@ -297,34 +284,26 @@ const Calendar = React.memo(
                      accountEmail: event.accountEmail,
                      start: newStartTime.toISOString(),
                      end: newEndTime.toISOString(),
-                     // Preserve other event properties
-                     summary: event.title,
-                     description: event.description,
-                     colorId: foundColor ? foundColor[0] : null,
-                     conferenceData: event.conferenceData,
-                     calendarSummary: selectedCalendar.title,
-                     calendarBackgroundColor: selectedCalendar.color,
+                     task_id: event.pura_task_id,
+                     slot_index: event.pura_schedule_index,
                      // Add task detail parameters for synced events
                      ...(isSyncedCurrentTask && {
                         task_detail_flg: true,
-                        task_id: event.pura_task_id,
-                        slot_index: event.pura_schedule_index,
                         target_event_index: event.pura_schedule_index
                      })
                   }
 
-                  await updateGoogleEventAction(updateData)
+                  await updateGoogleEventTimeAction(updateData)
                }
             } catch (error) {
                console.error('Failed to update event:', error)
             }
          },
          [
-            updateGoogleEventAction,
+            updateGoogleEventTimeAction,
             updateTaskScheduleAction,
             pageId,
-            currentTask,
-            googleCalendars
+            currentTask
          ]
       )
 
@@ -364,18 +343,6 @@ const Calendar = React.memo(
                      event.eventType === 'synced' &&
                      currentTask &&
                      currentTask._id === event.pura_task_id
-                  const foundColor = Object.entries(
-                     GOOGLE_CALENDAR_COLORS
-                  ).find(([, hex]) => hex === event.color)
-                  const selectedCalendar = googleCalendars.find(
-                     (cal) => cal.calendarId === event.calendarId
-                  ) || {
-                     calendarId: event.calendarId || '',
-                     title: '',
-                     accountEmail: event.accountEmail || '',
-                     accessRole: '',
-                     color: ''
-                  }
                   // Update Google Calendar event
                   const updateData = {
                      eventId: event.id,
@@ -384,34 +351,26 @@ const Calendar = React.memo(
                      accountEmail: event.accountEmail,
                      start: newStartTime.toISOString(),
                      end: newEndTime.toISOString(),
-                     // Preserve other event properties
-                     summary: event.title,
-                     description: event.description,
-                     colorId: foundColor ? foundColor[0] : null,
-                     conferenceData: event.conferenceData,
-                     calendarSummary: selectedCalendar.title,
-                     calendarBackgroundColor: selectedCalendar.color,
+                     task_id: event.pura_task_id,
+                     slot_index: event.pura_schedule_index,
                      // Add task detail parameters for synced events
                      ...(isSyncedCurrentTask && {
                         task_detail_flg: true,
-                        task_id: event.pura_task_id,
-                        slot_index: event.pura_schedule_index,
                         target_event_index: event.pura_schedule_index
                      })
                   }
 
-                  await updateGoogleEventAction(updateData)
+                  await updateGoogleEventTimeAction(updateData)
                }
             } catch (error) {
                console.error('Failed to resize event:', error)
             }
          },
          [
-            updateGoogleEventAction,
+            updateGoogleEventTimeAction,
             updateTaskScheduleAction,
             pageId,
-            currentTask,
-            googleCalendars
+            currentTask
          ]
       )
 
@@ -530,7 +489,7 @@ Calendar.displayName = 'Calendar'
 Calendar.propTypes = {
    loadCalendarAction: PropTypes.func.isRequired,
    changeCalendarRangeAction: PropTypes.func.isRequired,
-   updateGoogleEventAction: PropTypes.func.isRequired,
+   updateGoogleEventTimeAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired,
    tasks: PropTypes.array.isRequired,
@@ -592,7 +551,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    loadCalendarAction,
    changeCalendarRangeAction,
-   updateGoogleEventAction,
+   updateGoogleEventTimeAction,
    updateTaskScheduleAction
 }
 

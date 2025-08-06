@@ -63,13 +63,12 @@ const EventEditModal = React.memo(
       // Redux props
       event,
       googleCalendars,
-      taskData: { task, pageId },
+      taskData: { task },
 
       updateGoogleEventAction,
       updateTaskScheduleAction,
       updateTaskBasicInfoAction,
       clearEventEditModalAction,
-      showTaskModalAction,
       deleteGoogleEventAction
    }) => {
       // -------------------------------------------------------------------------
@@ -204,11 +203,11 @@ const EventEditModal = React.memo(
                   conferenceData: conferenceData,
                   calendarSummary: selectedCalendar.title,
                   calendarBackgroundColor: selectedCalendar.color,
+                  task_id: event.pura_task_id,
+                  slot_index: event.pura_schedule_index,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
                      task_detail_flg: true,
-                     task_id: event.pura_task_id,
-                     slot_index: event.pura_schedule_index,
                      target_event_index: event.pura_schedule_index
                   })
                })

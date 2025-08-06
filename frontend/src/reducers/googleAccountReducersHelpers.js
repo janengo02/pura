@@ -873,6 +873,40 @@ export const deleteGoogleEvent = ({ deletedEvent, googleEvents }) => {
    return { googleEvents }
 }
 /**
+ * Update only event start and end times (for drag/drop operations)
+ * @param {Object} params - Event list, event ID, and new times
+ * @returns {Object} Updated state with modified event times
+ */
+export const updateGoogleEventTime = ({
+   eventId,
+   googleEvents,
+   start,
+   end
+}) => {
+   const updatedEventList = googleEvents.map((event) => {
+      if (event.id === eventId) {
+         const startTime = parseEventDateTime(start)
+         let endTime = parseEventDateTime(end)
+         const isAllDay = isAllDayEvent({ start, end })
+
+         if (isAllDay) {
+            endTime = processAllDayEndTime(startTime, endTime)
+         }
+         return {
+            ...event,
+            start: startTime,
+            end: endTime,
+            allDay: isAllDay,
+            updatedDate: new Date()
+         }
+      }
+      return event
+   })
+
+   return { googleEvents: updatedEventList }
+}
+
+/**
  * Update or delete Google event with full date support
  * @param {Object} params - Event list, updated event data, and calendar data
  * @returns {Object} Updated state with modified event
