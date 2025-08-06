@@ -188,7 +188,7 @@ const Calendar = React.memo(
                newRangeEnd = getRangeEnd(newRange.end, localizer)
             } else {
                newRangeStart = getRangeStart(newRange[0], localizer)
-               newRangeEnd = getRangeEnd(newRange[1], localizer)
+               newRangeEnd = getRangeEnd(newRange[1] || newRange[0], localizer)
             }
 
             changeCalendarRangeAction([newRangeStart, newRangeEnd])
@@ -535,7 +535,7 @@ Calendar.propTypes = {
    googleAccount: PropTypes.object.isRequired,
    tasks: PropTypes.array.isRequired,
    currentLanguage: PropTypes.string.isRequired,
-   pageId: PropTypes.string.isRequired,
+   pageId: PropTypes.string,
    currentTask: PropTypes.object,
    googleCalendars: PropTypes.arrayOf(
       PropTypes.shape({

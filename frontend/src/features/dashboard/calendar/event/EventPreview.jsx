@@ -346,7 +346,6 @@ EventPreview.displayName = 'EventPreview'
 
 // PropTypes validation
 EventPreview.propTypes = {
-   children: PropTypes.node.isRequired,
    event: PropTypes.shape({
       id: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
