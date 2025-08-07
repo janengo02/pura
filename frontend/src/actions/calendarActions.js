@@ -4,9 +4,9 @@
 
 import { api } from '../utils'
 import { setAlertAction } from './alertActions'
+import { commonErrorHandler, fatalErrorHandler } from './errorActions'
 import {
    GET_CALENDAR,
-   CALENDAR_AUTH_ERROR,
    UPDATE_CALENDAR_VISIBILITY,
    UPDATE_CALENDAR_EVENT,
    UPDATE_CALENDAR_EVENT_TIME,
@@ -21,66 +21,6 @@ import {
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
-
-/**
- * Helper for fatal error dispatch - similar to pageActionFatalErrorHandler
- * Used for critical errors that prevent calendar functionality
- * @param {Function} dispatch - Redux dispatch function
- * @param {Object} err - Error object
- */
-export const googleAccountFatalErrorHandler = (dispatch, err) => {
-   const errors = err?.response?.data?.errors || [
-      { title: 'alert-oops', msg: 'alert-server_error' }
-   ]
-
-   // Dispatch auth error to reset calendar state
-   dispatch({
-      type: CALENDAR_AUTH_ERROR
-   })
-
-   // Show alerts for each error
-   if (errors) {
-      errors.forEach((error) =>
-         dispatch(
-            setAlertAction(
-               error.title || 'alert-oops',
-               error.msg || 'alert-server_error',
-               'error'
-            )
-         )
-      )
-   }
-}
-
-/**
- * Helper for recoverable error dispatch - similar to pageActionErrorHandler
- * Used for errors that allow retry or graceful degradation
- * @param {Function} dispatch - Redux dispatch function
- * @param {Object} err - Error object
- * @param {string} accountEmail - Optional account email for context
- */
-export const googleAccountErrorHandler = (
-   dispatch,
-   err,
-   accountEmail = null
-) => {
-   const errors = err?.response?.data?.errors || [
-      { title: 'alert-oops', msg: 'alert-server_error' }
-   ]
-
-   // Show alerts for each error
-   if (errors) {
-      errors.forEach((error) =>
-         dispatch(
-            setAlertAction(
-               error.title || 'alert-oops',
-               error.msg || 'alert-server_error',
-               'error'
-            )
-         )
-      )
-   }
-}
 
 // =============================================================================
 // ACTION CREATORS
@@ -119,7 +59,7 @@ export const loadCalendarAction =
             }
          })
       } catch (err) {
-         googleAccountFatalErrorHandler(dispatch, err)
+         fatalErrorHandler(dispatch, pageId, err)
       }
    }
 
@@ -130,27 +70,28 @@ export const loadCalendarAction =
  * @param {string} reqData.code - OAuth authorization code
  * @param {Array} reqData.range - Date range for initial sync
  */
-export const addGoogleAccountAction = (reqData) => async (dispatch) => {
-   try {
-      const res = await api.post('/calendar/add-account', reqData)
+export const addGoogleAccountAction =
+   (reqData) => async (dispatch, getState) => {
+      try {
+         const res = await api.post('/calendar/add-account', reqData)
 
-      if (res.data?.account_email) {
-         dispatch({
-            type: ADD_CALENDAR_ACCOUNT,
-            payload: {
-               data: res.data,
-               range: reqData.range
-            }
-         })
-      } else {
-         throw new Error(
-            'Unexpected response format from /calendar/add-account'
-         )
+         if (res.data?.account_email) {
+            dispatch({
+               type: ADD_CALENDAR_ACCOUNT,
+               payload: {
+                  data: res.data,
+                  range: reqData.range
+               }
+            })
+         } else {
+            throw new Error(
+               'Unexpected response format from /calendar/add-account'
+            )
+         }
+      } catch (err) {
+         commonErrorHandler(dispatch, err, getState)
       }
-   } catch (err) {
-      googleAccountErrorHandler(dispatch, err)
    }
-}
 
 /**
  * Set Default Google Account Action
@@ -158,49 +99,51 @@ export const addGoogleAccountAction = (reqData) => async (dispatch) => {
  * @param {Object} reqData - Request data for setting default account
  * @param {string} reqData.account_email - ID of the account to set as default
  */
-export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
-   try {
-      const res = await api.put(
-         `/calendar/set-default/${reqData.account_email}`
-      )
-
-      if (res.data?._id) {
-         dispatch({
-            type: SET_CALENDAR_DEFAULT_ACCOUNT,
-            payload: {
-               accountEmail: reqData.account_email,
-               accountData: res.data
-            }
-         })
-      } else {
-         throw new Error(
-            'Unexpected response format from /calendar/set-default'
+export const setDefaultGoogleAccountAction =
+   (reqData) => async (dispatch, getState) => {
+      try {
+         const res = await api.put(
+            `/calendar/set-default/${reqData.account_email}`
          )
+
+         if (res.data?._id) {
+            dispatch({
+               type: SET_CALENDAR_DEFAULT_ACCOUNT,
+               payload: {
+                  accountEmail: reqData.account_email,
+                  accountData: res.data
+               }
+            })
+         } else {
+            throw new Error(
+               'Unexpected response format from /calendar/set-default'
+            )
+         }
+      } catch (err) {
+         commonErrorHandler(dispatch, err, getState)
       }
-   } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
-}
 
 /**
  * Get Default Google Account Action
  * Retrieves the current default Google account
  */
-export const getDefaultGoogleAccountAction = () => async (dispatch) => {
-   try {
-      const res = await api.get('/calendar/default')
+export const getDefaultGoogleAccountAction =
+   () => async (dispatch, getState) => {
+      try {
+         const res = await api.get('/calendar/default')
 
-      dispatch({
-         type: GET_CALENDAR_DEFAULT_ACCOUNT,
-         payload: res.data?._id ? res.data : null
-      })
-   } catch (err) {
-      // Only show error if it's not a 404 (no default account)
-      if (err.response?.status !== 404) {
-         googleAccountErrorHandler(dispatch, err)
+         dispatch({
+            type: GET_CALENDAR_DEFAULT_ACCOUNT,
+            payload: res.data?._id ? res.data : null
+         })
+      } catch (err) {
+         // Only show error if it's not a 404 (no default account)
+         if (err.response?.status !== 404) {
+            commonErrorHandler(dispatch, err, getState)
+         }
       }
    }
-}
 
 /**
  * Update Google Event Action
@@ -217,87 +160,88 @@ export const getDefaultGoogleAccountAction = () => async (dispatch) => {
  * @param {number} [reqData.slot_index] - Slot index for synced events
  * @param {number} [reqData.target_event_index] - Target event index for task detail updates
  */
-export const updateGoogleEventAction = (reqData) => async (dispatch) => {
-   try {
-      // Optimistic update - Calendar - update event in state
-      // Create optimistic update payload
-      const optimisticEventData = {
-         id: reqData.eventId,
-         summary: reqData.summary,
-         description: reqData.description,
-         location: reqData.location,
-         colorId: reqData.colorId,
-         start: reqData.start ? { dateTime: reqData.start } : undefined,
-         end: reqData.end ? { dateTime: reqData.end } : undefined,
-         conferenceData: {
-            conferenceSolution: {
-               key: {
-                  type: 'hangoutsMeet'
-               }
-            },
-            conferenceId: reqData.conferenceData?.id,
-            entryPoints: [
-               {
-                  entryPointType: 'video',
-                  uri: reqData.conferenceData?.joinUrl
-               }
-            ]
-         }
-      }
-
-      // Get target calendar for optimistic update
-      const optimisticCalendar = {
-         id: reqData.calendarId || reqData.originalCalendarId,
-         summary: reqData.calendarSummary || 'Calendar',
-         backgroundColor: reqData.calendarBackgroundColor || '#3174ad'
-      }
-
-      dispatch({
-         type: UPDATE_CALENDAR_EVENT,
-         payload: {
-            event: optimisticEventData,
-            calendar: optimisticCalendar,
-            originalEventId: reqData.eventId
-         }
-      })
-
-      if (reqData.task_id && typeof reqData.slot_index === 'number') {
-         // Optimistic update - Page | Task
-         dispatch({
-            type: UPDATE_TASK_SCHEDULE,
-            payload: {
-               task_id: reqData.task_id,
-               slot_index: reqData.slot_index,
-               start: reqData.start,
-               end: reqData.end,
-               update_date: new Date().toISOString(),
-               target_event_index: reqData.target_event_index
+export const updateGoogleEventAction =
+   (reqData) => async (dispatch, getState) => {
+      try {
+         // Optimistic update - Calendar - update event in state
+         // Create optimistic update payload
+         const optimisticEventData = {
+            id: reqData.eventId,
+            summary: reqData.summary,
+            description: reqData.description,
+            location: reqData.location,
+            colorId: reqData.colorId,
+            start: reqData.start ? { dateTime: reqData.start } : undefined,
+            end: reqData.end ? { dateTime: reqData.end } : undefined,
+            conferenceData: {
+               conferenceSolution: {
+                  key: {
+                     type: 'hangoutsMeet'
+                  }
+               },
+               conferenceId: reqData.conferenceData?.id,
+               entryPoints: [
+                  {
+                     entryPointType: 'video',
+                     uri: reqData.conferenceData?.joinUrl
+                  }
+               ]
             }
-         })
-      }
+         }
 
-      const res = await api.post(
-         `/calendar/update-event/${reqData.eventId}`,
-         reqData
-      )
+         // Get target calendar for optimistic update
+         const optimisticCalendar = {
+            id: reqData.calendarId || reqData.originalCalendarId,
+            summary: reqData.calendarSummary || 'Calendar',
+            backgroundColor: reqData.calendarBackgroundColor || '#3174ad'
+         }
 
-      // Dispatch actual update with server response
-      if (res.data?.event) {
          dispatch({
             type: UPDATE_CALENDAR_EVENT,
-            payload: { ...res.data, originalEventId: reqData.eventId }
+            payload: {
+               event: optimisticEventData,
+               calendar: optimisticCalendar,
+               originalEventId: reqData.eventId
+            }
          })
-      } else {
-         throw new Error(
-            'Unexpected response format from /calendar/update-event'
+
+         if (reqData.task_id && typeof reqData.slot_index === 'number') {
+            // Optimistic update - Page | Task
+            dispatch({
+               type: UPDATE_TASK_SCHEDULE,
+               payload: {
+                  task_id: reqData.task_id,
+                  slot_index: reqData.slot_index,
+                  start: reqData.start,
+                  end: reqData.end,
+                  update_date: new Date().toISOString(),
+                  target_event_index: reqData.target_event_index
+               }
+            })
+         }
+
+         const res = await api.post(
+            `/calendar/update-event/${reqData.eventId}`,
+            reqData
          )
+
+         // Dispatch actual update with server response
+         if (res.data?.event) {
+            dispatch({
+               type: UPDATE_CALENDAR_EVENT,
+               payload: { ...res.data, originalEventId: reqData.eventId }
+            })
+         } else {
+            throw new Error(
+               'Unexpected response format from /calendar/update-event'
+            )
+         }
+      } catch (err) {
+         // On error, we might want to revert the optimistic update
+         // For now, just show the error - the next calendar refresh will correct the state
+         commonErrorHandler(dispatch, err, getState)
       }
-   } catch (err) {
-      // On error, we might want to revert the optimistic update
-      // For now, just show the error - the next calendar refresh will correct the state
-      googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
    }
-}
 
 /**
  * Update Google Event Time Action (for drag/drop operations)
@@ -314,38 +258,39 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
  * @param {number} [reqData.slot_index] - Slot index for synced events
  * @param {number} [reqData.target_event_index] - Target event index for task detail updates
  */
-export const updateGoogleEventTimeAction = (reqData) => async (dispatch) => {
-   try {
-      // Optimistic update - Calendar - update event times in state
-      dispatch({
-         type: UPDATE_CALENDAR_EVENT_TIME,
-         payload: {
-            eventId: reqData.eventId,
-            start: reqData.start ? { dateTime: reqData.start } : undefined,
-            end: reqData.end ? { dateTime: reqData.end } : undefined
-         }
-      })
-      if (reqData.task_id && typeof reqData.slot_index === 'number') {
-         // Optimistic update - Page | Task
+export const updateGoogleEventTimeAction =
+   (reqData) => async (dispatch, getState) => {
+      try {
+         // Optimistic update - Calendar - update event times in state
          dispatch({
-            type: UPDATE_TASK_SCHEDULE,
+            type: UPDATE_CALENDAR_EVENT_TIME,
             payload: {
-               task_id: reqData.task_id,
-               slot_index: reqData.slot_index,
-               start: reqData.start,
-               end: reqData.end,
-               update_date: new Date().toISOString(),
-               target_event_index: reqData.target_event_index
+               eventId: reqData.eventId,
+               start: reqData.start ? { dateTime: reqData.start } : undefined,
+               end: reqData.end ? { dateTime: reqData.end } : undefined
             }
          })
-      }
+         if (reqData.task_id && typeof reqData.slot_index === 'number') {
+            // Optimistic update - Page | Task
+            dispatch({
+               type: UPDATE_TASK_SCHEDULE,
+               payload: {
+                  task_id: reqData.task_id,
+                  slot_index: reqData.slot_index,
+                  start: reqData.start,
+                  end: reqData.end,
+                  update_date: new Date().toISOString(),
+                  target_event_index: reqData.target_event_index
+               }
+            })
+         }
 
-      // API call to update event times only
-      await api.post(`/calendar/update-event/${reqData.eventId}`, reqData)
-   } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
+         // API call to update event times only
+         await api.post(`/calendar/update-event/${reqData.eventId}`, reqData)
+      } catch (err) {
+         commonErrorHandler(dispatch, err, getState)
+      }
    }
-}
 
 /**
  * Delete Google Event Action
@@ -354,22 +299,23 @@ export const updateGoogleEventTimeAction = (reqData) => async (dispatch) => {
  * @param {string} reqData.eventId - Event ID to delete
  * @param {string} reqData.accountEmail - Google account ID
  */
-export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
-   // Optimistic update - Calendar - remove event from state
-   dispatch({
-      type: DELETE_CALENDAR_EVENT,
-      payload: {
-         id: reqData.eventId
-      }
-   })
-   try {
-      await api.delete(`/calendar/delete-event/${reqData.eventId}`, {
-         data: reqData
+export const deleteGoogleEventAction =
+   (reqData) => async (dispatch, getState) => {
+      // Optimistic update - Calendar - remove event from state
+      dispatch({
+         type: DELETE_CALENDAR_EVENT,
+         payload: {
+            id: reqData.eventId
+         }
       })
-   } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
+      try {
+         await api.delete(`/calendar/delete-event/${reqData.eventId}`, {
+            data: reqData
+         })
+      } catch (err) {
+         commonErrorHandler(dispatch, err, getState)
+      }
    }
-}
 
 /**
  * Change Calendar Visibility Action
@@ -377,14 +323,14 @@ export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
  * @param {string} calendarId - Calendar ID to toggle visibility
  */
 export const changeCalendarVisibilityAction =
-   (calendarId) => async (dispatch) => {
+   (calendarId) => async (dispatch, getState) => {
       try {
          dispatch({
             type: UPDATE_CALENDAR_VISIBILITY,
             payload: { calendarId }
          })
       } catch (err) {
-         googleAccountErrorHandler(dispatch, err)
+         commonErrorHandler(dispatch, err, getState)
       }
    }
 
@@ -394,20 +340,21 @@ export const changeCalendarVisibilityAction =
  * @param {Object} reqData - Request data for disconnection
  * @param {string} reqData.account_email - Google account ID to disconnect
  */
-export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
-   // Optimistic update - Calendar - remove account from state
-   dispatch({
-      type: REMOVE_CALENDAR_ACCOUNT,
-      payload: {
-         accountEmail: reqData.account_email
+export const disconnectGoogleAccountAction =
+   (reqData) => async (dispatch, getState) => {
+      // Optimistic update - Calendar - remove account from state
+      dispatch({
+         type: REMOVE_CALENDAR_ACCOUNT,
+         payload: {
+            accountEmail: reqData.account_email
+         }
+      })
+      try {
+         await api.delete(`/calendar/disconnect/${reqData.account_email}`)
+      } catch (err) {
+         commonErrorHandler(dispatch, err, getState)
       }
-   })
-   try {
-      await api.delete(`/calendar/disconnect/${reqData.account_email}`)
-   } catch (err) {
-      googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
-}
 
 /**
  * Create Google Meet Space Action

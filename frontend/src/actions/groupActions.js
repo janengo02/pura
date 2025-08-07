@@ -1,7 +1,7 @@
 import { api } from '../utils'
 import { CREATE_GROUP, DELETE_GROUP, UPDATE_GROUP } from './types'
 
-import { pageActionErrorHandler } from './pageActions'
+import { commonErrorHandler } from './errorActions'
 
 /**
  * Create new group
@@ -11,7 +11,7 @@ import { pageActionErrorHandler } from './pageActions'
  * @param {string} reqData.color - Group color
  * @returns {Function} Redux thunk
  */
-export const createGroupAction = (reqData) => async (dispatch) => {
+export const createGroupAction = (reqData) => async (dispatch, getState) => {
    try {
       const res = await api.post(`/group/new/${reqData.page_id}`, reqData)
       dispatch({
@@ -19,7 +19,7 @@ export const createGroupAction = (reqData) => async (dispatch) => {
          payload: res.data.group
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }
 
@@ -32,7 +32,7 @@ export const createGroupAction = (reqData) => async (dispatch) => {
  * @param {string} [reqData.color] - Group color
  * @returns {Function} Redux thunk
  */
-export const updateGroupAction = (reqData) => async (dispatch) => {
+export const updateGroupAction = (reqData) => async (dispatch, getState) => {
    // Optimistic update - Group - update group details in state
    dispatch({
       type: UPDATE_GROUP,
@@ -44,7 +44,7 @@ export const updateGroupAction = (reqData) => async (dispatch) => {
          reqData
       )
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }
 
@@ -55,7 +55,7 @@ export const updateGroupAction = (reqData) => async (dispatch) => {
  * @param {string} reqData.group_id - Group ID
  * @returns {Function} Redux thunk
  */
-export const deleteGroupAction = (reqData) => async (dispatch) => {
+export const deleteGroupAction = (reqData) => async (dispatch, getState) => {
    // Optimistic update - Group - remove group from state
    dispatch({
       type: DELETE_GROUP,
@@ -66,6 +66,6 @@ export const deleteGroupAction = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/group/${reqData.page_id}/${reqData.group_id}`)
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }

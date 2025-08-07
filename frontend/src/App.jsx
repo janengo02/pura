@@ -13,8 +13,7 @@ import PasswordRecover from './features/login/PasswordRecover'
 import Landing from './features/landing/Landing'
 import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
-import NotFound from './components/errorHandler/NotFound'
-import ServerError from './components/errorHandler/ServerError'
+import ErrorPage from './features/error/ErrorPage'
 
 // External Libraries
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -95,12 +94,12 @@ const App = () => {
                      <Route path='register' element={<Register />} />
                      <Route path='login' element={<Login />} />
                      <Route path='recover' element={<PasswordRecover />} />
-                     <Route path='error' element={<ServerError />} />
+                     <Route path='error' element={<ErrorPage />} />
                      <Route
                         path='dashboard'
                         element={<PrivateRoute component={Dashboard} />}
                      />
-                     <Route path='/*' element={<NotFound />} />
+                     <Route path='/*' element={<ErrorPage />} />
                   </Routes>
                </Router>
             </ChakraProvider>

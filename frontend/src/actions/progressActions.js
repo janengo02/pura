@@ -1,6 +1,6 @@
 import { api } from '../utils'
 import { CREATE_PROGRESS, DELETE_PROGRESS, UPDATE_PROGRESS } from './types'
-import { pageActionErrorHandler } from './pageActions'
+import { commonErrorHandler } from './errorActions'
 
 /**
  * Create new progress status
@@ -11,7 +11,7 @@ import { pageActionErrorHandler } from './pageActions'
  * @param {string} reqData.color - Progress background color
  * @returns {Function} Redux thunk
  */
-export const createProgressAction = (reqData) => async (dispatch) => {
+export const createProgressAction = (reqData) => async (dispatch, getState) => {
    try {
       const res = await api.post(`/progress/new/${reqData.page_id}`, reqData)
       dispatch({
@@ -19,7 +19,7 @@ export const createProgressAction = (reqData) => async (dispatch) => {
          payload: res.data.progress
       })
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }
 
@@ -33,7 +33,7 @@ export const createProgressAction = (reqData) => async (dispatch) => {
  * @param {string} [reqData.color] - Progress background color
  * @returns {Function} Redux thunk
  */
-export const updateProgressAction = (reqData) => async (dispatch) => {
+export const updateProgressAction = (reqData) => async (dispatch, getState) => {
    // Optimistic update - Progress - update progress details in state
    dispatch({
       type: UPDATE_PROGRESS,
@@ -45,7 +45,7 @@ export const updateProgressAction = (reqData) => async (dispatch) => {
          reqData
       )
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }
 
@@ -56,7 +56,7 @@ export const updateProgressAction = (reqData) => async (dispatch) => {
  * @param {string} reqData.progress_id - Progress ID
  * @returns {Function} Redux thunk
  */
-export const deleteProgressAction = (reqData) => async (dispatch) => {
+export const deleteProgressAction = (reqData) => async (dispatch, getState) => {
    // Optimistic update - Progress - remove progress from state
    dispatch({
       type: DELETE_PROGRESS,
@@ -67,6 +67,6 @@ export const deleteProgressAction = (reqData) => async (dispatch) => {
    try {
       await api.delete(`/progress/${reqData.page_id}/${reqData.progress_id}`)
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }

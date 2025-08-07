@@ -62,7 +62,7 @@ const Kanban = React.memo(
       const navigate = useNavigate()
 
       const errorState = useMemo(() => {
-         if (!(_id && error)) return null
+         if (!error) return null
 
          const code = errors?.[0]?.code || 400
          const msg = errors?.[0]?.msg || 'alert-bad-request'
@@ -71,7 +71,7 @@ const Kanban = React.memo(
             code: `${code}`,
             msg: `${msg}`
          }
-      }, [_id, error, errors])
+      }, [error, errors])
 
       // -------------------------------------------------------------------------
       // UTIL COMPONENTS

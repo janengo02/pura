@@ -1,61 +1,7 @@
 import { api } from '../utils'
-import { setAlertAction } from './alertActions'
-import { showTaskModalAction } from './taskActions'
-import {
-   FILTER_SCHEDULE,
-   FILTER_NAME,
-   GET_PAGE,
-   DROP_TASK,
-   PAGE_ERROR
-} from './types'
+import { commonErrorHandler, fatalErrorHandler } from './errorActions'
+import { FILTER_SCHEDULE, FILTER_NAME, GET_PAGE, DROP_TASK } from './types'
 
-/**
- * Handle fatal page errors
- * @param {Function} dispatch - Redux dispatch function
- * @param {string} pageId - Page ID
- * @param {Object} err - Error object
- * @returns {void}
- */
-export const pageActionFatalErrorHandler = (dispatch, pageId, err) => {
-   const errors = err?.response?.data?.errors || ['Unknown error']
-   dispatch({
-      type: PAGE_ERROR,
-      payload: {
-         _id: pageId,
-         errors
-      }
-   })
-}
-/**
- * Handle page action errors
- * @param {Function} dispatch - Redux dispatch function
- * @param {Object} err - Error object
- * @param {string} [pageId] - Page ID (optional)
- * @param {string} [taskId] - Task ID (optional)
- * @returns {void}
- */
-export const pageActionErrorHandler = (
-   dispatch,
-   err,
-   pageId = null,
-   taskId = null
-) => {
-   const errors = err?.response?.data?.errors || ['Unknown error']
-   if (errors) {
-      errors.forEach((error) =>
-         dispatch(setAlertAction(error.title, error.msg, 'error'))
-      )
-   }
-   dispatch(getFirstPageAction())
-   if (pageId && taskId) {
-      dispatch(
-         showTaskModalAction({
-            page_id: pageId,
-            task_id: taskId
-         })
-      )
-   }
-}
 /**
  * Get the first page of a user
  * @returns {Function} Redux thunk
@@ -68,7 +14,7 @@ export const getFirstPageAction = () => async (dispatch) => {
          payload: res.data
       })
    } catch (err) {
-      pageActionFatalErrorHandler(dispatch, null, err)
+      fatalErrorHandler(dispatch, null, err)
    }
 }
 
@@ -79,7 +25,7 @@ export const getFirstPageAction = () => async (dispatch) => {
  * @param {Object} reqData.result - Drag and drop result
  * @returns {Function} Redux thunk
  */
-export const dropTaskAction = (reqData) => async (dispatch) => {
+export const dropTaskAction = (reqData) => async (dispatch, getState) => {
    // Optimistic update - Page - update task position
    dispatch({
       type: DROP_TASK,
@@ -88,7 +34,7 @@ export const dropTaskAction = (reqData) => async (dispatch) => {
    try {
       await api.post(`/page/move-task/${reqData.page_id}`, reqData)
    } catch (err) {
-      pageActionErrorHandler(dispatch, err)
+      commonErrorHandler(dispatch, err, getState)
    }
 }
 /**
