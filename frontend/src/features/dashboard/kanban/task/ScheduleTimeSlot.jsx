@@ -465,7 +465,7 @@ const ScheduleTimeSlot = React.memo(
             return (
                <MenuItem size='md' isDisabled>
                   <Text fontSize='md' color='text.secondary'>
-                     {t('sync-no-accounts-connected')}
+                     {t('alert-sync-no-accounts-connected')}
                   </Text>
                </MenuItem>
             )
@@ -565,7 +565,7 @@ const ScheduleTimeSlot = React.memo(
                         icon={<PiPlugs size={18} />}
                         onClick={unsyncFromGoogle}
                      >
-                        {t('sync-unsync-action')}
+                        {t('btn-sync-unsync-action')}
                      </MenuItem>
                   )
                },
@@ -575,7 +575,7 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
                         <StatusMessage>
-                           {t('sync-select-calendar-message')}
+                           {t('desc-sync-select-calendar-message')}
                         </StatusMessage>
                      </StatusBox>
                   ),
@@ -599,7 +599,7 @@ const ScheduleTimeSlot = React.memo(
                               />
                            )}
                            <StatusMessage color='status.disconnected.text'>
-                              {t('sync-account-disconnected-message')}
+                              {t('alert-sync-account-disconnected-message')}
                            </StatusMessage>
                         </VStack>
                      </StatusBox>
@@ -610,13 +610,13 @@ const ScheduleTimeSlot = React.memo(
                            icon={<PiArrowClockwise size={18} />}
                            onClick={googleReconnectLogin}
                         >
-                           {t('sync-reconnect-action')}
+                           {t('btn-sync-reconnect-action')}
                         </MenuItem>
                         <MenuItem
                            icon={<PiPlugs size={18} />}
                            onClick={unsyncFromGoogle}
                         >
-                           {t('sync-unsync-action')}
+                           {t('btn-sync-unsync-action')}
                         </MenuItem>
                      </>
                   )
@@ -639,7 +639,7 @@ const ScheduleTimeSlot = React.memo(
                               />
                            )}
                            <StatusMessage color='status.warning.text'>
-                              {t('sync-event-not-found-message')}
+                              {t('alert-sync-event-not-found-message')}
                            </StatusMessage>
                         </VStack>
                      </StatusBox>
@@ -649,7 +649,7 @@ const ScheduleTimeSlot = React.memo(
                         icon={<PiPlugs size={18} />}
                         onClick={unsyncFromGoogle}
                      >
-                        {t('sync-unsync-action')}
+                        {t('btn-sync-unsync-action')}
                      </MenuItem>
                   )
                },
@@ -671,7 +671,7 @@ const ScheduleTimeSlot = React.memo(
                               />
                            )}
                            <StatusMessage color='status.warning.text'>
-                              {t('sync-times-mismatch-title')}
+                              {t('alert-sync-times-mismatch-title')}
                            </StatusMessage>
                         </VStack>
                      </StatusBox>
@@ -684,7 +684,7 @@ const ScheduleTimeSlot = React.memo(
                         >
                            <VStack spacing={1} align='start'>
                               <Text fontSize='md' fontWeight='medium'>
-                                 {t('sync-use-task-time')}
+                                 {t('btn-sync-use-task-time')}
                               </Text>
                               <Text fontSize='xs' color='text.secondary'>
                                  {formatTime(slot.start)} -{' '}
@@ -699,7 +699,7 @@ const ScheduleTimeSlot = React.memo(
                            >
                               <VStack spacing={1} align='start'>
                                  <Text fontSize='md' fontWeight='medium'>
-                                    {t('sync-use-google-time')}
+                                    {t('btn-sync-use-google-time')}
                                  </Text>
                                  <Text fontSize='xs' color='text.secondary'>
                                     {formatTime(slot.google_event_start)} -{' '}
@@ -713,7 +713,7 @@ const ScheduleTimeSlot = React.memo(
                            icon={<PiPlugs size={18} />}
                            onClick={unsyncFromGoogle}
                         >
-                           {t('sync-unsync-action')}
+                           {t('btn-sync-unsync-action')}
                         </MenuItem>
                      </>
                   )
@@ -726,9 +726,9 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='status.error.bg'>
                         <StatusMessage color='status.error.text'>
-                           {t('sync-error-occurred-message')}
+                           {t('alert-sync-error-occurred-message')}
                            <br />
-                           {t('sync-error-retry-message')}
+                           {t('desc-sync-error-retry-message')}
                         </StatusMessage>
                      </StatusBox>
                   )
@@ -744,9 +744,9 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
                         <StatusMessage>
-                           {t('sync-unknown-status-message')}
+                           {t('alert-sync-unknown-status-message')}
                            <br />
-                           {t('sync-unknown-status-action')}
+                           {t('desc-sync-unknown-status-action')}
                         </StatusMessage>
                      </StatusBox>
                   )
@@ -775,7 +775,7 @@ const ScheduleTimeSlot = React.memo(
 
          return (
             <Tooltip
-               label={`${t('sync-status-tooltip')}: ${syncStatus}`}
+               label={`${t('tooltip-sync-status-tooltip')}: ${syncStatus}`}
                placement='top'
                hasArrow
             >

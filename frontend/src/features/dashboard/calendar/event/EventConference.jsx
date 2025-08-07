@@ -49,10 +49,13 @@ const EventConference = ({ conferenceData }) => {
                <HStack spacing={3} w='full'>
                   <PiVideoCamera size={18} />
                   <Button colorScheme='blue' onClick={handleJoinMeeting}>
-                     {t('event-join-meeting')}
+                     {t('btn-event-join-meeting')}
                   </Button>
 
-                  <Tooltip label={t('copy-meeting-url')} placement='top'>
+                  <Tooltip
+                     label={t('tooltip-copy-meeting-url')}
+                     placement='top'
+                  >
                      <IconButton
                         variant='ghost'
                         onClick={handleCopyUrl}
@@ -61,7 +64,7 @@ const EventConference = ({ conferenceData }) => {
                   </Tooltip>
                </HStack>
                <Text fontSize='sm' color='text.secondary' ml={8}>
-                  {t('meet-id')}: {conferenceData.id}
+                  {t('label-meet-id')}: {conferenceData.id}
                </Text>
             </VStack>
          )}
@@ -126,7 +129,7 @@ const EventConferenceInput = ({
          {conferenceData?.joinUrl ? (
             <HStack align='start' spacing={0}>
                <EventConference conferenceData={conferenceData} />
-               <Tooltip label={t('remove-conference')} placement='top'>
+               <Tooltip label={t('btn-remove-conference')} placement='top'>
                   <IconButton
                      variant='ghost'
                      icon={<PiX size={18} />}
@@ -147,8 +150,8 @@ const EventConferenceInput = ({
                   isDisabled={!accountEmail || createGoogleMeetLoading}
                >
                   {createGoogleMeetLoading
-                     ? t('creating-meet')
-                     : t('create-google-meet')}
+                     ? t('alert-creating-meet')
+                     : t('btn-create-google-meet')}
                </Button>
             </HStack>
          )}

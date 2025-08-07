@@ -13,17 +13,17 @@ const EventVisibility = ({ visibility }) => {
 
    if (!visibility) return null
 
-   let visibilityText = t('visibility-default')
+   let visibilityText = t('label-visibility-default')
 
    switch (visibility.visibility) {
       case 'private':
-         visibilityText = t('visibility-private')
+         visibilityText = t('label-visibility-private')
          break
       case 'public':
-         visibilityText = t('visibility-public')
+         visibilityText = t('label-visibility-public')
          break
       case 'confidential':
-         visibilityText = t('visibility-confidential')
+         visibilityText = t('label-visibility-confidential')
          break
       case 'default':
          break

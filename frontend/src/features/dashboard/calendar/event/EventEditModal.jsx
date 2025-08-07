@@ -117,7 +117,7 @@ const EventEditModal = React.memo(
          if (isNaN(newStartTime.getTime()) || isNaN(newEndTime.getTime())) {
             toast({
                title: null,
-               description: t('event-invalid-time-format'),
+               description: t('alert-event-invalid-time-format'),
                status: 'error',
                duration: 5000,
                isClosable: true
@@ -129,7 +129,7 @@ const EventEditModal = React.memo(
          if (newStartTime >= newEndTime) {
             toast({
                title: null,
-               description: t('event-invalid-time-range'),
+               description: t('alert-event-invalid-time-range'),
                status: 'error',
                duration: 5000,
                isClosable: true
@@ -144,7 +144,7 @@ const EventEditModal = React.memo(
          if (event.eventType === 'task' || event.eventType === 'synced') {
             loadingToast = toast({
                title: null,
-               description: t('syncing'),
+               description: t('desc-syncing'),
                status: 'loading',
                position: 'bottom',
                duration: null, // Keep it open until we close it

@@ -30,13 +30,13 @@ const EventReminders = ({ reminders, eventStart }) => {
                      if (minutes < 60) {
                         const key =
                            minutes === 1
-                              ? 'reminder-minute'
-                              : 'reminder-minutes'
+                              ? 'desc-reminder-minute'
+                              : 'desc-reminder-minutes'
                         return t(key, { minutes })
                      } else if (minutes < 1440) {
                         const hours = Math.floor(minutes / 60)
                         const key =
-                           hours === 1 ? 'reminder-hour' : 'reminder-hours'
+                           hours === 1 ? 'desc-reminder-hour' : 'desc-reminder-hours'
                         return t(key, { hours })
                      } else {
                         const days = Math.floor(minutes / 1440)
@@ -48,11 +48,11 @@ const EventReminders = ({ reminders, eventStart }) => {
                         if (isExactWeeks && days >= 7) {
                            const weeks = Math.floor(exactWeeks)
                            const key =
-                              weeks === 1 ? 'reminder-week' : 'reminder-weeks'
+                              weeks === 1 ? 'desc-reminder-week' : 'desc-reminder-weeks'
                            return t(key, { weeks })
                         } else {
                            const key =
-                              days === 1 ? 'reminder-day' : 'reminder-days'
+                              days === 1 ? 'desc-reminder-day' : 'desc-reminder-days'
                            return t(key, { days })
                         }
                      }
@@ -69,13 +69,13 @@ const EventReminders = ({ reminders, eventStart }) => {
 
                   if (minutes < 60) {
                      const key =
-                        minutes === 1 ? 'reminder-minute' : 'reminder-minutes'
+                        minutes === 1 ? 'desc-reminder-minute' : 'desc-reminder-minutes'
                      return t(key, { minutes })
                   } else if (isSameDay) {
                      // Same day - show hours before
                      const hours = Math.floor(minutes / 60)
                      const key =
-                        hours === 1 ? 'reminder-hour' : 'reminder-hours'
+                        hours === 1 ? 'desc-reminder-hour' : 'desc-reminder-hours'
                      return t(key, { hours })
                   } else {
                      // Different day - calculate day difference and show time
@@ -87,7 +87,7 @@ const EventReminders = ({ reminders, eventStart }) => {
                      })
 
                      if (dayDiff === 1) {
-                        return t('reminder-day-before-at', {
+                        return t('desc-reminder-day-before-at', {
                            time: timeString
                         })
                      } else {
@@ -109,28 +109,28 @@ const EventReminders = ({ reminders, eventStart }) => {
                            if (isSameTime) {
                               const key =
                                  weeks === 1
-                                    ? 'reminder-week'
-                                    : 'reminder-weeks'
+                                    ? 'desc-reminder-week'
+                                    : 'desc-reminder-weeks'
                               return t(key, { weeks })
                            } else {
                               const key =
                                  weeks === 1
-                                    ? 'reminder-week-before-at'
-                                    : 'reminder-weeks-before-at'
+                                    ? 'desc-reminder-week-before-at'
+                                    : 'desc-reminder-weeks-before-at'
                               return t(key, { weeks, time: timeString })
                            }
                         } else {
                            if (isSameTime) {
                               const key =
                                  dayDiff === 1
-                                    ? 'reminder-day'
-                                    : 'reminder-days'
+                                    ? 'desc-reminder-day'
+                                    : 'desc-reminder-days'
                               return t(key, { days: dayDiff })
                            } else {
                               const key =
                                  dayDiff === 1
-                                    ? 'reminder-day-before-at'
-                                    : 'reminder-days-before-at'
+                                    ? 'desc-reminder-day-before-at'
+                                    : 'desc-reminder-days-before-at'
                               return t(key, {
                                  days: dayDiff,
                                  time: timeString
@@ -150,7 +150,7 @@ const EventReminders = ({ reminders, eventStart }) => {
                      </Text>
                      {reminder.method === 'email' && (
                         <Badge size='md' colorScheme='blue'>
-                           {t('reminder-email')}
+                           {t('label-reminder-email')}
                         </Badge>
                      )}
                   </HStack>

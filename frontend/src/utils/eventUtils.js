@@ -202,13 +202,13 @@ export const getResponseBadgeColor = (status) => {
 export const getResponseText = (status, t) => {
    switch (status) {
       case 'accepted':
-         return t('attendee-accepted')
+         return t('label-event-attendee-accepted')
       case 'declined':
-         return t('attendee-declined')
+         return t('label-event-attendee-declined')
       case 'tentative':
-         return t('attendee-tentative')
+         return t('label-event-attendee-tentative')
       default:
-         return t('attendee-pending')
+         return t('label-event-attendee-pending')
    }
 }
 

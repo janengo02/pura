@@ -210,8 +210,8 @@ const EventPreview = React.memo(
 
          const statusText =
             syncStatus === SCHEDULE_SYNCE_STATUS.SYNCED
-               ? t('sync-status-synced')
-               : t('sync-status-conflicted')
+               ? t('label-sync-status-synced')
+               : t('label-sync-status-conflicted')
 
          return (
             <Tag {...tagProps}>

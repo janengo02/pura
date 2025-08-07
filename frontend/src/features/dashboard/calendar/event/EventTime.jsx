@@ -194,7 +194,7 @@ const EventTimeInput = React.memo(
             pl={7}
             color={!isTimeValid ? 'danger.secondary' : undefined}
          >
-            {startTimeInput} - {endTimeInput} {t('timezone-jst')}
+            {startTimeInput} - {endTimeInput} {t('label-timezone-jst')}
          </Flex>
       )
    }

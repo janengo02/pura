@@ -48,29 +48,33 @@ const EventAttendees = ({ attendees }) => {
             >
                <VStack align='start' spacing={1} w='full'>
                   <Text fontSize='md' fontWeight='medium' color='text.primary'>
-                     {t('event-attendees')} ({attendees.length})
+                     {t('label-event-attendees')} ({attendees.length})
                   </Text>
 
                   {/* Response Summary */}
                   <HStack spacing={2} fontSize='xs'>
                      {responseStats.accepted > 0 && (
                         <Text color='text.secondary'>
-                           {responseStats.accepted} {t('attendee-accepted')}
+                           {responseStats.accepted}{' '}
+                           {t('label-event-attendee-accepted')}
                         </Text>
                      )}
                      {responseStats.declined > 0 && (
                         <Text color='text.secondary'>
-                           {responseStats.declined} {t('attendee-declined')}
+                           {responseStats.declined}{' '}
+                           {t('label-event-attendee-declined')}
                         </Text>
                      )}
                      {responseStats.tentative > 0 && (
                         <Text color='text.secondary'>
-                           {responseStats.tentative} {t('attendee-tentative')}
+                           {responseStats.tentative}{' '}
+                           {t('label-event-attendee-tentative')}
                         </Text>
                      )}
                      {responseStats.awaiting > 0 && (
                         <Text color='text.secondary'>
-                           {responseStats.awaiting} {t('attendee-pending')}
+                           {responseStats.awaiting}{' '}
+                           {t('label-event-attendee-pending')}
                         </Text>
                      )}
                   </HStack>
@@ -105,7 +109,7 @@ const EventAttendees = ({ attendees }) => {
 
                               {attendee.isOrganizer && (
                                  <Text fontSize='md' color='text.secondary'>
-                                    {t('attendee-organizer')}
+                                    {t('label-event-attendee-organizer')}
                                  </Text>
                               )}
                            </VStack>

@@ -3,7 +3,7 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 const PasswordRecover = () => {
    const { t } = useReactiveTranslation()
-   return <div>{t('password-recover')}</div>
+   return <div>{t('title-password-recover')}</div>
 }
 
 export default PasswordRecover

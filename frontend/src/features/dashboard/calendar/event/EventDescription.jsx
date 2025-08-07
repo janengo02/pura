@@ -103,7 +103,7 @@ const EventDescriptionInput = React.memo(({ description, setDescription }) => {
                onChange={handleDescriptionChange}
                modules={modules}
                formats={formats}
-               placeholder={t('placeholder-event-description')}
+               placeholder={t('placeholder-label-event-description')}
                theme='snow'
             />
          </Box>
