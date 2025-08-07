@@ -45,8 +45,6 @@ export const changeLanguageAction = (language) => async (dispatch) => {
          )
       }, 10)
    } catch (error) {
-      console.error('Failed to change language:', error)
-
       // Dispatch error action
       dispatch({
          type: LANGUAGE_ERROR,
@@ -90,8 +88,6 @@ export const initializeLanguageAction = () => async (dispatch) => {
          payload: initialLanguage
       })
    } catch (error) {
-      console.error('Failed to initialize language:', error)
-
       // Fallback to English
       dispatch({
          type: CHANGE_LANGUAGE,

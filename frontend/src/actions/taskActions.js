@@ -236,7 +236,6 @@ export const moveTaskAction = (formData) => async (dispatch) => {
          payload: res.data.page
       })
    } catch (err) {
-      console.error('Error moving task:', err)
       pageActionErrorHandler(
          dispatch,
          err,

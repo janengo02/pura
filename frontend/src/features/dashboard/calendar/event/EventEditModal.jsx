@@ -228,7 +228,7 @@ const EventEditModal = React.memo(
                }
             }
          } catch (error) {
-            console.error('Error updating event:', error)
+            // empty
          } finally {
             // Remove loading toast
             if (loadingToast) {

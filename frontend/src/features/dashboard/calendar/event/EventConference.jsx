@@ -29,8 +29,9 @@ const EventConference = ({ conferenceData }) => {
       if (conferenceData.joinUrl) {
          try {
             await navigator.clipboard.writeText(conferenceData.joinUrl)
+            // @todo: Display a toast notification
          } catch (err) {
-            console.error('Failed to copy URL:', err)
+            // @todo: Display a toast notification
          }
       }
    }
@@ -91,7 +92,6 @@ const EventConferenceInput = ({
    const [createGoogleMeet, createGoogleMeetLoading] = useLoading(
       useCallback(async () => {
          if (!accountEmail) {
-            console.error('No account email provided for Meet creation')
             return
          }
 

@@ -5,7 +5,6 @@ const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
 const User = require('../../models/UserModel')
-const Page = require('../../models/PageModel')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const {
@@ -255,7 +254,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
       const user = await User.findById(req.user.id)
       const refreshToken = user.google_accounts.find(
          (acc) => acc.account_email === accountEmail
-      ).refresh_token
+      )?.refresh_token
 
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
@@ -438,7 +437,6 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
          })
       } catch (err) {
          // Event might already be deleted
-         console.log('Event not found, might already be deleted')
       }
 
       // Delete the event

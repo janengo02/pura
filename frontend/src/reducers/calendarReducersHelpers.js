@@ -1344,7 +1344,6 @@ export const syncTaskScheduleSlot = ({
       formattedAccount,
       syncedTaskInfo
    )
-   console.log(enhancedEvent)
 
    // Remove existing task event and add the new synced event
    const updatedEvents = googleEvents

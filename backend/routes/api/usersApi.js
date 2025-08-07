@@ -250,7 +250,6 @@ router.post(
             { expiresIn: 36000 },
             (err, token) => {
                if (err) {
-                  console.error('JWT signing error:', err)
                   return sendErrorResponse(
                      res,
                      500,
@@ -267,7 +266,6 @@ router.post(
             }
          )
       } catch (err) {
-         console.error('Registration error:', err.message)
          sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
       }
    }

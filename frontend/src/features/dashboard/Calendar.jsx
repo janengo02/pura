@@ -241,61 +241,57 @@ const Calendar = React.memo(
       // Handle event drag and drop
       const onEventDrop = useCallback(
          async ({ event, start, end }) => {
-            try {
-               // Set seconds and milliseconds to 0 for consistency
-               const newStartTime = new Date(start)
-               const newEndTime = new Date(end)
-               newStartTime.setSeconds(0, 0)
-               newEndTime.setSeconds(0, 0)
+            // Set seconds and milliseconds to 0 for consistency
+            const newStartTime = new Date(start)
+            const newEndTime = new Date(end)
+            newStartTime.setSeconds(0, 0)
+            newEndTime.setSeconds(0, 0)
 
-               if (event.eventType === 'task') {
-                  // Check if this is the current task being viewed
-                  const isCurrentTask =
-                     currentTaskId && currentTaskId === event.pura_task_id
+            if (event.eventType === 'task') {
+               // Check if this is the current task being viewed
+               const isCurrentTask =
+                  currentTaskId && currentTaskId === event.pura_task_id
 
-                  // Update task schedule slot for task events
-                  await updateTaskScheduleAction({
-                     page_id: pageId,
-                     task_id: event.pura_task_id,
-                     slot_index: event.pura_schedule_index,
-                     start: newStartTime.toISOString(),
-                     end: newEndTime.toISOString(),
-                     ...(isCurrentTask && {
-                        task_detail_flg: true,
-                        target_event_index: event.pura_schedule_index
-                     })
+               // Update task schedule slot for task events
+               await updateTaskScheduleAction({
+                  page_id: pageId,
+                  task_id: event.pura_task_id,
+                  slot_index: event.pura_schedule_index,
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString(),
+                  ...(isCurrentTask && {
+                     task_detail_flg: true,
+                     target_event_index: event.pura_schedule_index
                   })
-               } else if (
-                  event.eventType === 'google' ||
-                  event.eventType === 'synced'
-               ) {
-                  // Check if this is a synced event with current task
-                  const isSyncedCurrentTask =
-                     event.eventType === 'synced' &&
-                     currentTaskId &&
-                     currentTaskId === event.pura_task_id
+               })
+            } else if (
+               event.eventType === 'google' ||
+               event.eventType === 'synced'
+            ) {
+               // Check if this is a synced event with current task
+               const isSyncedCurrentTask =
+                  event.eventType === 'synced' &&
+                  currentTaskId &&
+                  currentTaskId === event.pura_task_id
 
-                  // Update Google Calendar event
-                  const updateData = {
-                     eventId: event.id,
-                     calendarId: event.calendarId,
-                     originalCalendarId: event.calendarId,
-                     accountEmail: event.accountEmail,
-                     start: newStartTime.toISOString(),
-                     end: newEndTime.toISOString(),
-                     task_id: event.pura_task_id,
-                     slot_index: event.pura_schedule_index,
-                     // Add task detail parameters for synced events
-                     ...(isSyncedCurrentTask && {
-                        task_detail_flg: true,
-                        target_event_index: event.pura_schedule_index
-                     })
-                  }
-
-                  await updateGoogleEventTimeAction(updateData)
+               // Update Google Calendar event
+               const updateData = {
+                  eventId: event.id,
+                  calendarId: event.calendarId,
+                  originalCalendarId: event.calendarId,
+                  accountEmail: event.accountEmail,
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString(),
+                  task_id: event.pura_task_id,
+                  slot_index: event.pura_schedule_index,
+                  // Add task detail parameters for synced events
+                  ...(isSyncedCurrentTask && {
+                     task_detail_flg: true,
+                     target_event_index: event.pura_schedule_index
+                  })
                }
-            } catch (error) {
-               console.error('Failed to update event:', error)
+
+               await updateGoogleEventTimeAction(updateData)
             }
          },
          [
@@ -309,60 +305,56 @@ const Calendar = React.memo(
       // Handle event resize
       const onEventResize = useCallback(
          async ({ event, start, end }) => {
-            try {
-               // Set seconds and milliseconds to 0 for consistency
-               const newStartTime = new Date(start)
-               const newEndTime = new Date(end)
-               newStartTime.setSeconds(0, 0)
-               newEndTime.setSeconds(0, 0)
+            // Set seconds and milliseconds to 0 for consistency
+            const newStartTime = new Date(start)
+            const newEndTime = new Date(end)
+            newStartTime.setSeconds(0, 0)
+            newEndTime.setSeconds(0, 0)
 
-               if (event.eventType === 'task') {
-                  // Check if this is the current task being viewed
-                  const isCurrentTask =
-                     currentTaskId && currentTaskId === event.pura_task_id
+            if (event.eventType === 'task') {
+               // Check if this is the current task being viewed
+               const isCurrentTask =
+                  currentTaskId && currentTaskId === event.pura_task_id
 
-                  // Update task schedule slot for task events
-                  await updateTaskScheduleAction({
-                     page_id: pageId,
-                     task_id: event.pura_task_id,
-                     slot_index: event.pura_schedule_index,
-                     start: newStartTime.toISOString(),
-                     end: newEndTime.toISOString(),
-                     ...(isCurrentTask && {
-                        task_detail_flg: true,
-                        target_event_index: event.pura_schedule_index
-                     })
+               // Update task schedule slot for task events
+               await updateTaskScheduleAction({
+                  page_id: pageId,
+                  task_id: event.pura_task_id,
+                  slot_index: event.pura_schedule_index,
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString(),
+                  ...(isCurrentTask && {
+                     task_detail_flg: true,
+                     target_event_index: event.pura_schedule_index
                   })
-               } else if (
-                  event.eventType === 'google' ||
-                  event.eventType === 'synced'
-               ) {
-                  // Check if this is a synced event with current task
-                  const isSyncedCurrentTask =
-                     event.eventType === 'synced' &&
-                     currentTaskId &&
-                     currentTaskId === event.pura_task_id
-                  // Update Google Calendar event
-                  const updateData = {
-                     eventId: event.id,
-                     calendarId: event.calendarId,
-                     originalCalendarId: event.calendarId,
-                     accountEmail: event.accountEmail,
-                     start: newStartTime.toISOString(),
-                     end: newEndTime.toISOString(),
-                     task_id: event.pura_task_id,
-                     slot_index: event.pura_schedule_index,
-                     // Add task detail parameters for synced events
-                     ...(isSyncedCurrentTask && {
-                        task_detail_flg: true,
-                        target_event_index: event.pura_schedule_index
-                     })
-                  }
-
-                  await updateGoogleEventTimeAction(updateData)
+               })
+            } else if (
+               event.eventType === 'google' ||
+               event.eventType === 'synced'
+            ) {
+               // Check if this is a synced event with current task
+               const isSyncedCurrentTask =
+                  event.eventType === 'synced' &&
+                  currentTaskId &&
+                  currentTaskId === event.pura_task_id
+               // Update Google Calendar event
+               const updateData = {
+                  eventId: event.id,
+                  calendarId: event.calendarId,
+                  originalCalendarId: event.calendarId,
+                  accountEmail: event.accountEmail,
+                  start: newStartTime.toISOString(),
+                  end: newEndTime.toISOString(),
+                  task_id: event.pura_task_id,
+                  slot_index: event.pura_schedule_index,
+                  // Add task detail parameters for synced events
+                  ...(isSyncedCurrentTask && {
+                     task_detail_flg: true,
+                     target_event_index: event.pura_schedule_index
+                  })
                }
-            } catch (error) {
-               console.error('Failed to resize event:', error)
+
+               await updateGoogleEventTimeAction(updateData)
             }
          },
          [

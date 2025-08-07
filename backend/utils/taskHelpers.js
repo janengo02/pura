@@ -205,11 +205,9 @@ const syncTaskSlotWithGoogle = async (
 
          return { success: true, event: event.data || event }
       } catch (err) {
-         console.error(`Error syncing slot ${slot}:`, err)
          return { success: false, error: err.message }
       }
    } catch (err) {
-      console.error('Error syncing task slot:', err)
       return { success: false, error: err.message }
    }
 }
@@ -266,12 +264,12 @@ const deleteGoogleEventsForRemovedSlots = async (
                   eventId: slot.google_event_id
                })
             } catch (err) {
-               console.error('Error deleting Google event:', err)
+               // Event might not exist or already deleted
             }
          }
       }
    } catch (err) {
-      console.error('Error deleting Google events:', err)
+      // Event might not exist or already deleted
    }
 }
 
@@ -350,7 +348,6 @@ const updateTaskFromGoogleEvent = async (
 
       return { success: true, task }
    } catch (err) {
-      console.error('Error updating task from Google event:', err)
       return { success: false, error: err.message }
    }
 }
@@ -914,7 +911,6 @@ const syncTaskSlotWithGoogleHelper = async (
          event: result.event
       }
    } catch (err) {
-      console.error('Error syncing task slot with Google:', err)
       return { success: false, error: err.message, statusCode: 500 }
    }
 }

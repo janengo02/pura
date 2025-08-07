@@ -9,7 +9,7 @@
  */
 const sendErrorResponse = (res, code, title, msg, error = null) => {
    if (error) {
-      console.error('---ERROR---:', error.message || error)
+      // @todo: Implement proper logging mechanism
       if (error.kind === 'ObjectId') {
          res.status(404).json({
             errors: [

@@ -120,7 +120,6 @@ router.post('/create-space', auth, async (req, res) => {
          updateTime: new Date().toISOString()
       })
    } catch (err) {
-      console.error('Error creating Google Meet space:', err)
       sendErrorResponse(
          res,
          500,
@@ -174,7 +173,6 @@ router.get('/space/:spaceId', auth, async (req, res) => {
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {
-      console.error('Error getting Google Meet space:', err)
       sendErrorResponse(
          res,
          500,
@@ -228,8 +226,6 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {
-      console.error('Error updating Google Meet space:', err)
-
       if (err.code === 404) {
          return sendErrorResponse(
             res,
@@ -287,8 +283,6 @@ router.delete('/space/:spaceId', auth, async (req, res) => {
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {
-      console.error('Error ending Google Meet space:', err)
-
       if (err.code === 404) {
          return sendErrorResponse(
             res,
