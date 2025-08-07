@@ -29,7 +29,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      return sendErrorResponse(res, 404, 'page', 'access')
    }
    //   Validation: Form input
    const result = validationResult(req)
@@ -68,13 +68,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 
       res.json({ progress: progress })
    } catch (error) {
-      return sendErrorResponse(
-         res,
-         500,
-         'alert-oops',
-         'alert-server_error',
-         error
-      )
+      return sendErrorResponse(res, 500, 'progress', 'create', error)
    }
 })
 
@@ -90,7 +84,7 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      return sendErrorResponse(res, 404, 'page', 'access')
    }
 
    //   Validation: Form input
@@ -102,12 +96,7 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    //   Validation: Check if progress exists
    const progress = await validateProgress(req.params.progress_id)
    if (!progress) {
-      return sendErrorResponse(
-         res,
-         404,
-         'alert-oops',
-         'alert-progress-notfound'
-      )
+      return sendErrorResponse(res, 404, 'progress', 'access')
    }
    //   Prepare: Set up new progress
    const { title, title_color, color } = req.body
@@ -129,13 +118,7 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
 
       res.json()
    } catch (error) {
-      return sendErrorResponse(
-         res,
-         500,
-         'alert-oops',
-         'alert-server_error',
-         error
-      )
+      return sendErrorResponse(res, 500, 'progress', 'update', error)
    }
 })
 
@@ -151,18 +134,13 @@ router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
 
       //   Validation: Check if progress exists
       const progress = await validateProgress(req.params.progress_id)
       if (!progress) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-progress-notfound'
-         )
+         return sendErrorResponse(res, 404, 'progress', 'access')
       }
       //   Prepare: Set up new tasks array & task_map
       const {
@@ -196,13 +174,7 @@ router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
       await page.save()
       res.json()
    } catch (error) {
-      return sendErrorResponse(
-         res,
-         500,
-         'alert-oops',
-         'alert-server_error',
-         error
-      )
+      return sendErrorResponse(res, 500, 'progress', 'delete', error)
    }
 })
 

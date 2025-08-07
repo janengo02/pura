@@ -34,25 +34,20 @@ router.get('/:page_id/:task_id', auth, async (req, res) => {
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Page not found or unauthorized'
-         )
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
 
       //   Validation: Check if task exists
       const task = await Task.findById(req.params.task_id)
       if (!task) {
-         return sendErrorResponse(res, 404, 'alert-oops', 'Task not found')
+         return sendErrorResponse(res, 404, 'task', 'access')
       }
 
       // Use the enhanced formatTaskResponse with sync status calculation
       const response = await formatTaskResponse(task, page, req.user.id)
       res.json(response.task)
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'task', 'access', err)
    }
 })
 /**
@@ -74,12 +69,7 @@ router.post(
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-page-notfound or unauthorized'
-         )
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
       //   Validation: Form input
       const result = validationResult(req)
@@ -97,13 +87,11 @@ router.post(
       const groupId = page.group_order.indexOf(group_id)
       const progressId = page.progress_order.indexOf(progress_id)
       //   Validation: Check if group and progress exist
-      if (groupId === -1 || progressId === -1) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-group_progress-notfound'
-         )
+      if (groupId === -1) {
+         return sendErrorResponse(res, 404, 'group', 'access')
+      }
+      if (progressId === -1) {
+         return sendErrorResponse(res, 404, 'progress', 'access')
       }
       const taskMapIndex = groupId * page.progress_order.length + progressId
       let newTaskMap = page.task_map.slice()
@@ -135,7 +123,7 @@ router.post(
 
          res.json({ task: task })
       } catch (error) {
-         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
+         sendErrorResponse(res, 500, 'task', 'create', error)
       }
    }
 )
@@ -162,12 +150,7 @@ router.post('/sync-google-event', auth, async (req, res) => {
       )
 
       if (!result.success) {
-         return sendErrorResponse(
-            res,
-            result.statusCode || 500,
-            'alert-oops',
-            result.message
-         )
+         throw new Error(result.message)
       }
 
       // Use the enhanced formatTaskResponse with sync status calculation
@@ -181,7 +164,7 @@ router.post('/sync-google-event', auth, async (req, res) => {
          event: result.event
       })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -198,12 +181,7 @@ router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
       // Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Page not found or unauthorized'
-         )
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
 
       const { title, content } = req.body
@@ -218,12 +196,7 @@ router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
       )
 
       if (!result.success) {
-         return sendErrorResponse(
-            res,
-            result.statusCode || 500,
-            'alert-oops',
-            result.message
-         )
+         throw new Error(result.message)
       }
 
       const response = await formatTaskResponse(
@@ -233,7 +206,7 @@ router.put('/basic/:page_id/:task_id', auth, async (req, res) => {
       )
       res.json(response)
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'task', 'update', err)
    }
 })
 
@@ -250,22 +223,12 @@ router.put('/move/:page_id/:task_id', auth, async (req, res) => {
       // Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Page not found or unauthorized'
-         )
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
 
       const { group_id, progress_id } = req.body
       if (!group_id && !progress_id) {
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'Either group_id or progress_id is required'
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       const result = await moveTask(req.params.task_id, req.params.page_id, {
@@ -274,12 +237,7 @@ router.put('/move/:page_id/:task_id', auth, async (req, res) => {
       })
 
       if (!result.success) {
-         return sendErrorResponse(
-            res,
-            result.statusCode || 500,
-            'alert-oops',
-            result.message
-         )
+         throw new Error(result.message)
       }
 
       const response = await formatTaskResponse(
@@ -289,7 +247,7 @@ router.put('/move/:page_id/:task_id', auth, async (req, res) => {
       )
       res.json(response)
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'task', 'move', err)
    }
 })
 
@@ -309,32 +267,17 @@ router.put(
          // Validation: Check if page exists and user is the owner
          const page = await validatePage(req.params.page_id, req.user.id)
          if (!page) {
-            return sendErrorResponse(
-               res,
-               404,
-               'alert-oops',
-               'Page not found or unauthorized'
-            )
+            return sendErrorResponse(res, 404, 'page', 'access')
          }
 
          const slotIndex = parseInt(req.params.slot_index)
          if (isNaN(slotIndex)) {
-            return sendErrorResponse(
-               res,
-               400,
-               'alert-oops',
-               'Invalid slot index'
-            )
+            return sendErrorResponse(res, 400, 'validation', 'failed')
          }
 
          const { start, end } = req.body
          if (!start && !end) {
-            return sendErrorResponse(
-               res,
-               400,
-               'alert-oops',
-               'Either start or end time is required'
-            )
+            return sendErrorResponse(res, 400, 'validation', 'failed')
          }
 
          const result = await updateTaskSchedule(
@@ -345,12 +288,7 @@ router.put(
          )
 
          if (!result.success) {
-            return sendErrorResponse(
-               res,
-               result.statusCode || 500,
-               'alert-oops',
-               result.message
-            )
+            throw new Error(result.message)
          }
 
          const response = await formatTaskResponse(
@@ -360,7 +298,7 @@ router.put(
          )
          res.json(response)
       } catch (err) {
-         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+         sendErrorResponse(res, 500, 'schedule', 'update', err)
       }
    }
 )
@@ -378,22 +316,12 @@ router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
       // Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.page_id, req.user.id)
       if (!page) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Page not found or unauthorized'
-         )
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
 
       const { start, end } = req.body
       if (!start || !end) {
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'Both start and end times are required'
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       const result = await addTaskScheduleSlot(
@@ -406,12 +334,7 @@ router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
       )
 
       if (!result.success) {
-         return sendErrorResponse(
-            res,
-            result.statusCode || 500,
-            'alert-oops',
-            result.message
-         )
+         throw new Error(result.message)
       }
 
       const response = await formatTaskResponse(
@@ -421,7 +344,7 @@ router.post('/schedule/:page_id/:task_id', auth, async (req, res) => {
       )
       res.json({ ...response, newSlotIndex: result.newSlotIndex })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'schedule', 'create', err)
    }
 })
 
@@ -440,22 +363,12 @@ router.delete(
          // Validation: Check if page exists and user is the owner
          const page = await validatePage(req.params.page_id, req.user.id)
          if (!page) {
-            return sendErrorResponse(
-               res,
-               404,
-               'alert-oops',
-               'Page not found or unauthorized'
-            )
+            return sendErrorResponse(res, 404, 'page', 'access')
          }
 
          const slotIndex = parseInt(req.params.slot_index)
          if (isNaN(slotIndex)) {
-            return sendErrorResponse(
-               res,
-               400,
-               'alert-oops',
-               'Invalid slot index'
-            )
+            return sendErrorResponse(res, 400, 'validation', 'failed')
          }
 
          const result = await removeTaskScheduleSlot(
@@ -466,12 +379,7 @@ router.delete(
          )
 
          if (!result.success) {
-            return sendErrorResponse(
-               res,
-               result.statusCode || 500,
-               'alert-oops',
-               result.message
-            )
+            throw new Error(result.message)
          }
 
          const response = await formatTaskResponse(
@@ -481,7 +389,7 @@ router.delete(
          )
          res.json(response)
       } catch (err) {
-         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+         sendErrorResponse(res, 500, 'schedule', 'delete', err)
       }
    }
 )
@@ -498,18 +406,13 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.page_id, req.user.id)
    if (!page) {
-      return sendErrorResponse(
-         res,
-         404,
-         'alert-oops',
-         'Page not found or unauthorized'
-      )
+      return sendErrorResponse(res, 404, 'page', 'access')
    }
 
    //   Validation: Check if task exists
    const task = await Task.findById(task_id)
    if (!task) {
-      return sendErrorResponse(res, 404, 'alert-oops', 'alert-task-notfound')
+      return sendErrorResponse(res, 404, 'task', 'access')
    }
 
    // Delete associated Google Calendar events
@@ -536,7 +439,7 @@ router.delete('/:page_id/:task_id', [auth], async (req, res) => {
       await page.save()
       res.json()
    } catch (error) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
+      sendErrorResponse(res, 500, 'task', 'delete', error)
    }
 })
 module.exports = router

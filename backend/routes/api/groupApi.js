@@ -25,18 +25,11 @@ const { createGroup, deleteGroup } = require('../../../shared/utils')
 router.post('/new/:page_id', [auth], async (req, res) => {
    try {
       const page = await validatePage(req.params.page_id, req.user.id)
-      if (!page)
-         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      if (!page) return sendErrorResponse(res, 404, 'page', 'access')
 
       const result = validationResult(req)
       if (!result.isEmpty())
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'alert-validation-error',
-            result.array()
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
 
       const newGroup = prepareGroupData(req.body)
       const { task_map: newTaskMap } = createGroup({
@@ -61,7 +54,7 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 
       res.json({ group: group })
    } catch (error) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
+      sendErrorResponse(res, 500, 'group', 'create', error)
    }
 })
 
@@ -76,27 +69,14 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
    try {
       const page = await validatePage(req.params.page_id, req.user.id)
-      if (!page)
-         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      if (!page) return sendErrorResponse(res, 404, 'page', 'access')
 
       const group = await validateGroup(req.params.group_id)
-      if (!group)
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-group-notfound'
-         )
+      if (!group) return sendErrorResponse(res, 404, 'group', 'access')
 
       const result = validationResult(req)
       if (!result.isEmpty())
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'alert-validation-error',
-            result.array()
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
 
       const { title, color } = req.body
       group.update_date = new Date()
@@ -113,7 +93,7 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
 
       res.json()
    } catch (error) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
+      sendErrorResponse(res, 500, 'group', 'update', error)
    }
 })
 
@@ -127,17 +107,10 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
 router.delete('/:page_id/:group_id', [auth], async (req, res) => {
    try {
       const page = await validatePage(req.params.page_id, req.user.id)
-      if (!page)
-         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      if (!page) return sendErrorResponse(res, 404, 'page', 'access')
 
       const group = await validateGroup(req.params.group_id)
-      if (!group)
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'alert-group-notfound'
-         )
+      if (!group) return sendErrorResponse(res, 404, 'group', 'access')
 
       const {
          group_order: newGroupOrder,
@@ -169,7 +142,7 @@ router.delete('/:page_id/:group_id', [auth], async (req, res) => {
 
       res.json()
    } catch (error) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
+      sendErrorResponse(res, 500, 'group', 'delete', error)
    }
 })
 

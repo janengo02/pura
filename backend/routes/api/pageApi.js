@@ -32,7 +32,7 @@ router.get('/', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule', 'content'])
       res.json(page)
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'page', 'access', err)
    }
 })
 
@@ -47,7 +47,7 @@ router.get('/:id', auth, async (req, res) => {
    try {
       const page = await validatePage(req.params.id, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
       await page
          .populate('progress_order', [
@@ -60,7 +60,7 @@ router.get('/:id', auth, async (req, res) => {
          .populate('tasks', ['title', 'schedule', 'content'])
       res.json(page)
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'page', 'access', err)
    }
 })
 
@@ -75,13 +75,7 @@ router.post('/', [auth], async (req, res) => {
    //   Validation: Form input
    const result = validationResult(req)
    if (!result.isEmpty()) {
-      return sendErrorResponse(
-         res,
-         400,
-         'alert-oops',
-         'alert-validation-error',
-         result.array()
-      )
+      return sendErrorResponse(res, 400, 'validation', 'failed')
    }
 
    //   Prepare: Set up new page
@@ -102,7 +96,7 @@ router.post('/', [auth], async (req, res) => {
 
       res.json(page)
    } catch (error) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', error)
+      sendErrorResponse(res, 500, 'page', 'create', error)
    }
 })
 
@@ -118,7 +112,7 @@ router.post('/move-task/:id', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
    const page = await validatePage(req.params.id, req.user.id)
    if (!page) {
-      return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      return sendErrorResponse(res, 404, 'page', 'access')
    }
    const { destination, source, draggableId } = req.body.result
 
@@ -153,7 +147,7 @@ router.post('/move-task/:id', [auth], async (req, res) => {
       await newPage.save()
       res.json()
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'page', 'update', err)
    }
 })
 module.exports = router

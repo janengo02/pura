@@ -20,7 +20,8 @@ import {
    Spinner,
    Spacer,
    Box,
-   VStack
+   VStack,
+   HStack
 } from '@chakra-ui/react'
 
 // Internal Components
@@ -63,19 +64,28 @@ const ToastItem = React.memo(({ alert, onRemove }) => {
    const toastContent = useMemo(() => {
       if (alert.alertType === 'loading') {
          return (
-            <Alert {...TOAST_STYLES} bg='bg.surface'>
+            <Alert {...TOAST_STYLES}>
                <Spinner size='md' marginInlineEnd={3} />
-               <AlertTitle>{t(alert.title)}</AlertTitle>
-               <AlertDescription>{t(alert.msg)}</AlertDescription>
+               <VStack>
+                  <AlertTitle>{t(alert.title)}</AlertTitle>
+                  <AlertDescription>{t(alert.msg)}</AlertDescription>
+               </VStack>
             </Alert>
          )
       }
 
       return (
-         <Alert status={alert.alertType} {...TOAST_STYLES}>
+         <Alert
+            status={alert.alertType}
+            {...TOAST_STYLES}
+            alignItems='flex-start'
+         >
             <AlertIcon />
-            <AlertTitle>{t(alert.title)}</AlertTitle>
-            <AlertDescription>{t(alert.msg)}</AlertDescription>
+            <VStack align='flex-start'>
+               <AlertTitle>{t(alert.title)}</AlertTitle>
+               <AlertDescription>{t(alert.msg)}</AlertDescription>
+            </VStack>
+
             <Spacer />
             <CloseButton
                onClick={(e) => {

@@ -23,12 +23,7 @@ router.post('/create-space', auth, async (req, res) => {
       const { accountEmail, config = {} } = req.body
 
       if (!accountEmail) {
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'Account email is required'
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       // Note: Config validation removed since we're using Calendar API approach
@@ -39,12 +34,7 @@ router.post('/create-space', auth, async (req, res) => {
       )
 
       if (!account) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Google account not found'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       // Use Google Calendar API to create Meet link (since google.meet API is not available)
@@ -101,12 +91,7 @@ router.post('/create-space', auth, async (req, res) => {
       })
 
       if (!meetUri) {
-         return sendErrorResponse(
-            res,
-            500,
-            'alert-oops',
-            'Failed to generate Google Meet URI'
-         )
+         return sendErrorResponse(res, 500, 'google', 'sync')
       }
 
       res.json({
@@ -120,12 +105,7 @@ router.post('/create-space', auth, async (req, res) => {
          updateTime: new Date().toISOString()
       })
    } catch (err) {
-      sendErrorResponse(
-         res,
-         500,
-         'alert-oops',
-         'Failed to create Google Meet space'
-      )
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -143,12 +123,7 @@ router.get('/space/:spaceId', auth, async (req, res) => {
       const { accountEmail } = req.query
 
       if (!accountEmail) {
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'Account email is required'
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       const user = await User.findById(req.user.id)
@@ -157,12 +132,7 @@ router.get('/space/:spaceId', auth, async (req, res) => {
       )
 
       if (!account) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Google account not found'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       // Since Google Meet API v2 is not available, return a message
@@ -173,12 +143,7 @@ router.get('/space/:spaceId', auth, async (req, res) => {
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {
-      sendErrorResponse(
-         res,
-         500,
-         'alert-oops',
-         'Failed to get Google Meet space'
-      )
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -196,12 +161,7 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
       const { accountEmail, config } = req.body
 
       if (!accountEmail) {
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'Account email is required'
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       const user = await User.findById(req.user.id)
@@ -210,12 +170,7 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
       )
 
       if (!account) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Google account not found'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       // Since Google Meet API v2 is not available, return a message
@@ -227,15 +182,10 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
       })
    } catch (err) {
       if (err.code === 404) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Google Meet space not found'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -253,12 +203,7 @@ router.delete('/space/:spaceId', auth, async (req, res) => {
       const { accountEmail } = req.body
 
       if (!accountEmail) {
-         return sendErrorResponse(
-            res,
-            400,
-            'alert-oops',
-            'Account email is required'
-         )
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       const user = await User.findById(req.user.id)
@@ -267,12 +212,7 @@ router.delete('/space/:spaceId', auth, async (req, res) => {
       )
 
       if (!account) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Google account not found'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       // Since Google Meet API v2 is not available, return a message
@@ -284,15 +224,10 @@ router.delete('/space/:spaceId', auth, async (req, res) => {
       })
    } catch (err) {
       if (err.code === 404) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'Google Meet space not found'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 

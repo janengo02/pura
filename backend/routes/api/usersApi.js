@@ -180,7 +180,7 @@ router.post(
       // Validate form input
       const result = validationResult(req)
       if (!result.isEmpty()) {
-         return sendErrorResponse(res, 400, 'alert-oops', result.array()[0].msg)
+         return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
       // Extract data with language defaulting to English
@@ -189,7 +189,7 @@ router.post(
       // Check if user already exists
       let user = await User.findOne({ email })
       if (user) {
-         return sendErrorResponse(res, 400, 'alert-oops', 'alert-user-exists')
+         return sendErrorResponse(res, 400, 'auth', 'register')
       }
 
       // -------------------------------------------------------------------------
@@ -250,13 +250,7 @@ router.post(
             { expiresIn: 36000 },
             (err, token) => {
                if (err) {
-                  return sendErrorResponse(
-                     res,
-                     500,
-                     'alert-oops',
-                     'alert-server_error',
-                     err
-                  )
+                  return sendErrorResponse(res, 500, 'auth', 'register', err)
                }
 
                res.json({
@@ -266,7 +260,7 @@ router.post(
             }
          )
       } catch (err) {
-         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+         sendErrorResponse(res, 500, 'auth', 'register', err)
       }
    }
 )

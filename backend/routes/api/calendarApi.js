@@ -55,12 +55,12 @@ router.get('/list-events', auth, async (req, res) => {
       updateGoogleAccountSyncStatus(user, notSyncedAccounts)
       const page = await validatePage(pageId, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+         return sendErrorResponse(res, 404, 'page', 'access')
       }
       await page.populate('tasks', ['title', 'schedule', 'content'])
       res.json({ google_accounts: gAccounts, tasks: page.tasks })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -141,7 +141,7 @@ router.post('/add-account', auth, async (req, res) => {
          calendars: newAccountCalendars
       })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -163,7 +163,7 @@ router.put('/set-default/:account_email', auth, async (req, res) => {
       )
 
       if (!targetAccount) {
-         return sendErrorResponse(res, 404, 'alert-oops', 'Account not found')
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       // Set new default account
@@ -183,7 +183,7 @@ router.put('/set-default/:account_email', auth, async (req, res) => {
          message: 'Default account updated successfully'
       })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -199,12 +199,7 @@ router.get('/default', auth, async (req, res) => {
       const defaultAccount = user.google_accounts.find((acc) => acc.is_default)
 
       if (!defaultAccount) {
-         return sendErrorResponse(
-            res,
-            404,
-            'alert-oops',
-            'No default account set'
-         )
+         return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       res.json({
@@ -214,7 +209,7 @@ router.get('/default', auth, async (req, res) => {
          is_default: defaultAccount.is_default
       })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -402,7 +397,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
 
       res.json({ event: event.data, calendar: updatedCalendar.data })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -436,7 +431,7 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
 
       res.json({ event: { id: eventId, deleted: true } })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 
@@ -460,7 +455,7 @@ router.delete('/disconnect/:account_email', auth, async (req, res) => {
       await user.save()
       res.json({ message: 'Account disconnected' })
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'google', 'sync', err)
    }
 })
 

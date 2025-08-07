@@ -35,10 +35,10 @@ router.get('/', auth, async (req, res) => {
             }))
          })
       } else {
-         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error')
+         throw new Error('User not found')
       }
    } catch (err) {
-      sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+      sendErrorResponse(res, 500, 'auth', 'access', err)
    }
 })
 
@@ -67,22 +67,12 @@ router.post(
          // Check if user exists
          const user = await User.findOne({ email })
          if (!user) {
-            return sendErrorResponse(
-               res,
-               401,
-               'alert-oops',
-               'alert-invalid-email'
-            )
+            return sendErrorResponse(res, 401, 'auth', 'login')
          }
 
          const isMatch = await bcrypt.compare(password, user.password)
          if (!isMatch) {
-            return sendErrorResponse(
-               res,
-               401,
-               'alert-oops',
-               'alert-invalid-password'
-            )
+            return sendErrorResponse(res, 401, 'auth', 'login')
          }
 
          // Return json web token
@@ -93,20 +83,14 @@ router.post(
             { expiresIn: 360000 },
             (err, token) => {
                if (err) {
-                  sendErrorResponse(
-                     res,
-                     500,
-                     'alert-oops',
-                     'alert-server_error',
-                     err
-                  )
+                  throw Error('Token generation failed')
                } else {
                   res.json({ token })
                }
             }
          )
       } catch (err) {
-         sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
+         sendErrorResponse(res, 500, 'auth', 'login', err)
       }
    }
 )
