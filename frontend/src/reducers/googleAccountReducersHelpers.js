@@ -1144,8 +1144,8 @@ export const updateTaskEvents = ({ googleEvents, taskUpdateData }) => {
                   ? taskUpdateData.title
                   : event.title,
             description:
-               taskUpdateData.description !== undefined
-                  ? taskUpdateData.description
+               taskUpdateData.content !== undefined
+                  ? taskUpdateData.content
                   : event.description
          }
       }

@@ -5,12 +5,13 @@
 import {
    SHOW_TASK,
    CLEAR_TASK,
-   UPDATE_TASK,
+   UPDATE_TASK_BASIC,
    UPDATE_TASK_SCHEDULE,
-   ADD_TASK_SCHEDULE_SLOT,
-   SYNC_TASK_SCHEDULE_SLOT,
-   REMOVE_TASK_SCHEDULE_SLOT,
-   MOVE_TASK
+   CREATE_TASK_SCHEDULE,
+   SYNC_TASK_EVENT,
+   DELETE_TASK_SCHEDULE,
+   MOVE_TASK,
+   DELETE_TASK
 } from '../actions/types'
 
 const initialState = {
@@ -27,7 +28,7 @@ function taskReducer(state = initialState, action) {
             task: payload
          }
 
-      case UPDATE_TASK:
+      case UPDATE_TASK_BASIC:
          return {
             ...state,
             task:
@@ -71,7 +72,7 @@ function taskReducer(state = initialState, action) {
                   : state.task
          }
 
-      case ADD_TASK_SCHEDULE_SLOT:
+      case CREATE_TASK_SCHEDULE:
          return {
             ...state,
             task:
@@ -88,7 +89,7 @@ function taskReducer(state = initialState, action) {
                   : state.task
          }
 
-      case SYNC_TASK_SCHEDULE_SLOT:
+      case SYNC_TASK_EVENT:
          return {
             ...state,
             task:
@@ -112,7 +113,7 @@ function taskReducer(state = initialState, action) {
                   : state.task
          }
 
-      case REMOVE_TASK_SCHEDULE_SLOT:
+      case DELETE_TASK_SCHEDULE:
          return {
             ...state,
             task:
@@ -145,6 +146,7 @@ function taskReducer(state = initialState, action) {
          }
 
       case CLEAR_TASK:
+      case DELETE_TASK:
          return {
             ...state,
             task: null

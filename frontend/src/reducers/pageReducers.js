@@ -9,12 +9,12 @@ import {
    UPDATE_GROUP,
    DELETE_GROUP,
    CREATE_TASK,
-   UPDATE_TASK,
+   UPDATE_TASK_BASIC,
    DELETE_TASK,
-   ADD_PAGE_TASK_SCHEDULE_SLOT,
-   REMOVE_PAGE_TASK_SCHEDULE_SLOT,
-   UPDATE_PAGE_TASK_SCHEDULE_SLOT,
-   UPDATE_PAGE_TASK_SYNC_SCHEDULE,
+   CREATE_TASK_SCHEDULE,
+   DELETE_TASK_SCHEDULE,
+   UPDATE_TASK_SCHEDULE,
+   SYNC_TASK_EVENT,
    FILTER_SCHEDULE,
    FILTER_NAME
 } from '../actions/types'
@@ -150,10 +150,7 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...deleteGroup({
-               groupIndex: findGroupIndex(
-                  state.group_order,
-                  payload.group_id
-               ),
+               groupIndex: findGroupIndex(state.group_order, payload.group_id),
                progress_order: state.progress_order,
                group_order: state.group_order,
                tasks: state.tasks,
@@ -175,7 +172,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case UPDATE_TASK:
+      case UPDATE_TASK_BASIC:
          return {
             ...state,
             ...updateTask({
@@ -185,7 +182,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case REMOVE_PAGE_TASK_SCHEDULE_SLOT:
+      case DELETE_TASK_SCHEDULE:
          return {
             ...state,
             ...removePageTaskScheduleSlot({
@@ -195,7 +192,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case ADD_PAGE_TASK_SCHEDULE_SLOT:
+      case CREATE_TASK_SCHEDULE:
          return {
             ...state,
             ...addPageTaskScheduleSlot({
@@ -205,7 +202,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case UPDATE_PAGE_TASK_SCHEDULE_SLOT:
+      case UPDATE_TASK_SCHEDULE:
          return {
             ...state,
             ...updatePageTaskScheduleSlot({
@@ -215,7 +212,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
-      case UPDATE_PAGE_TASK_SYNC_SCHEDULE:
+      case SYNC_TASK_EVENT:
          return {
             ...state,
             ...syncTaskScheduleInPage({

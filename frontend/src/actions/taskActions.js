@@ -6,21 +6,11 @@ import {
    GET_PAGE,
    SHOW_TASK,
    MOVE_TASK,
-   UPDATE_TASK,
+   UPDATE_TASK_BASIC,
    UPDATE_TASK_SCHEDULE,
-   ADD_TASK_SCHEDULE_SLOT,
-   ADD_PAGE_TASK_SCHEDULE_SLOT,
-   SYNC_TASK_SCHEDULE_SLOT,
-   REMOVE_TASK_SCHEDULE_SLOT,
-   REMOVE_PAGE_TASK_SCHEDULE_SLOT,
-   UPDATE_PAGE_TASK_SYNC_SCHEDULE,
-   GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
-   GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
-   GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT,
-   GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
-   GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
-   GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT,
-   UPDATE_PAGE_TASK_SCHEDULE_SLOT
+   CREATE_TASK_SCHEDULE,
+   SYNC_TASK_EVENT,
+   DELETE_TASK_SCHEDULE
 } from './types'
 import {
    pageActionErrorHandler,
@@ -61,23 +51,12 @@ export const createTaskAction = (reqData) => async (dispatch) => {
  * @returns {Function} Redux thunk
  */
 export const deleteTaskAction = (reqData) => async (dispatch) => {
-   // Optimistic update - Page - remove task from state
+   // Optimistic update - Page | Task | Calendar
    dispatch({
       type: DELETE_TASK,
       payload: {
          task_id: reqData.task_id
       }
-   })
-   // Optimistic update - Calendar - remove task events
-   dispatch({
-      type: GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
-      payload: {
-         task_id: reqData.task_id
-      }
-   })
-   // Optimistic update - Task - clear task details
-   dispatch({
-      type: CLEAR_TASK
    })
    try {
       await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
@@ -165,48 +144,21 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/task/sync-google-event', reqData)
 
-      // Check if sync was successful and we have event data
-      if (res.data.event && res.data.event.id) {
-         // Update page tasks array - sync specific schedule slot
-         dispatch({
-            type: UPDATE_PAGE_TASK_SYNC_SCHEDULE,
-            payload: {
-               task_id: reqData.task_id,
-               slot_index: reqData.slot_index,
-               google_event_id: res.data.event.id,
-               calendar_id: reqData.calendar_id,
-               account_email: reqData.account_email,
-               sync_status:
-                  res.data.task.schedule[reqData.slot_index].sync_status
-            }
-         })
-
-         // Update task reducer - sync specific schedule slot
-         dispatch({
-            type: SYNC_TASK_SCHEDULE_SLOT,
-            payload: {
-               task_id: reqData.task_id,
-               slot_index: reqData.slot_index,
-               google_event_id: res.data.event.id,
-               calendar_id: reqData.calendar_id,
-               account_email: reqData.account_email,
-               sync_status:
-                  res.data.task.schedule[reqData.slot_index].sync_status,
-               update_date: res.data.task.update_date
-            }
-         })
-
-         dispatch({
-            type: GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT,
-            payload: {
-               account_email: reqData.account_email,
-               calendar_id: reqData.calendar_id,
-               event: res.data.event,
-               task: res.data.task,
-               slot_index: reqData.slot_index
-            }
-         })
-      }
+      // Update - Page | Task | Calendar
+      dispatch({
+         type: SYNC_TASK_EVENT,
+         payload: {
+            task_id: reqData.task_id,
+            slot_index: reqData.slot_index,
+            google_event_id: res.data.event.id,
+            calendar_id: reqData.calendar_id,
+            account_email: reqData.account_email,
+            sync_status: res.data.task.schedule[reqData.slot_index].sync_status,
+            update_date: res.data.task.update_date,
+            event: res.data.event,
+            task: res.data.task
+         }
+      })
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
@@ -223,23 +175,13 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
  * @returns {Function} Redux thunk
  */
 export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
-   // Optimistic update - Task - update task details in state
+   // Optimistic update - Page | Task | Calendar
    dispatch({
-      type: UPDATE_TASK,
+      type: UPDATE_TASK_BASIC,
       payload: {
          task_id: formData.task_id,
          title: formData.title,
          content: formData.content,
-         update_date: new Date().toISOString()
-      }
-   })
-   // Optimistic update - Calendar - update task and synced event
-   dispatch({
-      type: GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
-      payload: {
-         task_id: formData.task_id,
-         title: formData.title,
-         description: formData.content,
          update_date: new Date().toISOString()
       }
    })
@@ -270,18 +212,16 @@ export const updateTaskBasicInfoAction = (formData) => async (dispatch) => {
  * @returns {Function} Redux thunk
  */
 export const moveTaskAction = (formData) => async (dispatch) => {
-   // Optimistic update - Task - update task details in state
-   if (formData.task_detail_flg) {
-      dispatch({
-         type: MOVE_TASK,
-         payload: {
-            task_id: formData.task_id,
-            group: formData.group,
-            progress: formData.progress,
-            update_date: new Date().toISOString()
-         }
-      })
-   }
+   // Optimistic update - Task
+   dispatch({
+      type: MOVE_TASK,
+      payload: {
+         task_id: formData.task_id,
+         group: formData.group,
+         progress: formData.progress,
+         update_date: new Date().toISOString()
+      }
+   })
 
    try {
       const res = await api.put(
@@ -291,7 +231,6 @@ export const moveTaskAction = (formData) => async (dispatch) => {
             progress_id: formData.progress?._id
          }
       )
-
       dispatch({
          type: GET_PAGE,
          payload: res.data.page
@@ -319,39 +258,16 @@ export const moveTaskAction = (formData) => async (dispatch) => {
  * @returns {Function} Redux thunk
  */
 export const updateTaskScheduleAction = (formData) => async (dispatch) => {
-   // Optimistic update - Task - update task details in state
-   if (formData.task_detail_flg) {
-      dispatch({
-         type: UPDATE_TASK_SCHEDULE,
-         payload: {
-            task_id: formData.task_id,
-            slot_index: formData.slot_index,
-            start: formData.start,
-            end: formData.end,
-            update_date: new Date().toISOString(),
-            target_event_index: formData.target_event_index
-         }
-      })
-   }
-   // Optimistic update - Page - update task schedule in tasks array for synced events
+   // Optimistic update - Page | Task | Calendar
    dispatch({
-      type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
+      type: UPDATE_TASK_SCHEDULE,
       payload: {
          task_id: formData.task_id,
          slot_index: formData.slot_index,
          start: formData.start,
          end: formData.end,
-         update_date: new Date().toISOString()
-      }
-   })
-   // Optimistic update - Calendar - update task and synced schedule
-   dispatch({
-      type: GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
-      payload: {
-         task_id: formData.task_id,
-         slot_index: formData.slot_index,
-         start: formData.start,
-         end: formData.end
+         update_date: new Date().toISOString(),
+         target_event_index: formData.target_event_index
       }
    })
    try {
@@ -394,37 +310,16 @@ export const addTaskScheduleSlotAction = (formData) => async (dispatch) => {
       }
       const newSlotIndex = formData.slot_index
 
-      // Optimistic update - Page - add new schedule slot to tasks array
+      // Optimistic update - Page | Task
       dispatch({
-         type: ADD_PAGE_TASK_SCHEDULE_SLOT,
-         payload: {
-            task_id: formData.task_id,
-            newSlot: newSlot,
-            update_date: new Date().toISOString()
-         }
-      })
-
-      // Optimistic update - Task - add new schedule slot if task detail is shown
-      if (formData.task_detail_flg) {
-         dispatch({
-            type: ADD_TASK_SCHEDULE_SLOT,
-            payload: {
-               task_id: formData.task_id,
-               newSlot: newSlot,
-               update_date: new Date().toISOString()
-            }
-         })
-      }
-
-      // Optimistic update - Calendar - add new task schedule slot event
-      dispatch({
-         type: GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT,
+         type: CREATE_TASK_SCHEDULE,
          payload: {
             task_id: formData.task_id,
             taskTitle: formData.task_title,
             taskContent: formData.task_content,
             newSlot: newSlot,
-            newSlotIndex: newSlotIndex
+            newSlotIndex: newSlotIndex,
+            update_date: new Date().toISOString()
          }
       })
 
@@ -452,30 +347,13 @@ export const addTaskScheduleSlotAction = (formData) => async (dispatch) => {
  * @returns {Function} Redux thunk
  */
 export const removeTaskScheduleSlotAction = (formData) => async (dispatch) => {
-   // Optimistic update - Page - recalculate task schedule
+   // Optimistic update - Page | Task | Calendar
    dispatch({
-      type: REMOVE_PAGE_TASK_SCHEDULE_SLOT,
+      type: DELETE_TASK_SCHEDULE,
       payload: {
          task_id: formData.task_id,
          slot_index: formData.slot_index,
          update_date: new Date().toISOString()
-      }
-   })
-   // Optimistic update - Task - remove schedule slot
-   dispatch({
-      type: REMOVE_TASK_SCHEDULE_SLOT,
-      payload: {
-         task_id: formData.task_id,
-         slot_index: formData.slot_index,
-         update_date: new Date().toISOString()
-      }
-   })
-   // Optimistic update - Calendar - remove task and synced schedule slot
-   dispatch({
-      type: GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
-      payload: {
-         task_id: formData.task_id,
-         slot_index: formData.slot_index
       }
    })
 

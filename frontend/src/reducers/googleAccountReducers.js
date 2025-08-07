@@ -1,22 +1,22 @@
 import {
-   GOOGLE_CALENDAR_LOADED,
-   GOOGLE_CALENDAR_AUTH_ERROR,
-   GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY,
-   GOOGLE_CALENDAR_UPDATE_EVENT,
-   GOOGLE_CALENDAR_UPDATE_EVENT_TIME,
-   GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
-   GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
-   GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT,
-   GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
-   GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
-   GOOGLE_CALENDAR_ADD_EVENT,
-   GOOGLE_CALENDAR_ADD_ACCOUNT,
-   GOOGLE_CALENDAR_REMOVE_ACCOUNT,
-   GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
-   GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT,
-   GOOGLE_CALENDAR_DELETE_EVENT,
-   GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT,
-   CALENDAR_CHANGE_RANGE
+   GET_CALENDAR,
+   CALENDAR_AUTH_ERROR,
+   UPDATE_CALENDAR_VISIBILITY,
+   UPDATE_CALENDAR_EVENT,
+   UPDATE_CALENDAR_EVENT_TIME,
+   UPDATE_TASK_BASIC,
+   UPDATE_TASK_SCHEDULE,
+   CREATE_TASK_SCHEDULE,
+   DELETE_TASK_SCHEDULE,
+   DELETE_TASK,
+   CREATE_CALENDAR_EVENT,
+   ADD_CALENDAR_ACCOUNT,
+   REMOVE_CALENDAR_ACCOUNT,
+   SET_CALENDAR_DEFAULT_ACCOUNT,
+   GET_CALENDAR_DEFAULT_ACCOUNT,
+   DELETE_CALENDAR_EVENT,
+   SYNC_TASK_EVENT,
+   UPDATE_CALENDAR_RANGE
 } from '../actions/types'
 import {
    addGoogleAccount,
@@ -50,12 +50,12 @@ const initialState = {
 function googleAccountReducer(state = initialState, action) {
    const { type, payload } = action
    switch (type) {
-      case CALENDAR_CHANGE_RANGE:
+      case UPDATE_CALENDAR_RANGE:
          return {
             ...state,
             range: payload.range
          }
-      case GOOGLE_CALENDAR_ADD_ACCOUNT:
+      case ADD_CALENDAR_ACCOUNT:
          return {
             ...state,
             isLoggedIn: true,
@@ -67,7 +67,7 @@ function googleAccountReducer(state = initialState, action) {
             }),
             loading: false
          }
-      case GOOGLE_CALENDAR_REMOVE_ACCOUNT:
+      case REMOVE_CALENDAR_ACCOUNT:
          return {
             ...state,
             isLoggedIn: true,
@@ -80,7 +80,7 @@ function googleAccountReducer(state = initialState, action) {
             loading: false
          }
 
-      case GOOGLE_CALENDAR_LOADED:
+      case GET_CALENDAR:
          return {
             ...state,
             isLoggedIn: true,
@@ -91,7 +91,7 @@ function googleAccountReducer(state = initialState, action) {
             loading: false
          }
 
-      case GOOGLE_CALENDAR_CHANGE_CALENDAR_VISIBILITY:
+      case UPDATE_CALENDAR_VISIBILITY:
          return {
             ...state,
             ...changeGoogleCalendarVisibility({
@@ -101,7 +101,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_UPDATE_EVENT:
+      case UPDATE_CALENDAR_EVENT:
          return {
             ...state,
             ...updateGoogleEvent({
@@ -112,7 +112,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_UPDATE_EVENT_TIME:
+      case UPDATE_CALENDAR_EVENT_TIME:
          return {
             ...state,
             ...updateGoogleEventTime({
@@ -123,7 +123,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_DELETE_EVENT:
+      case DELETE_CALENDAR_EVENT:
          return {
             ...state,
             ...deleteGoogleEvent({
@@ -132,7 +132,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_UPDATE_TASK_EVENT:
+      case UPDATE_TASK_BASIC:
          return {
             ...state,
             ...updateTaskEvents({
@@ -141,7 +141,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE:
+      case UPDATE_TASK_SCHEDULE:
          return {
             ...state,
             ...updateTaskSchedule({
@@ -150,7 +150,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT:
+      case CREATE_TASK_SCHEDULE:
          return {
             ...state,
             ...addTaskScheduleSlot({
@@ -159,7 +159,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT:
+      case DELETE_TASK_SCHEDULE:
          return {
             ...state,
             ...removeTaskScheduleSlot({
@@ -168,7 +168,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_DELETE_TASK_EVENTS:
+      case DELETE_TASK:
          return {
             ...state,
             ...deleteTaskEvents({
@@ -177,7 +177,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_ADD_EVENT:
+      case CREATE_CALENDAR_EVENT:
          return {
             ...state,
             ...createGoogleEvent({
@@ -188,7 +188,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT:
+      case SET_CALENDAR_DEFAULT_ACCOUNT:
          return {
             ...state,
             ...setDefaultGoogleAccount({
@@ -198,7 +198,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT:
+      case GET_CALENDAR_DEFAULT_ACCOUNT:
          return {
             ...state,
             ...getDefaultGoogleAccount({
@@ -206,7 +206,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT:
+      case SYNC_TASK_EVENT:
          return {
             ...state,
             ...syncTaskScheduleSlot({
@@ -221,7 +221,7 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
-      case GOOGLE_CALENDAR_AUTH_ERROR:
+      case CALENDAR_AUTH_ERROR:
          return {
             ...state,
             isLoggedIn: false,
