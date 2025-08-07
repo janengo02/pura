@@ -428,18 +428,6 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
 
-      // First get the event to check if it's a Pura task
-      try {
-         await calendar.events.get({
-            auth: oath2Client,
-            calendarId: calendarId || 'primary',
-            eventId: eventId
-         })
-      } catch (err) {
-         // Event might already be deleted
-      }
-
-      // Delete the event
       await calendar.events.delete({
          auth: oath2Client,
          calendarId: calendarId || 'primary',
