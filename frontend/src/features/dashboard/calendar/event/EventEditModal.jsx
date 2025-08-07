@@ -146,6 +146,7 @@ const EventEditModal = React.memo(
                title: null,
                description: t('syncing'),
                status: 'loading',
+               position: 'bottom',
                duration: null, // Keep it open until we close it
                isClosable: false
             })

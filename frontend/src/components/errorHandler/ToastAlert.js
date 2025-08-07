@@ -20,12 +20,10 @@ import {
    Spinner,
    Spacer,
    Box,
-   VStack,
-   HStack
+   VStack
 } from '@chakra-ui/react'
 
 // Internal Components
-import Link from '../typography/Link'
 
 // Actions & Utils
 import { removeAlertAction } from '../../actions/alertActions'
