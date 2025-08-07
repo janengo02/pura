@@ -4,7 +4,7 @@ const Group = require('../models/GroupModel')
 const Progress = require('../models/ProgressModel')
 const Page = require('../models/PageModel')
 const { google } = require('googleapis')
-const { setOAuthCredentials } = require('./googleAccountHelper')
+const { setOAuthCredentials } = require('./calendarHelpers')
 const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
 
 /**
@@ -338,7 +338,10 @@ const updateTaskFromGoogleEvent = async (
       }
 
       // Update the calendar ID if it changed (event was moved to different calendar)
-      if (newCalendarId && newCalendarId !== task.schedule[slotIndex].google_calendar_id) {
+      if (
+         newCalendarId &&
+         newCalendarId !== task.schedule[slotIndex].google_calendar_id
+      ) {
          task.schedule[slotIndex].google_calendar_id = newCalendarId
       }
 

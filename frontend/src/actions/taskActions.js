@@ -16,7 +16,7 @@ import {
    pageActionErrorHandler,
    pageActionFatalErrorHandler
 } from './pageActions'
-import { googleAccountErrorHandler } from './googleAccountActions'
+import { googleAccountErrorHandler } from './calendarActions'
 
 /**
  * Create new task

@@ -17,7 +17,7 @@ import {
    syncTaskWithGoogleAction,
    showTaskModalAction
 } from '../../../../actions/taskActions'
-import { addGoogleAccountAction } from '../../../../actions/googleAccountActions'
+import { addGoogleAccountAction } from '../../../../actions/calendarActions'
 import { setAlertAction } from '../../../../actions/alertActions'
 
 // UI Components
@@ -891,8 +891,8 @@ const selectScheduleData = createSelector(
 
 const selectGoogleData = createSelector(
    [
-      (state) => state.googleAccount.googleAccounts,
-      (state) => state.googleAccount.googleCalendars
+      (state) => state.calendar.googleAccounts,
+      (state) => state.calendar.googleCalendars
    ],
    (googleAccounts, googleCalendars) => ({
       googleAccounts,
@@ -901,7 +901,7 @@ const selectGoogleData = createSelector(
 )
 
 const selectSettingsData = createSelector(
-   [(state) => state.googleAccount.range],
+   [(state) => state.calendar.range],
    (range) => ({
       range
    })

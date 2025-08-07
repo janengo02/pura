@@ -4,10 +4,10 @@ import auth from './authReducers'
 import loading from './loadingReducers'
 import page from './pageReducers'
 import task from './taskReducers'
-import googleAccount from './googleAccountReducers'
-import languageReducer from './languageReducer'
-import themeReducer from '../reducers/themeReducer'
-import eventReducer from '../reducers/eventReducers'
+import calendar from './calendarReducers'
+import language from './languageReducer'
+import theme from '../reducers/themeReducer'
+import event from '../reducers/eventReducers'
 
 export default combineReducers({
    loading,
@@ -15,8 +15,8 @@ export default combineReducers({
    auth,
    page,
    task,
-   googleAccount,
-   language: languageReducer,
-   theme: themeReducer,
-   event: eventReducer
+   calendar,
+   language,
+   theme,
+   event
 })

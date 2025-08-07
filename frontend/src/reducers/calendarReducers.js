@@ -35,7 +35,7 @@ import {
    deleteTaskEvents,
    deleteGoogleEvent,
    syncTaskScheduleSlot
-} from './googleAccountReducersHelpers'
+} from './calendarReducersHelpers'
 
 const initialState = {
    isLoggedIn: false,
@@ -47,7 +47,7 @@ const initialState = {
    range: []
 }
 
-function googleAccountReducer(state = initialState, action) {
+function calendarReducer(state = initialState, action) {
    const { type, payload } = action
    switch (type) {
       case UPDATE_CALENDAR_RANGE:
@@ -236,4 +236,4 @@ function googleAccountReducer(state = initialState, action) {
    }
 }
 
-export default googleAccountReducer
+export default calendarReducer

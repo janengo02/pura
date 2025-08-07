@@ -7,7 +7,7 @@ const auth = require('../../middleware/auth')
 const User = require('../../models/UserModel')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
-const { setOAuthCredentials } = require('../../utils/googleAccountHelper')
+const { setOAuthCredentials } = require('../../utils/calendarHelpers')
 
 dotenv.config()
 
@@ -52,7 +52,9 @@ router.post('/create-space', auth, async (req, res) => {
       const calendar = google.calendar('v3')
 
       // Generate a unique conference ID
-      const conferenceId = `meet_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+      const conferenceId = `meet_${Date.now()}_${Math.random()
+         .toString(36)
+         .substring(2, 11)}`
 
       // Generate conference data for Google Meet
       const conferenceData = {
@@ -86,7 +88,7 @@ router.post('/create-space', auth, async (req, res) => {
 
       // Extract the generated Meet URI
       const meetUri = createdEvent.data.conferenceData?.entryPoints?.find(
-         entry => entry.entryPointType === 'video'
+         (entry) => entry.entryPointType === 'video'
       )?.uri
 
       const meetConferenceId = createdEvent.data.conferenceData?.conferenceId
@@ -119,7 +121,12 @@ router.post('/create-space', auth, async (req, res) => {
       })
    } catch (err) {
       console.error('Error creating Google Meet space:', err)
-      sendErrorResponse(res, 500, 'alert-oops', 'Failed to create Google Meet space')
+      sendErrorResponse(
+         res,
+         500,
+         'alert-oops',
+         'Failed to create Google Meet space'
+      )
    }
 })
 
@@ -162,12 +169,18 @@ router.get('/space/:spaceId', auth, async (req, res) => {
       // Since Google Meet API v2 is not available, return a message
       res.json({
          success: false,
-         message: 'Google Meet space details cannot be retrieved. Google Meet API v2 is not available through googleapis library.',
+         message:
+            'Google Meet space details cannot be retrieved. Google Meet API v2 is not available through googleapis library.',
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {
       console.error('Error getting Google Meet space:', err)
-      sendErrorResponse(res, 500, 'alert-oops', 'Failed to get Google Meet space')
+      sendErrorResponse(
+         res,
+         500,
+         'alert-oops',
+         'Failed to get Google Meet space'
+      )
    }
 })
 
@@ -210,7 +223,8 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
       // Since Google Meet API v2 is not available, return a message
       res.json({
          success: false,
-         message: 'Google Meet space updates are not supported. Google Meet API v2 is not available through googleapis library.',
+         message:
+            'Google Meet space updates are not supported. Google Meet API v2 is not available through googleapis library.',
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {
@@ -268,7 +282,8 @@ router.delete('/space/:spaceId', auth, async (req, res) => {
       // Since Google Meet API v2 is not available, return a message
       res.json({
          success: false,
-         message: 'Google Meet space deletion is not supported. Google Meet API v2 is not available through googleapis library.',
+         message:
+            'Google Meet space deletion is not supported. Google Meet API v2 is not available through googleapis library.',
          error: 'API_NOT_AVAILABLE'
       })
    } catch (err) {

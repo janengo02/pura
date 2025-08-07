@@ -41,7 +41,7 @@ import EventVisibility from './EventVisibility'
 import EventCalendarInfo from './EventCalendarInfo'
 
 // Actions & Hooks
-import { deleteGoogleEventAction } from '../../../../actions/googleAccountActions'
+import { deleteGoogleEventAction } from '../../../../actions/calendarActions'
 import {
    removeTaskScheduleSlotAction,
    showTaskModalAction

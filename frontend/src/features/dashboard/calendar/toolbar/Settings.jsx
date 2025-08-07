@@ -43,7 +43,7 @@ import {
    addGoogleAccountAction,
    disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction
-} from '../../../../actions/googleAccountActions'
+} from '../../../../actions/calendarActions'
 import { setAlertAction } from '../../../../actions/alertActions'
 import { showTaskModalAction } from '../../../../actions/taskActions'
 
@@ -371,10 +371,10 @@ Settings.propTypes = {
 
 const selectSettingsData = createSelector(
    [
-      (state) => state.googleAccount.googleAccounts,
-      (state) => state.googleAccount.googleCalendars,
-      (state) => state.googleAccount.range,
-      (state) => state.googleAccount.defaultAccount
+      (state) => state.calendar.googleAccounts,
+      (state) => state.calendar.googleCalendars,
+      (state) => state.calendar.range,
+      (state) => state.calendar.defaultAccount
    ],
    (googleAccounts, googleCalendars, range, defaultAccount) => ({
       googleAccounts: googleAccounts || [],

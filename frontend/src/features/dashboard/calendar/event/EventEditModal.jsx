@@ -32,7 +32,7 @@ import {
 import {
    deleteGoogleEventAction,
    updateGoogleEventAction
-} from '../../../../actions/googleAccountActions'
+} from '../../../../actions/calendarActions'
 import {
    showTaskModalAction,
    updateTaskScheduleAction,
@@ -492,7 +492,7 @@ const selectEventData = createSelector(
 )
 
 const selectGoogleCalendars = createSelector(
-   (state) => state.googleAccount.googleCalendars,
+   (state) => state.calendar.googleCalendars,
    (googleCalendars) => {
       // Filter out calendars that are not writable
       return googleCalendars.filter(

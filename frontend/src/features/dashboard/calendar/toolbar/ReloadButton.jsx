@@ -15,7 +15,7 @@ import { IconButton } from '@chakra-ui/react'
 
 // Icons & Actions
 import { PiArrowClockwise } from 'react-icons/pi'
-import { loadCalendarAction } from '../../../../actions/googleAccountActions'
+import { loadCalendarAction } from '../../../../actions/calendarActions'
 
 // Utils
 import { firstVisibleDay, lastVisibleDay } from '../../../../utils/dates'
@@ -105,7 +105,7 @@ ReloadButton.propTypes = {
 // =============================================================================
 
 const selectReloadButtonData = createSelector(
-   [(state) => state.page._id, (state) => state.googleAccount.range],
+   [(state) => state.page._id, (state) => state.calendar.range],
    (pageId, range) => ({
       pageId: pageId || '',
       range: range || []

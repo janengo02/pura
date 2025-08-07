@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react'
 import { PiVideoCamera, PiCopy, PiPlus, PiTrash, PiX } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
-import { createGoogleMeetSpaceAction } from '../../../../actions/googleAccountActions'
+import { createGoogleMeetSpaceAction } from '../../../../actions/calendarActions'
 import useLoading from '../../../../hooks/useLoading'
 
 const EventConference = ({ conferenceData }) => {

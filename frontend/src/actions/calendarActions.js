@@ -103,7 +103,7 @@ export const changeCalendarRangeAction = (range) => ({
 export const loadCalendarAction =
    (visibleRange, pageId) => async (dispatch) => {
       try {
-         const res = await api.get('/google-account/list-events', {
+         const res = await api.get('/calendar/list-events', {
             params: {
                minDate: visibleRange[0],
                maxDate: visibleRange[1],
@@ -132,7 +132,7 @@ export const loadCalendarAction =
  */
 export const addGoogleAccountAction = (reqData) => async (dispatch) => {
    try {
-      const res = await api.post('/google-account/add-account', reqData)
+      const res = await api.post('/calendar/add-account', reqData)
 
       if (res.data?.account_email) {
          dispatch({
@@ -144,7 +144,7 @@ export const addGoogleAccountAction = (reqData) => async (dispatch) => {
          })
       } else {
          throw new Error(
-            'Unexpected response format from /google-account/add-account'
+            'Unexpected response format from /calendar/add-account'
          )
       }
    } catch (err) {
@@ -161,7 +161,7 @@ export const addGoogleAccountAction = (reqData) => async (dispatch) => {
 export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.put(
-         `/google-account/set-default/${reqData.account_email}`
+         `/calendar/set-default/${reqData.account_email}`
       )
 
       if (res.data?._id) {
@@ -174,7 +174,7 @@ export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
          })
       } else {
          throw new Error(
-            'Unexpected response format from /google-account/set-default'
+            'Unexpected response format from /calendar/set-default'
          )
       }
    } catch (err) {
@@ -188,7 +188,7 @@ export const setDefaultGoogleAccountAction = (reqData) => async (dispatch) => {
  */
 export const getDefaultGoogleAccountAction = () => async (dispatch) => {
    try {
-      const res = await api.get('/google-account/default')
+      const res = await api.get('/calendar/default')
 
       dispatch({
          type: GET_CALENDAR_DEFAULT_ACCOUNT,
@@ -277,7 +277,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
       }
 
       const res = await api.post(
-         `/google-account/update-event/${reqData.eventId}`,
+         `/calendar/update-event/${reqData.eventId}`,
          reqData
       )
 
@@ -289,7 +289,7 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          })
       } else {
          throw new Error(
-            'Unexpected response format from /google-account/update-event'
+            'Unexpected response format from /calendar/update-event'
          )
       }
    } catch (err) {
@@ -341,7 +341,7 @@ export const updateGoogleEventTimeAction = (reqData) => async (dispatch) => {
       }
 
       // API call to update event times only
-      await api.post(`/google-account/update-event/${reqData.eventId}`, reqData)
+      await api.post(`/calendar/update-event/${reqData.eventId}`, reqData)
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
    }
@@ -363,7 +363,7 @@ export const deleteGoogleEventAction = (reqData) => async (dispatch) => {
       }
    })
    try {
-      await api.delete(`/google-account/delete-event/${reqData.eventId}`, {
+      await api.delete(`/calendar/delete-event/${reqData.eventId}`, {
          data: reqData
       })
    } catch (err) {
@@ -403,7 +403,7 @@ export const disconnectGoogleAccountAction = (reqData) => async (dispatch) => {
       }
    })
    try {
-      await api.delete(`/google-account/disconnect/${reqData.account_email}`)
+      await api.delete(`/calendar/disconnect/${reqData.account_email}`)
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }

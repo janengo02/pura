@@ -14,15 +14,14 @@ const {
    updateGoogleAccountSyncStatus,
    autoSetDefaultForSingleAccount,
    ensureSingleDefaultAccount
-} = require('../../utils/googleAccountHelper')
+} = require('../../utils/calendarHelpers')
 const { updateTaskFromGoogleEvent } = require('../../utils/taskHelpers')
-const { tasks } = require('googleapis/build/src/apis/tasks')
 const { validatePage } = require('../../utils/pageHelpers')
 
 dotenv.config()
 
 /**
- * @route GET api/google-account/list-events
+ * @route GET api/calendar/list-events
  * @desc Get Google Calendar events for all linked accounts
  * @access Private
  * @param {string} minDate
@@ -67,7 +66,7 @@ router.get('/list-events', auth, async (req, res) => {
 })
 
 /**
- * @route POST api/google-account/add-account
+ * @route POST api/calendar/add-account
  * @desc Add/update Google account via OAuth
  * @access Private
  * @param {string} code oAuth code from Google
@@ -148,7 +147,7 @@ router.post('/add-account', auth, async (req, res) => {
 })
 
 /**
- * @route PUT api/google-account/set-default/:account_email
+ * @route PUT api/calendar/set-default/:account_email
  * @desc Set Google account as default
  * @access Private
  * @param {string} account_email
@@ -190,7 +189,7 @@ router.put('/set-default/:account_email', auth, async (req, res) => {
 })
 
 /**
- * @route GET api/google-account/default
+ * @route GET api/calendar/default
  * @desc Get current default Google account
  * @access Private
  * @returns {Object} Default account details
@@ -221,7 +220,7 @@ router.get('/default', auth, async (req, res) => {
 })
 
 /**
- * @route POST api/google-account/update-event/:eventId
+ * @route POST api/calendar/update-event/:eventId
  * @desc Update Google Calendar event and sync to Pura task
  * @access Private
  * @param {string} eventId
@@ -409,7 +408,7 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
 })
 
 /**
- * @route DELETE api/google-account/delete-event/:eventId
+ * @route DELETE api/calendar/delete-event/:eventId
  * @desc Delete Google Calendar event (non-Pura task events only)
  * @access Private
  * @param {string} eventId
@@ -456,7 +455,7 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
 })
 
 /**
- * @route DELETE api/google-account/disconnect/:account_email
+ * @route DELETE api/calendar/disconnect/:account_email
  * @desc Disconnect Google account
  * @access Private
  * @param {string} account_email

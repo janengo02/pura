@@ -37,7 +37,7 @@ import {
    loadCalendarAction,
    changeCalendarRangeAction,
    updateGoogleEventTimeAction
-} from '../../actions/googleAccountActions'
+} from '../../actions/calendarActions'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
 
 // Utils
@@ -512,7 +512,7 @@ Calendar.propTypes = {
 // Memoized selectors for better Redux performance
 const selectCalendarData = createSelector(
    [
-      (state) => state.googleAccount,
+      (state) => state.calendar,
       (state) => state.language?.current || 'en',
       (state) => state.page._id,
       (state) => state.task.task?._id
@@ -526,7 +526,7 @@ const selectCalendarData = createSelector(
 )
 
 const selectGoogleCalendars = createSelector(
-   (state) => state.googleAccount.googleCalendars,
+   (state) => state.calendar.googleCalendars,
    (googleCalendars) => {
       // Filter out calendars that are not writable
       return googleCalendars.filter(
