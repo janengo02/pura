@@ -43,9 +43,7 @@ export const updateTask = ({ tasks, payload }) => {
             ? {
                  ...task,
                  title:
-                    payload.title !== undefined
-                       ? payload.title
-                       : task.title,
+                    payload.title !== undefined ? payload.title : task.title,
                  content:
                     payload.content !== undefined
                        ? payload.content
@@ -75,6 +73,29 @@ export const removePageTaskScheduleSlot = ({ tasks, payload }) => {
                  schedule: task.schedule?.filter(
                     (slot, index) => index !== payload.slot_index
                  ),
+                 update_date: payload.update_date || task.update_date
+              }
+            : task
+      )
+   }
+}
+
+/**
+ * Add new task schedule slot in page state
+ * @param {Array} tasks - Current tasks array
+ * @param {Object} payload - Add payload
+ * @param {string} payload.task_id - Task ID
+ * @param {Object} payload.newSlot - New schedule slot data
+ * @param {string} [payload.update_date] - Update timestamp
+ * @returns {Object} Updated state fragment
+ */
+export const addPageTaskScheduleSlot = ({ tasks, payload }) => {
+   return {
+      tasks: tasks.map((task) =>
+         task._id === payload.task_id
+            ? {
+                 ...task,
+                 schedule: [...(task.schedule || []), payload.newSlot],
                  update_date: payload.update_date || task.update_date
               }
             : task
@@ -113,6 +134,40 @@ export const updatePageTaskScheduleSlot = ({ tasks, payload }) => {
             : task
       )
    }
+}
+
+/**
+ * Sync task schedule slot with Google Calendar in page state
+ * @param {Array} tasks - Current tasks array
+ * @param {Object} payload - Sync payload
+ * @param {string} payload.task_id - Task ID
+ * @param {number} payload.slot_index - Slot index
+ * @param {string} payload.google_event_id - Google Calendar event ID
+ * @param {string} payload.calendar_id - Google Calendar ID
+ * @param {string} payload.account_email - Google account email
+ * @returns {Object} Updated state fragment
+ */
+export const syncTaskScheduleInPage = ({ tasks, payload }) => {
+   const updatedTasks = tasks.map((task) =>
+      task._id === payload.task_id
+         ? {
+              ...task,
+              schedule: task.schedule?.map((slot, index) =>
+                 index === payload.slot_index
+                    ? {
+                         ...slot,
+                         google_event_id: payload.google_event_id,
+                         google_calendar_id: payload.calendar_id,
+                         google_account_email: payload.account_email,
+                         sync_status: payload.sync_status || '0'
+                      }
+                    : slot
+              )
+           }
+         : task
+   )
+
+   return { tasks: updatedTasks }
 }
 
 /**

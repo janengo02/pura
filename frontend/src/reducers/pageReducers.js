@@ -11,8 +11,10 @@ import {
    CREATE_TASK,
    UPDATE_TASK,
    DELETE_TASK,
+   ADD_PAGE_TASK_SCHEDULE_SLOT,
    REMOVE_PAGE_TASK_SCHEDULE_SLOT,
    UPDATE_PAGE_TASK_SCHEDULE_SLOT,
+   UPDATE_PAGE_TASK_SYNC_SCHEDULE,
    FILTER_SCHEDULE,
    FILTER_NAME
 } from '../actions/types'
@@ -30,8 +32,10 @@ import {
    updateProgress,
    updateGroup,
    updateTask,
+   addPageTaskScheduleSlot,
    removePageTaskScheduleSlot,
    updatePageTaskScheduleSlot,
+   syncTaskScheduleInPage,
    updateFilterSchedule,
    updateFilterName,
    findProgressIndex,
@@ -191,10 +195,30 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: false
          }
+      case ADD_PAGE_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            ...addPageTaskScheduleSlot({
+               tasks: state.tasks,
+               payload
+            }),
+            loading: false,
+            error: false
+         }
       case UPDATE_PAGE_TASK_SCHEDULE_SLOT:
          return {
             ...state,
             ...updatePageTaskScheduleSlot({
+               tasks: state.tasks,
+               payload
+            }),
+            loading: false,
+            error: false
+         }
+      case UPDATE_PAGE_TASK_SYNC_SCHEDULE:
+         return {
+            ...state,
+            ...syncTaskScheduleInPage({
                tasks: state.tasks,
                payload
             }),

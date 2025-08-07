@@ -7,6 +7,8 @@ import {
    CLEAR_TASK,
    UPDATE_TASK,
    UPDATE_TASK_SCHEDULE,
+   ADD_TASK_SCHEDULE_SLOT,
+   SYNC_TASK_SCHEDULE_SLOT,
    REMOVE_TASK_SCHEDULE_SLOT,
    MOVE_TASK
 } from '../actions/types'
@@ -69,6 +71,47 @@ function taskReducer(state = initialState, action) {
                   : state.task
          }
 
+      case ADD_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            task:
+               state.task && state.task._id === payload.task_id
+                  ? {
+                       ...state.task,
+                       schedule: [
+                          ...(state.task.schedule || []),
+                          payload.newSlot
+                       ],
+                       update_date:
+                          payload.update_date || state.task.update_date
+                    }
+                  : state.task
+         }
+
+      case SYNC_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            task:
+               state.task && state.task._id === payload.task_id
+                  ? {
+                       ...state.task,
+                       schedule: state.task.schedule?.map((slot, index) =>
+                          index === payload.slot_index
+                             ? {
+                                  ...slot,
+                                  google_event_id: payload.google_event_id,
+                                  google_calendar_id: payload.calendar_id,
+                                  google_account_email: payload.account_email,
+                                  sync_status: payload.sync_status || '0'
+                               }
+                             : slot
+                       ),
+                       update_date:
+                          payload.update_date || state.task.update_date
+                    }
+                  : state.task
+         }
+
       case REMOVE_TASK_SCHEDULE_SLOT:
          return {
             ...state,
@@ -79,6 +122,7 @@ function taskReducer(state = initialState, action) {
                        schedule: state.task.schedule?.filter(
                           (slot, index) => index !== payload.slot_index
                        ),
+                       target_event_index: null,
                        update_date:
                           payload.update_date || state.task.update_date
                     }

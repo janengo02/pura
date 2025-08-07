@@ -114,10 +114,9 @@ const Calendar = React.memo(
       updateGoogleEventTimeAction,
       updateTaskScheduleAction,
       googleAccount: { googleEvents, loading, range },
-      tasks,
       currentLanguage,
       pageId,
-      currentTask,
+      currentTaskId,
       googleCalendars
    }) => {
       // -------------------------------------------------------------------------
@@ -252,7 +251,7 @@ const Calendar = React.memo(
                if (event.eventType === 'task') {
                   // Check if this is the current task being viewed
                   const isCurrentTask =
-                     currentTask && currentTask._id === event.pura_task_id
+                     currentTaskId && currentTaskId === event.pura_task_id
 
                   // Update task schedule slot for task events
                   await updateTaskScheduleAction({
@@ -273,8 +272,8 @@ const Calendar = React.memo(
                   // Check if this is a synced event with current task
                   const isSyncedCurrentTask =
                      event.eventType === 'synced' &&
-                     currentTask &&
-                     currentTask._id === event.pura_task_id
+                     currentTaskId &&
+                     currentTaskId === event.pura_task_id
 
                   // Update Google Calendar event
                   const updateData = {
@@ -303,7 +302,7 @@ const Calendar = React.memo(
             updateGoogleEventTimeAction,
             updateTaskScheduleAction,
             pageId,
-            currentTask
+            currentTaskId
          ]
       )
 
@@ -320,7 +319,7 @@ const Calendar = React.memo(
                if (event.eventType === 'task') {
                   // Check if this is the current task being viewed
                   const isCurrentTask =
-                     currentTask && currentTask._id === event.pura_task_id
+                     currentTaskId && currentTaskId === event.pura_task_id
 
                   // Update task schedule slot for task events
                   await updateTaskScheduleAction({
@@ -341,8 +340,8 @@ const Calendar = React.memo(
                   // Check if this is a synced event with current task
                   const isSyncedCurrentTask =
                      event.eventType === 'synced' &&
-                     currentTask &&
-                     currentTask._id === event.pura_task_id
+                     currentTaskId &&
+                     currentTaskId === event.pura_task_id
                   // Update Google Calendar event
                   const updateData = {
                      eventId: event.id,
@@ -370,7 +369,7 @@ const Calendar = React.memo(
             updateGoogleEventTimeAction,
             updateTaskScheduleAction,
             pageId,
-            currentTask
+            currentTaskId
          ]
       )
 
@@ -400,10 +399,10 @@ const Calendar = React.memo(
       }, [activeLanguage])
 
       useEffect(() => {
-         if (range && range.length) {
-            loadCalendarAction(range, tasks)
+         if (range && range.length && pageId) {
+            loadCalendarAction(range, pageId)
          }
-      }, [range, loadCalendarAction, tasks])
+      }, [range, loadCalendarAction, pageId])
 
       // Initialize calendar with default date range on mount
       useEffect(() => {
@@ -492,10 +491,9 @@ Calendar.propTypes = {
    updateGoogleEventTimeAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired,
-   tasks: PropTypes.array.isRequired,
    currentLanguage: PropTypes.string.isRequired,
    pageId: PropTypes.string,
-   currentTask: PropTypes.object,
+   currentTaskId: PropTypes.string,
    googleCalendars: PropTypes.arrayOf(
       PropTypes.shape({
          calendarId: PropTypes.string,
@@ -515,17 +513,15 @@ Calendar.propTypes = {
 const selectCalendarData = createSelector(
    [
       (state) => state.googleAccount,
-      (state) => state.page.tasks,
       (state) => state.language?.current || 'en',
       (state) => state.page._id,
-      (state) => state.task.task
+      (state) => state.task.task?._id
    ],
-   (googleAccount, tasks, currentLanguage, pageId, currentTask) => ({
+   (googleAccount, currentLanguage, pageId, currentTaskId) => ({
       googleAccount,
-      tasks,
       currentLanguage,
       pageId,
-      currentTask
+      currentTaskId
    })
 )
 

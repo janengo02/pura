@@ -36,18 +36,6 @@ const BUTTON_STYLES = {
 }
 
 // =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectReloadButtonData = createSelector(
-   [(state) => state.page.tasks, (state) => state.googleAccount.range],
-   (tasks, range) => ({
-      tasks: tasks || [],
-      range: range || []
-   })
-)
-
-// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -55,7 +43,7 @@ const ReloadButton = React.memo(
    ({
       // Redux props
       loadCalendarAction,
-      reloadData: { tasks, range }
+      reloadData: { pageId, range }
    }) => {
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -69,8 +57,8 @@ const ReloadButton = React.memo(
                   ? range
                   : [firstVisibleDay(new Date()), lastVisibleDay(new Date())]
 
-            await loadCalendarAction(reloadRange, tasks)
-         }, [loadCalendarAction, range, tasks])
+            await loadCalendarAction(reloadRange, pageId)
+         }, [loadCalendarAction, range, pageId])
       )
 
       const handleReloadClick = useCallback(
@@ -107,11 +95,22 @@ ReloadButton.displayName = 'CalendarReloadButton'
 ReloadButton.propTypes = {
    loadCalendarAction: PropTypes.func.isRequired,
    reloadData: PropTypes.shape({
-      tasks: PropTypes.array.isRequired,
+      pageId: PropTypes.string.isRequired,
       range: PropTypes.array.isRequired
    }).isRequired
 }
 
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectReloadButtonData = createSelector(
+   [(state) => state.page._id, (state) => state.googleAccount.range],
+   (pageId, range) => ({
+      pageId: pageId || '',
+      range: range || []
+   })
+)
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================

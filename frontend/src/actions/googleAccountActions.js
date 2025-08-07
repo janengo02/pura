@@ -99,31 +99,26 @@ export const changeCalendarRangeAction = (range) => ({
  * Load Calendar Action
  * Loads Google Calendar events for the specified date range
  * @param {Array} visibleRange - Array containing start and end dates
- * @param {Array} tasksArray - Array of existing tasks
+ * @param {string} pageId - ID of the page for context
  */
 export const loadCalendarAction =
-   (visibleRange, tasksArray) => async (dispatch) => {
+   (visibleRange, pageId) => async (dispatch) => {
       try {
          const res = await api.get('/google-account/list-events', {
             params: {
                minDate: visibleRange[0],
-               maxDate: visibleRange[1]
+               maxDate: visibleRange[1],
+               pageId
             }
          })
 
-         if (Array.isArray(res.data)) {
-            dispatch({
-               type: GOOGLE_CALENDAR_LOADED,
-               payload: {
-                  data: res.data,
-                  tasks: tasksArray
-               }
-            })
-         } else {
-            throw new Error(
-               'Unexpected response format from /google-account/list-events'
-            )
-         }
+         dispatch({
+            type: GOOGLE_CALENDAR_LOADED,
+            payload: {
+               data: res.data.google_accounts,
+               tasks: res.data.tasks || []
+            }
+         })
       } catch (err) {
          googleAccountFatalErrorHandler(dispatch, err)
       }
@@ -275,23 +270,33 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
          }
       })
 
-      // Optimistic update - Task - update task details in state for synced events
-      if (
-         reqData.task_detail_flg &&
-         reqData.task_id &&
-         typeof reqData.slot_index === 'number'
-      ) {
+      if (reqData.task_id && typeof reqData.slot_index === 'number') {
+         // Optimistic update - Page - update task schedule in tasks array for synced events
          dispatch({
-            type: UPDATE_TASK_SCHEDULE,
+            type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
             payload: {
                task_id: reqData.task_id,
                slot_index: reqData.slot_index,
                start: reqData.start,
                end: reqData.end,
-               update_date: new Date().toISOString(),
-               target_event_index: reqData.target_event_index
+               update_date: new Date().toISOString()
             }
          })
+
+         if (reqData.task_detail_flg) {
+            // Optimistic update - Task - update task details in state for synced events
+            dispatch({
+               type: UPDATE_TASK_SCHEDULE,
+               payload: {
+                  task_id: reqData.task_id,
+                  slot_index: reqData.slot_index,
+                  start: reqData.start,
+                  end: reqData.end,
+                  update_date: new Date().toISOString(),
+                  target_event_index: reqData.target_event_index
+               }
+            })
+         }
       }
 
       const res = await api.post(
@@ -305,19 +310,6 @@ export const updateGoogleEventAction = (reqData) => async (dispatch) => {
             type: GOOGLE_CALENDAR_UPDATE_EVENT,
             payload: { ...res.data, originalEventId: reqData.eventId }
          })
-         // Optimistic update - Page - update task schedule in tasks array for synced events
-         if (reqData.task_id && typeof reqData.slot_index === 'number') {
-            dispatch({
-               type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
-               payload: {
-                  task_id: reqData.task_id,
-                  slot_index: reqData.slot_index,
-                  start: reqData.start,
-                  end: reqData.end,
-                  update_date: new Date().toISOString()
-               }
-            })
-         }
       } else {
          throw new Error(
             'Unexpected response format from /google-account/update-event'
@@ -356,23 +348,33 @@ export const updateGoogleEventTimeAction = (reqData) => async (dispatch) => {
             end: reqData.end ? { dateTime: reqData.end } : undefined
          }
       })
-      // Optimistic update - Task - update task details in state for synced events
-      if (
-         reqData.task_detail_flg &&
-         reqData.task_id &&
-         typeof reqData.slot_index === 'number'
-      ) {
+      if (reqData.task_id && typeof reqData.slot_index === 'number') {
+         // Optimistic update - Page - update task schedule in tasks array for synced events
          dispatch({
-            type: UPDATE_TASK_SCHEDULE,
+            type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
             payload: {
                task_id: reqData.task_id,
                slot_index: reqData.slot_index,
                start: reqData.start,
                end: reqData.end,
-               update_date: new Date().toISOString(),
-               target_event_index: reqData.target_event_index
+               update_date: new Date().toISOString()
             }
          })
+
+         if (reqData.task_detail_flg) {
+            // Optimistic update - Task - update task details in state for synced events
+            dispatch({
+               type: UPDATE_TASK_SCHEDULE,
+               payload: {
+                  task_id: reqData.task_id,
+                  slot_index: reqData.slot_index,
+                  start: reqData.start,
+                  end: reqData.end,
+                  update_date: new Date().toISOString(),
+                  target_event_index: reqData.target_event_index
+               }
+            })
+         }
       }
 
       // API call to update event times only
@@ -382,28 +384,13 @@ export const updateGoogleEventTimeAction = (reqData) => async (dispatch) => {
       )
 
       if (res.data?.event) {
-         // Optimistic update - Page - update task schedule in tasks array for synced events
-         if (reqData.task_id && typeof reqData.slot_index === 'number') {
-            console.log('Here')
-            dispatch({
-               type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
-               payload: {
-                  task_id: reqData.task_id,
-                  slot_index: reqData.slot_index,
-                  start: reqData.start,
-                  end: reqData.end,
-                  update_date: new Date().toISOString()
-               }
-            })
-         }
+         // No need to dispatch again, optimistic update already handled
       } else {
          throw new Error(
             'Unexpected response format from /google-account/update-event-time'
          )
       }
    } catch (err) {
-      // On error, we might want to revert the optimistic update
-      // For now, just show the error - the next calendar refresh will correct the state
       googleAccountErrorHandler(dispatch, err, reqData.accountEmail)
    }
 }

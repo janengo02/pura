@@ -1188,6 +1188,64 @@ export const updateTaskSchedule = ({ googleEvents, scheduleUpdateData }) => {
 }
 
 /**
+ * Add new task schedule slot as calendar event
+ * @param {Object} params - Current events and task data
+ * @param {Array} params.googleEvents - Current Google events list
+ * @param {Object} params.addSlotData - Add slot data with task info and new slot
+ * @returns {Object} Updated state with new task event added
+ */
+export const addTaskScheduleSlot = ({ googleEvents, addSlotData }) => {
+   const { task_id, taskTitle, taskContent, newSlot, newSlotIndex } =
+      addSlotData
+   const startTime = new Date(Date.parse(newSlot.start))
+   const endTime = new Date(Date.parse(newSlot.end))
+   const isAllDay = isTaskScheduleAllDay(startTime, endTime)
+
+   // Create a new task event for the calendar
+   const newTaskEvent = {
+      id: `${task_id}_${newSlotIndex}`,
+      google_event_id: null,
+      pura_task_id: task_id,
+      pura_schedule_index: newSlotIndex,
+      title: taskTitle,
+      start: startTime,
+      end: endTime,
+      allDay: isAllDay,
+      calendarId: null,
+      calendar: null,
+      color: '#d2c2f2',
+      accessRole: 'owner',
+      calendarVisible: true,
+      accountEmail: null,
+      eventType: 'task',
+      googleEventTitle: null,
+
+      // Initialize enhanced fields for task events
+      description: taskContent,
+      location: null,
+      attendees: [],
+      conferenceData: null,
+      reminders: { useDefaultNullifier: false, overrides: [] },
+      visibility: {
+         visibility: 'default',
+         transparency: 'opaque',
+         status: 'confirmed'
+      },
+      extendedProperties: {
+         private: {},
+         shared: {},
+         isPuraTask: true,
+         puraTaskId: task_id
+      },
+      recurrence: null
+   }
+
+   const updatedEvents = [...googleEvents, newTaskEvent]
+
+   return { googleEvents: updatedEvents }
+}
+
+/**
  * Remove task schedule slot from Google calendar events (task and synced events)
  * @param {Object} params - Current events and removal data
  * @param {Array} params.googleEvents - Current Google events list
@@ -1223,6 +1281,82 @@ export const removeTaskScheduleSlot = ({ googleEvents, removalData }) => {
          }
          return event
       })
+
+   return { googleEvents: updatedEvents }
+}
+
+/**
+ * Sync task schedule slot with Google Calendar (add new sync event)
+ * @param {Object} params - Current state and sync data
+ * @param {Array} params.googleAccounts - Current Google accounts list
+ * @param {Array} params.googleCalendars - Current Google calendars list
+ * @param {Array} params.googleEvents - Current Google events list
+ * @param {string} params.accountEmail - Google account email
+ * @param {string} params.calendarId - Google calendar ID
+ * @param {Object} params.newEvent - Google Calendar event data
+ * @param {Object} params.syncTask - Task data with schedule slot info
+ * @param {number} params.slotIndex - Index of the schedule slot being synced
+ * @returns {Object} Updated state with synced event added
+ */
+export const syncTaskScheduleSlot = ({
+   googleAccounts,
+   googleCalendars,
+   googleEvents,
+   accountEmail,
+   calendarId,
+   newEvent,
+   syncTask,
+   slotIndex
+}) => {
+   // Defensive check for syncTask
+   if (!syncTask || !syncTask.schedule || !Array.isArray(syncTask.schedule)) {
+      return { googleEvents }
+   }
+
+   // Find the calendar and account for enhanced event creation
+   const calendar = googleCalendars.find(
+      (cal) =>
+         cal.calendarId === calendarId && cal.accountEmail === accountEmail
+   )
+   const formattedCalendar = {
+      id: calendarId,
+      summary: calendar?.title,
+      backgroundColor: calendar?.color,
+      accessRole: calendar?.accessRole,
+      selected: calendar?.selected || false
+   }
+   const formattedAccount = { accountEmail: accountEmail }
+
+   const matchingSlot = syncTask.schedule[slotIndex]
+
+   // Create task info for the enhanced event
+   const syncedTaskInfo = {
+      taskId: syncTask._id,
+      taskTitle: syncTask.title,
+      taskContent: syncTask.content,
+      slotIndex: slotIndex,
+      slot: matchingSlot
+   }
+
+   const enhancedEvent = createEnhancedEventObject(
+      newEvent,
+      formattedCalendar,
+      formattedAccount,
+      syncedTaskInfo
+   )
+   console.log(enhancedEvent)
+
+   // Remove existing task event and add the new synced event
+   const updatedEvents = googleEvents
+      .filter(
+         (event) =>
+            !(
+               event.eventType === 'task' &&
+               event.pura_task_id === syncTask._id &&
+               event.pura_schedule_index === slotIndex
+            )
+      )
+      .concat(enhancedEvent)
 
    return { googleEvents: updatedEvents }
 }

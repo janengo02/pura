@@ -67,13 +67,23 @@ const ScheduleSelect = React.memo(
          const formData = {
             page_id: _id,
             task_id: task._id,
+            task_title: task.title,
+            task_content: task.content,
             start: startTime.toISOString(),
             end: endTime.toISOString(),
+            slot_index: task.schedule?.length || 0,
             task_detail_flg: true
          }
 
          await addTaskScheduleSlotAction(formData)
-      }, [task._id, _id, addTaskScheduleSlotAction])
+      }, [
+         task._id,
+         _id,
+         addTaskScheduleSlotAction,
+         task.schedule?.length,
+         task.content,
+         task.title
+      ])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC

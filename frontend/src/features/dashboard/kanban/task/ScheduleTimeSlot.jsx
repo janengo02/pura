@@ -196,7 +196,6 @@ const ScheduleTimeSlot = React.memo(
       // LOADING STATES
       // -------------------------------------------------------------------------
 
-      const [deleteSlot, deleteSlotLoading] = useLoading(handleDeleteSlot)
       const [syncWithGoogle, syncLoading] = useLoading(handleSyncWithGoogle)
       const [unsyncFromGoogle, unsyncLoading] = useLoading(
          handleUnsyncFromGoogle
@@ -306,9 +305,9 @@ const ScheduleTimeSlot = React.memo(
       const handleDeleteClick = useCallback(
          async (e) => {
             e.preventDefault()
-            await deleteSlot()
+            await handleDeleteSlot()
          },
-         [deleteSlot]
+         [handleDeleteSlot]
       )
 
       // -------------------------------------------------------------------------
@@ -389,11 +388,10 @@ const ScheduleTimeSlot = React.memo(
                colorScheme='gray'
                color='text.primary'
                size='md'
-               isLoading={deleteSlotLoading}
                onClick={handleDeleteClick}
             />
          ),
-         [deleteSlotLoading, handleDeleteClick]
+         [handleDeleteClick]
       )
 
       // -------------------------------------------------------------------------

@@ -5,6 +5,7 @@ const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
 const User = require('../../models/UserModel')
+const Page = require('../../models/PageModel')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const {
@@ -15,6 +16,8 @@ const {
    ensureSingleDefaultAccount
 } = require('../../utils/googleAccountHelper')
 const { updateTaskFromGoogleEvent } = require('../../utils/taskHelpers')
+const { tasks } = require('googleapis/build/src/apis/tasks')
+const { validatePage } = require('../../utils/pageHelpers')
 
 dotenv.config()
 
@@ -29,7 +32,7 @@ dotenv.config()
 router.get('/list-events', auth, async (req, res) => {
    try {
       const user = await User.findById(req.user.id)
-      const { minDate, maxDate } = req.query
+      const { minDate, maxDate, pageId } = req.query
       const notSyncedAccounts = []
 
       const gAccounts = await Promise.all(
@@ -51,9 +54,13 @@ router.get('/list-events', auth, async (req, res) => {
             }
          })
       )
-
       updateGoogleAccountSyncStatus(user, notSyncedAccounts)
-      res.json(gAccounts)
+      const page = await validatePage(pageId, req.user.id)
+      if (!page) {
+         return sendErrorResponse(res, 404, 'alert-oops', 'alert-page-notfound')
+      }
+      await page.populate('tasks', ['title', 'schedule', 'content'])
+      res.json({ google_accounts: gAccounts, tasks: page.tasks })
    } catch (err) {
       sendErrorResponse(res, 500, 'alert-oops', 'alert-server_error', err)
    }

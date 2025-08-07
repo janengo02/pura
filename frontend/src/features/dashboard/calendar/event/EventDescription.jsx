@@ -12,7 +12,6 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 
 const EventDescription = ({ description }) => {
    if (!description) return null
-
    // Check if description contains HTML tags
    const isHTML = /<[^>]*>/g.test(description)
 

@@ -8,12 +8,18 @@ import {
    MOVE_TASK,
    UPDATE_TASK,
    UPDATE_TASK_SCHEDULE,
+   ADD_TASK_SCHEDULE_SLOT,
+   ADD_PAGE_TASK_SCHEDULE_SLOT,
+   SYNC_TASK_SCHEDULE_SLOT,
    REMOVE_TASK_SCHEDULE_SLOT,
    REMOVE_PAGE_TASK_SCHEDULE_SLOT,
+   UPDATE_PAGE_TASK_SYNC_SCHEDULE,
    GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
    GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
+   GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
+   GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT,
    UPDATE_PAGE_TASK_SCHEDULE_SLOT
 } from './types'
 import {
@@ -159,14 +165,48 @@ export const syncTaskWithGoogleAction = (reqData) => async (dispatch) => {
    try {
       const res = await api.post('/task/sync-google-event', reqData)
 
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
-      dispatch({
-         type: SHOW_TASK,
-         payload: res.data.task
-      })
+      // Check if sync was successful and we have event data
+      if (res.data.event && res.data.event.id) {
+         // Update page tasks array - sync specific schedule slot
+         dispatch({
+            type: UPDATE_PAGE_TASK_SYNC_SCHEDULE,
+            payload: {
+               task_id: reqData.task_id,
+               slot_index: reqData.slot_index,
+               google_event_id: res.data.event.id,
+               calendar_id: reqData.calendar_id,
+               account_email: reqData.account_email,
+               sync_status:
+                  res.data.task.schedule[reqData.slot_index].sync_status
+            }
+         })
+
+         // Update task reducer - sync specific schedule slot
+         dispatch({
+            type: SYNC_TASK_SCHEDULE_SLOT,
+            payload: {
+               task_id: reqData.task_id,
+               slot_index: reqData.slot_index,
+               google_event_id: res.data.event.id,
+               calendar_id: reqData.calendar_id,
+               account_email: reqData.account_email,
+               sync_status:
+                  res.data.task.schedule[reqData.slot_index].sync_status,
+               update_date: res.data.task.update_date
+            }
+         })
+
+         dispatch({
+            type: GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT,
+            payload: {
+               account_email: reqData.account_email,
+               calendar_id: reqData.calendar_id,
+               event: res.data.event,
+               task: res.data.task,
+               slot_index: reqData.slot_index
+            }
+         })
+      }
    } catch (err) {
       googleAccountErrorHandler(dispatch, err, reqData.account_email)
    }
@@ -293,6 +333,17 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
          }
       })
    }
+   // Optimistic update - Page - update task schedule in tasks array for synced events
+   dispatch({
+      type: UPDATE_PAGE_TASK_SCHEDULE_SLOT,
+      payload: {
+         task_id: formData.task_id,
+         slot_index: formData.slot_index,
+         start: formData.start,
+         end: formData.end,
+         update_date: new Date().toISOString()
+      }
+   })
    // Optimistic update - Calendar - update task and synced schedule
    dispatch({
       type: GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
@@ -333,25 +384,54 @@ export const updateTaskScheduleAction = (formData) => async (dispatch) => {
  */
 export const addTaskScheduleSlotAction = (formData) => async (dispatch) => {
    try {
-      const res = await api.post(
-         `/task/schedule/${formData.page_id}/${formData.task_id}`,
-         {
-            start: formData.start,
-            end: formData.end
-         }
-      )
+      const newSlot = {
+         start: formData.start,
+         end: formData.end,
+         google_event_id: null,
+         google_calendar_id: null,
+         google_account_email: null,
+         sync_status: '0'
+      }
+      const newSlotIndex = formData.slot_index
+
+      // Optimistic update - Page - add new schedule slot to tasks array
       dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
+         type: ADD_PAGE_TASK_SCHEDULE_SLOT,
+         payload: {
+            task_id: formData.task_id,
+            newSlot: newSlot,
+            update_date: new Date().toISOString()
+         }
       })
+
+      // Optimistic update - Task - add new schedule slot if task detail is shown
       if (formData.task_detail_flg) {
          dispatch({
-            type: SHOW_TASK,
-            payload: res.data.task
+            type: ADD_TASK_SCHEDULE_SLOT,
+            payload: {
+               task_id: formData.task_id,
+               newSlot: newSlot,
+               update_date: new Date().toISOString()
+            }
          })
       }
 
-      return { newSlotIndex: res.data.newSlotIndex }
+      // Optimistic update - Calendar - add new task schedule slot event
+      dispatch({
+         type: GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT,
+         payload: {
+            task_id: formData.task_id,
+            taskTitle: formData.task_title,
+            taskContent: formData.task_content,
+            newSlot: newSlot,
+            newSlotIndex: newSlotIndex
+         }
+      })
+
+      await api.post(`/task/schedule/${formData.page_id}/${formData.task_id}`, {
+         start: formData.start,
+         end: formData.end
+      })
    } catch (err) {
       pageActionErrorHandler(
          dispatch,

@@ -6,6 +6,7 @@ import {
    GOOGLE_CALENDAR_UPDATE_EVENT_TIME,
    GOOGLE_CALENDAR_UPDATE_TASK_EVENT,
    GOOGLE_CALENDAR_UPDATE_TASK_SCHEDULE,
+   GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT,
    GOOGLE_CALENDAR_DELETE_TASK_EVENTS,
    GOOGLE_CALENDAR_ADD_EVENT,
@@ -14,6 +15,7 @@ import {
    GOOGLE_CALENDAR_SET_DEFAULT_ACCOUNT,
    GOOGLE_CALENDAR_GET_DEFAULT_ACCOUNT,
    GOOGLE_CALENDAR_DELETE_EVENT,
+   GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT,
    CALENDAR_CHANGE_RANGE
 } from '../actions/types'
 import {
@@ -28,9 +30,11 @@ import {
    removeGoogleAccount,
    updateTaskEvents,
    updateTaskSchedule,
+   addTaskScheduleSlot,
    removeTaskScheduleSlot,
    deleteTaskEvents,
-   deleteGoogleEvent
+   deleteGoogleEvent,
+   syncTaskScheduleSlot
 } from './googleAccountReducersHelpers'
 
 const initialState = {
@@ -146,6 +150,15 @@ function googleAccountReducer(state = initialState, action) {
             })
          }
 
+      case GOOGLE_CALENDAR_ADD_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            ...addTaskScheduleSlot({
+               googleEvents: state.googleEvents,
+               addSlotData: payload
+            })
+         }
+
       case GOOGLE_CALENDAR_REMOVE_TASK_SCHEDULE_SLOT:
          return {
             ...state,
@@ -190,6 +203,21 @@ function googleAccountReducer(state = initialState, action) {
             ...state,
             ...getDefaultGoogleAccount({
                defaultAccountData: payload
+            })
+         }
+
+      case GOOGLE_CALENDAR_SYNC_TASK_SCHEDULE_SLOT:
+         return {
+            ...state,
+            ...syncTaskScheduleSlot({
+               googleAccounts: state.googleAccounts,
+               googleCalendars: state.googleCalendars,
+               googleEvents: state.googleEvents,
+               accountEmail: payload.account_email,
+               calendarId: payload.calendar_id,
+               newEvent: payload.event,
+               syncTask: payload.task,
+               slotIndex: payload.slot_index
             })
          }
 
