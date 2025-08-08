@@ -22,7 +22,8 @@ import {
    MenuItemOption,
    Button,
    Text,
-   HStack
+   HStack,
+   Box
 } from '@chakra-ui/react'
 
 // Utils & Icons
@@ -41,6 +42,34 @@ const BUTTON_STYLES = {
 
 const MENU_ITEM_STYLES = {
    fontSize: 'md'
+}
+
+// =============================================================================
+// UTILITY COMPONENTS
+// =============================================================================
+
+/**
+ * Flag icon component using flag-icons library
+ */
+const FlagIcon = React.memo(({ countryCode, size = '1.25em' }) => {
+   return (
+      <Box
+         as='span'
+         className={`fi fi-${countryCode}`}
+         display='inline-block'
+         width={size}
+         height={size}
+         borderRadius='2px'
+         boxShadow='0 0 1px rgba(0,0,0,0.2)'
+      />
+   )
+})
+
+FlagIcon.displayName = 'FlagIcon'
+
+FlagIcon.propTypes = {
+   countryCode: PropTypes.string.isRequired,
+   size: PropTypes.string
 }
 
 // =============================================================================
@@ -75,7 +104,7 @@ const LanguageMenuButton = React.memo(({ currentLanguage }) => {
          rightIcon={<PiCaretDown size={12} />}
       >
          <HStack spacing={2}>
-            <Text fontSize='md'>{currentLangInfo.flag}</Text>
+            <FlagIcon countryCode={currentLangInfo.flagCode} size='1.2em' />
             <Text fontSize='md'>{t(currentLangInfo.labelKey)}</Text>
          </HStack>
       </MenuButton>
@@ -97,15 +126,15 @@ const LanguageMenuOptions = React.memo(
 
       const languageMenuItems = useMemo(
          () =>
-            LANGUAGE_OPTIONS.map(({ value, key, labelKey, flag }) => (
+            LANGUAGE_OPTIONS.map(({ value, key, labelKey, flagCode }) => (
                <MenuItemOption
                   key={key}
                   value={value}
                   {...MENU_ITEM_STYLES}
                   onClick={() => onLanguageChange(value)}
                >
-                  <HStack spacing={3}>
-                     <Text fontSize='md'>{flag}</Text>
+                  <HStack spacing={3} align='center'>
+                     <FlagIcon countryCode={flagCode} size='1.2em' />
                      <Text>{t(labelKey)}</Text>
                   </HStack>
                </MenuItemOption>

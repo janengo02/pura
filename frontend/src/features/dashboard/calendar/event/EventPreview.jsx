@@ -14,16 +14,15 @@ import { createSelector } from 'reselect'
 import {
    IconButton,
    Image,
-   Popover,
    PopoverBody,
    PopoverContent,
    PopoverHeader,
-   PopoverTrigger,
    HStack,
    Tag,
    TagLabel,
    Box,
-   VStack
+   VStack,
+   useColorMode
 } from '@chakra-ui/react'
 
 // Icons & Components
@@ -111,7 +110,7 @@ const EventPreview = React.memo(
       // -------------------------------------------------------------------------
 
       const { t } = useReactiveTranslation()
-
+      const { colorMode } = useColorMode()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -251,7 +250,11 @@ const EventPreview = React.memo(
                <IconButton
                   icon={
                      <Image
-                        src='assets/img/pura-logo-icon.svg'
+                        src={
+                           colorMode === 'dark'
+                              ? '/assets/img/pura-logo-icon-white.png'
+                              : '/assets/img/pura-logo-icon-purple.png'
+                        }
                         boxSize={4}
                         alt='Pura Task'
                      />

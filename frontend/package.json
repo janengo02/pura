@@ -16,6 +16,7 @@
       "@testing-library/user-event": "^13.5.0",
       "axios": "^1.6.1",
       "clone-deep": "^4.0.1",
+      "flag-icons": "^7.5.0",
       "framer-motion": "^10.16.4",
       "i18next": "^23.7.6",
       "moment": "^2.30.1",

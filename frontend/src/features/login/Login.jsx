@@ -25,7 +25,8 @@ import {
    Text,
    VStack,
    Button,
-   Box
+   Box,
+   Image
 } from '@chakra-ui/react'
 
 // Internal Components
@@ -126,7 +127,7 @@ const Login = React.memo(
 
                   <GridItem colSpan={1}>
                      <Button
-                        size='md'
+                        size='lg'
                         w='full'
                         colorScheme='purple'
                         isLoading={isLoading}
@@ -170,19 +171,30 @@ const Login = React.memo(
             alignItems='center'
          >
             <LandingHeader />
-            <Flex h='100%' w='full' maxW='container.xl' alignItems='center'>
+            <Flex
+               h='100%'
+               w='full'
+               maxW='container.xl'
+               alignItems='center'
+               gap={12}
+            >
                <VStack
-                  w='full'
+                  flex={6}
                   h='full'
                   p={10}
                   spacing={10}
                   alignItems='flex-start'
                   bg='bg.surface'
                   justifyContent='center'
-               />
+               >
+                  <Image
+                     src='/assets/img/login-graphic.gif'
+                     sx={{ filter: 'hue-rotate(40deg)' }}
+                  />
+               </VStack>
 
                <VStack
-                  w='full'
+                  flex={6}
                   h='full'
                   p={10}
                   spacing={8}

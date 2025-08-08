@@ -25,15 +25,13 @@ import {
    Text,
    VStack,
    Button,
-   Box
+   Image
 } from '@chakra-ui/react'
 
 // Internal Components
 import { MultiInput } from '../../components/MultiInput'
 import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
-import LanguageSwitcher from '../../components/LanguageSwitcher'
-import ThemeToggle from '../../components/ThemeToggle'
 
 // Actions & Schema
 import { registerAction } from '../../actions/authActions'
@@ -159,7 +157,7 @@ const Register = React.memo(
 
                   <GridItem colSpan={1}>
                      <Button
-                        size='md'
+                        size='lg'
                         w='full'
                         colorScheme='purple'
                         isLoading={isLoading}
@@ -203,9 +201,15 @@ const Register = React.memo(
             alignItems='center'
          >
             <LandingHeader />
-            <Flex h='100%' w='full' maxW='container.xl' alignItems='center'>
+            <Flex
+               h='100%'
+               w='full'
+               maxW='container.xl'
+               alignItems='center'
+               gap={5}
+            >
                <VStack
-                  w='full'
+                  flex={6}
                   h='full'
                   p={10}
                   spacing={8}
@@ -217,14 +221,20 @@ const Register = React.memo(
                </VStack>
 
                <VStack
-                  w='full'
+                  flex={6}
                   h='full'
                   p={10}
                   spacing={10}
                   alignItems='flex-start'
                   bg='bg.surface'
                   justifyContent='center'
-               />
+               >
+                  <Image
+                     src='/assets/img/register-graphic.gif'
+                     sx={{ filter: 'hue-rotate(29deg)' }}
+                     pt={20}
+                  />
+               </VStack>
             </Flex>
          </Container>
       )

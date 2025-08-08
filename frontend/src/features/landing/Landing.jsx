@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback, useEffect, useState } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
@@ -28,7 +28,8 @@ import {
    Badge,
    Divider,
    Image,
-   Center
+   Center,
+   useColorMode
 } from '@chakra-ui/react'
 
 // Icons
@@ -300,6 +301,7 @@ const HASHTAGS = [
 export const LandingHeader = React.memo(() => {
    const navigate = useNavigate()
    const { t } = useReactiveTranslation()
+   const { colorMode } = useColorMode()
 
    return (
       <Flex
@@ -317,7 +319,11 @@ export const LandingHeader = React.memo(() => {
       >
          <Heading size='md' color='accent.primary'>
             <Image
-               src='/assets/img/pura-logo.png'
+               src={
+                  colorMode === 'dark'
+                     ? '/assets/img/pura-logo-white.svg'
+                     : '/assets/img/pura-logo-purple.svg'
+               }
                alt='Pura Logo'
                height='40px'
                cursor='pointer'
