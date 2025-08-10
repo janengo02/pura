@@ -214,6 +214,75 @@ router.get('/default', auth, async (req, res) => {
 })
 
 /**
+ * @route POST api/calendar/create-event
+ * @desc Create a new Google Calendar event
+ * @access Private
+ * @param {string} accountEmail
+ * @param {string} calendarId
+ * @param {string} summary
+ * @param {string} start
+ * @param {string} end
+ * @param {string} description @optional
+ * @param {string} location @optional
+ * @param {string} colorId @optional
+ * @returns {Object} {event: created event, calendar: calendar of the created event}
+ */
+router.post('/create-event', auth, async (req, res) => {
+   try {
+      const {
+         accountEmail,
+         calendarId,
+         summary,
+         start,
+         end,
+         description,
+         location,
+         colorId
+      } = req.body
+
+      const user = await User.findById(req.user.id)
+      const refreshToken = user.google_accounts.find(
+         (acc) => acc.account_email === accountEmail
+      )?.refresh_token
+
+      if (!refreshToken) {
+         return sendErrorResponse(res, 404, 'google', 'access')
+      }
+
+      const oath2Client = setOAuthCredentials(refreshToken)
+      const calendar = google.calendar('v3')
+
+      const eventData = {
+         summary: summary,
+         description: description || '',
+         location: location || '',
+         colorId: colorId,
+         start: {
+            dateTime: start
+         },
+         end: {
+            dateTime: end
+         }
+      }
+
+      const event = await calendar.events.insert({
+         auth: oath2Client,
+         calendarId: calendarId || 'primary',
+         requestBody: eventData
+      })
+
+      const eventCalendar = await calendar.calendarList.get({
+         auth: oath2Client,
+         calendarId: calendarId || 'primary'
+      })
+
+      res.json({ event: event.data, calendar: eventCalendar.data })
+   } catch (err) {
+      sendErrorResponse(res, 500, 'google', 'sync', err)
+   }
+})
+
+/**
  * @route POST api/calendar/update-event/:eventId
  * @desc Update Google Calendar event and sync to Pura task
  * @access Private

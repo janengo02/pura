@@ -27,6 +27,7 @@ const EventTitleInput = React.memo(({ title, setTitle }) => {
       <Textarea
          value={title}
          onChange={handleTitleChange}
+         onBlur={handleTitleChange}
          fontSize='2xl'
          fontWeight='semibold'
          flexGrow={1}

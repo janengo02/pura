@@ -31,12 +31,14 @@ import {
 import Toolbar from './calendar/toolbar/Toolbar'
 import CalendarNavigationToolbar from './calendar/toolbar/CalendarNavigationToolbar'
 import EventPreview from './calendar/event/EventPreview'
+import EventCreatePopover from './calendar/event/EventCreatePopover'
 
 // Actions
 import {
    loadCalendarAction,
    changeCalendarRangeAction,
-   updateGoogleEventTimeAction
+   updateGoogleEventTimeAction,
+   createCalendarEventAction
 } from '../../actions/calendarActions'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
 
@@ -58,7 +60,7 @@ import {
 const EVENT_TEXT_COLOR = '#1A202C'
 const SELECTED_EVENT_SHADOW =
    '0px 6px 10px 0px rgba(0,0,0,.14),0px 1px 18px 0px rgba(0,0,0,.12),0px 3px 5px -1px rgba(0,0,0,.2)'
-const POPOVER_STYLES = {
+export const POPOVER_STYLES = {
    placement: 'auto',
    isLazy: true,
    strategy: 'fixed',
@@ -112,12 +114,12 @@ const Calendar = React.memo(
       loadCalendarAction,
       changeCalendarRangeAction,
       updateGoogleEventTimeAction,
+      createCalendarEventAction,
       updateTaskScheduleAction,
       googleAccount: { googleEvents, loading, range },
       currentLanguage,
       pageId,
-      currentTaskId,
-      googleCalendars
+      currentTaskId
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS
@@ -217,26 +219,45 @@ const Calendar = React.memo(
          }
       }, [])
 
-      // Handle event drag start
-      const onDragStart = useCallback(({ event }) => {
-         // Capture current mouse position immediately
-         const captureMousePosition = () => {
-            const handleMouseCapture = (mouseEvent) => {
-               setMousePosition({
-                  x: mouseEvent.clientX,
-                  y: mouseEvent.clientY
-               })
-               document.removeEventListener('click', handleMouseCapture)
+      // Handle event selection
+      const onSelectEvent = useCallback((event, e) => {
+         // Capture mouse position directly from the event
+         setMousePosition({
+            x: e.clientX,
+            y: e.clientY
+         })
 
-               // Show EventPreview after capturing position
-               setPreviewEvent(event)
+         // Show EventPreview
+         setPreviewEvent(event)
+      }, [])
+
+      // Handle slot selection for creating new events
+      const onSelectSlot = useCallback(
+         (slotInfo) => {
+            if (slotInfo.action !== 'select' || !slotInfo.bounds) return
+            // Capture mouse position for popover placement
+            const mousePosition = {
+               x: slotInfo.bounds.left || 0,
+               y: slotInfo.bounds.bottom || 0
+            }
+            const newEvent = {
+               id: 'new',
+               summary: '',
+               colorId: null,
+               description: null,
+               start: {
+                  dateTime: slotInfo.start
+               },
+               end: {
+                  dateTime: slotInfo.end
+               }
             }
 
-            document.addEventListener('click', handleMouseCapture)
-         }
-
-         captureMousePosition()
-      }, [])
+            // Dispatch action to create calendar event
+            createCalendarEventAction(newEvent, mousePosition)
+         },
+         [createCalendarEventAction]
+      )
 
       // Handle event drag and drop
       const onEventDrop = useCallback(
@@ -428,9 +449,12 @@ const Calendar = React.memo(
                      eventPropGetter={eventPropGetter}
                      popup
                      culture={activeLanguage}
-                     onDragStart={onDragStart}
                      onEventDrop={onEventDrop}
                      onEventResize={onEventResize}
+                     selectable
+                     timeslots={2}
+                     onSelectEvent={onSelectEvent}
+                     onSelectSlot={onSelectSlot}
                      resizable
                   />
                </VStack>
@@ -463,6 +487,7 @@ const Calendar = React.memo(
                      />
                   </Popover>
                )}
+               <EventCreatePopover />
             </Box>
          </Skeleton>
       )
@@ -481,20 +506,12 @@ Calendar.propTypes = {
    loadCalendarAction: PropTypes.func.isRequired,
    changeCalendarRangeAction: PropTypes.func.isRequired,
    updateGoogleEventTimeAction: PropTypes.func.isRequired,
+   createCalendarEventAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired,
    currentLanguage: PropTypes.string.isRequired,
    pageId: PropTypes.string,
-   currentTaskId: PropTypes.string,
-   googleCalendars: PropTypes.arrayOf(
-      PropTypes.shape({
-         calendarId: PropTypes.string,
-         title: PropTypes.string,
-         accountEmail: PropTypes.string,
-         accessRole: PropTypes.string,
-         color: PropTypes.string
-      })
-   ).isRequired
+   currentTaskId: PropTypes.string
 }
 
 // =============================================================================
@@ -517,29 +534,19 @@ const selectCalendarData = createSelector(
    })
 )
 
-const selectGoogleCalendars = createSelector(
-   (state) => state.calendar.googleCalendars,
-   (googleCalendars) => {
-      // Filter out calendars that are not writable
-      return googleCalendars.filter(
-         (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
-      )
-   }
-)
-
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   ...selectCalendarData(state),
-   googleCalendars: selectGoogleCalendars(state)
+   ...selectCalendarData(state)
 })
 
 const mapDispatchToProps = {
    loadCalendarAction,
    changeCalendarRangeAction,
    updateGoogleEventTimeAction,
+   createCalendarEventAction,
    updateTaskScheduleAction
 }
 

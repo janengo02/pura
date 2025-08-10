@@ -10,6 +10,7 @@ import {
    DELETE_TASK_SCHEDULE,
    DELETE_TASK,
    CREATE_CALENDAR_EVENT,
+   CLEAR_CALENDAR_EVENT,
    ADD_CALENDAR_ACCOUNT,
    REMOVE_CALENDAR_ACCOUNT,
    SET_CALENDAR_DEFAULT_ACCOUNT,
@@ -24,7 +25,6 @@ import {
    changeGoogleCalendarVisibility,
    updateGoogleEvent,
    updateGoogleEventTime,
-   createGoogleEvent,
    setDefaultGoogleAccount,
    getDefaultGoogleAccount,
    removeGoogleAccount,
@@ -34,7 +34,8 @@ import {
    removeTaskScheduleSlot,
    deleteTaskEvents,
    deleteGoogleEvent,
-   syncTaskScheduleSlot
+   syncTaskScheduleSlot,
+   createGoogleEvent
 } from './calendarReducersHelpers'
 
 const initialState = {
@@ -181,11 +182,20 @@ function calendarReducer(state = initialState, action) {
          return {
             ...state,
             ...createGoogleEvent({
+               defaultAccount: state.defaultAccount,
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
-               accountEmail: payload.accountEmail,
-               newEvent: payload.event
+               newEvent: payload.newEvent,
+               newEventMousePosition: payload.mousePosition
             })
+         }
+
+      case CLEAR_CALENDAR_EVENT:
+         return {
+            ...state,
+            googleEvents: state.googleEvents.filter(
+               (event) => event.id !== 'new'
+            )
          }
 
       case SET_CALENDAR_DEFAULT_ACCOUNT:

@@ -15,7 +15,9 @@ import {
    SET_CALENDAR_DEFAULT_ACCOUNT,
    GET_CALENDAR_DEFAULT_ACCOUNT,
    DELETE_CALENDAR_EVENT,
-   UPDATE_TASK_SCHEDULE
+   UPDATE_TASK_SCHEDULE,
+   CREATE_CALENDAR_EVENT,
+   CLEAR_CALENDAR_EVENT
 } from './types'
 
 // =============================================================================
@@ -357,6 +359,70 @@ export const disconnectGoogleAccountAction =
    }
 
 /**
+ * Create Calendar Event Action
+ * Creates a new calendar event in the store to show event creation UI
+ * @param {Object} newEvent - Slot information from react-big-calendar
+ * @param {Date} newEvent.dateTime.start - Start time of the selected slot
+ * @param {Date} newEvent.dateTime.end - End time of the selected slot
+ * @param {Object} mousePosition - Mouse position for popover placement
+ */
+export const createCalendarEventAction = (newEvent, mousePosition) => ({
+   type: CREATE_CALENDAR_EVENT,
+   payload: {
+      newEvent,
+      mousePosition
+   }
+})
+
+/**
+ * Clear Calendar Event Action
+ * Clears the new calendar event creation state
+ */
+export const clearCalendarEventAction = () => ({
+   type: CLEAR_CALENDAR_EVENT
+})
+
+/**
+ * Create Google Event Action
+ * Creates a new event in Google Calendar
+ * @param {Object} reqData - Request data for event creation
+ * @param {string} reqData.accountEmail - Google account email
+ * @param {string} reqData.calendarId - Target calendar ID
+ * @param {string} reqData.summary - Event title
+ * @param {string} reqData.start - Start time (ISO string)
+ * @param {string} reqData.end - End time (ISO string)
+ * @param {string} [reqData.description] - Event description
+ * @param {string} [reqData.location] - Event location
+ * @param {string} [reqData.colorId] - Event color ID
+ */
+export const createGoogleEventAction =
+   (reqData) => async (dispatch, getState) => {
+      try {
+         const res = await api.post('/calendar/create-event', reqData)
+
+         if (res.data?.event) {
+            // Add the new event to the calendar state
+            dispatch({
+               type: UPDATE_CALENDAR_EVENT,
+               payload: { ...res.data, originalEventId: null }
+            })
+
+            // Clear the event creation state
+            dispatch(clearCalendarEventAction())
+
+            return res.data
+         } else {
+            throw new Error(
+               'Unexpected response format from /calendar/create-event'
+            )
+         }
+      } catch (err) {
+         commonErrorHandler(dispatch, err, getState)
+         throw err
+      }
+   }
+
+/**
  * Create Google Meet Space Action
  * Creates a new Google Meet space using the Google Meet API
  * @param {Object} reqData - Request data for Meet space creation
@@ -384,4 +450,26 @@ export const createGoogleMeetSpaceAction = (reqData) => async (dispatch) => {
       )
       return null
    }
+}
+
+// =============================================================================
+// UPDATE CALENDAR EVENT ACTION
+// =============================================================================
+
+export const updateNewEventAction = (updatedEvent) => (dispatch, getState) => {
+   const { calendar } = getState()
+
+   // Find the associated calendar
+   const associatedCalendar = calendar.googleCalendars.find(
+      (cal) => cal.calendarId === updatedEvent.calendarId
+   )
+
+   dispatch({
+      type: UPDATE_CALENDAR_EVENT,
+      payload: {
+         event: updatedEvent,
+         calendar: associatedCalendar,
+         originalEventId: 'new'
+      }
+   })
 }

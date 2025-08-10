@@ -1020,45 +1020,36 @@ export const updateGoogleEvent = ({
  * @returns {Object} Updated state with new event
  */
 export const createGoogleEvent = ({
+   defaultAccount,
    googleCalendars,
    googleEvents,
-   accountEmail,
-   newEvent
+   newEvent,
+   newEventMousePosition
 }) => {
-   // Find the primary calendar for the given accountEmail
+   console.log(defaultAccount)
+   // Find the calendar and account for enhanced event creation
    const calendar = googleCalendars.find(
-      (cal) => cal.accountEmail === accountEmail && cal.isPrimary
+      (cal) => cal.accountEmail === defaultAccount.accountEmail && cal.isPrimary
    )
+   const formattedCalendar = {
+      id: calendar.calendarId,
+      summary: calendar?.title,
+      backgroundColor: calendar?.color,
+      accessRole: calendar?.accessRole,
+      selected: calendar?.selected || false
+   }
+   const formattedAccount = { accountEmail: defaultAccount.accountEmail }
 
-   if (!calendar) {
-      // If no primary calendar found, return current events unchanged
-      return { googleEvents }
+   const enhancedEvent = {
+      ...createEnhancedEventObject(
+         newEvent,
+         formattedCalendar,
+         formattedAccount
+      ),
+      createdMousePosition: newEventMousePosition
    }
 
-   const startTime = parseEventDateTime(newEvent.start)
-   let endTime = parseEventDateTime(newEvent.end)
-   const isAllDay = isAllDayEvent(newEvent)
-
-   // Adjust end time for all-day events to work with react-big-calendar
-   if (isAllDay) {
-      endTime = processAllDayEndTime(startTime, endTime)
-   }
-
-   const eventToAdd = {
-      id: newEvent.id,
-      title: newEvent.summary || 'New Event',
-      start: startTime,
-      end: endTime,
-      allDay: isAllDay, // Critical property for react-big-calendar
-      calendarId: calendar.calendarId,
-      calendar: calendar.title,
-      color: calendar.color,
-      accessRole: calendar.accessRole,
-      calendarVisible: calendar.selected || false,
-      accountEmail: accountEmail
-   }
-
-   return { googleEvents: [...googleEvents, eventToAdd] }
+   return { googleEvents: [...googleEvents, enhancedEvent] }
 }
 // =============================================================================
 // REMOVE ACCOUNT STATE TRANSFORMERS

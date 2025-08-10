@@ -63,7 +63,7 @@ const BUTTON_STYLES = {
    color: 'text.primary'
 }
 
-const POPOVER_CONTENT_STYLES = {
+export const POPOVER_CONTENT_STYLES = {
    boxShadow: 'md',
    w: '400px',
    maxH: '80vh',
@@ -73,7 +73,7 @@ const POPOVER_CONTENT_STYLES = {
    elevate: 'md'
 }
 
-const POPOVER_HEADER_STYLES = {
+export const POPOVER_HEADER_STYLES = {
    display: 'flex',
    justifyContent: 'space-between',
    alignItems: 'center',
@@ -83,7 +83,7 @@ const POPOVER_HEADER_STYLES = {
    border: 'none'
 }
 
-const POPOVER_BODY_STYLES = {
+export const POPOVER_BODY_STYLES = {
    p: 4,
    maxW: '100%',
    maxH: 'calc(80vh - 60px)',
