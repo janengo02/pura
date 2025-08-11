@@ -5,7 +5,7 @@ const Progress = require('../models/ProgressModel')
 const Page = require('../models/PageModel')
 const { google } = require('googleapis')
 const { setOAuthCredentials } = require('./calendarHelpers')
-const { SCHEDULE_SYNCE_STATUS } = require('@pura/shared')
+const { SCHEDULE_SYNCE_STATUS } = require('./constants')
 
 /**
  * Parse Google Calendar event times to ISO strings

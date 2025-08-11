@@ -57,7 +57,7 @@ import {
 } from 'react-icons/pi'
 
 // Constants
-import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+import { SCHEDULE_SYNCE_STATUS } from '../../../../components/data/syncStatus'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Utils

@@ -2,7 +2,7 @@
 // CONSTANTS & UTILITY FUNCTIONS
 // =============================================================================
 
-import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+import { SCHEDULE_SYNCE_STATUS } from '../components/data/syncStatus'
 import { GOOGLE_CALENDAR_COLORS } from '../components/data/defaultColor'
 
 /**

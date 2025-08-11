@@ -19,15 +19,6 @@ import {
    FILTER_NAME,
    LOGOUT
 } from '../actions/types'
-import {
-   moveTask,
-   createGroup,
-   deleteGroup,
-   createProgress,
-   deleteProgress,
-   createTask,
-   deleteTask
-} from '@pura/shared'
 
 import {
    updateProgress,
@@ -42,7 +33,14 @@ import {
    findProgressIndex,
    findGroupIndex,
    getDefaultSchedule,
-   getDefaultName
+   getDefaultName,
+   moveTask,
+   createGroup,
+   deleteGroup,
+   createProgress,
+   deleteProgress,
+   createTask,
+   deleteTask
 } from './pageReducersHelpers'
 
 const initialState = {
@@ -261,7 +259,7 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: true
          }
-      
+
       case LOGOUT:
          return {
             ...initialState,

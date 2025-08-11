@@ -46,11 +46,10 @@ import {
    showTaskModalAction
 } from '../../../../actions/taskActions'
 import { showEventEditModalAction } from '../../../../actions/eventActions'
-import useLoading from '../../../../hooks/useLoading'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Constants
-import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+import { SCHEDULE_SYNCE_STATUS } from '../../../../components/data/syncStatus'
 
 // =============================================================================
 // CONSTANTS

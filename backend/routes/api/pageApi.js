@@ -8,11 +8,9 @@ const { validationResult } = require('express-validator')
 
 const auth = require('../../middleware/auth')
 const { sendErrorResponse } = require('../../utils/responseHelper')
-const { validatePage } = require('../../utils/pageHelpers')
+const { validatePage, moveTask } = require('../../utils/pageHelpers')
 
 const Page = require('../../models/PageModel')
-const { moveTask } = require('../../../shared/utils')
-
 /**
  * @route GET api/page
  * @desc Get first page of user

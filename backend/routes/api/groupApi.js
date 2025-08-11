@@ -8,11 +8,14 @@ const Page = require('../../models/PageModel')
 const Group = require('../../models/GroupModel')
 const Task = require('../../models/TaskModel')
 
-const { validateGroup, prepareGroupData } = require('../../utils/groupHelpers')
+const {
+   validateGroup,
+   prepareGroupData,
+   createGroup,
+   deleteGroup
+} = require('../../utils/groupHelpers')
 const { validatePage } = require('../../utils/pageHelpers')
 const { sendErrorResponse } = require('../../utils/responseHelper')
-
-const { createGroup, deleteGroup } = require('../../../shared/utils')
 
 /**
  * @route POST api/group/new/:page_id

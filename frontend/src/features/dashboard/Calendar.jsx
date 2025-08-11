@@ -47,7 +47,7 @@ import { getRangeStart, getRangeEnd } from '../../utils/dates'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // Constants
-import { SCHEDULE_SYNCE_STATUS } from '@pura/shared'
+import { SCHEDULE_SYNCE_STATUS } from '../../components/data/syncStatus'
 import {
    createLocalizedLocalizer,
    LOCALE_CONFIGS

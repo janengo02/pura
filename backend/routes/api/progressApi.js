@@ -8,14 +8,14 @@ const { sendErrorResponse } = require('../../utils/responseHelper')
 const { validatePage } = require('../../utils/pageHelpers')
 const {
    validateProgress,
-   prepareProgressData
+   prepareProgressData,
+   createProgress,
+   deleteProgress
 } = require('../../utils/progressHelper')
 
 const Page = require('../../models/PageModel')
 const Progress = require('../../models/ProgressModel')
 const Task = require('../../models/TaskModel')
-
-const { createProgress, deleteProgress } = require('../../../shared/utils')
 
 /**
  * @route POST api/progress/new/:page_id
