@@ -49,7 +49,8 @@ import {
    PiPlay,
    PiImage,
    PiClock,
-   PiTarget
+   PiTarget,
+   PiHouseBold
 } from 'react-icons/pi'
 
 // Internal Components
@@ -298,10 +299,35 @@ const HASHTAGS = [
 /**
  * Landing page header with navigation
  */
-export const LandingHeader = React.memo(() => {
+export const LandingHeader = React.memo(({ isAuthenticated }) => {
    const navigate = useNavigate()
    const { t } = useReactiveTranslation()
    const { colorMode } = useColorMode()
+
+   const authButtons = useMemo(() => {
+      if (isAuthenticated) {
+         return (
+            <Button
+               colorScheme='purple'
+               onClick={() => navigate('/dashboard')}
+               leftIcon={<PiHouseBold size={16} />}
+            >
+               {t('btn-dashboard')}
+            </Button>
+         )
+      }
+
+      return (
+         <>
+            <Button variant='ghost' onClick={() => navigate('/login')}>
+               {t('landing-demo-login')}
+            </Button>
+            <Button colorScheme='purple' onClick={() => navigate('/register')}>
+               {t('landing-register')}
+            </Button>
+         </>
+      )
+   }, [isAuthenticated, navigate, t])
 
    return (
       <Flex
@@ -334,18 +360,17 @@ export const LandingHeader = React.memo(() => {
          <HStack spacing={4}>
             <ThemeToggle asMenuItem={false} />
             <LanguageSwitcher />
-            <Button variant='ghost' onClick={() => navigate('/login')}>
-               {t('landing-demo-login')}
-            </Button>
-            <Button colorScheme='purple' onClick={() => navigate('/register')}>
-               {t('landing-register')}
-            </Button>
+            {authButtons}
          </HStack>
       </Flex>
    )
 })
 
 LandingHeader.displayName = 'LandingHeader'
+
+LandingHeader.propTypes = {
+   isAuthenticated: PropTypes.bool
+}
 
 /**
  * Hero section with main value proposition
@@ -995,13 +1020,13 @@ Footer.displayName = 'Footer'
 // MAIN COMPONENT
 // =============================================================================
 
-const Landing = React.memo(() => {
+const Landing = React.memo(({ landingData, isAuthenticated }) => {
    // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------
    return (
       <Box minH='100vh' bg='bg.surface'>
-         <LandingHeader />
+         <LandingHeader isAuthenticated={isAuthenticated} />
          <HeroSection />
          <FeaturesSection />
          <DemoFeaturesShowcase />
@@ -1021,7 +1046,8 @@ Landing.displayName = 'Landing'
 
 // PropTypes validation
 Landing.propTypes = {
-   // Add props if needed for Redux connection
+   landingData: PropTypes.object,
+   isAuthenticated: PropTypes.bool
 }
 
 // =============================================================================
@@ -1032,8 +1058,8 @@ Landing.propTypes = {
 const selectLandingData = createSelector(
    [
       // Add selectors if needed
-      (state) => state.language.language,
-      (state) => state.theme.theme
+      (state) => state.language?.current || 'en',
+      (state) => state.theme?.current || 'light'
    ],
    (language, theme) => ({
       language,
@@ -1041,12 +1067,18 @@ const selectLandingData = createSelector(
    })
 )
 
+const selectAuthState = createSelector(
+   [(state) => state.auth?.isAuthenticated || false],
+   (isAuthenticated) => isAuthenticated
+)
+
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   landingData: selectLandingData(state)
+   landingData: selectLandingData(state),
+   isAuthenticated: selectAuthState(state)
 })
 
 const mapDispatchToProps = {
