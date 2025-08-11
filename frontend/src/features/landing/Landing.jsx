@@ -175,28 +175,28 @@ const DEMO_FEATURES = [
             titleKey: 'landing-drag-drop-interface',
             descriptionKey: 'landing-drag-drop-interface-desc',
             mediaType: 'video',
-            mediaSrc: '/assets/videos/kanban-drag-drop.mp4',
+            mediaSrc: '/assets/img/preview/kanban-1.mov',
             mediaAlt: 'Kanban board drag and drop functionality demonstration'
          },
          {
             titleKey: 'landing-customizable-layouts',
             descriptionKey: 'landing-customizable-layouts-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/mobile-kanban.png',
+            mediaSrc: '/assets/img/preview/kanban-2.png',
             mediaAlt: 'Customizable Kanban board layout options'
          },
          {
             titleKey: 'landing-task-scheduling',
             descriptionKey: 'landing-task-scheduling-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/task-scheduling.png',
+            mediaSrc: '/assets/img/preview/kanban-3.png',
             mediaAlt: 'Task creation modal with scheduling interface'
          },
          {
             titleKey: 'landing-advanced-filtering',
             descriptionKey: 'landing-advanced-filtering-desc',
-            mediaType: 'image',
-            mediaSrc: '/assets/images/task-filtering.png',
+            mediaType: 'video',
+            mediaSrc: '/assets/img/preview/kanban-4.mov',
             mediaAlt: 'Task filtering and search interface'
          }
       ],
@@ -212,28 +212,28 @@ const DEMO_FEATURES = [
             titleKey: 'landing-oauth-authentication',
             descriptionKey: 'landing-oauth-authentication-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/google-oauth.png',
+            mediaSrc: '/assets/img/preview/calendar-1.png',
             mediaAlt: 'Google OAuth authentication flow'
          },
          {
             titleKey: 'landing-multiple-view-modes',
             descriptionKey: 'landing-multiple-view-modes-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/calendar-views.png',
+            mediaSrc: '/assets/img/preview/calendar-2.png',
             mediaAlt: 'Calendar application with multiple view options'
          },
          {
             titleKey: 'landing-event-management',
             descriptionKey: 'landing-event-management-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/multi-calendar.png',
+            mediaSrc: '/assets/img/preview/calendar-3.png',
             mediaAlt: 'Google Calendar event management interface'
          },
          {
             titleKey: 'landing-conflict-detection',
             descriptionKey: 'landing-conflict-detection-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/conflict-resolution.png',
+            mediaSrc: '/assets/img/preview/calendar-4.png',
             mediaAlt: 'Calendar conflict detection and resolution system'
          }
       ],
@@ -248,30 +248,30 @@ const DEMO_FEATURES = [
          {
             titleKey: 'landing-theme-system',
             descriptionKey: 'landing-theme-system-desc',
-            mediaType: 'image',
-            mediaSrc: '/assets/images/theme-switching.png',
+            mediaType: 'video',
+            mediaSrc: '/assets/img/preview/ux-1.mov',
             mediaAlt: 'Dark and light theme switching demonstration'
          },
          {
             titleKey: 'landing-internationalization-feature',
             descriptionKey: 'landing-internationalization-feature-desc',
-            mediaType: 'image',
-            mediaSrc: '/assets/images/language-switching.png',
+            mediaType: 'video',
+            mediaSrc: '/assets/img/preview/ux-2.mov',
             mediaAlt:
                'Language switching interface between English and Japanese'
          },
          {
             titleKey: 'landing-optimistic-updates',
             descriptionKey: 'landing-optimistic-updates-desc',
-            mediaType: 'image',
-            mediaSrc: '/assets/images/optimistic-ui.png',
+            mediaType: 'video',
+            mediaSrc: '/assets/img/preview/ux-3.mov',
             mediaAlt: 'Optimistic UI updates with error handling'
          },
          {
             titleKey: 'landing-form-validation',
             descriptionKey: 'landing-form-validation-desc',
             mediaType: 'image',
-            mediaSrc: '/assets/images/error-handling.png',
+            mediaSrc: '/assets/img/preview/ux-4.png',
             mediaAlt: 'Form validation and error handling interface'
          }
       ],
@@ -547,17 +547,11 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
    const { t } = useReactiveTranslation()
 
    const [selectedFeature, setSelectedFeature] = useState(0)
-   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
 
    const currentFeature = feature.features[selectedFeature]
 
    const handleFeatureSelect = useCallback((featureIndex) => {
       setSelectedFeature(featureIndex)
-      setIsVideoPlaying(false)
-   }, [])
-
-   const handleVideoPlay = useCallback(() => {
-      setIsVideoPlaying(true)
    }, [])
 
    const mediaContent = useMemo(() => {
@@ -569,50 +563,20 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                overflow='hidden'
                shadow='2xl'
             >
-               {!isVideoPlaying ? (
-                  <Box
-                     position='relative'
-                     cursor='pointer'
-                     onClick={handleVideoPlay}
-                     _hover={{ transform: 'scale(1.02)' }}
-                     transition='transform 0.3s'
-                  >
-                     <Image
-                        src={`${currentFeature.mediaSrc.replace(
-                           '.mp4',
-                           '-thumbnail.jpg'
-                        )}`}
-                        alt={currentFeature.mediaAlt}
-                        w='full'
-                        h='400px'
-                        objectFit='cover'
-                        fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Demo'
-                     />
-                     <Center
-                        position='absolute'
-                        top='50%'
-                        left='50%'
-                        transform='translate(-50%, -50%)'
-                        bg='blackAlpha.700'
-                        color='white'
-                        borderRadius='full'
-                        w={20}
-                        h={20}
-                        _hover={{
-                           bg: 'blackAlpha.800',
-                           transform: 'translate(-50%, -50%) scale(1.1)'
-                        }}
-                        transition='all 0.2s'
-                     >
-                        <Icon as={PiPlay} boxSize={10} />
-                     </Center>
-                  </Box>
-               ) : (
-                  <Box as='video' w='full' h='400px' controls autoPlay>
-                     <source src={currentFeature.mediaSrc} type='video/mp4' />
-                     Your browser does not support the video tag.
-                  </Box>
-               )}
+               <Box 
+                  as='video' 
+                  key={currentFeature.mediaSrc}
+                  w='full' 
+                  h='auto'
+                  maxW='full'
+                  autoPlay 
+                  loop 
+                  muted
+                  playsInline
+               >
+                  <source src={currentFeature.mediaSrc} type='video/mp4' />
+                  Your browser does not support the video tag.
+               </Box>
             </Box>
          )
       }
@@ -621,9 +585,8 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
          <Image
             src={currentFeature.mediaSrc}
             alt={currentFeature.mediaAlt}
-            w='full'
-            h='400px'
-            objectFit='cover'
+            maxW='full'
+            h='auto'
             borderRadius='xl'
             shadow='2xl'
             _hover={{ transform: 'scale(1.02)' }}
@@ -631,7 +594,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Preview'
          />
       )
-   }, [currentFeature, isVideoPlaying, handleVideoPlay])
+   }, [currentFeature])
 
    const content = (
       <VStack align='start' spacing={6} flex={1}>
