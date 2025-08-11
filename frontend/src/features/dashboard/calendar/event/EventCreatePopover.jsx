@@ -46,8 +46,11 @@ import { EventTimeInput } from './EventTime'
 import { EventDescriptionInput } from './EventDescription'
 import { EventTitleInput } from './EventTitle'
 import { EventCalendarSelect } from './EventCalendarInfo'
+import { EventConferenceInput } from './EventConference'
 import { stringToDateTimeLocal } from '../../../../utils/dates'
 import { PiX } from 'react-icons/pi'
+import { GOOGLE_CALENDAR_COLORS } from '../../../../components/data/defaultColor'
+import useLoading from '../../../../hooks/useLoading'
 
 // =============================================================================
 // COMPONENT
@@ -70,40 +73,168 @@ const EventCreatePopover = ({
    // REFS & STATE
    // -------------------------------------------------------------------------
    const [eventTitle, setEventTitle] = useState('')
+   const [eventDescription, setEventDescription] = useState('')
+   const [startTime, setStartTime] = useState('')
+   const [endTime, setEndTime] = useState('')
+   const [selectedCalendar, setSelectedCalendar] = useState({})
+   const [selectedColorId, setSelectedColorId] = useState(null)
 
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
    // Memoized modal state based on task existence
    const isCreatingNewEvent = useMemo(() => Boolean(newEvent), [newEvent])
+   const isTimeValid = useMemo(() => {
+      if (!startTime || !endTime) return false
+      const startDate = new Date(startTime)
+      const endDate = new Date(endTime)
+
+      // Check if times are valid dates
+      if (
+         isNaN(startDate.getTime()) ||
+         isNaN(endDate.getTime()) ||
+         startDate >= endDate
+      ) {
+         return false
+      }
+      return true
+   }, [startTime, endTime])
+   const isEventValid = useMemo(() => {
+      return (
+         newEvent &&
+         isTimeValid &&
+         selectedCalendar.calendarId &&
+         selectedCalendar.accountEmail
+      )
+   }, [newEvent, isTimeValid, selectedCalendar])
    const hasEventTitleChanged = useMemo(
       () => eventTitle && eventTitle !== newEvent?.title,
       [eventTitle, newEvent?.title]
    )
+   const hasEventDescriptionChanged = useMemo(
+      () => eventDescription !== newEvent?.description,
+      [eventDescription, newEvent?.description]
+   )
+
+   const hasEventTimeChanged = useMemo(() => {
+      if (!newEvent) return false
+      const originalStartTime = newEvent.start
+         ? stringToDateTimeLocal(newEvent.start)
+         : ''
+      const originalEndTime = newEvent.end
+         ? stringToDateTimeLocal(newEvent.end)
+         : ''
+
+      return (
+         (startTime && startTime !== originalStartTime) ||
+         (endTime && endTime !== originalEndTime)
+      )
+   }, [startTime, endTime, newEvent])
+
+   const hasEventCalendarChanged = useMemo(() => {
+      if (!newEvent || !selectedCalendar.calendarId) return false
+      return selectedCalendar.calendarId !== newEvent.calendarId
+   }, [selectedCalendar.calendarId, newEvent])
+
+   const hasEventColorChanged = useMemo(() => {
+      if (!newEvent) return false
+      const currentColorId =
+         Object.entries(GOOGLE_CALENDAR_COLORS).find(
+            ([, hex]) => hex === newEvent.color
+         )?.[0] || null
+      return selectedColorId !== currentColorId
+   }, [selectedColorId, newEvent])
+
    // -------------------------------------------------------------------------
    // HANDLERS
    // -------------------------------------------------------------------------
    const handleUpdateCalendarEvent = useCallback(() => {
+      if (!isEventValid) return
+
       const updatedEvent = {
          ...newEvent,
          summary: eventTitle,
-         start: newEvent?.start ? { dateTime: newEvent.start } : undefined,
-         end: newEvent?.end ? { dateTime: newEvent.end } : undefined
+         description: eventDescription,
+         calendarId: selectedCalendar.calendarId || newEvent?.calendarId,
+         accountEmail: selectedCalendar.accountEmail || newEvent?.accountEmail,
+         colorId: selectedColorId,
+         start: startTime
+            ? { dateTime: new Date(startTime).toISOString() }
+            : newEvent?.start
+            ? { dateTime: newEvent.start }
+            : undefined,
+         end: endTime
+            ? { dateTime: new Date(endTime).toISOString() }
+            : newEvent?.end
+            ? { dateTime: newEvent.end }
+            : undefined
       }
       updateNewEventAction(updatedEvent)
-   }, [updateNewEventAction, newEvent, eventTitle])
+   }, [
+      isEventValid,
+      updateNewEventAction,
+      newEvent,
+      eventTitle,
+      eventDescription,
+      startTime,
+      endTime,
+      selectedCalendar,
+      selectedColorId
+   ])
    const handleTitleChange = useCallback((newTitle) => {
       setEventTitle(newTitle)
    }, [])
 
-   const handleSave = useCallback(() => {
-      createGoogleEventAction(newEvent)
-      clearCalendarEventAction()
-   }, [createGoogleEventAction, newEvent, clearCalendarEventAction])
+   const handleDescriptionChange = useCallback((newDescription) => {
+      setEventDescription(newDescription)
+   }, [])
+
+   const handleStartTimeChange = useCallback((newStartTime) => {
+      setStartTime(newStartTime)
+   }, [])
+
+   const handleEndTimeChange = useCallback((newEndTime) => {
+      setEndTime(newEndTime)
+   }, [])
+
+   const handleSave = useCallback(async () => {
+      if (!isEventValid) return
+
+      const newStartTime = new Date(startTime)
+      const newEndTime = new Date(endTime)
+      newStartTime.setSeconds(0, 0)
+      newEndTime.setSeconds(0, 0)
+      const formattedNewEvent = {
+         summary: eventTitle || t('placeholder-untitled'),
+         description: eventDescription,
+         calendarId: selectedCalendar.calendarId,
+         accountEmail: selectedCalendar.accountEmail,
+         colorId: selectedColorId,
+         start: newStartTime.toISOString(),
+         end: newEndTime.toISOString()
+      }
+      await createGoogleEventAction(formattedNewEvent)
+   }, [
+      isEventValid,
+      createGoogleEventAction,
+      eventTitle,
+      eventDescription,
+      selectedCalendar.calendarId,
+      selectedCalendar.accountEmail,
+      selectedColorId,
+      startTime,
+      endTime,
+      t
+   ])
 
    const handleOnClose = useCallback(() => {
       clearCalendarEventAction()
    }, [clearCalendarEventAction])
+   // -------------------------------------------------------------------------
+   // LOADING HOOKS
+   // -------------------------------------------------------------------------
+
+   const [createEvent, createLoading] = useLoading(handleSave)
 
    // -------------------------------------------------------------------------
    // EFFECTS
@@ -111,10 +242,29 @@ const EventCreatePopover = ({
 
    // Initialize task data when task changes
    useEffect(() => {
-      if (newEvent) {
-         setEventTitle(newEvent.title || '')
+      setEventTitle(newEvent?.title || '')
+      setEventDescription(newEvent?.description || '')
+      setStartTime(newEvent?.start ? stringToDateTimeLocal(newEvent.start) : '')
+      setEndTime(newEvent?.end ? stringToDateTimeLocal(newEvent.end) : '')
+
+      // Initialize calendar selection
+      const calendar = googleCalendars.find(
+         (cal) => cal.calendarId === newEvent?.calendarId
+      ) || {
+         calendarId: newEvent?.calendarId || '',
+         title: '',
+         accountEmail: newEvent?.accountEmail || '',
+         accessRole: '',
+         color: ''
       }
-   }, [newEvent])
+      setSelectedCalendar(calendar)
+
+      // Initialize color selection
+      const foundColor = Object.entries(GOOGLE_CALENDAR_COLORS).find(
+         ([, hex]) => hex === newEvent?.color
+      )
+      setSelectedColorId(foundColor ? foundColor[0] : null)
+   }, [newEvent, googleCalendars])
 
    // Auto-save title changes with debounce
    useEffect(() => {
@@ -124,10 +274,40 @@ const EventCreatePopover = ({
       }
    }, [hasEventTitleChanged, handleUpdateCalendarEvent])
 
+   // Auto-save description changes with debounce
+   useEffect(() => {
+      if (hasEventDescriptionChanged) {
+         const timeoutId = setTimeout(() => handleUpdateCalendarEvent(), 500)
+         return () => clearTimeout(timeoutId)
+      }
+   }, [hasEventDescriptionChanged, handleUpdateCalendarEvent])
+
+   // Auto-save time changes with short debounce
+   useEffect(() => {
+      if (hasEventTimeChanged) {
+         const timeoutId = setTimeout(() => handleUpdateCalendarEvent(), 100)
+         return () => clearTimeout(timeoutId)
+      }
+   }, [hasEventTimeChanged, handleUpdateCalendarEvent])
+
+   // Auto-save calendar changes immediately
+   useEffect(() => {
+      if (hasEventCalendarChanged) {
+         handleUpdateCalendarEvent()
+      }
+   }, [hasEventCalendarChanged, handleUpdateCalendarEvent])
+
+   // Auto-save color changes immediately
+   useEffect(() => {
+      if (hasEventColorChanged) {
+         handleUpdateCalendarEvent()
+      }
+   }, [hasEventColorChanged, handleUpdateCalendarEvent])
+
    // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------
-   if (!isCreatingNewEvent) {
+   if (!isCreatingNewEvent || createLoading) {
       return null
    }
    return (
@@ -151,6 +331,8 @@ const EventCreatePopover = ({
          <PopoverContent
             {...POPOVER_CONTENT_STYLES}
             w='550px'
+            maxH='none'
+            overflow='visible'
             sx={{
                animation: 'fadeUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
                '@keyframes fadeUp': {
@@ -184,8 +366,36 @@ const EventCreatePopover = ({
                      />
                   </Box>
 
+                  <EventTimeInput
+                     startTime={startTime}
+                     setStartTime={handleStartTimeChange}
+                     endTime={endTime}
+                     setEndTime={handleEndTimeChange}
+                  />
+
+                  <EventCalendarSelect
+                     selectedCalendar={selectedCalendar}
+                     setSelectedCalendar={setSelectedCalendar}
+                     selectedColorId={selectedColorId}
+                     setSelectedColorId={setSelectedColorId}
+                     calendars={googleCalendars || []}
+                     accounts={googleAccounts || []}
+                  />
+
+                  <EventDescriptionInput
+                     description={eventDescription}
+                     setDescription={handleDescriptionChange}
+                  />
+
                   <HStack w='full' justifyContent='flex-end' pt={2}>
-                     <Button size='md' colorScheme='blue' onClick={handleSave}>
+                     <Button
+                        size='md'
+                        colorScheme='blue'
+                        onClick={createEvent}
+                        disabled={!isEventValid || createLoading}
+                        isLoading={createLoading}
+                        loadingText={t('btn-saving')}
+                     >
                         {t('btn-save')}
                      </Button>
                   </HStack>

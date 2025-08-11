@@ -236,7 +236,6 @@ router.post('/create-event', auth, async (req, res) => {
          start,
          end,
          description,
-         location,
          colorId
       } = req.body
 
@@ -255,7 +254,6 @@ router.post('/create-event', auth, async (req, res) => {
       const eventData = {
          summary: summary,
          description: description || '',
-         location: location || '',
          colorId: colorId,
          start: {
             dateTime: start

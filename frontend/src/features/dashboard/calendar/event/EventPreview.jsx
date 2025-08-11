@@ -177,11 +177,6 @@ const EventPreview = React.memo(
 
          showEventEditModalAction(formData)
       }, [showEventEditModalAction, event, pageId])
-      // -------------------------------------------------------------------------
-      // LOADING HOOKS
-      // -------------------------------------------------------------------------
-
-      const [deleteEvent, deleteLoading] = useLoading(handleDelete)
 
       // -------------------------------------------------------------------------
       // RENDER HELPERS
@@ -220,16 +215,18 @@ const EventPreview = React.memo(
       }
 
       const renderActionButton = (onClose) => {
+         if (!event || !event.id || event.id === 'new') {
+            return null
+         }
          let puraTaskIcon = null
          let googleCalendarIcon = null
          const deleteIcon = (
             <IconButton
                icon={<PiTrash size={18} />}
                {...BUTTON_STYLES}
-               isLoading={deleteLoading}
                onClick={async (e) => {
                   e.preventDefault()
-                  await deleteEvent()
+                  handleDelete()
                   onClose()
                }}
             />

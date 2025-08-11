@@ -400,22 +400,16 @@ export const createGoogleEventAction =
       try {
          const res = await api.post('/calendar/create-event', reqData)
 
-         if (res.data?.event) {
-            // Add the new event to the calendar state
-            dispatch({
-               type: UPDATE_CALENDAR_EVENT,
-               payload: { ...res.data, originalEventId: null }
-            })
+         // Add the new event to the calendar state
+         dispatch({
+            type: UPDATE_CALENDAR_EVENT,
+            payload: { ...res.data, originalEventId: 'new' }
+         })
 
-            // Clear the event creation state
-            dispatch(clearCalendarEventAction())
+         // Clear the event creation state
+         dispatch(clearCalendarEventAction())
 
-            return res.data
-         } else {
-            throw new Error(
-               'Unexpected response format from /calendar/create-event'
-            )
-         }
+         return res.data
       } catch (err) {
          commonErrorHandler(dispatch, err, getState)
          throw err
@@ -464,12 +458,21 @@ export const updateNewEventAction = (updatedEvent) => (dispatch, getState) => {
       (cal) => cal.calendarId === updatedEvent.calendarId
    )
 
-   dispatch({
-      type: UPDATE_CALENDAR_EVENT,
-      payload: {
-         event: updatedEvent,
-         calendar: associatedCalendar,
-         originalEventId: 'new'
-      }
-   })
+   // Get target calendar for optimistic update
+   const formattedcalendar = {
+      id: associatedCalendar?.calendarId,
+      summary: associatedCalendar?.title,
+      backgroundColor: associatedCalendar?.color
+   }
+
+   if (associatedCalendar) {
+      dispatch({
+         type: UPDATE_CALENDAR_EVENT,
+         payload: {
+            event: updatedEvent,
+            calendar: formattedcalendar,
+            originalEventId: 'new'
+         }
+      })
+   }
 }

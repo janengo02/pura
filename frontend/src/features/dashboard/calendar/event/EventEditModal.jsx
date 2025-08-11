@@ -63,6 +63,7 @@ const EventEditModal = React.memo(
       // Redux props
       event,
       googleCalendars,
+      googleAccounts,
       taskData: { task },
 
       updateGoogleEventAction,
@@ -375,7 +376,9 @@ const EventEditModal = React.memo(
                         selectedColorId={selectedColorId}
                         setSelectedColorId={setSelectedColorId}
                         calendars={googleCalendars || []}
-                        accountEmail={event.accountEmail}
+                        accounts={googleAccounts.filter(
+                           (acc) => acc.accountEmail === event.accountEmail
+                        )} // Filter accounts by event accountEmail
                      />
                      <EventConferenceInput
                         conferenceData={conferenceData}
@@ -456,6 +459,12 @@ EventEditModal.propTypes = {
          color: PropTypes.string
       })
    ).isRequired,
+   googleAccounts: PropTypes.arrayOf(
+      PropTypes.shape({
+         email: PropTypes.string,
+         accountEmail: PropTypes.string
+      })
+   ).isRequired,
    taskData: PropTypes.shape({
       task: PropTypes.object,
       pageId: PropTypes.string
@@ -517,6 +526,7 @@ const selectTaskData = createSelector(
 const mapStateToProps = (state) => ({
    event: selectEventData(state),
    googleCalendars: selectGoogleCalendars(state),
+   googleAccounts: state.calendar.googleAccounts,
    taskData: selectTaskData(state)
 })
 

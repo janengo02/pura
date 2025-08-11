@@ -931,6 +931,7 @@ export const updateGoogleEvent = ({
          return {
             ...event,
             id: updatedEvent.id,
+            accountEmail: updatedEvent.accountEmail || event.accountEmail,
             calendarId: updatedCalendar.id,
             calendar: updatedCalendar.summary,
             title: updatedEvent.summary,
@@ -1026,7 +1027,6 @@ export const createGoogleEvent = ({
    newEvent,
    newEventMousePosition
 }) => {
-   console.log(defaultAccount)
    // Find the calendar and account for enhanced event creation
    const calendar = googleCalendars.find(
       (cal) => cal.accountEmail === defaultAccount.accountEmail && cal.isPrimary

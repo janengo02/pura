@@ -46,17 +46,32 @@ const EventCalendarSelect = React.memo(
       selectedColorId,
       setSelectedColorId,
       calendars = [],
-      accountEmail
+      accounts = []
    }) => {
-      // Filter calendars by account email if provided
-      const availableCalendars = accountEmail
-         ? calendars.filter((cal) => cal.accountEmail === accountEmail)
-         : calendars
+      // Filter calendars by available accounts
+      const accountEmails = accounts.map(
+         (account) => account.email || account.accountEmail
+      )
+      const availableCalendars =
+         accounts.length > 0
+            ? calendars.filter((cal) =>
+                 accountEmails.includes(cal.accountEmail)
+              )
+            : calendars
 
       // Only show writable calendars (owner or writer access)
       const writableCalendars = availableCalendars.filter(
          (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
       )
+
+      // Group calendars by account
+      const calendarsByAccount = writableCalendars.reduce((acc, calendar) => {
+         if (!acc[calendar.accountEmail]) {
+            acc[calendar.accountEmail] = []
+         }
+         acc[calendar.accountEmail].push(calendar)
+         return acc
+      }, {})
 
       return (
          <HStack align='start' spacing={3} w='full'>
@@ -72,14 +87,18 @@ const EventCalendarSelect = React.memo(
                >
                   {selectedCalendar.title}
                </MenuButton>
-               <MenuList>
-                  {writableCalendars.map((calendar) => (
-                     <MenuItem
-                        key={calendar.calendarId}
-                        onClick={() => setSelectedCalendar(calendar)}
-                     >
-                        {calendar.title}
-                     </MenuItem>
+               <MenuList zIndex={10000}>
+                  {Object.entries(calendarsByAccount).map(([accountEmail, accountCalendars]) => (
+                     <MenuGroup key={accountEmail} title={accountEmail}>
+                        {accountCalendars.map((calendar) => (
+                           <MenuItem
+                              key={calendar.calendarId}
+                              onClick={() => setSelectedCalendar(calendar)}
+                           >
+                              {calendar.title}
+                           </MenuItem>
+                        ))}
+                     </MenuGroup>
                   ))}
                </MenuList>
             </Menu>
@@ -102,7 +121,7 @@ const EventCalendarSelect = React.memo(
                      }
                   />
                </MenuButton>
-               <MenuList w='fit-content' minW='fit-content'>
+               <MenuList w='fit-content' minW='fit-content' zIndex={10000}>
                   <MenuGroup w='fit-content' minW='fit-content'>
                      <HStack
                         as='div'
@@ -145,7 +164,7 @@ const EventCalendarSelect = React.memo(
 )
 
 EventCalendarSelect.propTypes = {
-   selectedCalendar: PropTypes.string,
+   selectedCalendar: PropTypes.object,
    setSelectedCalendar: PropTypes.func.isRequired,
    selectedColorId: PropTypes.string,
    setSelectedColorId: PropTypes.func.isRequired,
@@ -157,7 +176,12 @@ EventCalendarSelect.propTypes = {
          accessRole: PropTypes.string.isRequired
       })
    ),
-   accountEmail: PropTypes.string
+   accounts: PropTypes.arrayOf(
+      PropTypes.shape({
+         email: PropTypes.string,
+         accountEmail: PropTypes.string
+      })
+   )
 }
 
 export default EventCalendarInfo

@@ -460,33 +460,35 @@ const Calendar = React.memo(
                </VStack>
 
                {/* Event Preview Popover with Stable Transition */}
-               {!!previewEvent && (
-                  <Popover
-                     isOpen
-                     onClose={() => {
-                        setPreviewEvent(null)
-                     }}
-                     {...POPOVER_STYLES}
-                  >
-                     <PopoverTrigger>
-                        <Box
-                           position='fixed'
-                           left={`${mousePosition.x}px`}
-                           top={`${mousePosition.y}px`}
-                           width='1px'
-                           height='1px'
-                           pointerEvents='none'
-                           zIndex={9999}
-                        />
-                     </PopoverTrigger>
-                     <EventPreview
-                        event={previewEvent}
+               {!!previewEvent &&
+                  previewEvent.id &&
+                  previewEvent.id !== 'new' && (
+                     <Popover
+                        isOpen
                         onClose={() => {
                            setPreviewEvent(null)
                         }}
-                     />
-                  </Popover>
-               )}
+                        {...POPOVER_STYLES}
+                     >
+                        <PopoverTrigger>
+                           <Box
+                              position='fixed'
+                              left={`${mousePosition.x}px`}
+                              top={`${mousePosition.y}px`}
+                              width='1px'
+                              height='1px'
+                              pointerEvents='none'
+                              zIndex={9999}
+                           />
+                        </PopoverTrigger>
+                        <EventPreview
+                           event={previewEvent}
+                           onClose={() => {
+                              setPreviewEvent(null)
+                           }}
+                        />
+                     </Popover>
+                  )}
                <EventCreatePopover />
             </Box>
          </Skeleton>
