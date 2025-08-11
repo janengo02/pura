@@ -17,7 +17,10 @@ import {
    syncTaskWithGoogleAction,
    showTaskModalAction
 } from '../../../../actions/taskActions'
-import { addGoogleAccountAction } from '../../../../actions/calendarActions'
+import {
+   addGoogleAccountAction,
+   navigateCalendarToDateAction
+} from '../../../../actions/calendarActions'
 import { setAlertAction } from '../../../../actions/alertActions'
 
 // UI Components
@@ -73,6 +76,7 @@ const ScheduleTimeSlot = React.memo(
       removeTaskScheduleSlotAction,
       syncTaskWithGoogleAction,
       addGoogleAccountAction,
+      navigateCalendarToDateAction,
       setAlertAction,
       showTaskModalAction,
       scheduleData: { task, pageId },
@@ -329,7 +333,7 @@ const ScheduleTimeSlot = React.memo(
             isViewingCalendarEvent,
             isInvalidTimeSlot
          }
-      }, [slot.start, slot.end, task.target_event_index, index])
+      }, [slot.start, slot.end, task, index])
 
       // -------------------------------------------------------------------------
       // ANIMATION EFFECT
@@ -339,7 +343,7 @@ const ScheduleTimeSlot = React.memo(
             setShowHighlight(true)
             const timer = setTimeout(() => {
                setShowHighlight(false)
-            }, 1000) // 2 seconds
+            }, 500) // 1 second
 
             return () => clearTimeout(timer)
          }
@@ -769,6 +773,12 @@ const ScheduleTimeSlot = React.memo(
          ]
       )
 
+      const handleSyncButtonClick = useCallback(() => {
+         // Navigate calendar to show this time slot
+         const slotStartDate = new Date(slot.start)
+         navigateCalendarToDateAction(slotStartDate, task._id, index)
+      }, [slot.start, navigateCalendarToDateAction, task._id, index])
+
       const syncButton = useMemo(() => {
          const syncStatus = slot.sync_status
          const syncProps = getSyncConfig(syncStatus)
@@ -794,6 +804,7 @@ const ScheduleTimeSlot = React.memo(
                      display='flex'
                      alignItems='center'
                      justifyContent='center'
+                     onClick={handleSyncButtonClick}
                   >
                      {syncProps.icon}
                   </MenuButton>
@@ -818,6 +829,7 @@ const ScheduleTimeSlot = React.memo(
          unsyncLoading,
          useTaskTimeLoading,
          useGoogleTimeLoading,
+         handleSyncButtonClick,
          t
       ])
 
@@ -922,6 +934,7 @@ const mapDispatchToProps = {
    removeTaskScheduleSlotAction,
    syncTaskWithGoogleAction,
    addGoogleAccountAction,
+   navigateCalendarToDateAction,
    setAlertAction,
    showTaskModalAction
 }

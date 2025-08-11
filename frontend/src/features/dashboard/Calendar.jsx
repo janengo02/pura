@@ -116,7 +116,7 @@ const Calendar = React.memo(
       updateGoogleEventTimeAction,
       createCalendarEventAction,
       updateTaskScheduleAction,
-      googleAccount: { googleEvents, loading, range },
+      googleAccount: { googleEvents, loading, range, navigationTarget },
       currentLanguage,
       pageId,
       currentTaskId
@@ -135,6 +135,8 @@ const Calendar = React.memo(
 
       const [previewEvent, setPreviewEvent] = useState(null)
       const [mousePosition, setMousePosition] = useState({ x: 20, y: 20 })
+      const [currentDate, setCurrentDate] = useState(new Date())
+      const [highlightedEvent, setHighlightedEvent] = useState(null)
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -197,27 +199,43 @@ const Calendar = React.memo(
       )
 
       // Customize event appearance based on selection state
-      const eventPropGetter = useCallback((event, start, end, isSelected) => {
-         const eventOpacity = 1
-         const backgroundColor = event.color
-         const boxShadow = isSelected ? SELECTED_EVENT_SHADOW : 'none'
+      const eventPropGetter = useCallback(
+         (event, start, end, isSelected) => {
+            const eventOpacity = 1
+            let backgroundColor = event.color
+            let boxShadow = isSelected ? SELECTED_EVENT_SHADOW : 'none'
+            let transition = 'none'
 
-         // Add conflict styling for conflicted events
-         const isConflicted =
-            event.syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED
-         const className = isConflicted ? 'conflicted-event' : ''
+            // Add conflict styling for conflicted events
+            const isConflicted =
+               event.syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED
+            const className = isConflicted ? 'conflicted-event' : ''
 
-         return {
-            className: className,
-            style: {
-               opacity: eventOpacity,
-               backgroundColor: backgroundColor,
-               color: EVENT_TEXT_COLOR,
-               boxShadow: boxShadow,
-               outline: 'none'
+            // Add highlight styling for navigated events
+            const isHighlighted =
+               highlightedEvent &&
+               event.pura_task_id === highlightedEvent.taskId &&
+               event.pura_schedule_index === highlightedEvent.slotIndex
+
+            if (isHighlighted) {
+               backgroundColor = 'var(--chakra-colors-accent-secondary)'
+               transition = 'background-color 0.3s ease-in-out'
             }
-         }
-      }, [])
+
+            return {
+               className: className,
+               style: {
+                  opacity: eventOpacity,
+                  backgroundColor: backgroundColor,
+                  color: EVENT_TEXT_COLOR,
+                  boxShadow: boxShadow,
+                  outline: 'none',
+                  transition: transition
+               }
+            }
+         },
+         [highlightedEvent]
+      )
 
       // Handle event selection
       const onSelectEvent = useCallback((event, e) => {
@@ -386,6 +404,38 @@ const Calendar = React.memo(
          ]
       )
 
+      // Handle navigation target changes (from sync button clicks)
+      useEffect(() => {
+         if (navigationTarget && navigationTarget.date) {
+            const targetDate = new Date(navigationTarget.date)
+
+            setCurrentDate(targetDate)
+
+            // Set highlighted event for styling
+            if (
+               navigationTarget.taskId &&
+               typeof navigationTarget.slotIndex === 'number'
+            ) {
+               setHighlightedEvent({
+                  taskId: navigationTarget.taskId,
+                  slotIndex: navigationTarget.slotIndex
+               })
+
+               // Clear highlight after 2 seconds
+               const timer = setTimeout(() => {
+                  setHighlightedEvent(null)
+               }, 500)
+
+               return () => clearTimeout(timer)
+            }
+
+            // Calculate new range based on target date and view
+            const newRangeStart = getRangeStart(targetDate, localizer)
+            const newRangeEnd = getRangeEnd(targetDate, localizer)
+            changeCalendarRangeAction([newRangeStart, newRangeEnd])
+         }
+      }, [navigationTarget, localizer, changeCalendarRangeAction])
+
       // -------------------------------------------------------------------------
       // EFFECTS
       // -------------------------------------------------------------------------
@@ -440,6 +490,8 @@ const Calendar = React.memo(
                      defaultDate={calendarConfig.defaultDate}
                      events={visibleEvents || []}
                      defaultView='week'
+                     date={currentDate}
+                     onNavigate={setCurrentDate}
                      localizer={localizer}
                      showMultiDayTimes
                      step={30}

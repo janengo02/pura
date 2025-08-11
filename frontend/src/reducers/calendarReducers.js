@@ -45,7 +45,8 @@ const initialState = {
    googleAccounts: [],
    defaultAccount: null,
    loading: true,
-   range: []
+   range: [],
+   navigationTarget: null
 }
 
 function calendarReducer(state = initialState, action) {
@@ -55,6 +56,11 @@ function calendarReducer(state = initialState, action) {
          return {
             ...state,
             range: payload.range
+         }
+      case 'NAVIGATE_CALENDAR_TO_DATE':
+         return {
+            ...state,
+            navigationTarget: payload
          }
       case ADD_CALENDAR_ACCOUNT:
          return {

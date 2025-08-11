@@ -79,7 +79,7 @@ const semanticTokens = {
          _dark: 'purple.300'
       },
       'accent.subtle': {
-         default: 'purple.50',
+         default: 'purple.100',
          _dark: 'purple.700'
       },
 
