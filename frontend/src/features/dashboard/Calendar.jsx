@@ -57,7 +57,6 @@ import {
 // CONSTANTS & CONFIGURATION
 // =============================================================================
 // Style constants
-const EVENT_TEXT_COLOR = '#1A202C'
 const SELECTED_EVENT_SHADOW =
    '0px 6px 10px 0px rgba(0,0,0,.14),0px 1px 18px 0px rgba(0,0,0,.12),0px 3px 5px -1px rgba(0,0,0,.2)'
 export const POPOVER_STYLES = {
@@ -198,6 +197,28 @@ const Calendar = React.memo(
          [changeCalendarRangeAction, localizer, range]
       )
 
+      // Utility function to determine if a color is dark or light
+      const isColorDark = useCallback((color) => {
+         if (!color) return false
+
+         // Handle CSS variables
+         if (color.startsWith('var(')) return false // Let CSS handle it
+
+         // Remove # if present
+         const hex = color.replace('#', '')
+
+         // Convert hex to RGB
+         const r = parseInt(hex.substr(0, 2), 16)
+         const g = parseInt(hex.substr(2, 2), 16)
+         const b = parseInt(hex.substr(4, 2), 16)
+
+         // Calculate luminance using relative luminance formula
+         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+         // Return true if color is dark (luminance < 0.5)
+         return luminance < 0.7
+      }, [])
+
       // Customize event appearance based on selection state
       const eventPropGetter = useCallback(
          (event, start, end, isSelected) => {
@@ -222,23 +243,30 @@ const Calendar = React.memo(
                transition = 'background-color 0.3s ease-in-out'
             }
 
+            // Determine text color based on background brightness
+            const isDarkBackground = isColorDark(backgroundColor)
+            const textColor = isDarkBackground
+               ? 'var(--chakra-colors-gray-100)'
+               : 'var(--chakra-colors-gray-700)'
+
             return {
                className: className,
                style: {
                   opacity: eventOpacity,
                   backgroundColor: backgroundColor,
-                  color: EVENT_TEXT_COLOR,
+                  color: textColor,
                   boxShadow: boxShadow,
                   outline: 'none',
                   transition: transition
                }
             }
          },
-         [highlightedEvent]
+         [highlightedEvent, isColorDark]
       )
 
       // Handle event selection
       const onSelectEvent = useCallback((event, e) => {
+         if (event.id === 'new') return // Ignore new event placeholder
          // Capture mouse position directly from the event
          setMousePosition({
             x: e.clientX,
@@ -280,6 +308,7 @@ const Calendar = React.memo(
       // Handle event drag and drop
       const onEventDrop = useCallback(
          async ({ event, start, end }) => {
+            if (event.id === 'new') return // Ignore new event placeholder
             // Set seconds and milliseconds to 0 for consistency
             const newStartTime = new Date(start)
             const newEndTime = new Date(end)
@@ -344,6 +373,7 @@ const Calendar = React.memo(
       // Handle event resize
       const onEventResize = useCallback(
          async ({ event, start, end }) => {
+            if (event.id === 'new') return // Ignore new event placeholder
             // Set seconds and milliseconds to 0 for consistency
             const newStartTime = new Date(start)
             const newEndTime = new Date(end)
