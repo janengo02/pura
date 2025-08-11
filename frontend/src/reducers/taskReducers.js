@@ -11,7 +11,8 @@ import {
    SYNC_TASK_EVENT,
    DELETE_TASK_SCHEDULE,
    MOVE_TASK,
-   DELETE_TASK
+   DELETE_TASK,
+   LOGOUT
 } from '../actions/types'
 
 const initialState = {
@@ -150,6 +151,11 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task: null
+         }
+
+      case LOGOUT:
+         return {
+            ...initialState
          }
 
       default:

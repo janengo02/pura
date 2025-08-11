@@ -153,6 +153,7 @@ const Register = React.memo(
                               leftIcon={<PiMagicWand size={16} />}
                               onClick={handleAutoGenerate}
                               colorScheme='purple'
+                              flexShrink={0}
                            >
                               {t('btn-auto-generate-demo')}
                            </Button>

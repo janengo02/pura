@@ -16,7 +16,8 @@ import {
    UPDATE_TASK_SCHEDULE,
    SYNC_TASK_EVENT,
    FILTER_SCHEDULE,
-   FILTER_NAME
+   FILTER_NAME,
+   LOGOUT
 } from '../actions/types'
 import {
    moveTask,
@@ -260,6 +261,13 @@ function pageReducer(state = initialState, action) {
             loading: false,
             error: true
          }
+      
+      case LOGOUT:
+         return {
+            ...initialState,
+            loading: false
+         }
+
       default:
          return state
    }

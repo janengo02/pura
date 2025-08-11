@@ -32,7 +32,7 @@ function authReducer(state = initialState, action) {
             ...state,
             ...payload,
             isAuthenticated: true,
-            loading: false
+            loading: true // Keep loading true until USER_LOADED is dispatched
          }
       case AUTH_ERROR:
       case REGISTER_FAIL:

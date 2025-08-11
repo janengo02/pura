@@ -17,7 +17,8 @@ import {
    GET_CALENDAR_DEFAULT_ACCOUNT,
    DELETE_CALENDAR_EVENT,
    SYNC_TASK_EVENT,
-   UPDATE_CALENDAR_RANGE
+   UPDATE_CALENDAR_RANGE,
+   LOGOUT
 } from '../actions/types'
 import {
    addGoogleAccount,
@@ -244,6 +245,12 @@ function calendarReducer(state = initialState, action) {
             googleEvents: [],
             googleCalendars: [],
             defaultAccount: null,
+            loading: false
+         }
+
+      case LOGOUT:
+         return {
+            ...initialState,
             loading: false
          }
 

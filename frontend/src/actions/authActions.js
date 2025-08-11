@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { api } from '../utils'
+import setAuthToken from '../utils/setAuthToken'
 import {
    REGISTER_SUCCESS,
    REGISTER_FAIL,
@@ -120,5 +121,7 @@ export const loginAction = (formData) => async (dispatch) => {
  * Logs out the current user
  */
 export const logoutAction = () => async (dispatch) => {
+   // Clear the auth token
+   setAuthToken()
    dispatch({ type: LOGOUT })
 }
