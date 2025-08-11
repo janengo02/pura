@@ -25,8 +25,14 @@ import {
    Text,
    VStack,
    Button,
-   Image
+   Image,
+   Box,
+   HStack,
+   Divider
 } from '@chakra-ui/react'
+
+// Icons
+import { PiDice1, PiDiceFive, PiMagicWand, PiUser } from 'react-icons/pi'
 
 // Internal Components
 import { MultiInput } from '../../components/MultiInput'
@@ -55,6 +61,34 @@ const Register = React.memo(
       const methods = useForm({
          resolver: yupResolver(s(t))
       })
+
+      // -------------------------------------------------------------------------
+      // HELPER FUNCTIONS
+      // -------------------------------------------------------------------------
+
+      const generateRandomData = () => {
+         const firstName = 'Pura'
+         const lastName = 'User'
+         const randomNum = Math.floor(Math.random() * 10000)
+
+         return {
+            name: `${firstName} ${lastName}${randomNum}`,
+            email: `user${randomNum}@pura-demo.com`,
+            password: 'PuraDemoPass123!',
+            confirm_password: 'PuraDemoPass123!'
+         }
+      }
+
+      const handleAutoGenerate = () => {
+         const demoData = generateRandomData()
+         methods.setValue('name', demoData.name)
+         methods.setValue('email', demoData.email)
+         methods.setValue('password', demoData.password)
+         methods.setValue('confirm_password', demoData.confirm_password)
+
+         // Clear any existing validation errors
+         methods.clearErrors()
+      }
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -106,6 +140,24 @@ const Register = React.memo(
                <SimpleGrid columns={1} rowGap={6} w='full'>
                   <GridItem colSpan={1}>
                      <FormAlert />
+                  </GridItem>
+                  <GridItem colSpan={1}>
+                     <Box>
+                        <HStack justify='space-between' align='center'>
+                           <Text fontWeight='semibold' color='text.primary'>
+                              {t('desc-auto-generate-demo-cta')}
+                           </Text>
+                           <Button
+                              variant='outline'
+                              size='md'
+                              leftIcon={<PiMagicWand size={16} />}
+                              onClick={handleAutoGenerate}
+                              colorScheme='purple'
+                           >
+                              {t('btn-auto-generate-demo')}
+                           </Button>
+                        </HStack>
+                     </Box>
                   </GridItem>
 
                   <GridItem colSpan={1}>
