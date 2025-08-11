@@ -17,6 +17,7 @@ import {
 
 // UI Components
 import {
+   Box,
    Flex,
    IconButton,
    Menu,
@@ -208,22 +209,24 @@ const Group = React.memo(
       // -------------------------------------------------------------------------
 
       const renderTitleInput = () => (
-         <FormProvider {...methods}>
-            <form noValidate autoComplete='on'>
-               <MultiInput
-                  name='title'
-                  type='text'
-                  variant='unstyled'
-                  placeholder={t('placeholder-untitled')}
-                  validation={s.title}
-                  color={group.color}
-                  fontWeight={600}
-                  borderRadius={0}
-                  autoFocus
-                  onBlur={handleInputBlur}
-               />
-            </form>
-         </FormProvider>
+         <Box paddingY={1}>
+            <FormProvider {...methods}>
+               <form noValidate autoComplete='on'>
+                  <MultiInput
+                     name='title'
+                     type='text'
+                     variant='unstyled'
+                     placeholder={t('placeholder-untitled')}
+                     validation={s.title}
+                     color={group.color}
+                     fontWeight={600}
+                     borderRadius={0}
+                     autoFocus
+                     onBlur={handleInputBlur}
+                  />
+               </form>
+            </FormProvider>
+         </Box>
       )
 
       const renderTitleDisplay = () => (
