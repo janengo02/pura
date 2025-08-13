@@ -3,8 +3,9 @@ import store from '../store'
 import { LOGOUT } from '../actions/types'
 
 // Create an instance of axios
+const API_URL = process.env?.REACT_APP_API_URL || 'http://localhost:2000'
 const api = axios.create({
-   baseURL: '/api',
+   baseURL: `${API_URL}/api`,
    headers: {
       'Content-Type': 'application/json'
    }
