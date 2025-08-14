@@ -1,9 +1,18 @@
 const express = require('express')
+const cors = require('cors')
 const connectDB = require('./config/db')
 const app = express()
 
 // Connect database
 connectDB()
+
+// CORS Configuration
+app.use(
+   cors({
+      origin: process.env.FRONTEND_URL,
+      credentials: true
+   })
+)
 
 // Init Middleware
 app.use(express.json({ extended: false }))
