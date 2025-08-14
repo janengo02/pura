@@ -7,12 +7,31 @@ const app = express()
 connectDB()
 
 // CORS Configuration
-app.use(
-   cors({
-      origin: process.env.FRONTEND_URL,
-      credentials: true
-   })
-)
+const corsOptions = {
+   origin: function (origin, callback) {
+      const allowedOrigins = [
+         'https://pura-production.up.railway.app',
+         'http://localhost:8080',
+         process.env.FRONTEND_URL
+      ].filter(Boolean)
+      
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true)
+      
+      if (allowedOrigins.includes(origin)) {
+         callback(null, true)
+      } else {
+         console.log('CORS blocked origin:', origin)
+         callback(new Error('Not allowed by CORS'))
+      }
+   },
+   credentials: true,
+   optionsSuccessStatus: 200,
+   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+}
+
+app.use(cors(corsOptions))
 
 // Init Middleware
 app.use(express.json({ extended: false }))
