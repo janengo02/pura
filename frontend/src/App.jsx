@@ -11,6 +11,7 @@ import Register from './features/register/Register'
 import Login from './features/login/Login'
 import PasswordRecover from './features/login/PasswordRecover'
 import Landing from './features/landing/Landing'
+import Terms from './features/landing/Terms'
 import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import ErrorPage from './features/error/ErrorPage'
@@ -99,6 +100,7 @@ const App = () => {
                         path='dashboard'
                         element={<PrivateRoute component={Dashboard} />}
                      />
+                     <Route path='terms' element={<Terms />} />
                      <Route path='/*' element={<ErrorPage />} />
                   </Routes>
                </Router>

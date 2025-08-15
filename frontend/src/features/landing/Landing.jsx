@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
@@ -563,14 +563,14 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                overflow='hidden'
                shadow='2xl'
             >
-               <Box 
-                  as='video' 
+               <Box
+                  as='video'
                   key={currentFeature.mediaSrc}
-                  w='full' 
+                  w='full'
                   h='auto'
                   maxW='full'
-                  autoPlay 
-                  loop 
+                  autoPlay
+                  loop
                   muted
                   playsInline
                >
@@ -931,8 +931,9 @@ CTASection.displayName = 'CTASection'
 /**
  * Footer section
  */
-const Footer = React.memo(() => {
+export const Footer = React.memo(() => {
    const { t } = useReactiveTranslation()
+   const navigate = useNavigate()
 
    return (
       <Box
@@ -967,9 +968,29 @@ const Footer = React.memo(() => {
                      </Badge>
                   </HStack>
 
-                  <Text color='text.secondary' fontSize='sm'>
-                     {t('landing-footer-description')}
-                  </Text>
+                  <VStack
+                     spacing={2}
+                     align={{ base: 'center', md: 'flex-end' }}
+                  >
+                     <Text color='text.secondary' fontSize='sm'>
+                        {t('landing-footer-description')}
+                     </Text>
+                     <HStack spacing={4}>
+                        <Text
+                           as='button'
+                           color='accent.primary'
+                           fontSize='sm'
+                           cursor='pointer'
+                           _hover={{ textDecoration: 'underline' }}
+                           onClick={() => navigate('/terms')}
+                        >
+                           Privacy Policy
+                        </Text>
+                        <Text color='text.secondary' fontSize='sm'>
+                           © 2025 Pura
+                        </Text>
+                     </HStack>
+                  </VStack>
                </Flex>
             </VStack>
          </Container>
@@ -984,6 +1005,15 @@ Footer.displayName = 'Footer'
 // =============================================================================
 
 const Landing = React.memo(({ landingData, isAuthenticated }) => {
+   // -------------------------------------------------------------------------
+   // EFFECTS
+   // -------------------------------------------------------------------------
+
+   // Scroll to top when component mounts
+   useEffect(() => {
+      window.scrollTo(0, 0)
+   }, [])
+
    // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------
