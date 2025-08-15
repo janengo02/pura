@@ -10,6 +10,8 @@
       "alert-google_calendar-event_created": "Googleカレンダーイベントが作成されました",
       "alert-google_calendar-event_synced": "スケジュールがGoogleカレンダーと同期されました",
       "alert-google_calendar-sync_failed": "Googleカレンダーとの同期に失敗しました",
+      "calendar-connect-required": "Googleカレンダーが必要です",
+      "calendar-connect-google-account-message": "カレンダーイベントを作成するには、少なくとも1つのGoogleアカウントを接続してください",
       "alert-group_progress-notfound": "グループまたは進捗を特定できません",
       "alert-group-notfound": "グループを特定できません",
       "alert-invalid-email": "そのメールアドレスのアカウントが見つかりません",

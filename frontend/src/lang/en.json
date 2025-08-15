@@ -10,6 +10,8 @@
       "alert-google_calendar-event_created": "Google Calendar event created",
       "alert-google_calendar-event_synced": "Schedule synced with Google Calendar",
       "alert-google_calendar-sync_failed": "Failed to sync with Google Calendar",
+      "calendar-connect-required": "Google Calendar Required",
+      "calendar-connect-google-account-message": "Please connect at least one Google account to create calendar events",
       "alert-group_progress-notfound": "Cannot identify group or progress",
       "alert-group-notfound": "Cannot identify group",
       "alert-invalid-email": "We couldn't find an account with that email",

@@ -1027,18 +1027,19 @@ export const createGoogleEvent = ({
    newEvent,
    newEventMousePosition
 }) => {
+   console.log(googleCalendars, defaultAccount)
    // Find the calendar and account for enhanced event creation
    const calendar = googleCalendars.find(
       (cal) => cal.accountEmail === defaultAccount.accountEmail && cal.isPrimary
    )
    const formattedCalendar = {
-      id: calendar.calendarId,
-      summary: calendar?.title,
-      backgroundColor: calendar?.color,
-      accessRole: calendar?.accessRole,
-      selected: calendar?.selected || false
+      id: calendar?.calendarId || null,
+      summary: calendar?.title || null,
+      backgroundColor: calendar?.color || '#3174ad',
+      accessRole: calendar?.accessRole || null,
+      selected: true
    }
-   const formattedAccount = { accountEmail: defaultAccount.accountEmail }
+   const formattedAccount = { account_email: defaultAccount.accountEmail }
 
    const enhancedEvent = {
       ...createEnhancedEventObject(
@@ -1169,7 +1170,8 @@ export const updateTaskSchedule = ({ googleEvents, scheduleUpdateData }) => {
                : event.start,
             end: scheduleUpdateData.end
                ? new Date(scheduleUpdateData.end)
-               : event.end
+               : event.end,
+            syncStatus: SCHEDULE_SYNCE_STATUS.SYNCED // Reset sync status to synced
          }
       }
       return event
@@ -1316,7 +1318,7 @@ export const syncTaskScheduleSlot = ({
       accessRole: calendar?.accessRole,
       selected: calendar?.selected || false
    }
-   const formattedAccount = { accountEmail: accountEmail }
+   const formattedAccount = { account_email: accountEmail }
 
    const matchingSlot = syncTask.schedule[slotIndex]
 

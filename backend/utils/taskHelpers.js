@@ -150,7 +150,7 @@ const syncTaskSlotWithGoogle = async (
          (acc) => acc.account_email === accountEmail
       )
       if (!account) {
-         return { success: false, message: 'Google account not found' }
+         return { success: true } // No sync needed if account not found
       }
 
       const oauth2Client = setOAuthCredentials(account.refresh_token)

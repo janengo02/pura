@@ -183,7 +183,10 @@ const ScheduleTimeSlot = React.memo(
       const handleUseTaskTime = useCallback(async () => {
          await updateScheduleSlot({
             start: slot.start,
-            end: slot.end
+            end: slot.end,
+            google_event_start: slot.start,
+            google_event_end: slot.end,
+            sync_status: SCHEDULE_SYNCE_STATUS.SYNCED
          })
       }, [updateScheduleSlot, slot.start, slot.end])
 
@@ -191,7 +194,10 @@ const ScheduleTimeSlot = React.memo(
          if (slot.google_event_start && slot.google_event_end) {
             await updateScheduleSlot({
                start: slot.google_event_start,
-               end: slot.google_event_end
+               end: slot.google_event_end,
+               google_event_start: slot.google_event_start,
+               google_event_end: slot.google_event_end,
+               sync_status: SCHEDULE_SYNCE_STATUS.SYNCED
             })
          }
       }, [updateScheduleSlot, slot.google_event_start, slot.google_event_end])

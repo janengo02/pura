@@ -62,7 +62,15 @@ function taskReducer(state = initialState, action) {
                              ? {
                                   ...slot,
                                   start: payload.start || slot.start,
-                                  end: payload.end || slot.end
+                                  end: payload.end || slot.end,
+                                  google_event_start:
+                                     payload.google_event_start ||
+                                     slot.google_event_start,
+                                  google_event_end:
+                                     payload.google_event_end ||
+                                     slot.google_event_end,
+                                  sync_status:
+                                     payload.sync_status || slot.sync_status
                                }
                              : slot
                        ),

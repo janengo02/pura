@@ -252,12 +252,8 @@ export const updateTaskScheduleAction =
       dispatch({
          type: UPDATE_TASK_SCHEDULE,
          payload: {
-            task_id: formData.task_id,
-            slot_index: formData.slot_index,
-            start: formData.start,
-            end: formData.end,
-            update_date: new Date().toISOString(),
-            target_event_index: formData.target_event_index
+            ...formData,
+            update_date: new Date().toISOString()
          }
       })
       try {

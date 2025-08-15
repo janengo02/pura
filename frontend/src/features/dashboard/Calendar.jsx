@@ -41,6 +41,10 @@ import {
    createCalendarEventAction
 } from '../../actions/calendarActions'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
+import {
+   setAlertAction,
+   removeAllAlertAction
+} from '../../actions/alertActions'
 
 // Utils
 import { getRangeStart, getRangeEnd } from '../../utils/dates'
@@ -115,7 +119,16 @@ const Calendar = React.memo(
       updateGoogleEventTimeAction,
       createCalendarEventAction,
       updateTaskScheduleAction,
-      googleAccount: { googleEvents, loading, range, navigationTarget },
+      setAlertAction,
+      removeAllAlertAction,
+      googleAccount: {
+         googleEvents,
+         googleCalendars,
+         googleAccounts,
+         loading,
+         range,
+         navigationTarget
+      },
       currentLanguage,
       pageId,
       currentTaskId
@@ -136,6 +149,9 @@ const Calendar = React.memo(
       const [mousePosition, setMousePosition] = useState({ x: 20, y: 20 })
       const [currentDate, setCurrentDate] = useState(new Date())
       const [highlightedEvent, setHighlightedEvent] = useState(null)
+
+      // Ref to track current alert timeout
+      const alertTimeoutRef = useRef(null)
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -172,6 +188,31 @@ const Calendar = React.memo(
                })),
          [googleEvents, t]
       )
+
+      // -------------------------------------------------------------------------
+      // UTILITY FUNCTIONS
+      // -------------------------------------------------------------------------
+
+      // Show info alert that auto-dismisses after 3 seconds
+      const showConnectGoogleAccountAlert = useCallback(() => {
+         // Clear any existing timeout to reset the 3-second timer
+         if (alertTimeoutRef.current) {
+            clearTimeout(alertTimeoutRef.current)
+         }
+
+         // Set the alert (this will replace any existing alert)
+         setAlertAction(
+            'calendar-connect-required',
+            'calendar-connect-google-account-message',
+            'info'
+         )
+
+         // Set new timeout to remove all alerts after 3 seconds
+         alertTimeoutRef.current = setTimeout(() => {
+            removeAllAlertAction()
+            alertTimeoutRef.current = null
+         }, 5000)
+      }, [setAlertAction, removeAllAlertAction])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -281,6 +322,35 @@ const Calendar = React.memo(
       const onSelectSlot = useCallback(
          (slotInfo) => {
             if (slotInfo.action !== 'select' || !slotInfo.bounds) return
+
+            // Check if we have Google accounts and calendars
+            if (!googleAccounts || googleAccounts.length === 0) {
+               showConnectGoogleAccountAlert()
+               return
+            }
+
+            if (!googleCalendars || googleCalendars.length === 0) {
+               showConnectGoogleAccountAlert()
+               return
+            }
+
+            // Check if there are any writable calendars
+            const accountEmails = googleAccounts.map(
+               (account) => account.email || account.accountEmail
+            )
+            const availableCalendars = googleCalendars.filter((cal) =>
+               accountEmails.includes(cal.accountEmail)
+            )
+            const writableCalendars = availableCalendars.filter(
+               (cal) =>
+                  cal.accessRole === 'owner' || cal.accessRole === 'writer'
+            )
+
+            if (writableCalendars.length === 0) {
+               showConnectGoogleAccountAlert()
+               return
+            }
+
             // Capture mouse position for popover placement
             const mousePosition = {
                x: slotInfo.bounds.left || 0,
@@ -302,7 +372,12 @@ const Calendar = React.memo(
             // Dispatch action to create calendar event
             createCalendarEventAction(newEvent, mousePosition)
          },
-         [createCalendarEventAction]
+         [
+            createCalendarEventAction,
+            googleAccounts,
+            googleCalendars,
+            showConnectGoogleAccountAlert
+         ]
       )
 
       // Handle event drag and drop
@@ -592,6 +667,8 @@ Calendar.propTypes = {
    updateGoogleEventTimeAction: PropTypes.func.isRequired,
    createCalendarEventAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
+   setAlertAction: PropTypes.func.isRequired,
+   removeAllAlertAction: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired,
    currentLanguage: PropTypes.string.isRequired,
    pageId: PropTypes.string,
@@ -631,7 +708,9 @@ const mapDispatchToProps = {
    changeCalendarRangeAction,
    updateGoogleEventTimeAction,
    createCalendarEventAction,
-   updateTaskScheduleAction
+   updateTaskScheduleAction,
+   setAlertAction,
+   removeAllAlertAction
 }
 
 // =============================================================================
