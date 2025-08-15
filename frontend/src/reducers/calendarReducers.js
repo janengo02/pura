@@ -35,7 +35,6 @@ import {
    removeTaskScheduleSlot,
    deleteTaskEvents,
    deleteGoogleEvent,
-   syncTaskScheduleSlot,
    createGoogleEvent
 } from './calendarReducersHelpers'
 
@@ -220,21 +219,6 @@ function calendarReducer(state = initialState, action) {
             ...state,
             ...getDefaultGoogleAccount({
                defaultAccountData: payload
-            })
-         }
-
-      case SYNC_TASK_EVENT:
-         return {
-            ...state,
-            ...syncTaskScheduleSlot({
-               googleAccounts: state.googleAccounts,
-               googleCalendars: state.googleCalendars,
-               googleEvents: state.googleEvents,
-               accountEmail: payload.account_email,
-               calendarId: payload.calendar_id,
-               newEvent: payload.event,
-               syncTask: payload.task,
-               slotIndex: payload.slot_index
             })
          }
 

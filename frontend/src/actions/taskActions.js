@@ -13,6 +13,7 @@ import {
    DELETE_TASK_SCHEDULE
 } from './types'
 import { commonErrorHandler, fatalErrorHandler } from './errorActions'
+import { loadCalendarAction } from './calendarActions'
 
 /**
  * Create new task
@@ -158,6 +159,28 @@ export const syncTaskWithGoogleAction =
                task: res.data.task
             }
          })
+         // If getState is provided, handle calendar reload and task modal
+         if (getState) {
+            const state = getState()
+            const calendarRange = state.calendar?.range
+            const currentPageId = state.page?._id
+            const currentTaskId = state.task?._id
+
+            // Reload calendar if range and page ID are available
+            if (calendarRange && calendarRange.length > 0 && currentPageId) {
+               dispatch(loadCalendarAction(calendarRange, currentPageId))
+            }
+
+            // Show task modal if both page ID and task ID are available
+            if (currentPageId && currentTaskId) {
+               dispatch(
+                  showTaskModalAction({
+                     page_id: currentPageId,
+                     task_id: currentTaskId
+                  })
+               )
+            }
+         }
       } catch (err) {
          commonErrorHandler(dispatch, err, getState)
       }
