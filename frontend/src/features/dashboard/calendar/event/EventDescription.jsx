@@ -12,8 +12,17 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 
 const EventDescription = ({ description }) => {
    if (!description) return null
+   
    // Check if description contains HTML tags
    const isHTML = /<[^>]*>/g.test(description)
+   
+   // If it's HTML, check if it contains actual text content
+   if (isHTML) {
+      // Remove all HTML tags and check if there's meaningful text left
+      const textContent = description.replace(/<[^>]*>/g, '').trim()
+      // If no text content remains after stripping HTML tags, return null
+      if (!textContent) return null
+   }
 
    // Convert plain text line breaks to HTML if needed
    const getDisplayContent = () => {
