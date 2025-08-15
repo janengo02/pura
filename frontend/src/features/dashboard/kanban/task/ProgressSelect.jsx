@@ -61,8 +61,7 @@ const ProgressSelect = React.memo(
                         moveTaskAction({
                            page_id: _id,
                            task_id: task._id,
-                           progress: progress_item,
-                           task_detail_flg: true
+                           progress: progress_item
                         })
                      }
                   }}

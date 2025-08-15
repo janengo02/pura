@@ -129,7 +129,6 @@ const ScheduleTimeSlot = React.memo(
                page_id: pageId,
                task_id: task._id,
                slot_index: index,
-               task_detail_flg: true,
                ...updates
             }
             await updateTaskScheduleAction(formData)
@@ -141,8 +140,7 @@ const ScheduleTimeSlot = React.memo(
          const formData = {
             page_id: pageId,
             task_id: task._id,
-            slot_index: index,
-            task_detail_flg: true
+            slot_index: index
          }
          await removeTaskScheduleSlotAction(formData)
       }, [removeTaskScheduleSlotAction, index, pageId, task._id])
@@ -327,7 +325,8 @@ const ScheduleTimeSlot = React.memo(
       const timeSlotState = useMemo(() => {
          const startTime = stringToDateTimeLocal(slot.start)
          const endTime = stringToDateTimeLocal(slot.end)
-         const isViewingCalendarEvent = task.target_event_index === index
+         const isViewingCalendarEvent =
+            task.view_target_event_at && task.target_event_index === index
          const isInvalidTimeSlot =
             startTime === 'Invalid date' ||
             endTime === 'Invalid date' ||
@@ -339,7 +338,13 @@ const ScheduleTimeSlot = React.memo(
             isViewingCalendarEvent,
             isInvalidTimeSlot
          }
-      }, [slot.start, slot.end, task, index])
+      }, [
+         slot.start,
+         slot.end,
+         task.target_event_index,
+         task.view_target_event_at,
+         index
+      ])
 
       // -------------------------------------------------------------------------
       // ANIMATION EFFECT

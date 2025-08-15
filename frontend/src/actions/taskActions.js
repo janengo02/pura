@@ -77,7 +77,8 @@ export const showTaskModalAction = (formData) => async (dispatch) => {
          payload: {
             ...res.data,
             ...(typeof formData.target_event_index === 'number' && {
-               target_event_index: formData.target_event_index
+               target_event_index: formData.target_event_index,
+               view_target_event_at: new Date()
             })
          }
       })
@@ -193,7 +194,6 @@ export const syncTaskWithGoogleAction =
  * @param {string} formData.task_id - Task ID
  * @param {string} [formData.title] - Task title
  * @param {string} [formData.content] - Task content
- * @param {boolean} [formData.task_detail_flg] - Task detail flag
  * @returns {Function} Redux thunk
  */
 export const updateTaskBasicInfoAction =
@@ -226,7 +226,6 @@ export const updateTaskBasicInfoAction =
  * @param {string} formData.task_id - Task ID
  * @param {Object} [formData.group] - Target group
  * @param {Object} [formData.progress] - Target progress
- * @param {boolean} [formData.task_detail_flg] - Task detail flag
  * @returns {Function} Redux thunk
  */
 export const moveTaskAction = (formData) => async (dispatch, getState) => {
@@ -266,7 +265,6 @@ export const moveTaskAction = (formData) => async (dispatch, getState) => {
  * @param {number} formData.slot_index - Slot index
  * @param {string} formData.start - Start time
  * @param {string} formData.end - End time
- * @param {boolean} [formData.task_detail_flg] - Task detail flag
  * @returns {Function} Redux thunk
  */
 export const updateTaskScheduleAction =
@@ -299,7 +297,6 @@ export const updateTaskScheduleAction =
  * @param {string} formData.task_id - Task ID
  * @param {string} formData.start - Start time
  * @param {string} formData.end - End time
- * @param {boolean} [formData.task_detail_flg] - Task detail flag
  * @returns {Function} Redux thunk that returns {newSlotIndex}
  */
 export const addTaskScheduleSlotAction =
@@ -346,7 +343,6 @@ export const addTaskScheduleSlotAction =
  * @param {string} formData.page_id - Page ID
  * @param {string} formData.task_id - Task ID
  * @param {number} formData.slot_index - Slot index
- * @param {boolean} [formData.task_detail_flg] - Task detail flag
  * @returns {Function} Redux thunk
  */
 export const removeTaskScheduleSlotAction =

@@ -179,7 +179,6 @@ const EventEditModal = React.memo(
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   ...(isCurrentTask && {
-                     task_detail_flg: true,
                      target_event_index: event.pura_schedule_index
                   })
                })
@@ -209,7 +208,6 @@ const EventEditModal = React.memo(
                   slot_index: event.pura_schedule_index,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
-                     task_detail_flg: true,
                      target_event_index: event.pura_schedule_index
                   })
                })

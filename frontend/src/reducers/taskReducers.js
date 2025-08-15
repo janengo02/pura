@@ -75,6 +75,9 @@ function taskReducer(state = initialState, action) {
                              : slot
                        ),
                        target_event_index: payload.target_event_index,
+                       view_target_event_at:
+                          payload.view_target_event_at ||
+                          state.task.view_target_event_at,
                        update_date:
                           payload.update_date || state.task.update_date
                     }

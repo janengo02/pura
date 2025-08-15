@@ -267,11 +267,12 @@ const Calendar = React.memo(
             let backgroundColor = event.color
             let boxShadow = isSelected ? SELECTED_EVENT_SHADOW : 'none'
             let transition = 'none'
+            let filter = 'none'
 
             // Add conflict styling for conflicted events
             const isConflicted =
                event.syncStatus === SCHEDULE_SYNCE_STATUS.CONFLICTED
-            const className = isConflicted ? 'conflicted-event' : ''
+            let className = isConflicted ? 'conflicted-event' : ''
 
             // Add highlight styling for navigated events
             const isHighlighted =
@@ -280,8 +281,11 @@ const Calendar = React.memo(
                event.pura_schedule_index === highlightedEvent.slotIndex
 
             if (isHighlighted) {
-               backgroundColor = 'var(--chakra-colors-accent-secondary)'
-               transition = 'background-color 0.3s ease-in-out'
+               filter = 'saturate(2) brightness(1.1)'
+               transition = 'filter 0.5s ease-in-out'
+               boxShadow =
+                  '0 8px 16px rgba(0,0,0,0.3), 0 4px 6px rgba(0,0,0,0.2)'
+               className += (className ? ' ' : '') + 'highlighted-event'
             }
 
             // Determine text color based on background brightness
@@ -298,6 +302,7 @@ const Calendar = React.memo(
                   color: textColor,
                   boxShadow: boxShadow,
                   outline: 'none',
+                  filter: filter,
                   transition: transition
                }
             }
@@ -403,7 +408,6 @@ const Calendar = React.memo(
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   ...(isCurrentTask && {
-                     task_detail_flg: true,
                      target_event_index: event.pura_schedule_index
                   })
                })
@@ -429,7 +433,6 @@ const Calendar = React.memo(
                   slot_index: event.pura_schedule_index,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
-                     task_detail_flg: true,
                      target_event_index: event.pura_schedule_index
                   })
                }
@@ -468,7 +471,6 @@ const Calendar = React.memo(
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   ...(isCurrentTask && {
-                     task_detail_flg: true,
                      target_event_index: event.pura_schedule_index
                   })
                })
@@ -493,7 +495,6 @@ const Calendar = React.memo(
                   slot_index: event.pura_schedule_index,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
-                     task_detail_flg: true,
                      target_event_index: event.pura_schedule_index
                   })
                }

@@ -829,3 +829,33 @@
 .chakra-ui-dark .quill-editor-container .ql-editor a {
    color: #63b3ed !important;
 }
+@keyframes jiggle {
+   0% {
+      transform: rotate(0deg) scale(1);
+   }
+   15% {
+      transform: rotate(-1.5deg) scale(1.02);
+   }
+   30% {
+      transform: rotate(1.5deg) scale(1.02);
+   }
+   45% {
+      transform: rotate(-1.5deg) scale(1.02);
+   }
+   60% {
+      transform: rotate(1.5deg) scale(1.01);
+   }
+   75% {
+      transform: rotate(-1.5deg) scale(1.01);
+   }
+   90% {
+      transform: rotate(1.5deg) scale(1.02);
+   }
+   100% {
+      transform: rotate(0deg) scale(1);
+   }
+}
+.highlighted-event {
+   animation: jiggle 1s ease-in-out;
+   animation-fill-mode: both;
+}

@@ -61,8 +61,7 @@ const GroupSelect = React.memo(
                         moveTaskAction({
                            page_id: _id,
                            task_id: task._id,
-                           group: group_item,
-                           task_detail_flg: true
+                           group: group_item
                         })
                      }
                   }}

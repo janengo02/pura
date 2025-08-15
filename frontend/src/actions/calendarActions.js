@@ -174,7 +174,6 @@ export const getDefaultGoogleAccountAction =
  * @param {string} reqData.originalCalendarId - Original calendar ID
  * @param {string} reqData.calendarSummary - Target calendar summary/name for optimistic updates
  * @param {string} reqData.calendarBackgroundColor - Target calendar background color for optimistic updates
- * @param {boolean} [reqData.task_detail_flg] - Task detail flag for optimistic task updates
  * @param {string} [reqData.task_id] - Task ID for synced events
  * @param {number} [reqData.slot_index] - Slot index for synced events
  * @param {number} [reqData.target_event_index] - Target event index for task detail updates
@@ -234,7 +233,8 @@ export const updateGoogleEventAction =
                   start: reqData.start,
                   end: reqData.end,
                   update_date: new Date().toISOString(),
-                  target_event_index: reqData.target_event_index
+                  target_event_index: reqData.target_event_index,
+                  view_target_event_at: new Date()
                }
             })
          }
@@ -272,7 +272,6 @@ export const updateGoogleEventAction =
  * @param {string} reqData.accountEmail - Google account ID
  * @param {string} reqData.calendarId - Calendar ID where event exists
  * @param {string} reqData.originalCalendarId - Original calendar ID
- * @param {boolean} [reqData.task_detail_flg] - Task detail flag for optimistic task updates
  * @param {string} [reqData.task_id] - Task ID for synced events
  * @param {number} [reqData.slot_index] - Slot index for synced events
  * @param {number} [reqData.target_event_index] - Target event index for task detail updates
@@ -299,7 +298,8 @@ export const updateGoogleEventTimeAction =
                   start: reqData.start,
                   end: reqData.end,
                   update_date: new Date().toISOString(),
-                  target_event_index: reqData.target_event_index
+                  target_event_index: reqData.target_event_index,
+                  view_target_event_at: new Date()
                }
             })
          }
