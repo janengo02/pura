@@ -8,7 +8,7 @@ const { check, validationResult } = require('express-validator')
 
 const auth = require('../../middleware/auth')
 const { sendErrorResponse } = require('../../utils/responseHelper')
-const User = require('../../models/UserModel')
+const prisma = require('../../config/prisma')
 
 dotenv.config()
 
@@ -16,22 +16,24 @@ dotenv.config()
  * @route GET api/auth
  * @desc Get authenticated user details
  * @access Private
- * @returns {Object} User details with email, name, avatar, google_accounts
+ * @returns {Object} User details with email, name, avatar, googleAccounts
  */
 router.get('/', auth, async (req, res) => {
    try {
-      const user = await User.findById(req.user.id).select('-password')
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
       if (user) {
-         const { email, name, avatar, google_accounts } = user
          res.json({
-            email,
-            name,
-            avatar,
-            google_accounts: google_accounts.map((account) => ({
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+            googleAccounts: user.googleAccounts.map((account) => ({
                _id: account._id,
-               account_email: account.account_email,
-               sync_status: account.sync_status,
-               is_default: account.is_default
+               accountEmail: account.accountEmail,
+               syncStatus: account.syncStatus,
+               isDefault: account.isDefault
             }))
          })
       } else {
@@ -65,7 +67,9 @@ router.post(
 
       try {
          // Check if user exists
-         const user = await User.findOne({ email })
+         const user = await prisma.user.findUnique({
+            where: { email }
+         })
          if (!user) {
             return sendErrorResponse(res, 401, 'auth', 'login')
          }

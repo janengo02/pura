@@ -29,7 +29,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const ScheduleSelect = React.memo(
-   ({ addTaskScheduleSlotAction, scheduleData: { task, _id } }) => {
+   ({ addTaskScheduleSlotAction, scheduleData: { task, id } }) => {
       const { t } = useReactiveTranslation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -65,19 +65,19 @@ const ScheduleSelect = React.memo(
          }
 
          const formData = {
-            page_id: _id,
-            task_id: task._id,
+            pageId: id,
+            taskId: task.id,
             task_title: task.title,
             task_content: task.content,
             start: startTime.toISOString(),
             end: endTime.toISOString(),
-            slot_index: task.schedule?.length || 0
+            slotIndex: task.schedule?.length || 0
          }
 
          await addTaskScheduleSlotAction(formData)
       }, [
-         task._id,
-         _id,
+         task.id,
+         id,
          addTaskScheduleSlotAction,
          task.schedule?.length,
          task.content,
@@ -127,7 +127,7 @@ ScheduleSelect.propTypes = {
    addTaskScheduleSlotAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
-      _id: PropTypes.string.isRequired
+      id: PropTypes.string.isRequired
    }).isRequired
 }
 
@@ -136,10 +136,10 @@ ScheduleSelect.propTypes = {
 // =============================================================================
 
 const selectScheduleSelectData = createSelector(
-   [(state) => state.task.task, (state) => state.page._id],
-   (task, _id) => ({
+   [(state) => state.task.task, (state) => state.page.id],
+   (task, id) => ({
       task,
-      _id
+      id
    })
 )
 

@@ -4,9 +4,7 @@ const router = express.Router()
 const { validationResult } = require('express-validator')
 const auth = require('../../middleware/auth')
 
-const Page = require('../../models/PageModel')
-const Group = require('../../models/GroupModel')
-const Task = require('../../models/TaskModel')
+const prisma = require('../../config/prisma')
 
 const {
    validateGroup,
@@ -18,16 +16,16 @@ const { validatePage } = require('../../utils/pageHelpers')
 const { sendErrorResponse } = require('../../utils/responseHelper')
 
 /**
- * @route POST api/group/new/:page_id
+ * @route POST api/group/new/:pageId
  * @desc Create new group
  * @access Private
- * @param {string} page_id
+ * @param {string} pageId
  * @body {string} title, color
  * @returns {Object} {group} created group object
  */
-router.post('/new/:page_id', [auth], async (req, res) => {
+router.post('/new/:pageId', [auth], async (req, res) => {
    try {
-      const page = await validatePage(req.params.page_id, req.user.id)
+      const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) return sendErrorResponse(res, 404, 'page', 'access')
 
       const result = validationResult(req)
@@ -35,25 +33,32 @@ router.post('/new/:page_id', [auth], async (req, res) => {
          return sendErrorResponse(res, 400, 'validation', 'failed')
 
       const newGroup = prepareGroupData(req.body)
-      const { task_map: newTaskMap } = createGroup({
+      const { taskMap: newTaskMap } = createGroup({
          tasks: page.tasks,
-         task_map: page.task_map,
-         group_order: page.group_order,
-         progress_order: page.progress_order,
+         taskMap: page.taskMap,
+         groupOrder: page.groupOrder,
+         progressOrder: page.progressOrder,
          newGroup
       })
 
-      const group = new Group(newGroup)
-      await group.save()
+      const group = await prisma.group.create({
+         data: newGroup
+      })
 
-      const updatedPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         { $push: { group_order: group }, $set: { update_date: new Date() } },
-         { new: true }
-      )
+      // Get current page
+      const currentPage = await prisma.page.findUnique({
+         where: { id: req.params.pageId }
+      })
 
-      updatedPage.task_map = newTaskMap
-      await updatedPage.save()
+      // Update page with new group
+      const updatedPage = await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            groupOrder: [...currentPage.groupOrder, group.id],
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
 
       res.json({ group: group })
    } catch (error) {
@@ -62,19 +67,19 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 })
 
 /**
- * @route POST api/group/update/:page_id/:group_id
+ * @route POST api/group/update/:pageId/:groupId
  * @desc Update group properties
  * @access Private
- * @param {string} page_id, group_id
+ * @param {string} pageId, groupId
  * @body {string} [title], [color]
  * @returns {Object} Empty response on success
  */
-router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
+router.post('/update/:pageId/:groupId', [auth], async (req, res) => {
    try {
-      const page = await validatePage(req.params.page_id, req.user.id)
+      const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) return sendErrorResponse(res, 404, 'page', 'access')
 
-      const group = await validateGroup(req.params.group_id)
+      const group = await validateGroup(req.params.groupId)
       if (!group) return sendErrorResponse(res, 404, 'group', 'access')
 
       const result = validationResult(req)
@@ -82,17 +87,19 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
          return sendErrorResponse(res, 400, 'validation', 'failed')
 
       const { title, color } = req.body
-      group.update_date = new Date()
-      if (title) group.title = title
-      if (color) group.color = color
+      const updateData = { updateDate: new Date() }
+      if (title) updateData.title = title
+      if (color) updateData.color = color
 
-      await group.save()
+      await prisma.group.update({
+         where: { id: req.params.groupId },
+         data: updateData
+      })
 
-      await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: { updateDate: new Date() }
+      })
 
       res.json()
    } catch (error) {
@@ -101,47 +108,51 @@ router.post('/update/:page_id/:group_id', [auth], async (req, res) => {
 })
 
 /**
- * @route DELETE api/group/:page_id/:group_id
+ * @route DELETE api/group/:pageId/:groupId
  * @desc Delete group and all associated tasks
  * @access Private
- * @param {string} page_id, group_id
+ * @param {string} pageId, groupId
  * @returns {Object} Empty response on success
  */
-router.delete('/:page_id/:group_id', [auth], async (req, res) => {
+router.delete('/:pageId/:groupId', [auth], async (req, res) => {
    try {
-      const page = await validatePage(req.params.page_id, req.user.id)
+      const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) return sendErrorResponse(res, 404, 'page', 'access')
 
-      const group = await validateGroup(req.params.group_id)
+      const group = await validateGroup(req.params.groupId)
       if (!group) return sendErrorResponse(res, 404, 'group', 'access')
 
       const {
-         group_order: newGroupOrder,
+         groupOrder: newGroupOrder,
          tasks: newTasks,
-         task_map: newTaskMap
+         taskMap: newTaskMap
       } = deleteGroup({
-         groupIndex: page.group_order.indexOf(req.params.group_id),
-         progress_order: page.progress_order,
-         group_order: page.group_order,
+         groupIndex: page.groupOrder.indexOf(req.params.groupId),
+         progressOrder: page.progressOrder,
+         groupOrder: page.groupOrder,
          tasks: page.tasks,
-         task_map: page.task_map
+         taskMap: page.taskMap
       })
 
       // Delete tasks from DB if they're not in newTasks
       const tasksToDelete = page.tasks.filter(
-         (taskId) => !newTasks.some((newTaskId) => taskId.equals(newTaskId))
+         (taskId) => !newTasks.includes(taskId)
       )
       for (let taskId of tasksToDelete) {
-         await Task.deleteOne({ _id: taskId })
+         await prisma.task.delete({ where: { id: taskId } })
       }
 
-      await group.deleteOne()
+      await prisma.group.delete({ where: { id: req.params.groupId } })
 
-      page.group_order = newGroupOrder
-      page.tasks = newTasks
-      page.task_map = newTaskMap
-      page.update_date = new Date()
-      await page.save()
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            groupOrder: newGroupOrder,
+            tasks: newTasks,
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
 
       res.json()
    } catch (error) {

@@ -4,7 +4,7 @@ const router = express.Router()
 const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
-const User = require('../../models/UserModel')
+const prisma = require('../../config/prisma')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const { setOAuthCredentials } = require('../../utils/calendarHelpers')
@@ -28,9 +28,12 @@ router.post('/create-space', auth, async (req, res) => {
 
       // Note: Config validation removed since we're using Calendar API approach
 
-      const user = await User.findById(req.user.id)
-      const account = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const account = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
 
       if (!account) {
@@ -38,7 +41,7 @@ router.post('/create-space', auth, async (req, res) => {
       }
 
       // Use Google Calendar API to create Meet link (since google.meet API is not available)
-      const oauth2Client = setOAuthCredentials(account.refresh_token)
+      const oauth2Client = setOAuthCredentials(account.refreshToken)
       const calendar = google.calendar('v3')
 
       // Generate a unique conference ID
@@ -126,9 +129,12 @@ router.get('/space/:spaceId', auth, async (req, res) => {
          return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
-      const user = await User.findById(req.user.id)
-      const account = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const account = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
 
       if (!account) {
@@ -164,9 +170,12 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
          return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
-      const user = await User.findById(req.user.id)
-      const account = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const account = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
 
       if (!account) {
@@ -206,9 +215,12 @@ router.delete('/space/:spaceId', auth, async (req, res) => {
          return sendErrorResponse(res, 400, 'validation', 'failed')
       }
 
-      const user = await User.findById(req.user.id)
-      const account = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const account = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
 
       if (!account) {

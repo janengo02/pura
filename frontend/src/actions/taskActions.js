@@ -18,16 +18,16 @@ import { loadCalendarAction } from './calendarActions'
 /**
  * Create new task
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
- * @param {string} reqData.group_id - Group ID
- * @param {string} reqData.progress_id - Progress ID
+ * @param {string} reqData.pageId - Page ID
+ * @param {string} reqData.groupId - Group ID
+ * @param {string} reqData.progressId - Progress ID
  * @param {string} [reqData.title] - Task title
  * @param {string} [reqData.content] - Task content
  * @returns {Function} Redux thunk
  */
 export const createTaskAction = (reqData) => async (dispatch, getState) => {
    try {
-      const res = await api.post(`/task/new/${reqData.page_id}`, reqData)
+      const res = await api.post(`/task/new/${reqData.pageId}`, reqData)
       dispatch({
          type: CREATE_TASK,
          payload: {
@@ -43,8 +43,8 @@ export const createTaskAction = (reqData) => async (dispatch, getState) => {
 /**
  * Delete a task
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
- * @param {string} reqData.task_id - Task ID
+ * @param {string} reqData.pageId - Page ID
+ * @param {string} reqData.taskId - Task ID
  * @returns {Function} Redux thunk
  */
 export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
@@ -52,11 +52,11 @@ export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
    dispatch({
       type: DELETE_TASK,
       payload: {
-         task_id: reqData.task_id
+         taskId: reqData.taskId
       }
    })
    try {
-      await api.delete(`/task/${reqData.page_id}/${reqData.task_id}`)
+      await api.delete(`/task/${reqData.pageId}/${reqData.taskId}`)
    } catch (err) {
       commonErrorHandler(dispatch, err, getState)
    }
@@ -64,42 +64,42 @@ export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
 /**
  * Show task modal with task details
  * @param {Object} formData - Form data
- * @param {string} formData.page_id - Page ID
- * @param {string} formData.task_id - Task ID
- * @param {number} [formData.target_event_index] - Target event index
+ * @param {string} formData.pageId - Page ID
+ * @param {string} formData.taskId - Task ID
+ * @param {number} [formData.targetEventIndex] - Target event index
  * @returns {Function} Redux thunk
  */
 export const showTaskModalAction = (formData) => async (dispatch) => {
    try {
-      const res = await api.get(`/task/${formData.page_id}/${formData.task_id}`)
+      const res = await api.get(`/task/${formData.pageId}/${formData.taskId}`)
       dispatch({
          type: SHOW_TASK,
          payload: {
             ...res.data,
-            ...(typeof formData.target_event_index === 'number' && {
-               target_event_index: formData.target_event_index,
-               view_target_event_at: new Date()
+            ...(typeof formData.targetEventIndex === 'number' && {
+               targetEventIndex: formData.targetEventIndex,
+               viewTargetEventAt: new Date()
             })
          }
       })
    } catch (err) {
-      fatalErrorHandler(dispatch, formData.page_id, err)
+      fatalErrorHandler(dispatch, formData.pageId, err)
    }
 }
 /**
  * Create new task and show modal
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
- * @param {string} reqData.group_id - Group ID
- * @param {string} reqData.progress_id - Progress ID
+ * @param {string} reqData.pageId - Page ID
+ * @param {string} reqData.groupId - Group ID
+ * @param {string} reqData.progressId - Progress ID
  * @returns {Function} Redux thunk
  */
 export const createTaskModalAction =
    (reqData) => async (dispatch, getState) => {
       try {
-         const res = await api.post(`/task/new/${reqData.page_id}`, reqData)
+         const res = await api.post(`/task/new/${reqData.pageId}`, reqData)
          const res_task = await api.get(
-            `/task/${reqData.page_id}/${res.data.task._id}`
+            `/task/${reqData.pageId}/${res.data.task.id}`
          )
          dispatch({
             type: SHOW_TASK,
@@ -134,9 +134,9 @@ export const clearTaskAction = () => (dispatch) => {
  * Create Google Event Action
  * Creates a new event in Google Calendar
  * @param {Object} reqData - Request data for event creation
- * @param {string} reqData.task_id - Task ID for the event
- * @param {Object} reqData.slot_index - Index of the time slot in the task schedule.
- * @param {string} reqData.account_email - Google account email to use
+ * @param {string} reqData.taskId - Task ID for the event
+ * @param {Object} reqData.slotIndex - Index of the time slot in the task schedule.
+ * @param {string} reqData.accountEmail - Google account email to use
  * @param {string} reqData.calendar_id - ID of the specific calendar to use
  */
 export const syncTaskWithGoogleAction =
@@ -148,14 +148,13 @@ export const syncTaskWithGoogleAction =
          dispatch({
             type: SYNC_TASK_EVENT,
             payload: {
-               task_id: reqData.task_id,
-               slot_index: reqData.slot_index,
-               google_event_id: res.data.event.id,
+               taskId: reqData.taskId,
+               slotIndex: reqData.slotIndex,
+               googleEventId: res.data.event.id,
                calendar_id: reqData.calendar_id,
-               account_email: reqData.account_email,
-               sync_status:
-                  res.data.task.schedule[reqData.slot_index].sync_status,
-               update_date: res.data.task.update_date,
+               accountEmail: reqData.accountEmail,
+               syncStatus: res.data.task.schedule[reqData.slotIndex].syncStatus,
+               updateDate: res.data.task.updateDate,
                event: res.data.event,
                task: res.data.task
             }
@@ -164,8 +163,8 @@ export const syncTaskWithGoogleAction =
          if (getState) {
             const state = getState()
             const calendarRange = state.calendar?.range
-            const currentPageId = state.page?._id
-            const currentTaskId = state.task?._id
+            const currentPageId = state.page?.id
+            const currentTaskId = state.task?.task?.id
 
             // Reload calendar if range and page ID are available
             if (calendarRange && calendarRange.length > 0 && currentPageId) {
@@ -176,8 +175,8 @@ export const syncTaskWithGoogleAction =
             if (currentPageId && currentTaskId) {
                dispatch(
                   showTaskModalAction({
-                     page_id: currentPageId,
-                     task_id: currentTaskId
+                     pageId: currentPageId,
+                     taskId: currentTaskId
                   })
                )
             }
@@ -190,8 +189,8 @@ export const syncTaskWithGoogleAction =
 /**
  * Update task basic info (title, content)
  * @param {Object} formData - Form data
- * @param {string} formData.page_id - Page ID
- * @param {string} formData.task_id - Task ID
+ * @param {string} formData.pageId - Page ID
+ * @param {string} formData.taskId - Task ID
  * @param {string} [formData.title] - Task title
  * @param {string} [formData.content] - Task content
  * @returns {Function} Redux thunk
@@ -202,15 +201,15 @@ export const updateTaskBasicInfoAction =
       dispatch({
          type: UPDATE_TASK_BASIC,
          payload: {
-            task_id: formData.task_id,
+            taskId: formData.taskId,
             title: formData.title,
             content: formData.content,
-            update_date: new Date().toISOString()
+            updateDate: new Date().toISOString()
          }
       })
 
       try {
-         await api.put(`/task/basic/${formData.page_id}/${formData.task_id}`, {
+         await api.put(`/task/basic/${formData.pageId}/${formData.taskId}`, {
             title: formData.title,
             content: formData.content
          })
@@ -222,8 +221,8 @@ export const updateTaskBasicInfoAction =
 /**
  * Move task to different group/progress
  * @param {Object} formData - Form data
- * @param {string} formData.page_id - Page ID
- * @param {string} formData.task_id - Task ID
+ * @param {string} formData.pageId - Page ID
+ * @param {string} formData.taskId - Task ID
  * @param {Object} [formData.group] - Target group
  * @param {Object} [formData.progress] - Target progress
  * @returns {Function} Redux thunk
@@ -233,19 +232,19 @@ export const moveTaskAction = (formData) => async (dispatch, getState) => {
    dispatch({
       type: MOVE_TASK,
       payload: {
-         task_id: formData.task_id,
+         taskId: formData.taskId,
          group: formData.group,
          progress: formData.progress,
-         update_date: new Date().toISOString()
+         updateDate: new Date().toISOString()
       }
    })
 
    try {
       const res = await api.put(
-         `/task/move/${formData.page_id}/${formData.task_id}`,
+         `/task/move/${formData.pageId}/${formData.taskId}`,
          {
-            group_id: formData.group?._id,
-            progress_id: formData.progress?._id
+            groupId: formData.group?.id,
+            progressId: formData.progress?.id
          }
       )
       dispatch({
@@ -260,9 +259,9 @@ export const moveTaskAction = (formData) => async (dispatch, getState) => {
 /**
  * Update task schedule slot time
  * @param {Object} formData - Form data
- * @param {string} formData.page_id - Page ID
- * @param {string} formData.task_id - Task ID
- * @param {number} formData.slot_index - Slot index
+ * @param {string} formData.pageId - Page ID
+ * @param {string} formData.taskId - Task ID
+ * @param {number} formData.slotIndex - Slot index
  * @param {string} formData.start - Start time
  * @param {string} formData.end - End time
  * @returns {Function} Redux thunk
@@ -274,12 +273,12 @@ export const updateTaskScheduleAction =
          type: UPDATE_TASK_SCHEDULE,
          payload: {
             ...formData,
-            update_date: new Date().toISOString()
+            updateDate: new Date().toISOString()
          }
       })
       try {
          await api.put(
-            `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`,
+            `/task/schedule/${formData.pageId}/${formData.taskId}/${formData.slotIndex}`,
             {
                start: formData.start,
                end: formData.end
@@ -293,8 +292,8 @@ export const updateTaskScheduleAction =
 /**
  * Add new schedule slot to task
  * @param {Object} formData - Form data
- * @param {string} formData.page_id - Page ID
- * @param {string} formData.task_id - Task ID
+ * @param {string} formData.pageId - Page ID
+ * @param {string} formData.taskId - Task ID
  * @param {string} formData.start - Start time
  * @param {string} formData.end - End time
  * @returns {Function} Redux thunk that returns {newSlotIndex}
@@ -305,28 +304,28 @@ export const addTaskScheduleSlotAction =
          const newSlot = {
             start: formData.start,
             end: formData.end,
-            google_event_id: null,
-            google_calendar_id: null,
-            google_account_email: null,
-            sync_status: '0'
+            googleEventId: null,
+            googleCalendarId: null,
+            googleAccountEmail: null,
+            syncStatus: '0'
          }
-         const newSlotIndex = formData.slot_index
+         const newSlotIndex = formData.slotIndex
 
          // Optimistic update - Page | Task
          dispatch({
             type: CREATE_TASK_SCHEDULE,
             payload: {
-               task_id: formData.task_id,
+               taskId: formData.taskId,
                taskTitle: formData.task_title,
                taskContent: formData.task_content,
                newSlot: newSlot,
                newSlotIndex: newSlotIndex,
-               update_date: new Date().toISOString()
+               updateDate: new Date().toISOString()
             }
          })
 
          await api.post(
-            `/task/schedule/${formData.page_id}/${formData.task_id}`,
+            `/task/schedule/${formData.pageId}/${formData.taskId}`,
             {
                start: formData.start,
                end: formData.end
@@ -340,9 +339,9 @@ export const addTaskScheduleSlotAction =
 /**
  * Remove schedule slot from task
  * @param {Object} formData - Form data
- * @param {string} formData.page_id - Page ID
- * @param {string} formData.task_id - Task ID
- * @param {number} formData.slot_index - Slot index
+ * @param {string} formData.pageId - Page ID
+ * @param {string} formData.taskId - Task ID
+ * @param {number} formData.slotIndex - Slot index
  * @returns {Function} Redux thunk
  */
 export const removeTaskScheduleSlotAction =
@@ -351,15 +350,15 @@ export const removeTaskScheduleSlotAction =
       dispatch({
          type: DELETE_TASK_SCHEDULE,
          payload: {
-            task_id: formData.task_id,
-            slot_index: formData.slot_index,
-            update_date: new Date().toISOString()
+            taskId: formData.taskId,
+            slotIndex: formData.slotIndex,
+            updateDate: new Date().toISOString()
          }
       })
 
       try {
          await api.delete(
-            `/task/schedule/${formData.page_id}/${formData.task_id}/${formData.slot_index}`
+            `/task/schedule/${formData.pageId}/${formData.taskId}/${formData.slotIndex}`
          )
       } catch (err) {
          commonErrorHandler(dispatch, err, getState)

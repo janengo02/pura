@@ -45,9 +45,9 @@ import {
 
 const initialState = {
    pages: [],
-   group_order: [],
-   progress_order: [],
-   task_map: [],
+   groupOrder: [],
+   progressOrder: [],
+   taskMap: [],
    tasks: [],
    title: null,
    user: null,
@@ -56,7 +56,7 @@ const initialState = {
       name: getDefaultName()
    },
    errors: null,
-   _id: null,
+   id: null,
    loading: true,
    error: false
 }
@@ -77,7 +77,7 @@ function pageReducer(state = initialState, action) {
             ...state,
             ...moveTask({
                tasks: state.tasks,
-               task_map: state.task_map,
+               taskMap: state.taskMap,
                ...payload
             }),
             loading: false,
@@ -87,9 +87,9 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...createProgress({
-               progress_order: state.progress_order,
-               group_order: state.group_order,
-               task_map: state.task_map,
+               progressOrder: state.progressOrder,
+               groupOrder: state.groupOrder,
+               taskMap: state.taskMap,
                newProgress: payload
             }),
             loading: false,
@@ -99,7 +99,7 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...updateProgress({
-               progress_order: state.progress_order,
+               progressOrder: state.progressOrder,
                updatedProgress: payload
             }),
             loading: false,
@@ -111,13 +111,13 @@ function pageReducer(state = initialState, action) {
             ...state,
             ...deleteProgress({
                progressIndex: findProgressIndex(
-                  state.progress_order,
-                  payload.progress_id
+                  state.progressOrder,
+                  payload.progressId
                ),
-               progress_order: state.progress_order,
-               group_order: state.group_order,
+               progressOrder: state.progressOrder,
+               groupOrder: state.groupOrder,
                tasks: state.tasks,
-               task_map: state.task_map
+               taskMap: state.taskMap
             }),
             loading: false,
             error: false
@@ -127,9 +127,9 @@ function pageReducer(state = initialState, action) {
             ...state,
             ...createGroup({
                tasks: state.tasks,
-               task_map: state.task_map,
-               group_order: state.group_order,
-               progress_order: state.progress_order,
+               taskMap: state.taskMap,
+               groupOrder: state.groupOrder,
+               progressOrder: state.progressOrder,
                newGroup: payload
             }),
             loading: false,
@@ -139,7 +139,7 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...updateGroup({
-               group_order: state.group_order,
+               groupOrder: state.groupOrder,
                updatedGroup: payload
             }),
             loading: false,
@@ -149,11 +149,11 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...deleteGroup({
-               groupIndex: findGroupIndex(state.group_order, payload.group_id),
-               progress_order: state.progress_order,
-               group_order: state.group_order,
+               groupIndex: findGroupIndex(state.groupOrder, payload.groupId),
+               progressOrder: state.progressOrder,
+               groupOrder: state.groupOrder,
                tasks: state.tasks,
-               task_map: state.task_map
+               taskMap: state.taskMap
             }),
             loading: false,
             error: false
@@ -163,9 +163,9 @@ function pageReducer(state = initialState, action) {
             ...state,
             ...createTask({
                new_task_info: payload,
-               group_order: state.group_order,
-               progress_order: state.progress_order,
-               task_map: state.task_map,
+               groupOrder: state.groupOrder,
+               progressOrder: state.progressOrder,
+               taskMap: state.taskMap,
                tasks: state.tasks
             }),
             loading: false,
@@ -225,8 +225,8 @@ function pageReducer(state = initialState, action) {
          return {
             ...state,
             ...deleteTask({
-               task_id: payload.task_id,
-               task_map: state.task_map,
+               taskId: payload.taskId,
+               taskMap: state.taskMap,
                tasks: state.tasks
             }),
             loading: false,

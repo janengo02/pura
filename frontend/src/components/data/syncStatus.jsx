@@ -1,5 +1,5 @@
 export const SCHEDULE_SYNCE_STATUS = {
-   NONE: '0', // No sync event (no google_event_id)
+   NONE: '0', // No sync event (no googleEventId)
    SYNCED: '1', // Event synced with Google Calendar
    ACCOUNT_NOT_CONNECTED: '2', // Google account not connected
    EVENT_NOT_FOUND: '3', // Event not found in Google Calendar

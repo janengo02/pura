@@ -116,10 +116,10 @@ const EventPreview = React.memo(
 
       const taskId = useMemo(() => {
          if (event.eventType === 'task' || event.eventType === 'synced') {
-            return event.pura_task_id
+            return event.puraTaskId
          }
          return null
-      }, [event.eventType, event.pura_task_id])
+      }, [event.eventType, event.puraTaskId])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -135,9 +135,9 @@ const EventPreview = React.memo(
             await deleteGoogleEventAction(reqData)
          } else {
             const reqData = {
-               page_id: pageId,
-               task_id: taskId,
-               slot_index: event.pura_schedule_index
+               pageId: pageId,
+               taskId: taskId,
+               slotIndex: event.puraScheduleIndex
             }
             await removeTaskScheduleSlotAction(reqData)
          }
@@ -150,17 +150,17 @@ const EventPreview = React.memo(
          event.eventType,
          pageId,
          taskId,
-         event.pura_schedule_index
+         event.puraScheduleIndex
       ])
 
       const handleShowTask = useCallback(async () => {
          const formData = {
-            page_id: pageId,
-            task_id: taskId,
-            target_event_index: event.pura_schedule_index
+            pageId: pageId,
+            taskId: taskId,
+            targetEventIndex: event.puraScheduleIndex
          }
          await showTaskModalAction(formData)
-      }, [showTaskModalAction, pageId, taskId, event.pura_schedule_index])
+      }, [showTaskModalAction, pageId, taskId, event.puraScheduleIndex])
 
       const handleOpenGoogleEvent = () => {
          if (event.htmlLink) {
@@ -355,8 +355,8 @@ EventPreview.propTypes = {
       calendarId: PropTypes.string,
       accountEmail: PropTypes.string,
       eventType: PropTypes.oneOf(['task', 'google', 'synced']).isRequired,
-      pura_task_id: PropTypes.string,
-      pura_schedule_index: PropTypes.number,
+      puraTaskId: PropTypes.string,
+      puraScheduleIndex: PropTypes.number,
       syncStatus: PropTypes.string,
       color: PropTypes.string,
       description: PropTypes.string,
@@ -428,9 +428,9 @@ EventPreview.propTypes = {
 // =============================================================================
 
 const selectEventWrapperData = createSelector(
-   [(state) => state.page._id],
-   (_id) => ({
-      pageId: _id
+   [(state) => state.page.id],
+   (id) => ({
+      pageId: id
    })
 )
 

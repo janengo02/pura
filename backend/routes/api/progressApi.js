@@ -13,21 +13,19 @@ const {
    deleteProgress
 } = require('../../utils/progressHelper')
 
-const Page = require('../../models/PageModel')
-const Progress = require('../../models/ProgressModel')
-const Task = require('../../models/TaskModel')
+const prisma = require('../../config/prisma')
 
 /**
- * @route POST api/progress/new/:page_id
+ * @route POST api/progress/new/:pageId
  * @desc Create new progress status
  * @access Private
- * @param {string} page_id
- * @body {string} title, title_color, color
+ * @param {string} pageId
+ * @body {string} title, titleColor, color
  * @returns {Object} {progress} created progress object
  */
-router.post('/new/:page_id', [auth], async (req, res) => {
+router.post('/new/:pageId', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
-   const page = await validatePage(req.params.page_id, req.user.id)
+   const page = await validatePage(req.params.pageId, req.user.id)
    if (!page) {
       return sendErrorResponse(res, 404, 'page', 'access')
    }
@@ -39,32 +37,34 @@ router.post('/new/:page_id', [auth], async (req, res) => {
    //   Prepare: Set up new progress
    const newProgress = prepareProgressData(req.body)
 
-   //   Prepare: Set up new task_map
-   const { task_map: newTaskMap } = createProgress({
-      progress_order: page.progress_order,
-      group_order: page.group_order,
-      task_map: page.task_map,
+   //   Prepare: Set up new taskMap
+   const { taskMap: newTaskMap } = createProgress({
+      progressOrder: page.progressOrder,
+      groupOrder: page.groupOrder,
+      taskMap: page.taskMap,
       newProgress
    })
 
    try {
       // Data: Add new progress
-      const progress = new Progress(newProgress)
-      await progress.save()
+      const progress = await prisma.progress.create({
+         data: newProgress
+      })
 
-      // Data: Add new progress to page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         {
-            $push: { progress_order: progress },
-            $set: { update_date: new Date() }
-         },
-         { new: true }
-      )
+      // Get current page
+      const currentPage = await prisma.page.findUnique({
+         where: { id: req.params.pageId }
+      })
 
-      // Data: Update page's task_map
-      newPage.task_map = newTaskMap
-      await newPage.save()
+      // Data: Update page with new progress
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            progressOrder: [...currentPage.progressOrder, progress.id],
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
 
       res.json({ progress: progress })
    } catch (error) {
@@ -73,16 +73,16 @@ router.post('/new/:page_id', [auth], async (req, res) => {
 })
 
 /**
- * @route POST api/progress/update/:page_id/:progress_id
+ * @route POST api/progress/update/:pageId/:progressId
  * @desc Update progress properties
  * @access Private
- * @param {string} page_id, progress_id
- * @body {string} [title], [title_color], [color]
+ * @param {string} pageId, progressId
+ * @body {string} [title], [titleColor], [color]
  * @returns {Object} Empty response on success
  */
-router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
+router.post('/update/:pageId/:progressId', [auth], async (req, res) => {
    //   Validation: Check if page exists and user is the owner
-   const page = await validatePage(req.params.page_id, req.user.id)
+   const page = await validatePage(req.params.pageId, req.user.id)
    if (!page) {
       return sendErrorResponse(res, 404, 'page', 'access')
    }
@@ -94,27 +94,29 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
    }
 
    //   Validation: Check if progress exists
-   const progress = await validateProgress(req.params.progress_id)
+   const progress = await validateProgress(req.params.progressId)
    if (!progress) {
       return sendErrorResponse(res, 404, 'progress', 'access')
    }
    //   Prepare: Set up new progress
-   const { title, title_color, color } = req.body
-   progress.update_date = new Date()
-   if (title) progress.title = title
-   if (title_color) progress.title_color = title_color
-   if (color) progress.color = color
+   const { title, titleColor, color } = req.body
+   const updateData = { updateDate: new Date() }
+   if (title) updateData.title = title
+   if (titleColor) updateData.titleColor = titleColor
+   if (color) updateData.color = color
 
    try {
-      // Data: update group
-      await progress.save()
+      // Data: update progress
+      await prisma.progress.update({
+         where: { id: req.params.progressId },
+         data: updateData
+      })
 
-      // Data: get new page
-      await Page.findOneAndUpdate(
-         { _id: req.params.page_id },
-         { $set: { update_date: new Date() } },
-         { new: true }
-      )
+      // Data: update page
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: { updateDate: new Date() }
+      })
 
       res.json()
    } catch (error) {
@@ -123,55 +125,59 @@ router.post('/update/:page_id/:progress_id', [auth], async (req, res) => {
 })
 
 /**
- * @route DELETE api/progress/:page_id/:progress_id
+ * @route DELETE api/progress/:pageId/:progressId
  * @desc Delete progress and all associated tasks
  * @access Private
- * @param {string} page_id, progress_id
+ * @param {string} pageId, progressId
  * @returns {Object} Empty response on success
  */
-router.delete('/:page_id/:progress_id', [auth], async (req, res) => {
+router.delete('/:pageId/:progressId', [auth], async (req, res) => {
    try {
       //   Validation: Check if page exists and user is the owner
-      const page = await validatePage(req.params.page_id, req.user.id)
+      const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) {
          return sendErrorResponse(res, 404, 'page', 'access')
       }
 
       //   Validation: Check if progress exists
-      const progress = await validateProgress(req.params.progress_id)
+      const progress = await validateProgress(req.params.progressId)
       if (!progress) {
          return sendErrorResponse(res, 404, 'progress', 'access')
       }
-      //   Prepare: Set up new tasks array & task_map
+      //   Prepare: Set up new tasks array & taskMap
       const {
-         progress_order: newProgressOrder,
+         progressOrder: newProgressOrder,
          tasks: newTasks,
-         task_map: newTaskMap
+         taskMap: newTaskMap
       } = deleteProgress({
-         progressIndex: page.progress_order.indexOf(req.params.progress_id),
-         progress_order: page.progress_order,
-         group_order: page.group_order,
+         progressIndex: page.progressOrder.indexOf(req.params.progressId),
+         progressOrder: page.progressOrder,
+         groupOrder: page.groupOrder,
          tasks: page.tasks,
-         task_map: page.task_map
+         taskMap: page.taskMap
       })
 
       // Delete tasks from DB if they're not in newTasks
       const tasksToDelete = page.tasks.filter(
-         (taskId) => !newTasks.some((newTaskId) => taskId.equals(newTaskId))
+         (taskId) => !newTasks.includes(taskId)
       )
       for (let taskId of tasksToDelete) {
-         await Task.deleteOne({ _id: taskId })
+         await prisma.task.delete({ where: { id: taskId } })
       }
 
       // Data: Delete progress
-      await progress.deleteOne()
+      await prisma.progress.delete({ where: { id: req.params.progressId } })
 
       // Data: Update page's arrays
-      page.progress_order = newProgressOrder
-      page.tasks = newTasks
-      page.task_map = newTaskMap
-      page.update_date = new Date()
-      await page.save()
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            progressOrder: newProgressOrder,
+            tasks: newTasks,
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
       res.json()
    } catch (error) {
       return sendErrorResponse(res, 500, 'progress', 'delete', error)

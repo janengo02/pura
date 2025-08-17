@@ -36,7 +36,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const GroupSelect = React.memo(
-   ({ moveTaskAction, groupData: { task, _id, group_order } }) => {
+   ({ moveTaskAction, groupData: { task, id, groupOrder } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -52,15 +52,15 @@ const GroupSelect = React.memo(
       // Memoize group menu items to prevent unnecessary re-renders
       const groupMenuItems = useMemo(() => {
          return (
-            group_order?.map((group_item) => (
+            groupOrder?.map((group_item) => (
                <MenuItem
-                  key={group_item._id}
+                  key={group_item.id}
                   onClick={async (e) => {
                      e.preventDefault()
-                     if (group_item._id !== task.group._id) {
+                     if (group_item.id !== task.group.id) {
                         moveTaskAction({
-                           page_id: _id,
-                           task_id: task._id,
+                           pageId: id,
+                           taskId: task.id,
                            group: group_item
                         })
                      }
@@ -77,7 +77,7 @@ const GroupSelect = React.memo(
                </MenuItem>
             )) || []
          )
-      }, [group_order, task.group._id, task._id, _id, moveTaskAction])
+      }, [groupOrder, task.group.id, task.id, id, moveTaskAction])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -147,8 +147,8 @@ GroupSelect.propTypes = {
    moveTaskAction: PropTypes.func.isRequired,
    groupData: PropTypes.shape({
       task: PropTypes.object.isRequired,
-      _id: PropTypes.string.isRequired,
-      group_order: PropTypes.array.isRequired
+      id: PropTypes.string.isRequired,
+      groupOrder: PropTypes.array.isRequired
    }).isRequired
 }
 // =============================================================================
@@ -158,13 +158,13 @@ GroupSelect.propTypes = {
 const selectGroupSelectData = createSelector(
    [
       (state) => state.task.task,
-      (state) => state.page._id,
-      (state) => state.page.group_order
+      (state) => state.page.id,
+      (state) => state.page.groupOrder
    ],
-   (task, _id, group_order) => ({
+   (task, id, groupOrder) => ({
       task,
-      _id,
-      group_order
+      id,
+      groupOrder
    })
 )
 

@@ -5,11 +5,16 @@
    "main": "server.js",
    "scripts": {
       "start": "node server",
-      "server": "nodemon"
+      "server": "nodemon",
+      "prisma:generate": "prisma generate --schema=models/schema.prisma",
+      "prisma:db:push": "prisma db push --schema=models/schema.prisma",
+      "prisma:validate": "prisma validate --schema=models/schema.prisma",
+      "prisma:format": "prisma format --schema=models/schema.prisma"
    },
    "author": "Jane Ngo",
    "license": "MIT",
    "dependencies": {
+      "@prisma/client": "^6.14.0",
       "bcryptjs": "^2.4.3",
       "config": "^3.3.9",
       "cors": "^2.8.5",
@@ -21,6 +26,7 @@
       "jsonwebtoken": "^9.0.2",
       "mongodb": "^6.17.0",
       "mongoose": "^8.15.2",
+      "prisma": "^6.14.0",
       "request": "^2.88.2"
    },
    "devDependencies": {

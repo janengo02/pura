@@ -68,7 +68,7 @@ const TaskModal = React.memo(
       leftWidth = '100%',
 
       // Redux props
-      taskData: { task, _id },
+      taskData: { task, id },
       deleteTaskAction,
       updateTaskBasicInfoAction,
       clearTaskAction
@@ -117,33 +117,33 @@ const TaskModal = React.memo(
       // -------------------------------------------------------------------------
 
       const handleDeleteTask = useCallback(() => {
-         if (!task?._id) return
+         if (!task?.id) return
          const formData = {
-            page_id: _id,
-            task_id: task?._id
+            pageId: id,
+            taskId: task?.id
          }
          deleteTaskAction(formData)
-      }, [_id, task?._id, deleteTaskAction])
+      }, [id, task?.id, deleteTaskAction])
 
       const handleUpdateTitle = useCallback(async () => {
-         if (!task?._id) return
+         if (!task?.id) return
          const formData = {
-            page_id: _id,
-            task_id: task?._id,
+            pageId: id,
+            taskId: task?.id,
             title: taskTitle || t('placeholder-untitled')
          }
          await updateTaskBasicInfoAction(formData)
-      }, [_id, task?._id, taskTitle, updateTaskBasicInfoAction, t])
+      }, [id, task?.id, taskTitle, updateTaskBasicInfoAction, t])
 
       const handleUpdateContent = useCallback(async () => {
-         if (!task?._id) return
+         if (!task?.id) return
          const formData = {
-            page_id: _id,
-            task_id: task?._id,
+            pageId: id,
+            taskId: task?.id,
             content: taskContent
          }
          await updateTaskBasicInfoAction(formData)
-      }, [_id, task?._id, taskContent, updateTaskBasicInfoAction])
+      }, [id, task?.id, taskContent, updateTaskBasicInfoAction])
 
       const handleTitleChange = useCallback((e) => {
          e.preventDefault()
@@ -206,7 +206,7 @@ const TaskModal = React.memo(
 
       // Focus title input only when modal first opens (new task selected)
       useEffect(() => {
-         const currentTaskId = task?._id
+         const currentTaskId = task?.id
          const previousTaskId = previousTaskIdRef.current
 
          // Only focus if modal is open, task exists, and task ID has changed
@@ -397,7 +397,7 @@ TaskModal.propTypes = {
    leftWidth: PropTypes.string,
    taskData: PropTypes.shape({
       task: PropTypes.object,
-      _id: PropTypes.string
+      id: PropTypes.string
    }).isRequired,
    updateTaskBasicInfoAction: PropTypes.func.isRequired,
    deleteTaskAction: PropTypes.func.isRequired,
@@ -409,10 +409,10 @@ TaskModal.propTypes = {
 // =============================================================================
 
 const selectTaskModalData = createSelector(
-   [(state) => state.task.task, (state) => state.page._id],
-   (task, _id) => ({
+   [(state) => state.task.task, (state) => state.page.id],
+   (task, id) => ({
       task,
-      _id
+      id
    })
 )
 

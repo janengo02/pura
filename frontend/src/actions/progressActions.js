@@ -5,15 +5,15 @@ import { commonErrorHandler } from './errorActions'
 /**
  * Create new progress status
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
+ * @param {string} reqData.pageId - Page ID
  * @param {string} reqData.title - Progress title
- * @param {string} reqData.title_color - Progress title color
+ * @param {string} reqData.titleColor - Progress title color
  * @param {string} reqData.color - Progress background color
  * @returns {Function} Redux thunk
  */
 export const createProgressAction = (reqData) => async (dispatch, getState) => {
    try {
-      const res = await api.post(`/progress/new/${reqData.page_id}`, reqData)
+      const res = await api.post(`/progress/new/${reqData.pageId}`, reqData)
       dispatch({
          type: CREATE_PROGRESS,
          payload: res.data.progress
@@ -26,10 +26,10 @@ export const createProgressAction = (reqData) => async (dispatch, getState) => {
 /**
  * Update a progress status
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
- * @param {string} reqData.progress_id - Progress ID
+ * @param {string} reqData.pageId - Page ID
+ * @param {string} reqData.progressId - Progress ID
  * @param {string} [reqData.title] - Progress title
- * @param {string} [reqData.title_color] - Progress title color
+ * @param {string} [reqData.titleColor] - Progress title color
  * @param {string} [reqData.color] - Progress background color
  * @returns {Function} Redux thunk
  */
@@ -41,7 +41,7 @@ export const updateProgressAction = (reqData) => async (dispatch, getState) => {
    })
    try {
       await api.post(
-         `/progress/update/${reqData.page_id}/${reqData.progress_id}`,
+         `/progress/update/${reqData.pageId}/${reqData.progressId}`,
          reqData
       )
    } catch (err) {
@@ -52,8 +52,8 @@ export const updateProgressAction = (reqData) => async (dispatch, getState) => {
 /**
  * Delete a progress status
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
- * @param {string} reqData.progress_id - Progress ID
+ * @param {string} reqData.pageId - Page ID
+ * @param {string} reqData.progressId - Progress ID
  * @returns {Function} Redux thunk
  */
 export const deleteProgressAction = (reqData) => async (dispatch, getState) => {
@@ -61,11 +61,11 @@ export const deleteProgressAction = (reqData) => async (dispatch, getState) => {
    dispatch({
       type: DELETE_PROGRESS,
       payload: {
-         progress_id: reqData.progress_id
+         progressId: reqData.progressId
       }
    })
    try {
-      await api.delete(`/progress/${reqData.page_id}/${reqData.progress_id}`)
+      await api.delete(`/progress/${reqData.pageId}/${reqData.progressId}`)
    } catch (err) {
       commonErrorHandler(dispatch, err, getState)
    }

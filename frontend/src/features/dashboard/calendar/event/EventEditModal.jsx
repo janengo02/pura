@@ -160,26 +160,26 @@ const EventEditModal = React.memo(
 
             // Update based on event type
             if (event.eventType === 'task') {
-               const isCurrentTask = task && task._id === event.pura_task_id
+               const isCurrentTask = task && task.id === event.puraTaskId
 
                // Update task title and content if changed
                if (title !== event.title || description !== event.description) {
                   await updateTaskBasicInfoAction({
-                     page_id: event.pageId,
-                     task_id: event.pura_task_id,
+                     pageId: event.pageId,
+                     taskId: event.puraTaskId,
                      title: title || t('placeholder-untitled'),
                      content: description
                   })
                }
                // Update task schedule slot for time changes
                await updateTaskScheduleAction({
-                  page_id: event.pageId,
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
+                  pageId: event.pageId,
+                  taskId: event.puraTaskId,
+                  slotIndex: event.puraScheduleIndex,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   ...(isCurrentTask && {
-                     target_event_index: event.pura_schedule_index
+                     targetEventIndex: event.puraScheduleIndex
                   })
                })
             } else if (
@@ -189,7 +189,7 @@ const EventEditModal = React.memo(
                const isSyncedCurrentTask =
                   event.eventType === 'synced' &&
                   task &&
-                  task._id === event.pura_task_id
+                  task.id === event.puraTaskId
 
                await updateGoogleEventAction({
                   eventId: event.id,
@@ -204,11 +204,11 @@ const EventEditModal = React.memo(
                   conferenceData: conferenceData,
                   calendarSummary: selectedCalendar.title,
                   calendarBackgroundColor: selectedCalendar.color,
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
+                  taskId: event.puraTaskId,
+                  slotIndex: event.puraScheduleIndex,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
-                     target_event_index: event.pura_schedule_index
+                     targetEventIndex: event.puraScheduleIndex
                   })
                })
 
@@ -219,8 +219,8 @@ const EventEditModal = React.memo(
                      description !== event.description
                   ) {
                      await updateTaskBasicInfoAction({
-                        page_id: event.pageId,
-                        task_id: event.pura_task_id,
+                        pageId: event.pageId,
+                        taskId: event.puraTaskId,
                         title: title || t('placeholder-untitled'),
                         content: description
                      })
@@ -443,9 +443,9 @@ EventEditModal.propTypes = {
       eventType: PropTypes.oneOf(['task', 'google', 'synced']),
       calendarId: PropTypes.string,
       accountEmail: PropTypes.string,
-      pura_task_id: PropTypes.string,
-      pura_schedule_index: PropTypes.number,
-      google_event_id: PropTypes.string,
+      puraTaskId: PropTypes.string,
+      puraScheduleIndex: PropTypes.number,
+      googleEventId: PropTypes.string,
       pageId: PropTypes.string
    }).isRequired,
    googleCalendars: PropTypes.arrayOf(
@@ -480,8 +480,8 @@ EventEditModal.propTypes = {
 // =============================================================================
 
 const selectEventData = createSelector(
-   [(state) => state.event, (state) => state.page._id],
-   (eventState, _id) => ({
+   [(state) => state.event, (state) => state.page.id],
+   (eventState, id) => ({
       id: eventState.id,
       title: eventState.title,
       description: eventState.description,
@@ -492,10 +492,10 @@ const selectEventData = createSelector(
       eventType: eventState.eventType,
       calendarId: eventState.calendarId,
       accountEmail: eventState.accountEmail,
-      pura_task_id: eventState.pura_task_id,
-      pura_schedule_index: eventState.pura_schedule_index,
-      google_event_id: eventState.google_event_id,
-      pageId: _id
+      puraTaskId: eventState.puraTaskId,
+      puraScheduleIndex: eventState.puraScheduleIndex,
+      googleEventId: eventState.googleEventId,
+      pageId: id
    })
 )
 
@@ -510,7 +510,7 @@ const selectGoogleCalendars = createSelector(
 )
 
 const selectTaskData = createSelector(
-   [(state) => state.task.task, (state) => state.page._id],
+   [(state) => state.task.task, (state) => state.page.id],
    (task, pageId) => ({
       task,
       pageId

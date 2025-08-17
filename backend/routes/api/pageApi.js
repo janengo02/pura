@@ -8,27 +8,28 @@ const { validationResult } = require('express-validator')
 
 const auth = require('../../middleware/auth')
 const { sendErrorResponse } = require('../../utils/responseHelper')
-const { validatePage, moveTask } = require('../../utils/pageHelpers')
+const {
+   validatePage,
+   moveTask,
+   populatePage
+} = require('../../utils/pageHelpers')
 
-const Page = require('../../models/PageModel')
+const prisma = require('../../config/prisma')
+
 /**
  * @route GET api/page
  * @desc Get first page of user
  * @access Private
- * @returns {Object} Page with progress_order, group_order, tasks, task_map
+ * @returns {Object} Page with progressOrder, groupOrder, tasks, taskMap
  */
 router.get('/', auth, async (req, res) => {
    try {
-      const page = await Page.findOne({ user: req.user.id })
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
-      res.json(page)
+      const page = await prisma.page.findFirst({
+         where: { userId: req.user.id }
+      })
+
+      const populatedPage = await populatePage(page)
+      res.json(populatedPage)
    } catch (err) {
       sendErrorResponse(res, 500, 'page', 'access', err)
    }
@@ -47,16 +48,9 @@ router.get('/:id', auth, async (req, res) => {
       if (!page) {
          return sendErrorResponse(res, 404, 'page', 'access')
       }
-      await page
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
-      res.json(page)
+
+      const populatedPage = await populatePage(page)
+      res.json(populatedPage)
    } catch (err) {
       sendErrorResponse(res, 500, 'page', 'access', err)
    }
@@ -77,20 +71,21 @@ router.post('/', [auth], async (req, res) => {
    }
 
    //   Prepare: Set up new page
-   const newPage = {
-      user: req.user.id,
-      progress_order: [],
-      group_order: [],
-      task_map: [],
+   const newPageData = {
+      userId: req.user.id,
+      progressOrder: [],
+      groupOrder: [],
+      taskMap: [],
       tasks: []
    }
    if (req.body.title) {
-      newPage.title = req.body.title
+      newPageData.title = req.body.title
    }
    try {
       // Data: Add new page
-      const page = new Page(newPage)
-      await page.save()
+      const page = await prisma.page.create({
+         data: newPageData
+      })
 
       res.json(page)
    } catch (error) {
@@ -115,34 +110,23 @@ router.post('/move-task/:id', [auth], async (req, res) => {
    const { destination, source, draggableId } = req.body.result
 
    try {
-      const { tasks: newTaskArray, task_map: newTaskMap } = moveTask({
+      const { tasks: newTaskArray, taskMap: newTaskMap } = moveTask({
          tasks: page.tasks,
-         task_map: page.task_map,
+         taskMap: page.taskMap,
          destination,
          source,
          draggableId
       })
 
-      // Data: Add new group to page
-      const newPage = await Page.findOneAndUpdate(
-         { _id: req.params.id },
-         {
-            $set: { tasks: newTaskArray, update_date: new Date() }
-         },
-         { new: true }
-      )
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
-
-      // Data: Update page's task_map
-      newPage.task_map = newTaskMap
-      await newPage.save()
+      // Data: Update page with new tasks and taskMap
+      await prisma.page.update({
+         where: { id: req.params.id },
+         data: {
+            tasks: newTaskArray,
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
       res.json()
    } catch (err) {
       sendErrorResponse(res, 500, 'page', 'update', err)

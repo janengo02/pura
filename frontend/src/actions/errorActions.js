@@ -16,11 +16,11 @@ export const fatalErrorHandler = (dispatch, pageId, err) => {
    dispatch({
       type: PAGE_ERROR,
       payload: {
-         _id: pageId,
+         id: pageId,
          errors
       }
    })
-   
+
    // Note: Navigation is handled by components (like Kanban.jsx) that listen to Redux state changes
    // Components use useNavigate('/error', { state: errorState }) for proper React Router navigation
 }
@@ -44,8 +44,8 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
    if (getState) {
       const state = getState()
       const calendarRange = state.calendar?.range
-      const currentPageId = state.page?._id
-      const currentTaskId = state.task?._id
+      const currentPageId = state.page?.id
+      const currentTaskId = state.task?.task?.id
 
       // Reload calendar if range and page ID are available
       if (calendarRange && calendarRange.length > 0 && currentPageId) {
@@ -56,8 +56,8 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
       if (currentPageId && currentTaskId) {
          dispatch(
             showTaskModalAction({
-               page_id: currentPageId,
-               task_id: currentTaskId
+               pageId: currentPageId,
+               taskId: currentTaskId
             })
          )
       }

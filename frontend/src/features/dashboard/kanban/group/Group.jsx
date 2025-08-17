@@ -67,8 +67,8 @@ const Group = React.memo(
       isNew = false,
       children = null,
       // Redux props
-      _id,
-      group_order,
+      id,
+      groupOrder,
       updateGroupAction,
       deleteGroupAction
    }) => {
@@ -108,16 +108,16 @@ const Group = React.memo(
 
       const handleDeleteGroup = useCallback(() => {
          const formData = {
-            page_id: _id,
-            group_id: group._id
+            pageId: id,
+            groupId: group.id
          }
          deleteGroupAction(formData)
-      }, [_id, group._id, deleteGroupAction])
+      }, [id, group.id, deleteGroupAction])
 
       const handleSubmitTitle = methods.handleSubmit(async (data) => {
          const formData = {
-            page_id: _id,
-            group_id: group._id,
+            pageId: id,
+            groupId: group.id,
             title: data.title || t('placeholder-untitled')
          }
          await updateGroupAction(formData)
@@ -127,13 +127,13 @@ const Group = React.memo(
       const handleColorChange = useCallback(
          (color) => {
             const formData = {
-               page_id: _id,
-               group_id: group._id,
+               pageId: id,
+               groupId: group.id,
                color: color
             }
             updateGroupAction(formData)
          },
-         [_id, group._id, updateGroupAction]
+         [id, group.id, updateGroupAction]
       )
 
       const handleMouseEnter = useCallback(
@@ -201,8 +201,8 @@ const Group = React.memo(
       )
       // Memoize delete button visibility
       const showDeleteButton = useMemo(
-         () => group_order.length > 1,
-         [group_order.length]
+         () => groupOrder.length > 1,
+         [groupOrder.length]
       )
       // -------------------------------------------------------------------------
       // RENDER COMPONENTS
@@ -312,15 +312,15 @@ Group.propTypes = {
    isNew: PropTypes.bool,
    children: PropTypes.node,
    // Redux props
-   _id: PropTypes.string.isRequired,
-   group_order: PropTypes.array.isRequired,
+   id: PropTypes.string.isRequired,
+   groupOrder: PropTypes.array.isRequired,
    updateGroupAction: PropTypes.func.isRequired,
    deleteGroupAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   _id: state.page._id,
-   group_order: state.page.group_order
+   id: state.page.id,
+   groupOrder: state.page.groupOrder
 })
 
 const mapDispatchToProps = {

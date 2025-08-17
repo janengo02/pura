@@ -33,7 +33,7 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task:
-               state.task && state.task._id === payload.task_id
+               state.task && state.task.id === payload.taskId
                   ? {
                        ...state.task,
                        title:
@@ -44,8 +44,7 @@ function taskReducer(state = initialState, action) {
                           payload.content !== undefined
                              ? payload.content
                              : state.task.content,
-                       update_date:
-                          payload.update_date || state.task.update_date
+                       updateDate: payload.updateDate || state.task.updateDate
                     }
                   : state.task
          }
@@ -54,32 +53,31 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task:
-               state.task && state.task._id === payload.task_id
+               state.task && state.task.id === payload.taskId
                   ? {
                        ...state.task,
                        schedule: state.task.schedule?.map((slot, index) =>
-                          index === payload.slot_index
+                          index === payload.slotIndex
                              ? {
                                   ...slot,
                                   start: payload.start || slot.start,
                                   end: payload.end || slot.end,
-                                  google_event_start:
-                                     payload.google_event_start ||
-                                     slot.google_event_start,
-                                  google_event_end:
-                                     payload.google_event_end ||
-                                     slot.google_event_end,
-                                  sync_status:
-                                     payload.sync_status || slot.sync_status
+                                  googleEventStart:
+                                     payload.googleEventStart ||
+                                     slot.googleEventStart,
+                                  googleEventEnd:
+                                     payload.googleEventEnd ||
+                                     slot.googleEventEnd,
+                                  syncStatus:
+                                     payload.syncStatus || slot.syncStatus
                                }
                              : slot
                        ),
-                       target_event_index: payload.target_event_index,
-                       view_target_event_at:
-                          payload.view_target_event_at ||
-                          state.task.view_target_event_at,
-                       update_date:
-                          payload.update_date || state.task.update_date
+                       targetEventIndex: payload.targetEventIndex,
+                       viewTargetEventAt:
+                          payload.viewTargetEventAt ||
+                          state.task.viewTargetEventAt,
+                       updateDate: payload.updateDate || state.task.updateDate
                     }
                   : state.task
          }
@@ -88,15 +86,14 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task:
-               state.task && state.task._id === payload.task_id
+               state.task && state.task.id === payload.taskId
                   ? {
                        ...state.task,
                        schedule: [
                           ...(state.task.schedule || []),
                           payload.newSlot
                        ],
-                       update_date:
-                          payload.update_date || state.task.update_date
+                       updateDate: payload.updateDate || state.task.updateDate
                     }
                   : state.task
          }
@@ -105,22 +102,21 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task:
-               state.task && state.task._id === payload.task_id
+               state.task && state.task.id === payload.taskId
                   ? {
                        ...state.task,
                        schedule: state.task.schedule?.map((slot, index) =>
-                          index === payload.slot_index
+                          index === payload.slotIndex
                              ? {
                                   ...slot,
-                                  google_event_id: payload.google_event_id,
-                                  google_calendar_id: payload.calendar_id,
-                                  google_account_email: payload.account_email,
-                                  sync_status: payload.sync_status || '0'
+                                  googleEventId: payload.googleEventId,
+                                  googleCalendarId: payload.calendar_id,
+                                  googleAccountEmail: payload.accountEmail,
+                                  syncStatus: payload.syncStatus || '0'
                                }
                              : slot
                        ),
-                       update_date:
-                          payload.update_date || state.task.update_date
+                       updateDate: payload.updateDate || state.task.updateDate
                     }
                   : state.task
          }
@@ -129,15 +125,14 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task:
-               state.task && state.task._id === payload.task_id
+               state.task && state.task.id === payload.taskId
                   ? {
                        ...state.task,
                        schedule: state.task.schedule?.filter(
-                          (slot, index) => index !== payload.slot_index
+                          (slot, index) => index !== payload.slotIndex
                        ),
-                       target_event_index: null,
-                       update_date:
-                          payload.update_date || state.task.update_date
+                       targetEventIndex: null,
+                       updateDate: payload.updateDate || state.task.updateDate
                     }
                   : state.task
          }
@@ -146,13 +141,12 @@ function taskReducer(state = initialState, action) {
          return {
             ...state,
             task:
-               state.task && state.task._id === payload.task_id
+               state.task && state.task.id === payload.taskId
                   ? {
                        ...state.task,
                        ...(payload.group && { group: payload.group }),
                        ...(payload.progress && { progress: payload.progress }),
-                       update_date:
-                          payload.update_date || state.task.update_date
+                       updateDate: payload.updateDate || state.task.updateDate
                     }
                   : state.task
          }

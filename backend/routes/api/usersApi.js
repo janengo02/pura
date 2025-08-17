@@ -9,12 +9,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { check, validationResult } = require('express-validator')
 
-// Models
-const Page = require('../../models/PageModel')
-const User = require('../../models/UserModel')
-const Group = require('../../models/GroupModel')
-const Progress = require('../../models/ProgressModel')
-const Task = require('../../models/TaskModel')
+// Prisma Client
+const prisma = require('../../config/prisma')
 
 // Utils
 const dotenv = require('dotenv')
@@ -67,26 +63,29 @@ const getDefaultTitles = (language = 'en') => {
 const createDefaultProgresses = async (language) => {
    const titles = getDefaultTitles(language)
 
-   const progress1 = new Progress({
-      title: titles.progress.todo,
-      title_color: 'kanban.progress.title.red',
-      color: 'kanban.progress.red'
+   const progress1 = await prisma.progress.create({
+      data: {
+         title: titles.progress.todo,
+         titleColor: 'kanban.progress.title.red',
+         color: 'kanban.progress.red'
+      }
    })
-   await progress1.save()
 
-   const progress2 = new Progress({
-      title: titles.progress.inProgress,
-      title_color: 'kanban.progress.title.orange',
-      color: 'kanban.progress.orange'
+   const progress2 = await prisma.progress.create({
+      data: {
+         title: titles.progress.inProgress,
+         titleColor: 'kanban.progress.title.orange',
+         color: 'kanban.progress.orange'
+      }
    })
-   await progress2.save()
 
-   const progress3 = new Progress({
-      title: titles.progress.done,
-      title_color: 'kanban.progress.title.green',
-      color: 'kanban.progress.green'
+   const progress3 = await prisma.progress.create({
+      data: {
+         title: titles.progress.done,
+         titleColor: 'kanban.progress.title.green',
+         color: 'kanban.progress.green'
+      }
    })
-   await progress3.save()
 
    return [progress1, progress2, progress3]
 }
@@ -99,10 +98,11 @@ const createDefaultProgresses = async (language) => {
 const createDefaultGroup = async (language) => {
    const titles = getDefaultTitles(language)
 
-   const group = new Group({
-      title: titles.group
+   const group = await prisma.group.create({
+      data: {
+         title: titles.group
+      }
    })
-   await group.save()
 
    return group
 }
@@ -115,10 +115,11 @@ const createDefaultGroup = async (language) => {
 const createDefaultTask = async (language) => {
    const titles = getDefaultTitles(language)
 
-   const task = new Task({
-      title: titles.task
+   const task = await prisma.task.create({
+      data: {
+         title: titles.task
+      }
    })
-   await task.save()
 
    return task
 }
@@ -135,15 +136,16 @@ const createDefaultTask = async (language) => {
 const createDefaultPage = async (user, progresses, group, task, language) => {
    const titles = getDefaultTitles(language)
 
-   const page = new Page({
-      user: user,
-      title: titles.page,
-      progress_order: progresses,
-      group_order: [group],
-      task_map: [1, 1, 1], // One task across three progress columns
-      tasks: [task]
+   const page = await prisma.page.create({
+      data: {
+         userId: user.id,
+         title: titles.page,
+         progressOrder: progresses.map(p => p.id),
+         groupOrder: [group.id],
+         taskMap: [1, 1, 1], // One task across three progress columns
+         tasks: [task.id]
+      }
    })
-   await page.save()
 
    return page
 }
@@ -187,7 +189,7 @@ router.post(
       const { name, email, password, language = 'en' } = req.body
 
       // Check if user already exists
-      let user = await User.findOne({ email })
+      let user = await prisma.user.findUnique({ where: { email } })
       if (user) {
          return sendErrorResponse(res, 400, 'auth', 'register')
       }
@@ -204,18 +206,19 @@ router.post(
             d: 'mm'
          })
 
-         // Create new user
-         user = new User({
-            name,
-            email,
-            avatar,
-            password
-         })
-
          // Encrypt password
          const salt = await bcrypt.genSalt(10)
-         user.password = await bcrypt.hash(password, salt)
-         await user.save()
+         const hashedPassword = await bcrypt.hash(password, salt)
+
+         // Create new user
+         user = await prisma.user.create({
+            data: {
+               name,
+               email,
+               avatar,
+               password: hashedPassword
+            }
+         })
 
          // -------------------------------------------------------------------------
          // DEFAULT CONTENT CREATION

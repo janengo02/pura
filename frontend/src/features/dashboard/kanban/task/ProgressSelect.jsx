@@ -36,7 +36,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const ProgressSelect = React.memo(
-   ({ moveTaskAction, progressData: { task, _id, progress_order } }) => {
+   ({ moveTaskAction, progressData: { task, id, progressOrder } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -52,15 +52,15 @@ const ProgressSelect = React.memo(
       // Memoize progress menu items to prevent unnecessary re-renders
       const progressMenuItems = useMemo(() => {
          return (
-            progress_order?.map((progress_item) => (
+            progressOrder?.map((progress_item) => (
                <MenuItem
-                  key={progress_item._id}
+                  key={progress_item.id}
                   onClick={async (e) => {
                      e.preventDefault()
-                     if (progress_item._id !== task.progress._id) {
+                     if (progress_item.id !== task.progress.id) {
                         moveTaskAction({
-                           page_id: _id,
-                           task_id: task._id,
+                           pageId: id,
+                           taskId: task.id,
                            progress: progress_item
                         })
                      }
@@ -68,14 +68,14 @@ const ProgressSelect = React.memo(
                >
                   <Tag
                      bg={progress_item.color}
-                     color={progress_item.title_color}
+                     color={progress_item.titleColor}
                   >
                      {progress_item.title}
                   </Tag>
                </MenuItem>
             )) || []
          )
-      }, [progress_order, task.progress._id, task._id, _id, moveTaskAction])
+      }, [progressOrder, task.progress.id, task.id, id, moveTaskAction])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -117,7 +117,7 @@ const ProgressSelect = React.memo(
                   >
                      <Tag
                         bg={task.progress.color}
-                        color={task.progress.title_color}
+                        color={task.progress.titleColor}
                      >
                         {task.progress.title}
                      </Tag>
@@ -143,8 +143,8 @@ ProgressSelect.propTypes = {
    moveTaskAction: PropTypes.func.isRequired,
    progressData: PropTypes.shape({
       task: PropTypes.object.isRequired,
-      _id: PropTypes.string.isRequired,
-      progress_order: PropTypes.array.isRequired
+      id: PropTypes.string.isRequired,
+      progressOrder: PropTypes.array.isRequired
    }).isRequired
 }
 
@@ -155,13 +155,13 @@ ProgressSelect.propTypes = {
 const selectProgressSelectData = createSelector(
    [
       (state) => state.task.task,
-      (state) => state.page._id,
-      (state) => state.page.progress_order
+      (state) => state.page.id,
+      (state) => state.page.progressOrder
    ],
-   (task, _id, progress_order) => ({
+   (task, id, progressOrder) => ({
       task,
-      _id,
-      progress_order
+      id,
+      progressOrder
    })
 )
 

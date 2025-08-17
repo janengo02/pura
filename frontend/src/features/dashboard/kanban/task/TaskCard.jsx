@@ -61,7 +61,7 @@ const TaskCard = React.memo(
       taskIndex,
       progressColor,
       // Redux props
-      _id,
+      id,
       filter,
       deleteTaskAction,
       updateTaskBasicInfoAction,
@@ -165,16 +165,16 @@ const TaskCard = React.memo(
 
       const handleDeleteTask = useCallback(() => {
          const formData = {
-            page_id: _id,
-            task_id: task._id
+            pageId: id,
+            taskId: task.id
          }
          deleteTaskAction(formData)
-      }, [_id, task._id, deleteTaskAction])
+      }, [id, task.id, deleteTaskAction])
 
       const handleSubmitTitle = methods.handleSubmit(async (data) => {
          const formData = {
-            page_id: _id,
-            task_id: task._id,
+            pageId: id,
+            taskId: task.id,
             title: data.title || t('placeholder-untitled')
          }
          await updateTaskBasicInfoAction(formData)
@@ -183,11 +183,11 @@ const TaskCard = React.memo(
 
       const handleShowTask = useCallback(async () => {
          const formData = {
-            page_id: _id,
-            task_id: task._id
+            pageId: id,
+            taskId: task.id
          }
          await showTaskModalAction(formData)
-      }, [_id, task._id, showTaskModalAction])
+      }, [id, task.id, showTaskModalAction])
 
       const handleMouseEnter = useCallback(
          (e) => {
@@ -388,7 +388,7 @@ TaskCard.propTypes = {
    taskIndex: PropTypes.number.isRequired,
    progressColor: PropTypes.string.isRequired,
    // Redux props
-   _id: PropTypes.string.isRequired,
+   id: PropTypes.string.isRequired,
    filter: PropTypes.object.isRequired,
    updateTaskBasicInfoAction: PropTypes.func.isRequired,
    deleteTaskAction: PropTypes.func.isRequired,
@@ -400,7 +400,7 @@ TaskCard.propTypes = {
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   _id: state.page._id,
+   id: state.page.id,
    filter: state.page.filter
 })
 

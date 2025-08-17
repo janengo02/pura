@@ -1,5 +1,4 @@
-const Page = require('../models/PageModel')
-const Group = require('../models/GroupModel')
+const prisma = require('../config/prisma')
 
 /**
  * Validate group exists
@@ -7,7 +6,7 @@ const Group = require('../models/GroupModel')
  * @returns {Object|null} Group object if exists, null if not found
  */
 const validateGroup = async (groupId) => {
-   const group = await Group.findById(groupId)
+   const group = await prisma.group.findUnique({ where: { id: groupId } })
    if (!group) return null
    return group
 }
@@ -28,41 +27,41 @@ const prepareGroupData = ({ title, color }) => {
 
 const createGroup = ({
    tasks,
-   task_map,
-   group_order,
-   progress_order,
+   taskMap,
+   groupOrder,
+   progressOrder,
    newGroup
 }) => {
-   const newTaskMap = [...task_map]
+   const newTaskMap = [...taskMap]
    const taskCount = tasks.length
-   for (let i = 1; i <= progress_order.length; i++) {
+   for (let i = 1; i <= progressOrder.length; i++) {
       newTaskMap.push(taskCount)
    }
-   const newGroupOrder = [...group_order]
+   const newGroupOrder = [...groupOrder]
    newGroupOrder.push(newGroup)
-   return { group_order: newGroupOrder, task_map: newTaskMap }
+   return { groupOrder: newGroupOrder, taskMap: newTaskMap }
 }
 
 const deleteGroup = ({
    groupIndex,
-   progress_order,
-   group_order,
+   progressOrder,
+   groupOrder,
    tasks,
-   task_map
+   taskMap
 }) => {
-   const originalTaskMap = [...task_map]
-   const newTaskMap = [...task_map]
+   const originalTaskMap = [...taskMap]
+   const newTaskMap = [...taskMap]
    const newTasks = [...tasks]
-   const newGroupOrder = [...group_order]
+   const newGroupOrder = [...groupOrder]
 
    if (groupIndex === -1) {
       return {
-         group_order: newGroupOrder,
+         groupOrder: newGroupOrder,
          tasks: newTasks,
-         task_map: newTaskMap
+         taskMap: newTaskMap
       }
    }
-   const progressCount = progress_order.length
+   const progressCount = progressOrder.length
    const mapStart = progressCount * groupIndex
    const mapEnd = mapStart + progressCount - 1
 
@@ -80,7 +79,7 @@ const deleteGroup = ({
    const newTaskEnd = originalTaskMap[mapEnd] - 1
    newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
 
-   return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
+   return { groupOrder: newGroupOrder, tasks: newTasks, taskMap: newTaskMap }
 }
 
 module.exports = {

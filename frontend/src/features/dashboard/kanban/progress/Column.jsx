@@ -33,10 +33,10 @@ const Column = ({
    progress,
    group,
    // Redux props
-   _id,
-   group_order,
-   progress_order,
-   task_map,
+   id,
+   groupOrder,
+   progressOrder,
+   taskMap,
    tasks,
    createTaskAction
 }) => {
@@ -53,39 +53,37 @@ const Column = ({
 
    const newTaskInfo = useMemo(
       () => ({
-         page_id: _id,
-         group_id: group._id,
-         progress_id: progress._id
+         pageId: id,
+         groupId: group.id,
+         progressId: progress.id
       }),
-      [_id, group._id, progress._id]
+      [id, group.id, progress.id]
    )
 
    const taskData = useMemo(() => {
-      const groupIndex = group_order.findIndex((g) => g._id === group._id)
-      const progressIndex = progress_order.findIndex(
-         (p) => p._id === progress._id
-      )
-      const taskMapIndex = groupIndex * progress_order.length + progressIndex
+      const groupIndex = groupOrder.findIndex((g) => g.id === group.id)
+      const progressIndex = progressOrder.findIndex((p) => p.id === progress.id)
+      const taskMapIndex = groupIndex * progressOrder.length + progressIndex
 
       let taskArray = []
       if (taskMapIndex === 0) {
-         taskArray = tasks.slice(0, task_map[0])
+         taskArray = tasks.slice(0, taskMap[0])
       } else {
          taskArray = tasks.slice(
-            task_map[taskMapIndex - 1],
-            task_map[taskMapIndex]
+            taskMap[taskMapIndex - 1],
+            taskMap[taskMapIndex]
          )
       }
 
       const droppableId = taskMapIndex.toString()
-      const taskPointer = task_map[taskMapIndex] - taskArray?.length
+      const taskPointer = taskMap[taskMapIndex] - taskArray?.length
 
       return {
          taskArray,
          droppableId,
          taskPointer
       }
-   }, [group_order, progress_order, task_map, tasks, group._id, progress._id])
+   }, [groupOrder, progressOrder, taskMap, tasks, group.id, progress.id])
 
    const taskCards = useMemo(
       () =>
@@ -180,19 +178,19 @@ Column.displayName = 'Column'
 // PropTypes validation
 Column.propTypes = {
    progress: PropTypes.shape({
-      _id: PropTypes.string.isRequired,
+      id: PropTypes.string.isRequired,
       color: PropTypes.string.isRequired,
       isNew: PropTypes.bool
    }).isRequired,
    group: PropTypes.shape({
-      _id: PropTypes.string.isRequired,
+      id: PropTypes.string.isRequired,
       isNew: PropTypes.bool
    }).isRequired,
    // Redux props
-   _id: PropTypes.string.isRequired,
-   group_order: PropTypes.array.isRequired,
-   progress_order: PropTypes.array.isRequired,
-   task_map: PropTypes.array.isRequired,
+   id: PropTypes.string.isRequired,
+   groupOrder: PropTypes.array.isRequired,
+   progressOrder: PropTypes.array.isRequired,
+   taskMap: PropTypes.array.isRequired,
    tasks: PropTypes.array.isRequired,
    createTaskAction: PropTypes.func.isRequired
 }
@@ -202,10 +200,10 @@ Column.propTypes = {
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   _id: state.page._id,
-   group_order: state.page.group_order,
-   progress_order: state.page.progress_order,
-   task_map: state.page.task_map,
+   id: state.page.id,
+   groupOrder: state.page.groupOrder,
+   progressOrder: state.page.progressOrder,
+   taskMap: state.page.taskMap,
    tasks: state.page.tasks
 })
 

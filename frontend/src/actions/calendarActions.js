@@ -73,7 +73,7 @@ export const loadCalendarAction =
          dispatch({
             type: GET_CALENDAR,
             payload: {
-               data: res.data.google_accounts,
+               data: res.data.googleAccounts,
                tasks: res.data.tasks || []
             }
          })
@@ -94,7 +94,7 @@ export const addGoogleAccountAction =
       try {
          const res = await api.post('/calendar/add-account', reqData)
 
-         if (res.data?.account_email) {
+         if (res.data?.accountEmail) {
             dispatch({
                type: ADD_CALENDAR_ACCOUNT,
                payload: {
@@ -116,20 +116,20 @@ export const addGoogleAccountAction =
  * Set Default Google Account Action
  * Sets a specific Google account as the default account
  * @param {Object} reqData - Request data for setting default account
- * @param {string} reqData.account_email - ID of the account to set as default
+ * @param {string} reqData.accountEmail - ID of the account to set as default
  */
 export const setDefaultGoogleAccountAction =
    (reqData) => async (dispatch, getState) => {
       try {
          const res = await api.put(
-            `/calendar/set-default/${reqData.account_email}`
+            `/calendar/set-default/${reqData.accountEmail}`
          )
 
-         if (res.data?._id) {
+         if (res.data?.id) {
             dispatch({
                type: SET_CALENDAR_DEFAULT_ACCOUNT,
                payload: {
-                  accountEmail: reqData.account_email,
+                  accountEmail: reqData.accountEmail,
                   accountData: res.data
                }
             })
@@ -154,7 +154,7 @@ export const getDefaultGoogleAccountAction =
 
          dispatch({
             type: GET_CALENDAR_DEFAULT_ACCOUNT,
-            payload: res.data?._id ? res.data : null
+            payload: res.data?.id ? res.data : null
          })
       } catch (err) {
          // Only show error if it's not a 404 (no default account)
@@ -174,9 +174,9 @@ export const getDefaultGoogleAccountAction =
  * @param {string} reqData.originalCalendarId - Original calendar ID
  * @param {string} reqData.calendarSummary - Target calendar summary/name for optimistic updates
  * @param {string} reqData.calendarBackgroundColor - Target calendar background color for optimistic updates
- * @param {string} [reqData.task_id] - Task ID for synced events
- * @param {number} [reqData.slot_index] - Slot index for synced events
- * @param {number} [reqData.target_event_index] - Target event index for task detail updates
+ * @param {string} [reqData.taskId] - Task ID for synced events
+ * @param {number} [reqData.slotIndex] - Slot index for synced events
+ * @param {number} [reqData.targetEventIndex] - Target event index for task detail updates
  */
 export const updateGoogleEventAction =
    (reqData) => async (dispatch, getState) => {
@@ -223,18 +223,18 @@ export const updateGoogleEventAction =
             }
          })
 
-         if (reqData.task_id && typeof reqData.slot_index === 'number') {
+         if (reqData.taskId && typeof reqData.slotIndex === 'number') {
             // Optimistic update - Page | Task
             dispatch({
                type: UPDATE_TASK_SCHEDULE,
                payload: {
-                  task_id: reqData.task_id,
-                  slot_index: reqData.slot_index,
+                  taskId: reqData.taskId,
+                  slotIndex: reqData.slotIndex,
                   start: reqData.start,
                   end: reqData.end,
-                  update_date: new Date().toISOString(),
-                  target_event_index: reqData.target_event_index,
-                  view_target_event_at: new Date()
+                  updateDate: new Date().toISOString(),
+                  targetEventIndex: reqData.targetEventIndex,
+                  viewTargetEventAt: new Date()
                }
             })
          }
@@ -272,9 +272,9 @@ export const updateGoogleEventAction =
  * @param {string} reqData.accountEmail - Google account ID
  * @param {string} reqData.calendarId - Calendar ID where event exists
  * @param {string} reqData.originalCalendarId - Original calendar ID
- * @param {string} [reqData.task_id] - Task ID for synced events
- * @param {number} [reqData.slot_index] - Slot index for synced events
- * @param {number} [reqData.target_event_index] - Target event index for task detail updates
+ * @param {string} [reqData.taskId] - Task ID for synced events
+ * @param {number} [reqData.slotIndex] - Slot index for synced events
+ * @param {number} [reqData.targetEventIndex] - Target event index for task detail updates
  */
 export const updateGoogleEventTimeAction =
    (reqData) => async (dispatch, getState) => {
@@ -288,18 +288,18 @@ export const updateGoogleEventTimeAction =
                end: reqData.end ? { dateTime: reqData.end } : undefined
             }
          })
-         if (reqData.task_id && typeof reqData.slot_index === 'number') {
+         if (reqData.taskId && typeof reqData.slotIndex === 'number') {
             // Optimistic update - Page | Task
             dispatch({
                type: UPDATE_TASK_SCHEDULE,
                payload: {
-                  task_id: reqData.task_id,
-                  slot_index: reqData.slot_index,
+                  taskId: reqData.taskId,
+                  slotIndex: reqData.slotIndex,
                   start: reqData.start,
                   end: reqData.end,
-                  update_date: new Date().toISOString(),
-                  target_event_index: reqData.target_event_index,
-                  view_target_event_at: new Date()
+                  updateDate: new Date().toISOString(),
+                  targetEventIndex: reqData.targetEventIndex,
+                  viewTargetEventAt: new Date()
                }
             })
          }
@@ -357,7 +357,7 @@ export const changeCalendarVisibilityAction =
  * Disconnect Google Account Action
  * Removes Google Account connection and clears calendar data
  * @param {Object} reqData - Request data for disconnection
- * @param {string} reqData.account_email - Google account ID to disconnect
+ * @param {string} reqData.accountEmail - Google account ID to disconnect
  */
 export const disconnectGoogleAccountAction =
    (reqData) => async (dispatch, getState) => {
@@ -365,11 +365,11 @@ export const disconnectGoogleAccountAction =
       dispatch({
          type: REMOVE_CALENDAR_ACCOUNT,
          payload: {
-            accountEmail: reqData.account_email
+            accountEmail: reqData.accountEmail
          }
       })
       try {
-         await api.delete(`/calendar/disconnect/${reqData.account_email}`)
+         await api.delete(`/calendar/disconnect/${reqData.accountEmail}`)
       } catch (err) {
          commonErrorHandler(dispatch, err, getState)
       }

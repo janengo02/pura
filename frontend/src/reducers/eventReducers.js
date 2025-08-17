@@ -14,9 +14,9 @@ const initialState = {
    eventType: null,
    calendarId: null,
    accountEmail: null,
-   pura_task_id: null,
-   pura_schedule_index: null,
-   google_event_id: null
+   puraTaskId: null,
+   puraScheduleIndex: null,
+   googleEventId: null
 }
 
 function eventReducer(state = initialState, action) {
@@ -41,9 +41,9 @@ function eventReducer(state = initialState, action) {
             eventType: null,
             calendarId: null,
             accountEmail: null,
-            pura_task_id: null,
-            pura_schedule_index: null,
-            google_event_id: null
+            puraTaskId: null,
+            puraScheduleIndex: null,
+            googleEventId: null
          }
 
       default:

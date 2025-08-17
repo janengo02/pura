@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URI")
+}
+
+model User {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  email          String          @unique
+  password       String
+  name           String
+  avatar         String?
+  googleAccounts GoogleAccount[]
+  pages          Page[]
+  createDate     DateTime        @default(now()) @map("create_date")
+  updateDate     DateTime        @default(now()) @updatedAt @map("update_date")
+
+  @@map("users")
+}
+
+model GoogleAccount {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  refreshToken String  @map("refresh_token")
+  accountEmail String  @map("account_email")
+  syncStatus   Boolean @default(true) @map("sync_status")
+  isDefault    Boolean @default(false) @map("is_default")
+  userId       String  @map("user_id") @db.ObjectId
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_accounts")
+}
+
+model Page {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @map("user") @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String   @default("Untitled")
+  progressOrder String[] @map("progress_order") @db.ObjectId
+  groupOrder    String[] @map("group_order") @db.ObjectId
+  taskMap       Int[]    @map("task_map")
+  tasks         String[] @map("tasks") @db.ObjectId
+  createDate    DateTime @default(now()) @map("create_date")
+  updateDate    DateTime @default(now()) @updatedAt @map("update_date")
+
+  @@map("pages")
+}
+
+model Task {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  title      String         @default("")
+  schedule   TaskSchedule[]
+  content    String         @default("")
+  createDate DateTime       @default(now()) @map("create_date")
+  updateDate DateTime       @default(now()) @updatedAt @map("update_date")
+
+  @@map("tasks")
+}
+
+type TaskSchedule {
+  id                  String  @map("_id") @db.ObjectId
+  start               DateTime?
+  end                 DateTime?
+  googleEventId       String? @map("google_event_id")
+  googleAccountEmail  String? @map("google_account_email")
+  googleCalendarId    String? @map("google_calendar_id")
+}
+
+model Group {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String   @default("")
+  color      String   @default("kanban.group.default")
+  visibility Boolean  @default(true)
+  createDate DateTime @default(now()) @map("create_date")
+  updateDate DateTime @default(now()) @updatedAt @map("update_date")
+
+  @@map("groups")
+}
+
+model Progress {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String   @default("")
+  titleColor String   @default("kanban.progress.title.default") @map("title_color")
+  color      String   @default("kanban.progress.default")
+  visibility Boolean  @default(true)
+  createDate DateTime @default(now()) @map("create_date")
+  updateDate DateTime @default(now()) @updatedAt @map("update_date")
+
+  @@map("progresses")
+}

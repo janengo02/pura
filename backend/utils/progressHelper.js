@@ -1,4 +1,4 @@
-const Progress = require('../models/ProgressModel')
+const prisma = require('../config/prisma')
 
 /**
  * Validate progress exists
@@ -6,7 +6,7 @@ const Progress = require('../models/ProgressModel')
  * @returns {Object|null} Progress object if exists, null if not found
  */
 const validateProgress = async (progressId) => {
-   const progress = await Progress.findById(progressId)
+   const progress = await prisma.progress.findUnique({ where: { id: progressId } })
    if (!progress) return null
    return progress
 }
@@ -15,56 +15,56 @@ const validateProgress = async (progressId) => {
  * Prepare progress data object from request body
  * @param {Object} body - Request body data
  * @param {string} [body.title] - Progress title
- * @param {string} [body.title_color] - Progress title color
+ * @param {string} [body.titleColor] - Progress title color
  * @param {string} [body.color] - Progress background color
  * @returns {Object} Prepared progress data object
  */
 const prepareProgressData = (body) => {
-   const { title, title_color, color } = body
+   const { title, titleColor, color } = body
    const data = {}
    if (title) data.title = title
-   if (title_color) data.title_color = title_color
+   if (titleColor) data.titleColor = titleColor
    if (color) data.color = color
    return data
 }
 
 const createProgress = ({
-   progress_order,
-   group_order,
-   task_map,
+   progressOrder,
+   groupOrder,
+   taskMap,
    newProgress
 }) => {
-   var newTaskMap = [...task_map]
-   if (group_order.length > 0) {
-      const n_group = group_order.length
-      const m_progress = progress_order.length + 1
+   var newTaskMap = [...taskMap]
+   if (groupOrder.length > 0) {
+      const n_group = groupOrder.length
+      const m_progress = progressOrder.length + 1
       for (let i = 1; i <= n_group; i++) {
          const task_count = newTaskMap[i * m_progress - 2]
          newTaskMap.splice(i * m_progress - 1, 0, task_count)
       }
    }
-   const newProgressOrder = [...progress_order]
+   const newProgressOrder = [...progressOrder]
    newProgressOrder.push(newProgress)
-   return { progress_order: newProgressOrder, task_map: newTaskMap }
+   return { progressOrder: newProgressOrder, taskMap: newTaskMap }
 }
 
 const deleteProgress = ({
    progressIndex,
-   progress_order,
-   group_order,
+   progressOrder,
+   groupOrder,
    tasks,
-   task_map
+   taskMap
 }) => {
    if (progressIndex === -1) {
       return {
-         progress_order: [...progress_order],
+         progressOrder: [...progressOrder],
          tasks: [...tasks],
-         task_map: [...task_map]
+         taskMap: [...taskMap]
       }
    }
 
-   const groupCount = group_order.length
-   const progressCount = progress_order.length
+   const groupCount = groupOrder.length
+   const progressCount = progressOrder.length
    const newTasks = []
    const newTaskMap = []
    let deletedCount = 0
@@ -72,8 +72,8 @@ const deleteProgress = ({
    for (let i = 0; i < groupCount; i++) {
       for (let j = 0; j < progressCount; j++) {
          const mapIdx = i * progressCount + j
-         const currMapCount = task_map[mapIdx]
-         const prevMapCount = mapIdx === 0 ? 0 : task_map[mapIdx - 1]
+         const currMapCount = taskMap[mapIdx]
+         const prevMapCount = mapIdx === 0 ? 0 : taskMap[mapIdx - 1]
          if (j === progressIndex) {
             deletedCount += currMapCount - prevMapCount
          } else {
@@ -86,12 +86,12 @@ const deleteProgress = ({
       }
    }
 
-   const newProgressOrder = [...progress_order]
+   const newProgressOrder = [...progressOrder]
    newProgressOrder.splice(progressIndex, 1)
    return {
-      progress_order: newProgressOrder,
+      progressOrder: newProgressOrder,
       tasks: newTasks,
-      task_map: newTaskMap
+      taskMap: newTaskMap
    }
 }
 

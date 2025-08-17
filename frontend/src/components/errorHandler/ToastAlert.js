@@ -75,6 +75,7 @@ const ToastItem = React.memo(({ alert, onRemove }) => {
       return (
          <Alert
             status={alert.alertType}
+            variant='solid'
             {...TOAST_STYLES}
             alignItems='flex-start'
          >

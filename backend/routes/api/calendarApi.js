@@ -4,7 +4,7 @@ const router = express.Router()
 const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
-const User = require('../../models/UserModel')
+const prisma = require('../../config/prisma')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const {
@@ -29,36 +29,60 @@ dotenv.config()
  */
 router.get('/list-events', auth, async (req, res) => {
    try {
-      const user = await User.findById(req.user.id)
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      
+      if (!user) {
+         return sendErrorResponse(res, 404, 'user', 'not_found')
+      }
+      
       const { minDate, maxDate, pageId } = req.query
       const notSyncedAccounts = []
 
       const gAccounts = await Promise.all(
-         user.google_accounts.map(async (account) => {
+         user.googleAccounts.map(async (account) => {
             const accountCalendars = await listEvent(
-               account.refresh_token,
+               account.refreshToken,
                minDate,
                maxDate
             )
             if (accountCalendars.length === 0) {
-               notSyncedAccounts.push(account._id)
+               notSyncedAccounts.push(account.id)
             }
             return {
-               _id: account._id,
-               account_email: account.account_email,
-               sync_status: accountCalendars.length > 0,
-               is_default: account.is_default,
+               id: account.id,
+               accountEmail: account.accountEmail,
+               syncStatus: accountCalendars.length > 0,
+               isDefault: account.isDefault,
                calendars: accountCalendars
             }
          })
       )
-      updateGoogleAccountSyncStatus(user, notSyncedAccounts)
+      await updateGoogleAccountSyncStatus(user, notSyncedAccounts)
       const page = await validatePage(pageId, req.user.id)
       if (!page) {
          return sendErrorResponse(res, 404, 'page', 'access')
       }
-      await page.populate('tasks', ['title', 'schedule', 'content'])
-      res.json({ google_accounts: gAccounts, tasks: page.tasks })
+      // Get page with tasks using Prisma
+      const pageWithTasks = await prisma.page.findUnique({
+         where: { id: page.id }
+      })
+      
+      // Get tasks separately since we removed the relation
+      const tasksData = await prisma.task.findMany({
+         where: { id: { in: pageWithTasks.tasks } }
+      })
+      
+      // Sort tasks to match the order in pageWithTasks.tasks
+      const taskMap = tasksData.reduce((map, task) => {
+         map[task.id] = task
+         return map
+      }, {})
+      const tasks = pageWithTasks.tasks.map(taskId => taskMap[taskId]).filter(Boolean)
+      
+      res.json({ googleAccounts: gAccounts, tasks: tasks })
    } catch (err) {
       sendErrorResponse(res, 500, 'google', 'sync', err)
    }
@@ -85,43 +109,46 @@ router.post('/add-account', auth, async (req, res) => {
       })
 
       const account_email = ticket.getPayload()['email']
-      const user = await User.findById(req.user.id)
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
 
-      let existingGoogleAccount = user.google_accounts.find(
-         (acc) => acc.account_email === account_email
+      let existingGoogleAccount = user.googleAccounts.find(
+         (acc) => acc.accountEmail === account_email
       )
 
       if (existingGoogleAccount) {
          // Update existing account
-         user.google_accounts = user.google_accounts.map((acc) =>
-            acc.account_email === account_email
-               ? { ...acc, refresh_token: refresh_token, sync_status: true }
-               : acc
-         )
-         user.update_date = new Date()
-         await user.save()
+         existingGoogleAccount = await prisma.googleAccount.update({
+            where: { id: existingGoogleAccount.id },
+            data: {
+               refreshToken: refresh_token,
+               syncStatus: true
+            }
+         })
+         
+         await prisma.user.update({
+            where: { id: req.user.id },
+            data: { updateDate: new Date() }
+         })
       } else {
          // Add new account
-         const isFirstAccount = user.google_accounts.length === 0
-         const newUser = await User.findOneAndUpdate(
-            { _id: req.user.id },
-            {
-               $push: {
-                  google_accounts: {
-                     refresh_token: refresh_token,
-                     account_email: account_email,
-                     sync_status: true,
-                     is_default: isFirstAccount // First account is automatically default
-                  }
-               },
-               $set: { update_date: new Date() }
-            },
-            { new: true }
-         )
-
-         existingGoogleAccount = newUser.google_accounts.find(
-            (acc) => acc.account_email === account_email
-         )
+         const isFirstAccount = user.googleAccounts.length === 0
+         existingGoogleAccount = await prisma.googleAccount.create({
+            data: {
+               refreshToken: refresh_token,
+               accountEmail: account_email,
+               syncStatus: true,
+               isDefault: isFirstAccount,
+               userId: req.user.id
+            }
+         })
+         
+         await prisma.user.update({
+            where: { id: req.user.id },
+            data: { updateDate: new Date() }
+         })
       }
 
       // Auto-set default if only one account
@@ -134,10 +161,10 @@ router.post('/add-account', auth, async (req, res) => {
       )
 
       res.json({
-         _id: existingGoogleAccount._id,
-         account_email: existingGoogleAccount.account_email,
-         sync_status: true,
-         is_default: existingGoogleAccount.is_default,
+         id: existingGoogleAccount.id,
+         accountEmail: existingGoogleAccount.accountEmail,
+         syncStatus: true,
+         isDefault: existingGoogleAccount.isDefault,
          calendars: newAccountCalendars
       })
    } catch (err) {
@@ -146,20 +173,23 @@ router.post('/add-account', auth, async (req, res) => {
 })
 
 /**
- * @route PUT api/calendar/set-default/:account_email
+ * @route PUT api/calendar/set-default/:accountEmail
  * @desc Set Google account as default
  * @access Private
- * @param {string} account_email
+ * @param {string} accountEmail
  * @returns {Object} Updated account details
  */
-router.put('/set-default/:account_email', auth, async (req, res) => {
+router.put('/set-default/:accountEmail', auth, async (req, res) => {
    try {
-      const { account_email } = req.params
-      const user = await User.findById(req.user.id)
+      const { accountEmail } = req.params
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
 
       // Verify account exists and belongs to user
-      const targetAccount = user.google_accounts.find(
-         (acc) => acc.account_email === account_email
+      const targetAccount = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
 
       if (!targetAccount) {
@@ -167,19 +197,22 @@ router.put('/set-default/:account_email', auth, async (req, res) => {
       }
 
       // Set new default account
-      await ensureSingleDefaultAccount(user, account_email)
+      await ensureSingleDefaultAccount(user, accountEmail)
 
       // Return updated account data
-      const updatedUser = await User.findById(req.user.id)
-      const updatedAccount = updatedUser.google_accounts.find(
-         (acc) => acc.account_email === account_email
+      const updatedUser = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const updatedAccount = updatedUser.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
 
       res.json({
-         _id: updatedAccount._id,
-         account_email: updatedAccount.account_email,
-         sync_status: updatedAccount.sync_status,
-         is_default: updatedAccount.is_default,
+         id: updatedAccount.id,
+         accountEmail: updatedAccount.accountEmail,
+         syncStatus: updatedAccount.syncStatus,
+         isDefault: updatedAccount.isDefault,
          message: 'Default account updated successfully'
       })
    } catch (err) {
@@ -195,18 +228,21 @@ router.put('/set-default/:account_email', auth, async (req, res) => {
  */
 router.get('/default', auth, async (req, res) => {
    try {
-      const user = await User.findById(req.user.id)
-      const defaultAccount = user.google_accounts.find((acc) => acc.is_default)
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const defaultAccount = user.googleAccounts.find((acc) => acc.isDefault)
 
       if (!defaultAccount) {
          return sendErrorResponse(res, 404, 'google', 'access')
       }
 
       res.json({
-         _id: defaultAccount._id,
-         account_email: defaultAccount.account_email,
-         sync_status: defaultAccount.sync_status,
-         is_default: defaultAccount.is_default
+         id: defaultAccount.id,
+         accountEmail: defaultAccount.accountEmail,
+         syncStatus: defaultAccount.syncStatus,
+         isDefault: defaultAccount.isDefault
       })
    } catch (err) {
       sendErrorResponse(res, 500, 'google', 'sync', err)
@@ -239,10 +275,13 @@ router.post('/create-event', auth, async (req, res) => {
          colorId
       } = req.body
 
-      const user = await User.findById(req.user.id)
-      const refreshToken = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
-      )?.refresh_token
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const refreshToken = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )?.refreshToken
 
       if (!refreshToken) {
          return sendErrorResponse(res, 404, 'google', 'access')
@@ -313,10 +352,13 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          conferenceData
       } = req.body
 
-      const user = await User.findById(req.user.id)
-      const refreshToken = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
-      )?.refresh_token
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const refreshToken = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )?.refreshToken
 
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
@@ -482,10 +524,13 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
       const { eventId } = req.params
       const { accountEmail, calendarId } = req.body
 
-      const user = await User.findById(req.user.id)
-      const refreshToken = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
-      ).refresh_token
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const refreshToken = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      ).refreshToken
 
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
@@ -503,23 +548,30 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
 })
 
 /**
- * @route DELETE api/calendar/disconnect/:account_email
+ * @route DELETE api/calendar/disconnect/:accountEmail
  * @desc Disconnect Google account
  * @access Private
- * @param {string} account_email
+ * @param {string} accountEmail
  * @returns {Object} {message}
  */
-router.delete('/disconnect/:account_email', auth, async (req, res) => {
+router.delete('/disconnect/:accountEmail', auth, async (req, res) => {
    try {
-      const { account_email } = req.params
-      const user = await User.findById(req.user.id)
+      const { accountEmail } = req.params
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
 
       // Remove the Google account
-      user.google_accounts = user.google_accounts.filter(
-         (acc) => acc.account_email !== account_email
+      const accountToDelete = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
-
-      await user.save()
+      
+      if (accountToDelete) {
+         await prisma.googleAccount.delete({
+            where: { id: accountToDelete.id }
+         })
+      }
       res.json({ message: 'Account disconnected' })
    } catch (err) {
       sendErrorResponse(res, 500, 'google', 'sync', err)

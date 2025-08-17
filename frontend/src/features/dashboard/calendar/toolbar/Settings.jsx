@@ -106,8 +106,8 @@ const Settings = React.memo(
          // Check if task modal is displayed (task exists in state)
          if (task && pageId) {
             const formData = {
-               page_id: pageId,
-               task_id: task._id
+               pageId: pageId,
+               taskId: task.id
             }
             await showTaskModalAction(formData)
          }
@@ -159,7 +159,7 @@ const Settings = React.memo(
       const handleGoogleDisconnect = useCallback(
          async (accountEmail) => {
             await disconnectGoogleAccountAction({
-               account_email: accountEmail
+               accountEmail: accountEmail
             })
             // Refetch task modal data if open after disconnecting Google account
             await refetchTaskModalIfOpen()
@@ -174,7 +174,7 @@ const Settings = React.memo(
             setIsSettingDefault(true)
             try {
                await setDefaultGoogleAccountAction({
-                  account_email: accountEmail
+                  accountEmail: accountEmail
                })
             } finally {
                setIsSettingDefault(false)
@@ -385,7 +385,7 @@ const selectSettingsData = createSelector(
 )
 
 const selectTaskData = createSelector(
-   [(state) => state.task.task, (state) => state.page._id],
+   [(state) => state.task.task, (state) => state.page.id],
    (task, pageId) => ({
       task,
       pageId

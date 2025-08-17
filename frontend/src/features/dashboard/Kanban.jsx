@@ -52,7 +52,7 @@ const Kanban = React.memo(
       dropTaskAction,
       createGroupAction,
       createProgressAction,
-      pageData: { _id, group_order, progress_order, errors, error, loading }
+      pageData: { id, groupOrder, progressOrder, errors, error, loading }
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
@@ -78,30 +78,30 @@ const Kanban = React.memo(
       // -------------------------------------------------------------------------
       const progressHeaders = useMemo(
          () =>
-            progress_order?.map((progress) => (
+            progressOrder?.map((progress) => (
                <ProgressHeader
-                  key={progress._id}
+                  key={progress.id}
                   progress={progress}
                   isNew={progress.title === ''}
                />
             )) || [],
-         [progress_order]
+         [progressOrder]
       )
 
       const groupComponents = useMemo(
          () =>
-            group_order?.map((group) => (
-               <Group key={group._id} group={group} isNew={group.title === ''}>
-                  {progress_order?.map((progress) => (
+            groupOrder?.map((group) => (
+               <Group key={group.id} group={group} isNew={group.title === ''}>
+                  {progressOrder?.map((progress) => (
                      <Column
-                        key={`${group._id}-${progress._id}`} // More specific key
+                        key={`${group.id}-${progress.id}`} // More specific key
                         progress={progress}
                         group={group}
                      />
                   ))}
                </Group>
             )) || [],
-         [group_order, progress_order]
+         [groupOrder, progressOrder]
       )
 
       // -------------------------------------------------------------------------
@@ -111,28 +111,28 @@ const Kanban = React.memo(
       const onDragEnd = useCallback(
          (result) => {
             const reqData = {
-               page_id: _id,
+               pageId: id,
                result: result
             }
             dropTaskAction(reqData)
          },
-         [_id, dropTaskAction]
+         [id, dropTaskAction]
       )
 
       const handleCreateProgress = useCallback(
          async (e) => {
             e.preventDefault()
-            createProgressAction({ page_id: _id })
+            createProgressAction({ pageId: id })
          },
-         [_id, createProgressAction]
+         [id, createProgressAction]
       )
 
       const handleCreateGroup = useCallback(
          async (e) => {
             e.preventDefault()
-            createGroupAction({ page_id: _id })
+            createGroupAction({ pageId: id })
          },
-         [_id, createGroupAction]
+         [id, createGroupAction]
       )
 
       // -------------------------------------------------------------------------
@@ -153,7 +153,7 @@ const Kanban = React.memo(
       // RENDER LOGIC
       // -------------------------------------------------------------------------
 
-      if (error && !_id) {
+      if (error && !id) {
          return <></>
       }
 
@@ -168,7 +168,7 @@ const Kanban = React.memo(
                gap={0}
                paddingBottom={10}
             >
-               {_id ? (
+               {id ? (
                   <VStack
                      w='fit-content'
                      h='fit-content'
@@ -243,9 +243,9 @@ Kanban.propTypes = {
    createGroupAction: PropTypes.func.isRequired,
    createProgressAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
-      _id: PropTypes.string,
-      group_order: PropTypes.array.isRequired,
-      progress_order: PropTypes.array.isRequired,
+      id: PropTypes.string,
+      groupOrder: PropTypes.array.isRequired,
+      progressOrder: PropTypes.array.isRequired,
       loading: PropTypes.bool.isRequired,
       errors: PropTypes.array,
       error: PropTypes.bool
@@ -258,17 +258,17 @@ Kanban.propTypes = {
 // Memoized selectors for better Redux performance
 const selectPageData = createSelector(
    [
-      (state) => state.page._id,
-      (state) => state.page.group_order,
-      (state) => state.page.progress_order,
+      (state) => state.page.id,
+      (state) => state.page.groupOrder,
+      (state) => state.page.progressOrder,
       (state) => state.page.loading,
       (state) => state.page.error,
       (state) => state.page.errors
    ],
-   (_id, group_order, progress_order, loading, error, errors) => ({
-      _id,
-      group_order,
-      progress_order,
+   (id, groupOrder, progressOrder, loading, error, errors) => ({
+      id,
+      groupOrder,
+      progressOrder,
       loading,
       error,
       errors

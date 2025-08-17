@@ -21,7 +21,7 @@ export const getFirstPageAction = () => async (dispatch) => {
 /**
  * Drop task to new position (drag and drop)
  * @param {Object} reqData - Request data
- * @param {string} reqData.page_id - Page ID
+ * @param {string} reqData.pageId - Page ID
  * @param {Object} reqData.result - Drag and drop result
  * @returns {Function} Redux thunk
  */
@@ -32,7 +32,7 @@ export const dropTaskAction = (reqData) => async (dispatch, getState) => {
       payload: reqData.result
    })
    try {
-      await api.post(`/page/move-task/${reqData.page_id}`, reqData)
+      await api.post(`/page/move-task/${reqData.pageId}`, reqData)
    } catch (err) {
       commonErrorHandler(dispatch, err, getState)
    }

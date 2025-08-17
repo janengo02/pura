@@ -67,8 +67,8 @@ const ProgressHeader = React.memo(
       progress,
       isNew = false,
       // Redux props
-      _id,
-      progress_order,
+      id,
+      progressOrder,
       updateProgressAction,
       deleteProgressAction
    }) => {
@@ -108,16 +108,16 @@ const ProgressHeader = React.memo(
 
       const handleDeleteProgress = useCallback(() => {
          const formData = {
-            page_id: _id,
-            progress_id: progress._id
+            pageId: id,
+            progressId: progress.id
          }
          deleteProgressAction(formData)
-      }, [_id, progress._id, deleteProgressAction])
+      }, [id, progress.id, deleteProgressAction])
 
       const handleSubmitTitle = methods.handleSubmit(async (data) => {
          const formData = {
-            page_id: _id,
-            progress_id: progress._id,
+            pageId: id,
+            progressId: progress.id,
             title: data.title || t('placeholder-untitled')
          }
          await updateProgressAction(formData)
@@ -125,26 +125,26 @@ const ProgressHeader = React.memo(
       })
 
       const handleColorChange = useCallback(
-         (color, title_color) => {
+         (color, titleColor) => {
             const formData = {
-               page_id: _id,
-               progress_id: progress._id,
+               pageId: id,
+               progressId: progress.id,
                color: color,
-               title_color: title_color
+               titleColor: titleColor
             }
             updateProgressAction(formData)
          },
-         [_id, progress._id, updateProgressAction]
+         [id, progress.id, updateProgressAction]
       )
 
       const handleColorOptionClick = useCallback(
          (e, colorOption) => {
             e.preventDefault()
-            if (colorOption.title_color !== progress.title_color) {
-               handleColorChange(colorOption.color, colorOption.title_color)
+            if (colorOption.titleColor !== progress.titleColor) {
+               handleColorChange(colorOption.color, colorOption.titleColor)
             }
          },
-         [progress.title_color, handleColorChange]
+         [progress.titleColor, handleColorChange]
       )
 
       const handleMouseEnter = useCallback(
@@ -209,8 +209,8 @@ const ProgressHeader = React.memo(
 
       // Memoize delete button visibility
       const showDeleteButton = useMemo(
-         () => progress_order.length > 1,
-         [progress_order.length]
+         () => progressOrder.length > 1,
+         [progressOrder.length]
       )
 
       // Memoize color options rendering
@@ -218,8 +218,8 @@ const ProgressHeader = React.memo(
          () =>
             progressColors.map((colorOption) => (
                <MenuItemOption
-                  key={colorOption.title_color}
-                  value={colorOption.title_color}
+                  key={colorOption.titleColor}
+                  value={colorOption.titleColor}
                   fontSize='md'
                   onClick={(e) => handleColorOptionClick(e, colorOption)}
                >
@@ -228,13 +228,13 @@ const ProgressHeader = React.memo(
                         <Flex
                            color={colorOption.color}
                            border='0.5px solid'
-                           borderColor={colorOption.title_color}
+                           borderColor={colorOption.titleColor}
                            borderRadius='full'
                         >
                            <PiCircleFill size={18} />
                         </Flex>
                      ) : (
-                        <Flex color={colorOption.title_color}>
+                        <Flex color={colorOption.titleColor}>
                            <PiCircleDuotone size={18} />
                         </Flex>
                      )}
@@ -258,7 +258,7 @@ const ProgressHeader = React.memo(
                   variant='unstyled'
                   placeholder={t('placeholder-untitled')}
                   validation={s.title}
-                  color={progress.title_color}
+                  color={progress.titleColor}
                   fontWeight={600}
                   borderRadius={0}
                   autoFocus
@@ -270,7 +270,7 @@ const ProgressHeader = React.memo(
 
       const renderTitleDisplay = () => (
          <>
-            <Text color={progress.title_color} fontWeight={600}>
+            <Text color={progress.titleColor} fontWeight={600}>
                {progress.title}
             </Text>
             <Spacer />
@@ -299,7 +299,7 @@ const ProgressHeader = React.memo(
 
                   <MenuDivider />
                   <MenuOptionGroup
-                     defaultValue={progress.title_color}
+                     defaultValue={progress.titleColor}
                      title={t('label-color')}
                      fontSize='md'
                      type='radio'
@@ -358,15 +358,15 @@ ProgressHeader.propTypes = {
    progress: PropTypes.object.isRequired,
    isNew: PropTypes.bool,
    // Redux props
-   _id: PropTypes.string.isRequired,
-   progress_order: PropTypes.array.isRequired,
+   id: PropTypes.string.isRequired,
+   progressOrder: PropTypes.array.isRequired,
    updateProgressAction: PropTypes.func.isRequired,
    deleteProgressAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
-   _id: state.page._id,
-   progress_order: state.page.progress_order
+   id: state.page.id,
+   progressOrder: state.page.progressOrder
 })
 
 const mapDispatchToProps = {

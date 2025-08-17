@@ -277,8 +277,8 @@ const Calendar = React.memo(
             // Add highlight styling for navigated events
             const isHighlighted =
                highlightedEvent &&
-               event.pura_task_id === highlightedEvent.taskId &&
-               event.pura_schedule_index === highlightedEvent.slotIndex
+               event.puraTaskId === highlightedEvent.taskId &&
+               event.puraScheduleIndex === highlightedEvent.slotIndex
 
             if (isHighlighted) {
                filter = 'saturate(2) brightness(1.1)'
@@ -398,17 +398,17 @@ const Calendar = React.memo(
             if (event.eventType === 'task') {
                // Check if this is the current task being viewed
                const isCurrentTask =
-                  currentTaskId && currentTaskId === event.pura_task_id
+                  currentTaskId && currentTaskId === event.puraTaskId
 
                // Update task schedule slot for task events
                await updateTaskScheduleAction({
-                  page_id: pageId,
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
+                  pageId: pageId,
+                  taskId: event.puraTaskId,
+                  slotIndex: event.puraScheduleIndex,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   ...(isCurrentTask && {
-                     target_event_index: event.pura_schedule_index
+                     targetEventIndex: event.puraScheduleIndex
                   })
                })
             } else if (
@@ -419,7 +419,7 @@ const Calendar = React.memo(
                const isSyncedCurrentTask =
                   event.eventType === 'synced' &&
                   currentTaskId &&
-                  currentTaskId === event.pura_task_id
+                  currentTaskId === event.puraTaskId
 
                // Update Google Calendar event
                const updateData = {
@@ -429,11 +429,11 @@ const Calendar = React.memo(
                   accountEmail: event.accountEmail,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
+                  taskId: event.puraTaskId,
+                  slotIndex: event.puraScheduleIndex,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
-                     target_event_index: event.pura_schedule_index
+                     targetEventIndex: event.puraScheduleIndex
                   })
                }
 
@@ -461,17 +461,17 @@ const Calendar = React.memo(
             if (event.eventType === 'task') {
                // Check if this is the current task being viewed
                const isCurrentTask =
-                  currentTaskId && currentTaskId === event.pura_task_id
+                  currentTaskId && currentTaskId === event.puraTaskId
 
                // Update task schedule slot for task events
                await updateTaskScheduleAction({
-                  page_id: pageId,
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
+                  pageId: pageId,
+                  taskId: event.puraTaskId,
+                  slotIndex: event.puraScheduleIndex,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
                   ...(isCurrentTask && {
-                     target_event_index: event.pura_schedule_index
+                     targetEventIndex: event.puraScheduleIndex
                   })
                })
             } else if (
@@ -482,7 +482,7 @@ const Calendar = React.memo(
                const isSyncedCurrentTask =
                   event.eventType === 'synced' &&
                   currentTaskId &&
-                  currentTaskId === event.pura_task_id
+                  currentTaskId === event.puraTaskId
                // Update Google Calendar event
                const updateData = {
                   eventId: event.id,
@@ -491,11 +491,11 @@ const Calendar = React.memo(
                   accountEmail: event.accountEmail,
                   start: newStartTime.toISOString(),
                   end: newEndTime.toISOString(),
-                  task_id: event.pura_task_id,
-                  slot_index: event.pura_schedule_index,
+                  taskId: event.puraTaskId,
+                  slotIndex: event.puraScheduleIndex,
                   // Add task detail parameters for synced events
                   ...(isSyncedCurrentTask && {
-                     target_event_index: event.pura_schedule_index
+                     targetEventIndex: event.puraScheduleIndex
                   })
                }
 
@@ -685,8 +685,8 @@ const selectCalendarData = createSelector(
    [
       (state) => state.calendar,
       (state) => state.language?.current || 'en',
-      (state) => state.page._id,
-      (state) => state.task.task?._id
+      (state) => state.page.id,
+      (state) => state.task.task?.id
    ],
    (googleAccount, currentLanguage, pageId, currentTaskId) => ({
       googleAccount,

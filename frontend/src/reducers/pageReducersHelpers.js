@@ -1,22 +1,22 @@
-export const updateProgress = ({ progress_order, updatedProgress }) => {
-   const { title, title_color, color, progress_id } = updatedProgress
-   const newProgressOrder = progress_order.map((p) =>
-      p._id === progress_id
+export const updateProgress = ({ progressOrder, updatedProgress }) => {
+   const { title, titleColor, color, progressId } = updatedProgress
+   const newProgressOrder = progressOrder.map((p) =>
+      p.id === progressId
          ? {
               ...p,
               ...(title && { title }),
-              ...(title_color && { title_color }),
+              ...(titleColor && { titleColor }),
               ...(color && { color })
            }
          : p
    )
-   return { progress_order: newProgressOrder }
+   return { progressOrder: newProgressOrder }
 }
 
-export const updateGroup = ({ group_order, updatedGroup }) => {
-   const { title, color, group_id } = updatedGroup
-   const newGroupOrder = group_order.map((g) =>
-      g._id === group_id
+export const updateGroup = ({ groupOrder, updatedGroup }) => {
+   const { title, color, groupId } = updatedGroup
+   const newGroupOrder = groupOrder.map((g) =>
+      g.id === groupId
          ? {
               ...g,
               ...(title && { title }),
@@ -24,22 +24,22 @@ export const updateGroup = ({ group_order, updatedGroup }) => {
            }
          : g
    )
-   return { group_order: newGroupOrder }
+   return { groupOrder: newGroupOrder }
 }
 /**
  * Update task basic information
  * @param {Array} tasks - Current tasks array
  * @param {Object} payload - Update payload
- * @param {string} payload.task_id - Task ID to update
+ * @param {string} payload.taskId - Task ID to update
  * @param {string} [payload.title] - New task title
  * @param {string} [payload.content] - New task content
- * @param {string} [payload.update_date] - Update timestamp
+ * @param {string} [payload.updateDate] - Update timestamp
  * @returns {Object} Updated state fragment
  */
 export const updateTask = ({ tasks, payload }) => {
    return {
       tasks: tasks.map((task) =>
-         task._id === payload.task_id
+         task.id === payload.taskId
             ? {
                  ...task,
                  title:
@@ -48,7 +48,7 @@ export const updateTask = ({ tasks, payload }) => {
                     payload.content !== undefined
                        ? payload.content
                        : task.content,
-                 update_date: payload.update_date || task.update_date
+                 updateDate: payload.updateDate || task.updateDate
               }
             : task
       )
@@ -59,21 +59,21 @@ export const updateTask = ({ tasks, payload }) => {
  * Remove task schedule slot from page state
  * @param {Array} tasks - Current tasks array
  * @param {Object} payload - Remove payload
- * @param {string} payload.task_id - Task ID
- * @param {number} payload.slot_index - Slot index to remove
- * @param {string} [payload.update_date] - Update timestamp
+ * @param {string} payload.taskId - Task ID
+ * @param {number} payload.slotIndex - Slot index to remove
+ * @param {string} [payload.updateDate] - Update timestamp
  * @returns {Object} Updated state fragment
  */
 export const removePageTaskScheduleSlot = ({ tasks, payload }) => {
    return {
       tasks: tasks.map((task) =>
-         task._id === payload.task_id
+         task.id === payload.taskId
             ? {
                  ...task,
                  schedule: task.schedule?.filter(
-                    (slot, index) => index !== payload.slot_index
+                    (slot, index) => index !== payload.slotIndex
                  ),
-                 update_date: payload.update_date || task.update_date
+                 updateDate: payload.updateDate || task.updateDate
               }
             : task
       )
@@ -84,19 +84,19 @@ export const removePageTaskScheduleSlot = ({ tasks, payload }) => {
  * Add new task schedule slot in page state
  * @param {Array} tasks - Current tasks array
  * @param {Object} payload - Add payload
- * @param {string} payload.task_id - Task ID
+ * @param {string} payload.taskId - Task ID
  * @param {Object} payload.newSlot - New schedule slot data
- * @param {string} [payload.update_date] - Update timestamp
+ * @param {string} [payload.updateDate] - Update timestamp
  * @returns {Object} Updated state fragment
  */
 export const addPageTaskScheduleSlot = ({ tasks, payload }) => {
    return {
       tasks: tasks.map((task) =>
-         task._id === payload.task_id
+         task.id === payload.taskId
             ? {
                  ...task,
                  schedule: [...(task.schedule || []), payload.newSlot],
-                 update_date: payload.update_date || task.update_date
+                 updateDate: payload.updateDate || task.updateDate
               }
             : task
       )
@@ -107,21 +107,21 @@ export const addPageTaskScheduleSlot = ({ tasks, payload }) => {
  * Update task schedule slot in page state
  * @param {Array} tasks - Current tasks array
  * @param {Object} payload - Update payload
- * @param {string} payload.task_id - Task ID
- * @param {number} payload.slot_index - Slot index to update
+ * @param {string} payload.taskId - Task ID
+ * @param {number} payload.slotIndex - Slot index to update
  * @param {string} payload.start - New start time
  * @param {string} payload.end - New end time
- * @param {string} [payload.update_date] - Update timestamp
+ * @param {string} [payload.updateDate] - Update timestamp
  * @returns {Object} Updated state fragment
  */
 export const updatePageTaskScheduleSlot = ({ tasks, payload }) => {
    return {
       tasks: tasks.map((task) =>
-         task._id === payload.task_id
+         task.id === payload.taskId
             ? {
                  ...task,
                  schedule: task.schedule?.map((slot, index) =>
-                    index === payload.slot_index
+                    index === payload.slotIndex
                        ? {
                             ...slot,
                             start: payload.start,
@@ -129,7 +129,7 @@ export const updatePageTaskScheduleSlot = ({ tasks, payload }) => {
                          }
                        : slot
                  ),
-                 update_date: payload.update_date || task.update_date
+                 updateDate: payload.updateDate || task.updateDate
               }
             : task
       )
@@ -140,26 +140,26 @@ export const updatePageTaskScheduleSlot = ({ tasks, payload }) => {
  * Sync task schedule slot with Google Calendar in page state
  * @param {Array} tasks - Current tasks array
  * @param {Object} payload - Sync payload
- * @param {string} payload.task_id - Task ID
- * @param {number} payload.slot_index - Slot index
- * @param {string} payload.google_event_id - Google Calendar event ID
+ * @param {string} payload.taskId - Task ID
+ * @param {number} payload.slotIndex - Slot index
+ * @param {string} payload.googleEventId - Google Calendar event ID
  * @param {string} payload.calendar_id - Google Calendar ID
- * @param {string} payload.account_email - Google account email
+ * @param {string} payload.accountEmail - Google account email
  * @returns {Object} Updated state fragment
  */
 export const syncTaskScheduleInPage = ({ tasks, payload }) => {
    const updatedTasks = tasks.map((task) =>
-      task._id === payload.task_id
+      task.id === payload.taskId
          ? {
               ...task,
               schedule: task.schedule?.map((slot, index) =>
-                 index === payload.slot_index
+                 index === payload.slotIndex
                     ? {
                          ...slot,
-                         google_event_id: payload.google_event_id,
-                         google_calendar_id: payload.calendar_id,
-                         google_account_email: payload.account_email,
-                         sync_status: payload.sync_status || '0'
+                         googleEventId: payload.googleEventId,
+                         googleCalendarId: payload.calendar_id,
+                         googleAccountEmail: payload.accountEmail,
+                         syncStatus: payload.syncStatus || '0'
                       }
                     : slot
               )
@@ -204,22 +204,22 @@ export const updateFilterName = ({ currentFilter, payload }) => {
 
 /**
  * Find progress index by ID
- * @param {Array} progress_order - Progress order array
- * @param {string} progress_id - Progress ID to find
+ * @param {Array} progressOrder - Progress order array
+ * @param {string} progressId - Progress ID to find
  * @returns {number} Index of progress or -1 if not found
  */
-export const findProgressIndex = (progress_order, progress_id) => {
-   return progress_order.findIndex((p) => p && p._id === progress_id)
+export const findProgressIndex = (progressOrder, progressId) => {
+   return progressOrder.findIndex((p) => p && p.id === progressId)
 }
 
 /**
  * Find group index by ID
- * @param {Array} group_order - Group order array
- * @param {string} group_id - Group ID to find
+ * @param {Array} groupOrder - Group order array
+ * @param {string} groupId - Group ID to find
  * @returns {number} Index of group or -1 if not found
  */
-export const findGroupIndex = (group_order, group_id) => {
-   return group_order.findIndex((g) => g && g._id === group_id)
+export const findGroupIndex = (groupOrder, groupId) => {
+   return groupOrder.findIndex((g) => g && g.id === groupId)
 }
 
 export const getDefaultSchedule = () => {
@@ -244,32 +244,32 @@ export const getDefaultName = () => {
  * Moves a task from one position/space to another in a drag-and-drop interface
  * @param {Object} params - The parameters object
  * @param {Array} params.tasks - Array of all tasks
- * @param {Array} params.task_map - Array mapping spaces to task counts/indices
+ * @param {Array} params.taskMap - Array mapping spaces to task counts/indices
  * @param {Object} params.destination - Destination drop location {droppableId, index}
  * @param {Object} params.source - Source drag location {droppableId, index}
  * @param {string} params.draggableId - ID of the dragged task
- * @returns {Object} Updated tasks and task_map arrays
+ * @returns {Object} Updated tasks and taskMap arrays
  */
 export const moveTask = ({
    tasks,
-   task_map,
+   taskMap,
    destination,
    source,
    draggableId
 }) => {
    const newTasks = [...tasks]
-   const newTaskMap = [...task_map]
+   const newTaskMap = [...taskMap]
 
    // Invalid drag-and-drop data
    if (!destination || !source || !draggableId) {
-      return { tasks: newTasks, task_map: newTaskMap }
+      return { tasks: newTasks, taskMap: newTaskMap }
    }
    // No change in position
    if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
    ) {
-      return { tasks: newTasks, task_map: newTaskMap }
+      return { tasks: newTasks, taskMap: newTaskMap }
    }
 
    const startSpace = Number(source.droppableId)
@@ -281,7 +281,7 @@ export const moveTask = ({
    // Calculate new position in tasks array
    let newTaskIndex = destination.index
    if (endSpace !== 0) {
-      newTaskIndex += task_map[endSpace - 1]
+      newTaskIndex += taskMap[endSpace - 1]
    }
    if (endSpace > startSpace) {
       newTaskIndex--
@@ -306,47 +306,47 @@ export const moveTask = ({
 
    return {
       tasks: newTasks,
-      task_map: newTaskMap
+      taskMap: newTaskMap
    }
 }
 
 export const createGroup = ({
    tasks,
-   task_map,
-   group_order,
-   progress_order,
+   taskMap,
+   groupOrder,
+   progressOrder,
    newGroup
 }) => {
-   const newTaskMap = [...task_map]
+   const newTaskMap = [...taskMap]
    const taskCount = tasks.length
-   for (let i = 1; i <= progress_order.length; i++) {
+   for (let i = 1; i <= progressOrder.length; i++) {
       newTaskMap.push(taskCount)
    }
-   const newGroupOrder = [...group_order]
+   const newGroupOrder = [...groupOrder]
    newGroupOrder.push(newGroup)
-   return { group_order: newGroupOrder, task_map: newTaskMap }
+   return { groupOrder: newGroupOrder, taskMap: newTaskMap }
 }
 
 export const deleteGroup = ({
    groupIndex,
-   progress_order,
-   group_order,
+   progressOrder,
+   groupOrder,
    tasks,
-   task_map
+   taskMap
 }) => {
-   const originalTaskMap = [...task_map]
-   const newTaskMap = [...task_map]
+   const originalTaskMap = [...taskMap]
+   const newTaskMap = [...taskMap]
    const newTasks = [...tasks]
-   const newGroupOrder = [...group_order]
+   const newGroupOrder = [...groupOrder]
 
    if (groupIndex === -1) {
       return {
-         group_order: newGroupOrder,
+         groupOrder: newGroupOrder,
          tasks: newTasks,
-         task_map: newTaskMap
+         taskMap: newTaskMap
       }
    }
-   const progressCount = progress_order.length
+   const progressCount = progressOrder.length
    const mapStart = progressCount * groupIndex
    const mapEnd = mapStart + progressCount - 1
 
@@ -364,46 +364,46 @@ export const deleteGroup = ({
    const newTaskEnd = originalTaskMap[mapEnd] - 1
    newTasks.splice(newTaskStart, newTaskEnd - newTaskStart + 1)
 
-   return { group_order: newGroupOrder, tasks: newTasks, task_map: newTaskMap }
+   return { groupOrder: newGroupOrder, tasks: newTasks, taskMap: newTaskMap }
 }
 
 export const createProgress = ({
-   progress_order,
-   group_order,
-   task_map,
+   progressOrder,
+   groupOrder,
+   taskMap,
    newProgress
 }) => {
-   const newTaskMap = [...task_map]
-   if (group_order.length > 0) {
-      const n_group = group_order.length
-      const m_progress = progress_order.length + 1
+   const newTaskMap = [...taskMap]
+   if (groupOrder.length > 0) {
+      const n_group = groupOrder.length
+      const m_progress = progressOrder.length + 1
       for (let i = 1; i <= n_group; i++) {
          const task_count = newTaskMap[i * m_progress - 2]
          newTaskMap.splice(i * m_progress - 1, 0, task_count)
       }
    }
-   const newProgressOrder = [...progress_order]
+   const newProgressOrder = [...progressOrder]
    newProgressOrder.push(newProgress)
-   return { progress_order: newProgressOrder, task_map: newTaskMap }
+   return { progressOrder: newProgressOrder, taskMap: newTaskMap }
 }
 
 export const deleteProgress = ({
    progressIndex,
-   progress_order,
-   group_order,
+   progressOrder,
+   groupOrder,
    tasks,
-   task_map
+   taskMap
 }) => {
    if (progressIndex === -1) {
       return {
-         progress_order: [...progress_order],
+         progressOrder: [...progressOrder],
          tasks: [...tasks],
-         task_map: [...task_map]
+         taskMap: [...taskMap]
       }
    }
 
-   const groupCount = group_order.length
-   const progressCount = progress_order.length
+   const groupCount = groupOrder.length
+   const progressCount = progressOrder.length
    const newTasks = []
    const newTaskMap = []
    let deletedCount = 0
@@ -411,8 +411,8 @@ export const deleteProgress = ({
    for (let i = 0; i < groupCount; i++) {
       for (let j = 0; j < progressCount; j++) {
          const mapIdx = i * progressCount + j
-         const currMapCount = task_map[mapIdx]
-         const prevMapCount = mapIdx === 0 ? 0 : task_map[mapIdx - 1]
+         const currMapCount = taskMap[mapIdx]
+         const prevMapCount = mapIdx === 0 ? 0 : taskMap[mapIdx - 1]
          if (j === progressIndex) {
             deletedCount += currMapCount - prevMapCount
          } else {
@@ -425,34 +425,34 @@ export const deleteProgress = ({
       }
    }
 
-   const newProgressOrder = [...progress_order]
+   const newProgressOrder = [...progressOrder]
    newProgressOrder.splice(progressIndex, 1)
    return {
-      progress_order: newProgressOrder,
+      progressOrder: newProgressOrder,
       tasks: newTasks,
-      task_map: newTaskMap
+      taskMap: newTaskMap
    }
 }
 
 export const createTask = ({
    new_task_info,
-   group_order,
-   progress_order,
-   task_map,
+   groupOrder,
+   progressOrder,
+   taskMap,
    tasks
 }) => {
-   const { group_id, progress_id, newTask } = new_task_info
+   const { groupId, progressId, newTask } = new_task_info
 
-   const progressIndex = progress_order.findIndex((p) => p._id === progress_id)
-   const groupIndex = group_order.findIndex((g) => g._id === group_id)
+   const progressIndex = progressOrder.findIndex((p) => p.id === progressId)
+   const groupIndex = groupOrder.findIndex((g) => g.id === groupId)
    if (progressIndex === -1 || groupIndex === -1) {
-      return { tasks: [...tasks], task_map: [...task_map] }
+      return { tasks: [...tasks], taskMap: [...taskMap] }
    }
 
-   const progressCount = progress_order.length
+   const progressCount = progressOrder.length
    const taskMapIndex = groupIndex * progressCount + progressIndex
 
-   const newTaskMap = [...task_map]
+   const newTaskMap = [...taskMap]
    for (let i = taskMapIndex; i < newTaskMap.length; i++) {
       newTaskMap[i]++
    }
@@ -463,23 +463,23 @@ export const createTask = ({
 
    return {
       tasks: newTasks,
-      task_map: newTaskMap
+      taskMap: newTaskMap
    }
 }
 
-export const deleteTask = ({ task_id, task_map, tasks }) => {
-   const taskIndex = tasks.findIndex((t) => t._id === task_id)
+export const deleteTask = ({ taskId, taskMap, tasks }) => {
+   const taskIndex = tasks.findIndex((t) => t.id === taskId)
    if (taskIndex === -1) {
-      return { tasks: [...tasks], task_map: [...task_map] }
+      return { tasks: [...tasks], taskMap: [...taskMap] }
    }
 
    const newTasks = [...tasks]
    newTasks.splice(taskIndex, 1)
 
-   const newTaskMap = [...task_map]
+   const newTaskMap = [...taskMap]
    for (let i = 0; i < newTaskMap.length; i++) {
       if (newTaskMap[i] > taskIndex) newTaskMap[i]--
    }
 
-   return { tasks: newTasks, task_map: newTaskMap }
+   return { tasks: newTasks, taskMap: newTaskMap }
 }

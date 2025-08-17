@@ -1,4 +1,5 @@
 const { google } = require('googleapis')
+const prisma = require('../config/prisma')
 
 /**
  * Create new OAuth2 client
@@ -89,16 +90,27 @@ const listEvent = async (refreshToken, minDate, maxDate) => {
  * Update sync status for Google accounts
  * @param {Object} user - User object
  * @param {Array} notSyncedAccounts - Array of account IDs that failed to sync
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const updateGoogleAccountSyncStatus = (user, notSyncedAccounts) => {
-   user.google_accounts = user.google_accounts.map((acc) =>
-      notSyncedAccounts.includes(acc._id)
-         ? { ...acc, sync_status: false }
-         : { ...acc, sync_status: true }
-   )
-   user.update_date = new Date()
-   user.save()
+const updateGoogleAccountSyncStatus = async (user, notSyncedAccounts) => {
+   // Update each account's sync status individually
+   const updatePromises = user.googleAccounts.map(async (acc) => {
+      const newSyncStatus = !notSyncedAccounts.includes(acc.id)
+      if (acc.syncStatus !== newSyncStatus) {
+         await prisma.googleAccount.update({
+            where: { id: acc.id },
+            data: { syncStatus: newSyncStatus }
+         })
+      }
+   })
+   
+   await Promise.all(updatePromises)
+   
+   // Update user's update date
+   await prisma.user.update({
+      where: { id: user.id },
+      data: { updateDate: new Date() }
+   })
 }
 
 /**
@@ -107,12 +119,24 @@ const updateGoogleAccountSyncStatus = (user, notSyncedAccounts) => {
  * @param {String} newDefaultAccountEmail - Email of the new default account
  */
 const ensureSingleDefaultAccount = async (user, newDefaultAccountEmail) => {
-   user.google_accounts = user.google_accounts.map((account) => ({
-      ...account,
-      is_default: account.account_email === newDefaultAccountEmail
-   }))
-   user.update_date = new Date()
-   await user.save()
+   // Update all accounts to set the correct default
+   const updatePromises = user.googleAccounts.map(async (account) => {
+      const shouldBeDefault = account.accountEmail === newDefaultAccountEmail
+      if (account.isDefault !== shouldBeDefault) {
+         await prisma.googleAccount.update({
+            where: { id: account.id },
+            data: { isDefault: shouldBeDefault }
+         })
+      }
+   })
+   
+   await Promise.all(updatePromises)
+   
+   // Update user's update date
+   await prisma.user.update({
+      where: { id: user.id },
+      data: { updateDate: new Date() }
+   })
 }
 
 /**
@@ -120,10 +144,20 @@ const ensureSingleDefaultAccount = async (user, newDefaultAccountEmail) => {
  * @param {Object} user - User object
  */
 const autoSetDefaultForSingleAccount = async (user) => {
-   if (user.google_accounts.length === 1) {
-      user.google_accounts[0].is_default = true
-      user.update_date = new Date()
-      await user.save()
+   if (user.googleAccounts.length === 1) {
+      const account = user.googleAccounts[0]
+      if (!account.isDefault) {
+         await prisma.googleAccount.update({
+            where: { id: account.id },
+            data: { isDefault: true }
+         })
+      }
+      
+      // Update user's update date
+      await prisma.user.update({
+         where: { id: user.id },
+         data: { updateDate: new Date() }
+      })
    }
 }
 

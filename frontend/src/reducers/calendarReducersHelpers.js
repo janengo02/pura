@@ -230,8 +230,8 @@ const extractExtendedProperties = (event) => {
       private: event.extendedProperties?.private || {},
       shared: event.extendedProperties?.shared || {},
       // Check for Pura-specific properties
-      isPuraTask: !!event.extendedProperties?.private?.pura_task_id,
-      puraTaskId: event.extendedProperties?.private?.pura_task_id || null
+      isPuraTask: !!event.extendedProperties?.private?.puraTaskId,
+      puraTaskId: event.extendedProperties?.private?.puraTaskId || null
    }
 }
 
@@ -282,13 +282,13 @@ export const addGoogleAccountListHelper = (
    newGoogleAccount
 ) => {
    const existingAccountIndex = googleAccounts.findIndex(
-      (account) => account.accountEmail === newGoogleAccount.account_email
+      (account) => account.accountEmail === newGoogleAccount.accountEmail
    )
 
    const newAccountData = {
-      accountEmail: newGoogleAccount.account_email,
-      accountSyncStatus: newGoogleAccount.sync_status,
-      isDefault: newGoogleAccount.is_default || false
+      accountEmail: newGoogleAccount.accountEmail,
+      accountSyncStatus: newGoogleAccount.syncStatus,
+      isDefault: newGoogleAccount.isDefault || false
    }
 
    if (existingAccountIndex !== -1) {
@@ -311,7 +311,7 @@ export const addGoogleAccountCalendarListHelper = (
    newAccountCalendars
 ) => {
    const calendarsWithoutCurrentAccount = currentCalendarList.filter(
-      (c) => c.accountEmail !== newAccountCalendars.account_email
+      (c) => c.accountEmail !== newAccountCalendars.accountEmail
    )
 
    const newCalendars = newAccountCalendars.calendars.map((calendar) => {
@@ -320,7 +320,7 @@ export const addGoogleAccountCalendarListHelper = (
       )
 
       return {
-         accountEmail: newAccountCalendars.account_email,
+         accountEmail: newAccountCalendars.accountEmail,
          calendarId: calendar.id,
          title: calendar.summary,
          color: calendar.backgroundColor,
@@ -349,7 +349,7 @@ export const addGoogleAccountEventListHelper = (
 ) => {
    // Preserve all events that are not related to the new Google account
    const eventsWithoutCurrentAccount = currentCalendarEvents.filter(
-      (ev) => ev.accountEmail !== newGoogleAccountEvents.account_email
+      (ev) => ev.accountEmail !== newGoogleAccountEvents.accountEmail
    )
 
    const newEvents = []
@@ -374,9 +374,9 @@ export const addGoogleAccountEventListHelper = (
             // This includes both 'task' and 'synced' events from ALL accounts, not just the current one
             const existingTaskEvent = currentCalendarEvents.find(
                (ev) =>
-                  ev.google_event_id === event.id &&
+                  ev.googleEventId === event.id &&
                   (ev.eventType === 'task' || ev.eventType === 'synced') &&
-                  ev.pura_task_id // Ensure it's actually a task-related event
+                  ev.puraTaskId // Ensure it's actually a task-related event
             )
 
             let syncStatus
@@ -396,8 +396,8 @@ export const addGoogleAccountEventListHelper = (
 
             const syncedInfo = existingTaskEvent
                ? {
-                    pura_task_id: existingTaskEvent.pura_task_id,
-                    pura_schedule_index: existingTaskEvent.pura_schedule_index,
+                    puraTaskId: existingTaskEvent.puraTaskId,
+                    puraScheduleIndex: existingTaskEvent.puraScheduleIndex,
                     eventType: 'synced',
                     title: existingTaskEvent.title, // Use task title for synced events
                     syncStatus: syncStatus // Calculate sync status from time comparison
@@ -409,7 +409,7 @@ export const addGoogleAccountEventListHelper = (
 
             newEvents.push({
                id: event.id,
-               google_event_id: event.id,
+               googleEventId: event.id,
                start: startTime,
                end: endTime,
                allDay: isAllDay, // Critical property for react-big-calendar
@@ -417,7 +417,7 @@ export const addGoogleAccountEventListHelper = (
                calendar: calendar.summary,
                accessRole: calendar.accessRole,
                calendarVisible: calendar.selected || false,
-               accountEmail: newGoogleAccountEvents.account_email,
+               accountEmail: newGoogleAccountEvents.accountEmail,
                googleEventTitle: event.summary,
                color: event.colorId
                   ? GOOGLE_CALENDAR_COLORS[event.colorId] ||
@@ -490,8 +490,8 @@ export const setDefaultGoogleAccount = ({
    return {
       googleAccounts: updatedAccounts,
       defaultAccount: {
-         accountEmail: accountData.account_email,
-         accountSyncStatus: accountData.sync_status,
+         accountEmail: accountData.accountEmail,
+         accountSyncStatus: accountData.syncStatus,
          isDefault: true
       }
    }
@@ -507,8 +507,8 @@ export const getDefaultGoogleAccount = ({ defaultAccountData }) => {
    return {
       defaultAccount: defaultAccountData
          ? {
-              accountEmail: defaultAccountData.account_email,
-              accountSyncStatus: defaultAccountData.sync_status,
+              accountEmail: defaultAccountData.accountEmail,
+              accountSyncStatus: defaultAccountData.syncStatus,
               isDefault: true
            }
          : null
@@ -525,9 +525,9 @@ export const getDefaultGoogleAccount = ({ defaultAccountData }) => {
  */
 export const loadAccountListHelper = (googleAccounts) => {
    return googleAccounts.map((account) => ({
-      accountEmail: account.account_email,
-      accountSyncStatus: account.sync_status,
-      isDefault: account.is_default || false
+      accountEmail: account.accountEmail,
+      accountSyncStatus: account.syncStatus,
+      isDefault: account.isDefault || false
    }))
 }
 
@@ -542,7 +542,7 @@ export const loadCalendarListHelper = (googleAccounts) => {
    googleAccounts.forEach((account) => {
       account.calendars.forEach((calendar) => {
          calendars.push({
-            accountEmail: account.account_email,
+            accountEmail: account.accountEmail,
             calendarId: calendar.id,
             title: calendar.summary,
             color: calendar.backgroundColor,
@@ -582,7 +582,7 @@ const createEnhancedEventObject = (
    // Base event object
    const baseEvent = {
       id: event.id,
-      google_event_id: event.id,
+      googleEventId: event.id,
       title: event.summary,
       start: startTime,
       end: endTime,
@@ -594,7 +594,7 @@ const createEnhancedEventObject = (
          : calendar.backgroundColor,
       accessRole: calendar.accessRole,
       calendarVisible: calendar.selected || false,
-      accountEmail: account.account_email,
+      accountEmail: account.accountEmail,
 
       // Enhanced data extraction
       description: event.description || null,
@@ -654,8 +654,8 @@ const createEnhancedEventObject = (
          description: syncedTaskInfo.taskContent,
          eventType: 'synced',
          syncStatus: syncStatus,
-         pura_task_id: syncedTaskInfo.taskId,
-         pura_schedule_index: syncedTaskInfo.slotIndex,
+         puraTaskId: syncedTaskInfo.taskId,
+         puraScheduleIndex: syncedTaskInfo.slotIndex,
          googleEventTitle: event.summary // Keep original Google event title
       }
    }
@@ -691,11 +691,11 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
    tasks.forEach((task) => {
       task.schedule?.forEach((slot, slotIndex) => {
          if (
-            slot.google_event_id &&
-            existingGoogleEventIds.has(slot.google_event_id)
+            slot.googleEventId &&
+            existingGoogleEventIds.has(slot.googleEventId)
          ) {
-            syncedEventMap.set(slot.google_event_id, {
-               taskId: task._id,
+            syncedEventMap.set(slot.googleEventId, {
+               taskId: task.id,
                taskTitle: task.title,
                taskContent: task.content,
                slotIndex,
@@ -709,28 +709,28 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
    tasks.forEach((task) => {
       task.schedule?.forEach((slot, slotIndex) => {
          if (
-            !slot.google_event_id ||
-            !existingGoogleEventIds.has(slot.google_event_id)
+            !slot.googleEventId ||
+            !existingGoogleEventIds.has(slot.googleEventId)
          ) {
             const startTime = new Date(Date.parse(slot.start))
             const endTime = new Date(Date.parse(slot.end))
             const isAllDay = isTaskScheduleAllDay(startTime, endTime)
 
             events.push({
-               id: `${task._id}_${slotIndex}`,
-               google_event_id: slot.google_event_id || null,
-               pura_task_id: task._id,
-               pura_schedule_index: slotIndex,
+               id: `${task.id}_${slotIndex}`,
+               googleEventId: slot.googleEventId || null,
+               puraTaskId: task.id,
+               puraScheduleIndex: slotIndex,
                title: task.title,
                start: startTime,
                end: endTime,
                allDay: isAllDay,
-               calendarId: slot.google_calendar_id || null,
+               calendarId: slot.googleCalendarId || null,
                calendar: null,
                color: '#d2c2f2',
                accessRole: 'owner',
                calendarVisible: true,
-               accountEmail: slot.google_account_email || null,
+               accountEmail: slot.googleAccountEmail || null,
                eventType: 'task',
                googleEventTitle: null,
 
@@ -749,7 +749,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
                   private: {},
                   shared: {},
                   isPuraTask: true,
-                  puraTaskId: task._id
+                  puraTaskId: task.id
                },
                recurrence: null
             })
@@ -1039,7 +1039,7 @@ export const createGoogleEvent = ({
       accessRole: calendar?.accessRole || null,
       selected: true
    }
-   const formattedAccount = { account_email: defaultAccount.accountEmail }
+   const formattedAccount = { accountEmail: defaultAccount.accountEmail }
 
    const enhancedEvent = {
       ...createEnhancedEventObject(
@@ -1118,16 +1118,16 @@ export const removeGoogleAccount = ({
  * Update task-related Google calendar events (task and synced events)
  * @param {Object} params - Current events and task update data
  * @param {Array} params.googleEvents - Current Google events list
- * @param {Object} params.taskUpdateData - Task update data with task_id, title, description
+ * @param {Object} params.taskUpdateData - Task update data with taskId, title, description
  * @returns {Object} Updated state with modified events
  */
 export const updateTaskEvents = ({ googleEvents, taskUpdateData }) => {
    const updatedEvents = googleEvents.map((event) => {
       // Update task events (eventType === 'task') or synced events (eventType === 'synced')
-      // that match the task_id
+      // that match the taskId
       if (
          (event.eventType === 'task' || event.eventType === 'synced') &&
-         event.pura_task_id === taskUpdateData.task_id
+         event.puraTaskId === taskUpdateData.taskId
       ) {
          return {
             ...event,
@@ -1151,17 +1151,17 @@ export const updateTaskEvents = ({ googleEvents, taskUpdateData }) => {
  * Update task schedule times in Google calendar events (task and synced events)
  * @param {Object} params - Current events and schedule update data
  * @param {Array} params.googleEvents - Current Google events list
- * @param {Object} params.scheduleUpdateData - Schedule update data with task_id, slot_index, start, end
+ * @param {Object} params.scheduleUpdateData - Schedule update data with taskId, slotIndex, start, end
  * @returns {Object} Updated state with modified events
  */
 export const updateTaskSchedule = ({ googleEvents, scheduleUpdateData }) => {
    const updatedEvents = googleEvents.map((event) => {
       // Update task events (eventType === 'task') or synced events (eventType === 'synced')
-      // that match the task_id and schedule slot index
+      // that match the taskId and schedule slot index
       if (
          (event.eventType === 'task' || event.eventType === 'synced') &&
-         event.pura_task_id === scheduleUpdateData.task_id &&
-         event.pura_schedule_index === scheduleUpdateData.slot_index
+         event.puraTaskId === scheduleUpdateData.taskId &&
+         event.puraScheduleIndex === scheduleUpdateData.slotIndex
       ) {
          return {
             ...event,
@@ -1188,18 +1188,17 @@ export const updateTaskSchedule = ({ googleEvents, scheduleUpdateData }) => {
  * @returns {Object} Updated state with new task event added
  */
 export const addTaskScheduleSlot = ({ googleEvents, addSlotData }) => {
-   const { task_id, taskTitle, taskContent, newSlot, newSlotIndex } =
-      addSlotData
+   const { taskId, taskTitle, taskContent, newSlot, newSlotIndex } = addSlotData
    const startTime = new Date(Date.parse(newSlot.start))
    const endTime = new Date(Date.parse(newSlot.end))
    const isAllDay = isTaskScheduleAllDay(startTime, endTime)
 
    // Create a new task event for the calendar
    const newTaskEvent = {
-      id: `${task_id}_${newSlotIndex}`,
-      google_event_id: null,
-      pura_task_id: task_id,
-      pura_schedule_index: newSlotIndex,
+      id: `${taskId}_${newSlotIndex}`,
+      googleEventId: null,
+      puraTaskId: taskId,
+      puraScheduleIndex: newSlotIndex,
       title: taskTitle,
       start: startTime,
       end: endTime,
@@ -1228,7 +1227,7 @@ export const addTaskScheduleSlot = ({ googleEvents, addSlotData }) => {
          private: {},
          shared: {},
          isPuraTask: true,
-         puraTaskId: task_id
+         puraTaskId: taskId
       },
       recurrence: null
    }
@@ -1242,34 +1241,34 @@ export const addTaskScheduleSlot = ({ googleEvents, addSlotData }) => {
  * Remove task schedule slot from Google calendar events (task and synced events)
  * @param {Object} params - Current events and removal data
  * @param {Array} params.googleEvents - Current Google events list
- * @param {Object} params.removalData - Removal data with task_id, slot_index
+ * @param {Object} params.removalData - Removal data with taskId, slotIndex
  * @returns {Object} Updated state with events removed or updated
  */
 export const removeTaskScheduleSlot = ({ googleEvents, removalData }) => {
    const updatedEvents = googleEvents
       .filter((event) => {
          // Remove task events (eventType === 'task') or synced events (eventType === 'synced')
-         // that match the task_id and schedule slot index
+         // that match the taskId and schedule slot index
          if (
             (event.eventType === 'task' || event.eventType === 'synced') &&
-            event.pura_task_id === removalData.task_id &&
-            event.pura_schedule_index === removalData.slot_index
+            event.puraTaskId === removalData.taskId &&
+            event.puraScheduleIndex === removalData.slotIndex
          ) {
             return false // Remove this event
          }
          return true // Keep this event
       })
       .map((event) => {
-         // For remaining events with the same task_id and higher slot indexes,
+         // For remaining events with the same taskId and higher slot indexes,
          // decrement their slot index since we removed a slot
          if (
             (event.eventType === 'task' || event.eventType === 'synced') &&
-            event.pura_task_id === removalData.task_id &&
-            event.pura_schedule_index > removalData.slot_index
+            event.puraTaskId === removalData.taskId &&
+            event.puraScheduleIndex > removalData.slotIndex
          ) {
             return {
                ...event,
-               pura_schedule_index: event.pura_schedule_index - 1
+               puraScheduleIndex: event.puraScheduleIndex - 1
             }
          }
          return event
@@ -1282,16 +1281,16 @@ export const removeTaskScheduleSlot = ({ googleEvents, removalData }) => {
  * Delete all task-related Google calendar events (task and synced events)
  * @param {Object} params - Current events and task deletion data
  * @param {Array} params.googleEvents - Current Google events list
- * @param {Object} params.taskDeletionData - Deletion data with task_id
+ * @param {Object} params.taskDeletionData - Deletion data with taskId
  * @returns {Object} Updated state with task events removed
  */
 export const deleteTaskEvents = ({ googleEvents, taskDeletionData }) => {
    const updatedEvents = googleEvents.filter((event) => {
       // Remove task events (eventType === 'task') or synced events (eventType === 'synced')
-      // that match the task_id
+      // that match the taskId
       if (
          (event.eventType === 'task' || event.eventType === 'synced') &&
-         event.pura_task_id === taskDeletionData.task_id
+         event.puraTaskId === taskDeletionData.taskId
       ) {
          return false // Remove this event
       }

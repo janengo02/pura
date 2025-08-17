@@ -6,7 +6,9 @@ import {
    SlideFade,
    CloseButton,
    Spinner,
-   Spacer
+   Spacer,
+   VStack,
+   HStack
 } from '@chakra-ui/react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -40,24 +42,22 @@ const FormAlert = ({ alerts, removeAlertAction, ...props }) => {
                   mb={index < alerts.length - 1 ? '6' : '0'}
                   {...props}
                >
-                  <AlertIcon />
-                  <AlertTitle>{t(alert.title)}</AlertTitle>
-                  <AlertDescription>{t(alert.msg)}</AlertDescription>
-                  {alert.msg === 'alert-invalid-password' && (
-                     <Link
-                        to='/recover'
-                        text={t('guide-recover_password')}
-                        ml={1.5}
+                  <HStack align='start'>
+                     <AlertIcon />
+                     <VStack align='start'>
+                        <AlertTitle>{t(alert.title)}</AlertTitle>
+                        <HStack>
+                           <AlertDescription>{t(alert.msg)}</AlertDescription>
+                        </HStack>
+                     </VStack>
+                     <Spacer />
+                     <CloseButton
+                        onClick={async (e) => {
+                           e.preventDefault()
+                           removeAlertAction(alert.id)
+                        }}
                      />
-                  )}
-
-                  <Spacer />
-                  <CloseButton
-                     onClick={async (e) => {
-                        e.preventDefault()
-                        removeAlertAction(alert.id)
-                     }}
-                  />
+                  </HStack>
                </Alert>
             </SlideFade>
          )

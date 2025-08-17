@@ -34,7 +34,7 @@ const Toolbar = React.memo(
    ({
       // Redux props
       createTaskModalAction,
-      pageData: { _id, group_order, progress_order }
+      pageData: { id, groupOrder, progressOrder }
    }) => {
       const { t } = useReactiveTranslation()
       // -------------------------------------------------------------------------
@@ -43,11 +43,11 @@ const Toolbar = React.memo(
 
       const newTaskInfo = useMemo(
          () => ({
-            page_id: _id,
-            group_id: group_order[0]?._id || null,
-            progress_id: progress_order[0]?._id || null
+            pageId: id,
+            groupId: groupOrder[0]?.id || null,
+            progressId: progressOrder[0]?.id || null
          }),
-         [_id, group_order, progress_order]
+         [id, groupOrder, progressOrder]
       )
 
       // -------------------------------------------------------------------------
@@ -57,11 +57,11 @@ const Toolbar = React.memo(
       const handleCreateTaskModal = useCallback(
          async (e) => {
             e.preventDefault()
-            if (group_order.length > 0 && progress_order.length > 0) {
+            if (groupOrder.length > 0 && progressOrder.length > 0) {
                await createTaskModalAction(newTaskInfo)
             }
          },
-         [createTaskModalAction, newTaskInfo, group_order, progress_order]
+         [createTaskModalAction, newTaskInfo, groupOrder, progressOrder]
       )
 
       // -------------------------------------------------------------------------
@@ -111,9 +111,9 @@ Toolbar.displayName = 'Toolbar'
 Toolbar.propTypes = {
    createTaskModalAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
-      _id: PropTypes.string,
-      group_order: PropTypes.array.isRequired,
-      progress_order: PropTypes.array.isRequired
+      id: PropTypes.string,
+      groupOrder: PropTypes.array.isRequired,
+      progressOrder: PropTypes.array.isRequired
    }).isRequired
 }
 // =============================================================================
@@ -123,14 +123,14 @@ Toolbar.propTypes = {
 // Memoized selectors for better Redux performance
 const selectPageData = createSelector(
    [
-      (state) => state.page._id,
-      (state) => state.page.group_order,
-      (state) => state.page.progress_order
+      (state) => state.page.id,
+      (state) => state.page.groupOrder,
+      (state) => state.page.progressOrder
    ],
-   (_id, group_order, progress_order) => ({
-      _id,
-      group_order,
-      progress_order
+   (id, groupOrder, progressOrder) => ({
+      id,
+      groupOrder,
+      progressOrder
    })
 )
 

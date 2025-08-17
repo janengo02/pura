@@ -100,8 +100,8 @@ const ScheduleTimeSlot = React.memo(
          // Check if task modal is displayed (task exists in state)
          if (task && pageId) {
             const formData = {
-               page_id: pageId,
-               task_id: task._id
+               pageId: pageId,
+               taskId: task.id
             }
             await showTaskModalAction(formData)
          }
@@ -126,24 +126,24 @@ const ScheduleTimeSlot = React.memo(
       const updateScheduleSlot = useCallback(
          async (updates) => {
             const formData = {
-               page_id: pageId,
-               task_id: task._id,
-               slot_index: index,
+               pageId: pageId,
+               taskId: task.id,
+               slotIndex: index,
                ...updates
             }
             await updateTaskScheduleAction(formData)
          },
-         [updateTaskScheduleAction, pageId, task._id, index]
+         [updateTaskScheduleAction, pageId, task.id, index]
       )
 
       const handleDeleteSlot = useCallback(async () => {
          const formData = {
-            page_id: pageId,
-            task_id: task._id,
-            slot_index: index
+            pageId: pageId,
+            taskId: task.id,
+            slotIndex: index
          }
          await removeTaskScheduleSlotAction(formData)
-      }, [removeTaskScheduleSlotAction, index, pageId, task._id])
+      }, [removeTaskScheduleSlotAction, index, pageId, task.id])
 
       // -------------------------------------------------------------------------
       // SYNC HANDLERS
@@ -154,25 +154,25 @@ const ScheduleTimeSlot = React.memo(
             // Handle args array from useLoading hook
             const [accountEmail, calendarId] = args
             const reqData = {
-               task_id: task._id,
-               slot_index: index,
-               account_email: accountEmail,
+               taskId: task.id,
+               slotIndex: index,
+               accountEmail: accountEmail,
                calendar_id: calendarId,
                sync_action: 'create'
             }
             await syncTaskWithGoogleAction(reqData)
          },
-         [task._id, index, syncTaskWithGoogleAction]
+         [task.id, index, syncTaskWithGoogleAction]
       )
 
       const handleUnsyncFromGoogle = useCallback(async () => {
          const reqData = {
-            task_id: task._id,
-            slot_index: index,
+            taskId: task.id,
+            slotIndex: index,
             sync_action: 'delete'
          }
          await syncTaskWithGoogleAction(reqData)
-      }, [task._id, index, syncTaskWithGoogleAction])
+      }, [task.id, index, syncTaskWithGoogleAction])
 
       // -------------------------------------------------------------------------
       // SYNC RESOLUTION HANDLERS
@@ -182,23 +182,23 @@ const ScheduleTimeSlot = React.memo(
          await updateScheduleSlot({
             start: slot.start,
             end: slot.end,
-            google_event_start: slot.start,
-            google_event_end: slot.end,
-            sync_status: SCHEDULE_SYNCE_STATUS.SYNCED
+            googleEventStart: slot.start,
+            googleEventEnd: slot.end,
+            syncStatus: SCHEDULE_SYNCE_STATUS.SYNCED
          })
       }, [updateScheduleSlot, slot.start, slot.end])
 
       const handleUseGoogleTime = useCallback(async () => {
-         if (slot.google_event_start && slot.google_event_end) {
+         if (slot.googleEventStart && slot.googleEventEnd) {
             await updateScheduleSlot({
-               start: slot.google_event_start,
-               end: slot.google_event_end,
-               google_event_start: slot.google_event_start,
-               google_event_end: slot.google_event_end,
-               sync_status: SCHEDULE_SYNCE_STATUS.SYNCED
+               start: slot.googleEventStart,
+               end: slot.googleEventEnd,
+               googleEventStart: slot.googleEventStart,
+               googleEventEnd: slot.googleEventEnd,
+               syncStatus: SCHEDULE_SYNCE_STATUS.SYNCED
             })
          }
-      }, [updateScheduleSlot, slot.google_event_start, slot.google_event_end])
+      }, [updateScheduleSlot, slot.googleEventStart, slot.googleEventEnd])
 
       // -------------------------------------------------------------------------
       // LOADING STATES
@@ -326,7 +326,7 @@ const ScheduleTimeSlot = React.memo(
          const startTime = stringToDateTimeLocal(slot.start)
          const endTime = stringToDateTimeLocal(slot.end)
          const isViewingCalendarEvent =
-            task.view_target_event_at && task.target_event_index === index
+            task.viewTargetEventAt && task.targetEventIndex === index
          const isInvalidTimeSlot =
             startTime === 'Invalid date' ||
             endTime === 'Invalid date' ||
@@ -341,8 +341,8 @@ const ScheduleTimeSlot = React.memo(
       }, [
          slot.start,
          slot.end,
-         task.target_event_index,
-         task.view_target_event_at,
+         task.targetEventIndex,
+         task.viewTargetEventAt,
          index
       ])
 
@@ -552,12 +552,12 @@ const ScheduleTimeSlot = React.memo(
       const getSyncConfig = useCallback(
          (syncStatus) => {
             const syncedAccount = googleAccounts.find(
-               (acc) => acc.accountEmail === slot.google_account_email
+               (acc) => acc.accountEmail === slot.googleAccountEmail
             )
             const syncedCalendar = googleCalendars.find(
                (cal) =>
-                  cal.calendarId === slot.google_calendar_id &&
-                  cal.accountEmail === slot.google_account_email
+                  cal.calendarId === slot.googleCalendarId &&
+                  cal.accountEmail === slot.googleAccountEmail
             )
 
             const configs = {
@@ -604,10 +604,10 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='status.disconnected.bg'>
                         <VStack spacing={2} align='start'>
-                           {slot.google_account_email && (
+                           {slot.googleAccountEmail && (
                               <AccountDisplay
                                  account={{
-                                    accountEmail: slot.google_account_email
+                                    accountEmail: slot.googleAccountEmail
                                  }}
                                  calendar={null}
                                  textColor='status.disconnected.text'
@@ -644,10 +644,10 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='status.warning.bg'>
                         <VStack spacing={2} align='start'>
-                           {slot.google_account_email && (
+                           {slot.googleAccountEmail && (
                               <AccountDisplay
                                  account={{
-                                    accountEmail: slot.google_account_email
+                                    accountEmail: slot.googleAccountEmail
                                  }}
                                  calendar={syncedCalendar}
                                  textColor='status.warning.text'
@@ -676,10 +676,10 @@ const ScheduleTimeSlot = React.memo(
                   desc: (
                      <StatusBox bgColor='status.warning.bg'>
                         <VStack spacing={2} align='start'>
-                           {slot.google_account_email && (
+                           {slot.googleAccountEmail && (
                               <AccountDisplay
                                  account={{
-                                    accountEmail: slot.google_account_email
+                                    accountEmail: slot.googleAccountEmail
                                  }}
                                  calendar={syncedCalendar}
                                  textColor='status.warning.text'
@@ -707,7 +707,7 @@ const ScheduleTimeSlot = React.memo(
                               </Text>
                            </VStack>
                         </MenuItem>
-                        {slot.google_event_start && slot.google_event_end && (
+                        {slot.googleEventStart && slot.googleEventEnd && (
                            <MenuItem
                               onClick={useGoogleTime}
                               isDisabled={useGoogleTimeLoading}
@@ -717,8 +717,8 @@ const ScheduleTimeSlot = React.memo(
                                     {t('btn-sync-use-google-time')}
                                  </Text>
                                  <Text fontSize='xs' color='text.secondary'>
-                                    {formatTime(slot.google_event_start)} -{' '}
-                                    {formatTime(slot.google_event_end)}
+                                    {formatTime(slot.googleEventStart)} -{' '}
+                                    {formatTime(slot.googleEventEnd)}
                                  </Text>
                               </VStack>
                            </MenuItem>
@@ -787,11 +787,11 @@ const ScheduleTimeSlot = React.memo(
       const handleSyncButtonClick = useCallback(() => {
          // Navigate calendar to show this time slot
          const slotStartDate = new Date(slot.start)
-         navigateCalendarToDateAction(slotStartDate, task._id, index)
-      }, [slot.start, navigateCalendarToDateAction, task._id, index])
+         navigateCalendarToDateAction(slotStartDate, task.id, index)
+      }, [slot.start, navigateCalendarToDateAction, task.id, index])
 
       const syncButton = useMemo(() => {
-         const syncStatus = slot.sync_status
+         const syncStatus = slot.syncStatus
          const syncProps = getSyncConfig(syncStatus)
 
          return (
@@ -834,7 +834,7 @@ const ScheduleTimeSlot = React.memo(
             </Tooltip>
          )
       }, [
-         slot.sync_status,
+         slot.syncStatus,
          getSyncConfig,
          syncLoading,
          unsyncLoading,
@@ -876,9 +876,9 @@ ScheduleTimeSlot.propTypes = {
    slot: PropTypes.shape({
       start: PropTypes.string.isRequired,
       end: PropTypes.string.isRequired,
-      sync_status: PropTypes.string,
-      google_account_email: PropTypes.string,
-      google_calendar_id: PropTypes.string
+      syncStatus: PropTypes.string,
+      googleAccountEmail: PropTypes.string,
+      googleCalendarId: PropTypes.string
    }).isRequired,
    index: PropTypes.number.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
@@ -905,7 +905,7 @@ ScheduleTimeSlot.propTypes = {
 // =============================================================================
 
 const selectScheduleData = createSelector(
-   [(state) => state.task.task, (state) => state.page._id],
+   [(state) => state.task.task, (state) => state.page.id],
    (task, pageId) => ({
       task,
       pageId

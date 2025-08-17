@@ -1,11 +1,48 @@
-const Task = require('../models/TaskModel')
-const User = require('../models/UserModel')
-const Group = require('../models/GroupModel')
-const Progress = require('../models/ProgressModel')
-const Page = require('../models/PageModel')
+const prisma = require('../config/prisma')
+const { ObjectId } = require('mongodb')
 const { google } = require('googleapis')
 const { setOAuthCredentials } = require('./calendarHelpers')
-const { SCHEDULE_SYNCE_STATUS } = require('./constants')
+const { populatePage } = require('./pageHelpers')
+
+const SCHEDULE_SYNCE_STATUS = {
+   NONE: '0', // No sync event (no googleEventId)
+   SYNCED: '1', // Event synced with Google Calendar
+   ACCOUNT_NOT_CONNECTED: '2', // Google account not connected
+   EVENT_NOT_FOUND: '3', // Event not found in Google Calendar
+   CONFLICTED: '4', // Event not synced with Google Calendar (Schedule is mismatched)
+   SYNC_ERROR: '5' // Error during sync operation
+}
+
+/**
+ * Helper function to ensure schedule slot has an ID
+ */
+function ensureSlotId(slot) {
+   if (!slot.id) {
+      return {
+         ...slot,
+         id: new ObjectId().toString()
+      }
+   }
+   return slot
+}
+
+/**
+ * Helper function to extract string ID from ObjectId or string
+ */
+function extractId(obj) {
+   if (!obj) return obj
+   if (typeof obj === 'string') return obj
+   if (typeof obj === 'object') {
+      // Try different ways to get the ID
+      if (obj._id) return obj._id.toString()
+      if (obj.id) return obj.id.toString()
+      if (obj.toHexString) return obj.toHexString()
+      // Last resort - convert to string but check it's not [object Object]
+      const str = obj.toString()
+      return str !== '[object Object]' ? str : null
+   }
+   return obj
+}
 
 /**
  * Parse Google Calendar event times to ISO strings
@@ -55,49 +92,50 @@ const parseGoogleEventTime = (startData, endData) => {
 /**
  * Calculate new task mapping when moving tasks
  * @param {Object} page - Page object
- * @param {string} task_id - Task ID to move
- * @param {string} [group_id] - Target group ID
- * @param {string} [progress_id] - Target progress ID
+ * @param {string} taskId - Task ID to move
+ * @param {string} [groupId] - Target group ID
+ * @param {string} [progressId] - Target progress ID
  * @returns {Object} {newTaskArray, newTaskMap, newGroupIndex, newProgressIndex}
  */
-const getNewMap = (page, task_id, group_id = null, progress_id = null) => {
-   const taskIndex = page.tasks.findIndex((t) => t.equals(task_id))
+const getNewMap = (page, taskId, groupId = null, progressId = null) => {
+   const taskIndex = page.tasks.findIndex((t) => extractId(t) === taskId)
    let taskMapIndex = 0
-   if (page.task_map[0] <= taskIndex) {
-      for (let i = 1; i < page.task_map.length; i++) {
-         if (
-            page.task_map[i - 1] <= taskIndex &&
-            page.task_map[i] > taskIndex
-         ) {
+   if (page.taskMap[0] <= taskIndex) {
+      for (let i = 1; i < page.taskMap.length; i++) {
+         if (page.taskMap[i - 1] <= taskIndex && page.taskMap[i] > taskIndex) {
             taskMapIndex = i
             break
          }
       }
    }
-   const progressIndex = taskMapIndex % page.progress_order.length
+   const progressIndex = taskMapIndex % page.progressOrder.length
    const groupIndex = parseInt(
-      (taskMapIndex - progressIndex) / page.progress_order.length
+      (taskMapIndex - progressIndex) / page.progressOrder.length
    )
    let newProgressIndex = progressIndex
    let newGroupIndex = groupIndex
    let newTaskMapIndex = taskMapIndex
    const newTaskArray = page.tasks.slice()
-   const newTaskMap = page.task_map.slice()
+   const newTaskMap = page.taskMap.slice()
 
-   if (group_id) {
-      newGroupIndex = page.group_order.indexOf(group_id)
+   if (groupId) {
+      newGroupIndex = page.groupOrder.findIndex(
+         (id) => extractId(id) === groupId
+      )
       newTaskMapIndex =
-         newGroupIndex * page.progress_order.length + progressIndex
+         newGroupIndex * page.progressOrder.length + progressIndex
    }
-   if (progress_id) {
-      newProgressIndex = page.progress_order.indexOf(progress_id)
+   if (progressId) {
+      newProgressIndex = page.progressOrder.findIndex(
+         (id) => extractId(id) === progressId
+      )
       newTaskMapIndex =
-         groupIndex * page.progress_order.length + newProgressIndex
+         groupIndex * page.progressOrder.length + newProgressIndex
    }
-   if (group_id || progress_id) {
+   if (groupId || progressId) {
       const targetTask = page.tasks[taskIndex]
 
-      let newTaskIndex = page.task_map[newTaskMapIndex]
+      let newTaskIndex = page.taskMap[newTaskMapIndex]
       if (newTaskMapIndex > taskMapIndex) {
          newTaskIndex--
       }
@@ -141,34 +179,37 @@ const syncTaskSlotWithGoogle = async (
    syncAction
 ) => {
    try {
-      const user = await User.findById(userId)
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+         include: { googleAccounts: true }
+      })
       if (!user) {
          return { success: false, message: 'User not found' }
       }
 
-      const account = user.google_accounts.find(
-         (acc) => acc.account_email === accountEmail
+      const account = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
       )
       if (!account) {
          return { success: true } // No sync needed if account not found
       }
 
-      const oauth2Client = setOAuthCredentials(account.refresh_token)
+      const oauth2Client = setOAuthCredentials(account.refreshToken)
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
       const originalEvent = await calendar.events.get({
          auth: oauth2Client,
          calendarId: calendarId || 'primary',
-         eventId: slot.google_event_id
+         eventId: slot.googleEventId
       })
       const eventData = originalEvent.data
       try {
          let event
 
-         if (syncAction === 'update' && slot.google_event_id) {
+         if (syncAction === 'update' && slot.googleEventId) {
             // Update existing event
             event = await calendar.events.update({
                calendarId: calendarId || 'primary',
-               eventId: slot.google_event_id,
+               eventId: slot.googleEventId,
                requestBody: {
                   ...eventData,
                   summary: taskTitle,
@@ -181,7 +222,7 @@ const syncTaskSlotWithGoogle = async (
                   }
                }
             })
-         } else if (syncAction === 'create' || !slot.google_event_id) {
+         } else if (syncAction === 'create' || !slot.googleEventId) {
             // Create new event
             event = await calendar.events.insert({
                calendarId: calendarId || 'primary',
@@ -196,7 +237,7 @@ const syncTaskSlotWithGoogle = async (
                   },
                   extendedProperties: {
                      private: {
-                        pura_task_id: taskId
+                        puraTaskId: taskId
                      }
                   }
                }
@@ -224,14 +265,17 @@ const deleteGoogleEventsForRemovedSlots = async (
    userId
 ) => {
    try {
-      const user = await User.findById(userId)
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+         include: { googleAccounts: true }
+      })
 
       // Find slots that were removed
       const removedSlots = oldSchedule.filter((oldSlot) => {
          return (
-            oldSlot.google_event_id &&
+            oldSlot.googleEventId &&
             !newSchedule.find(
-               (newSlot) => newSlot.google_event_id === oldSlot.google_event_id
+               (newSlot) => newSlot.googleEventId === oldSlot.googleEventId
             )
          )
       })
@@ -239,29 +283,29 @@ const deleteGoogleEventsForRemovedSlots = async (
       // Group removed slots by account
       const slotsByAccount = {}
       removedSlots.forEach((slot) => {
-         if (slot.google_event_id && slot.google_account_email) {
-            if (!slotsByAccount[slot.google_account_email]) {
-               slotsByAccount[slot.google_account_email] = []
+         if (slot.googleEventId && slot.googleAccountEmail) {
+            if (!slotsByAccount[slot.googleAccountEmail]) {
+               slotsByAccount[slot.googleAccountEmail] = []
             }
-            slotsByAccount[slot.google_account_email].push(slot)
+            slotsByAccount[slot.googleAccountEmail].push(slot)
          }
       })
 
       // Delete Google events for each account
       for (const [accountEmail, slots] of Object.entries(slotsByAccount)) {
-         const account = user.google_accounts.find(
-            (acc) => acc.account_email === accountEmail
+         const account = user.googleAccounts.find(
+            (acc) => acc.accountEmail === accountEmail
          )
          if (!account) continue
 
-         const oauth2Client = setOAuthCredentials(account.refresh_token)
+         const oauth2Client = setOAuthCredentials(account.refreshToken)
          const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
          for (const slot of slots) {
             try {
                await calendar.events.delete({
-                  calendarId: slot.google_calendar_id || 'primary',
-                  eventId: slot.google_event_id
+                  calendarId: slot.googleCalendarId || 'primary',
+                  eventId: slot.googleEventId
                })
             } catch (err) {
                // Event might not exist or already deleted
@@ -289,14 +333,14 @@ const updateTaskFromGoogleEvent = async (
 ) => {
    try {
       // Check if this is a Pura task event using extendedProperties
-      if (!eventData.extendedProperties?.private?.pura_task_id) {
+      if (!eventData.extendedProperties?.private?.puraTaskId) {
          return { success: false, message: 'Not a Pura task event' }
       }
 
-      const taskId = eventData.extendedProperties.private.pura_task_id
+      const taskId = eventData.extendedProperties.private.puraTaskId
 
       // Find the task
-      const task = await Task.findById(taskId)
+      const task = await prisma.task.findUnique({ where: { id: taskId } })
 
       if (!task) {
          return { success: false, message: 'Task not found' }
@@ -304,13 +348,13 @@ const updateTaskFromGoogleEvent = async (
 
       // Find the schedule slot by eventId (try both current and original event ID)
       let slotIndex = task.schedule.findIndex(
-         (slot) => slot.google_event_id === eventId
+         (slot) => slot.googleEventId === eventId
       )
 
       // If not found with current event ID and we have an original event ID, try that
       if (slotIndex === -1 && originalEventId) {
          slotIndex = task.schedule.findIndex(
-            (slot) => slot.google_event_id === originalEventId
+            (slot) => slot.googleEventId === originalEventId
          )
       }
 
@@ -332,21 +376,30 @@ const updateTaskFromGoogleEvent = async (
 
       // Update the event ID if it changed (event was moved to different calendar)
       if (originalEventId && eventId !== originalEventId) {
-         task.schedule[slotIndex].google_event_id = eventId
+         task.schedule[slotIndex].googleEventId = eventId
       }
 
       // Update the calendar ID if it changed (event was moved to different calendar)
       if (
          newCalendarId &&
-         newCalendarId !== task.schedule[slotIndex].google_calendar_id
+         newCalendarId !== task.schedule[slotIndex].googleCalendarId
       ) {
-         task.schedule[slotIndex].google_calendar_id = newCalendarId
+         task.schedule[slotIndex].googleCalendarId = newCalendarId
       }
 
-      task.update_date = new Date()
-      await task.save()
+      // Ensure all schedule slots have IDs and update the task
+      const scheduleWithIds = task.schedule.map(ensureSlotId)
+      const updatedTask = await prisma.task.update({
+         where: { id: taskId },
+         data: {
+            title: task.title,
+            content: task.content,
+            schedule: scheduleWithIds,
+            updateDate: new Date()
+         }
+      })
 
-      return { success: true, task }
+      return { success: true, task: updatedTask }
    } catch (err) {
       return { success: false, error: err.message }
    }
@@ -355,66 +408,69 @@ const updateTaskFromGoogleEvent = async (
  * Calculate sync status for a schedule slot
  * @param {Object} slot - Schedule slot object
  * @param {string} userId - User ID
- * @returns {Object} Slot with sync_status and Google event data
+ * @returns {Object} Slot with syncStatus and Google event data
  */
 const calculateSlotSyncStatus = async (slot, userId) => {
-   // NONE = no sync event (no google_event_id)
-   if (!slot.google_event_id) {
+   // NONE = no sync event (no googleEventId)
+   if (!slot.googleEventId) {
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.NONE
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.NONE
       }
    }
 
    // Get user to check account connectivity
-   const user = await User.findById(userId)
+   const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { googleAccounts: true }
+   })
    if (!user) {
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
       }
    }
 
    // ACCOUNT_NOT_CONNECTED = not synced (google account cannot be connected)
-   const account = user.google_accounts?.find(
-      (acc) => acc.account_email === slot.google_account_email
+   const account = user.googleAccounts?.find(
+      (acc) => acc.accountEmail === slot.googleAccountEmail
    )
    if (!account) {
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
       }
    }
 
    let oauth2Client, calendar, event
    try {
-      oauth2Client = setOAuthCredentials(account.refresh_token)
+      oauth2Client = setOAuthCredentials(account.refreshToken)
       calendar = google.calendar({ version: 'v3', auth: oauth2Client })
    } catch (err) {
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.ACCOUNT_NOT_CONNECTED
       }
    }
 
    try {
       event = await calendar.events.get({
-         calendarId: slot.google_calendar_id || 'primary',
-         eventId: slot.google_event_id
+         calendarId: slot.googleCalendarId || 'primary',
+         eventId: slot.googleEventId
       })
    } catch (err) {
       // EVENT_NOT_FOUND = not synced (account ok, event not found)
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
       }
    }
 
    if (event.data.status === 'cancelled') {
       // EVENT_NOT_FOUND = not synced (event cancelled)
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.EVENT_NOT_FOUND
       }
    }
 
@@ -431,18 +487,18 @@ const calculateSlotSyncStatus = async (slot, userId) => {
    if (slotStart === eventStart && slotEnd === eventEnd) {
       // SYNCED = synced normally
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.SYNCED,
-         google_event_start: eventStart,
-         google_event_end: eventEnd
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.SYNCED,
+         googleEventStart: eventStart,
+         googleEventEnd: eventEnd
       }
    } else {
       // CONFLICTED = not synced (event found, but schedule mismatch)
       return {
-         ...slot.toObject(),
-         sync_status: SCHEDULE_SYNCE_STATUS.CONFLICTED,
-         google_event_start: eventStart,
-         google_event_end: eventEnd
+         ...slot,
+         syncStatus: SCHEDULE_SYNCE_STATUS.CONFLICTED,
+         googleEventStart: eventStart,
+         googleEventEnd: eventEnd
       }
    }
 }
@@ -455,11 +511,17 @@ const calculateSlotSyncStatus = async (slot, userId) => {
  * @returns {Object} {task, page} formatted response
  */
 const formatTaskResponse = async (task, page, userId = null) => {
-   const { newGroupIndex, newProgressIndex } = getNewMap(page, task._id)
-   const group = await Group.findById(page.group_order[newGroupIndex])
-   const progress = await Progress.findById(
-      page.progress_order[newProgressIndex]
-   )
+   const { newGroupIndex, newProgressIndex } = getNewMap(page, task.id)
+
+   const groupId = extractId(page.groupOrder[newGroupIndex])
+   const progressId = extractId(page.progressOrder[newProgressIndex])
+
+   const group = await prisma.group.findUnique({
+      where: { id: groupId }
+   })
+   const progress = await prisma.progress.findUnique({
+      where: { id: progressId }
+   })
 
    // Calculate sync status for schedule if userId is provided
    let scheduleWithSync = task.schedule
@@ -470,12 +532,12 @@ const formatTaskResponse = async (task, page, userId = null) => {
    }
 
    const formattedTask = {
-      _id: task._id,
+      id: task.id,
       title: task.title,
       schedule: scheduleWithSync,
       content: task.content,
-      create_date: task.create_date,
-      update_date: task.update_date,
+      createDate: task.createDate,
+      updateDate: task.updateDate,
       group,
       progress
    }
@@ -499,28 +561,30 @@ const updateTaskBasicInfo = async (
    userId,
    { title, content }
 ) => {
-   const task = await Task.findById(taskId)
+   const task = await prisma.task.findUnique({
+      where: { id: taskId }
+   })
 
    if (!task) {
       return { success: false, message: 'Task not found', statusCode: 404 }
    }
 
-   if (title !== undefined) task.title = title
-   if (content !== undefined) task.content = content
-   task.update_date = new Date()
+   const updateData = { updateDate: new Date() }
+   if (title !== undefined) updateData.title = title
+   if (content !== undefined) updateData.content = content
 
    if (title !== undefined || content !== undefined) {
       // Sync title and/or content with Google Calendar if it has schedule slots
       for (let i = 0; i < task.schedule.length; i++) {
          const slot = task.schedule[i]
-         if (slot.google_event_id) {
+         if (slot.googleEventId) {
             const result = await syncTaskSlotWithGoogle(
-               task._id,
-               task.title,
-               task.content,
+               task.id,
+               updateData.title || task.title,
+               updateData.content || task.content,
                slot,
-               slot.google_account_email,
-               slot.google_calendar_id,
+               slot.googleAccountEmail,
+               slot.googleCalendarId,
                userId,
                'update'
             )
@@ -537,28 +601,30 @@ const updateTaskBasicInfo = async (
       }
    }
 
-   await task.save()
+   const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: updateData
+   })
 
    // Get updated page data
-   const page = await Page.findById(pageId)
-      .populate('progress_order', [
-         'title',
-         'title_color',
-         'color',
-         'visibility'
-      ])
-      .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule', 'content'])
+   const page = await prisma.page.findUnique({
+      where: { id: pageId }
+   })
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
    }
 
-   // Update page's update_date since task was modified
-   page.update_date = new Date()
-   await page.save()
+   // Populate page with related data
+   const populatedPage = await populatePage(page)
 
-   return { success: true, task, page }
+   // Update page's updateDate since task was modified
+   await prisma.page.update({
+      where: { id: pageId },
+      data: { updateDate: new Date() }
+   })
+
+   return { success: true, task: updatedTask, page: populatedPage }
 }
 
 /**
@@ -566,53 +632,48 @@ const updateTaskBasicInfo = async (
  * @param {string} taskId - Task ID
  * @param {string} pageId - Page ID
  * @param {Object} data - Move data
- * @param {string} [data.group_id] - Target group ID
- * @param {string} [data.progress_id] - Target progress ID
+ * @param {string} [data.groupId] - Target group ID
+ * @param {string} [data.progressId] - Target progress ID
  * @returns {Object} {success, task, page} or {success, message, statusCode}
  */
-const moveTask = async (taskId, pageId, { group_id, progress_id }) => {
-   const task = await Task.findById(taskId)
+const moveTask = async (taskId, pageId, { groupId, progressId }) => {
+   const task = await prisma.task.findUnique({ where: { id: taskId } })
    if (!task) {
       return { success: false, message: 'Task not found', statusCode: 404 }
    }
-   const page = await Page.findById(pageId)
+   const page = await prisma.page.findUnique({ where: { id: pageId } })
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
    }
+   console.log('getNewMap', page, taskId, groupId, progressId)
 
    const { newTaskArray, newTaskMap } = getNewMap(
       page,
       taskId,
-      group_id,
-      progress_id
+      groupId,
+      progressId
    )
 
-   const updatedPage = await Page.findOneAndUpdate(
-      { _id: pageId },
-      {
-         $set: {
-            tasks: newTaskArray,
-            update_date: new Date()
-         }
-      },
-      { new: true }
-   )
-      .populate('progress_order', [
-         'title',
-         'title_color',
-         'color',
-         'visibility'
-      ])
-      .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule', 'content'])
-   // Data: Update page's task_map
-   updatedPage.task_map = newTaskMap
-   await updatedPage.save()
+   // Update page with new task array and task map
+   const updatedPage = await prisma.page.update({
+      where: { id: pageId },
+      data: {
+         tasks: newTaskArray,
+         taskMap: newTaskMap,
+         updateDate: new Date()
+      }
+   })
 
-   task.update_date = new Date()
-   await task.save()
+   // Update task's updateDate
+   await prisma.task.update({
+      where: { id: taskId },
+      data: { updateDate: new Date() }
+   })
 
-   return { success: true, task, page: updatedPage }
+   // Populate page with related data
+   const populatedPage = await populatePage(updatedPage)
+
+   return { success: true, task, page: populatedPage }
 }
 
 /**
@@ -632,7 +693,7 @@ const updateTaskSchedule = async (
    userId,
    { slotIndex, start, end }
 ) => {
-   const task = await Task.findById(taskId)
+   const task = await prisma.task.findUnique({ where: { id: taskId } })
 
    if (!task) {
       return { success: false, message: 'Task not found', statusCode: 404 }
@@ -650,15 +711,15 @@ const updateTaskSchedule = async (
    if (start !== undefined) slot.start = start
    if (end !== undefined) slot.end = end
 
-   // Sync with Google Calendar if there's a google_event_id and times changed
-   if (slot.google_event_id && (start !== oldStart || end !== oldEnd)) {
+   // Sync with Google Calendar if there's a googleEventId and times changed
+   if (slot.googleEventId && (start !== oldStart || end !== oldEnd)) {
       const result = await syncTaskSlotWithGoogle(
-         task._id,
+         task.id,
          task.title,
          task.content,
          slot,
-         slot.google_account_email,
-         slot.google_calendar_id,
+         slot.googleAccountEmail,
+         slot.googleCalendarId,
          userId,
          'update'
       )
@@ -672,30 +733,36 @@ const updateTaskSchedule = async (
       }
    }
 
-   task.schedule[slotIndex] = slot
-   task.update_date = new Date()
-   await task.save()
+   // Update the task schedule and ensure all slots have IDs
+   const updatedSchedule = [...task.schedule]
+   updatedSchedule[slotIndex] = slot
+   const scheduleWithIds = updatedSchedule.map(ensureSlotId)
+
+   const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: {
+         schedule: scheduleWithIds,
+         updateDate: new Date()
+      }
+   })
 
    // Get updated page data
-   const page = await Page.findById(pageId)
-      .populate('progress_order', [
-         'title',
-         'title_color',
-         'color',
-         'visibility'
-      ])
-      .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule', 'content'])
+   const page = await prisma.page.findUnique({ where: { id: pageId } })
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
    }
 
-   // Update page's update_date since task was modified
-   page.update_date = new Date()
-   await page.save()
+   // Populate page with related data
+   const populatedPage = await populatePage(page)
 
-   return { success: true, task, page }
+   // Update page's updateDate since task was modified
+   await prisma.page.update({
+      where: { id: pageId },
+      data: { updateDate: new Date() }
+   })
+
+   return { success: true, task: updatedTask, page: populatedPage }
 }
 
 /**
@@ -708,40 +775,51 @@ const updateTaskSchedule = async (
  * @returns {Object} {success, task, page, newSlotIndex} or {success, message, statusCode}
  */
 const addTaskScheduleSlot = async (taskId, pageId, { start, end }) => {
-   const task = await Task.findById(taskId)
+   const task = await prisma.task.findUnique({ where: { id: taskId } })
 
    if (!task) {
       return { success: false, message: 'Task not found', statusCode: 404 }
    }
 
-   if (!task.schedule) task.schedule = []
+   const currentSchedule = task.schedule || []
+   const newSlot = {
+      id: new ObjectId().toString(),
+      start,
+      end
+   }
+   const updatedSchedule = [...currentSchedule, newSlot]
 
-   const newSlot = { start, end }
-   task.schedule.push(newSlot)
-   task.update_date = new Date()
-
-   await task.save()
+   const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: {
+         schedule: updatedSchedule,
+         updateDate: new Date()
+      }
+   })
 
    // Get updated page data
-   const page = await Page.findById(pageId)
-      .populate('progress_order', [
-         'title',
-         'title_color',
-         'color',
-         'visibility'
-      ])
-      .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule', 'content'])
+
+   const page = await prisma.page.findUnique({ where: { id: pageId } })
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
    }
 
-   // Update page's update_date since task was modified
-   page.update_date = new Date()
-   await page.save()
+   // Populate page with related data
+   const populatedPage = await populatePage(page)
 
-   return { success: true, task, page, newSlotIndex: task.schedule.length - 1 }
+   // Update page's updateDate since task was modified
+   await prisma.page.update({
+      where: { id: pageId },
+      data: { updateDate: new Date() }
+   })
+
+   return {
+      success: true,
+      task: updatedTask,
+      page: populatedPage,
+      newSlotIndex: updatedSchedule.length - 1
+   }
 }
 
 /**
@@ -759,7 +837,7 @@ const removeTaskScheduleSlot = async (
    userId,
    { slotIndex }
 ) => {
-   const task = await Task.findById(taskId)
+   const task = await prisma.task.findUnique({ where: { id: taskId } })
 
    if (!task) {
       return { success: false, message: 'Task not found', statusCode: 404 }
@@ -772,35 +850,41 @@ const removeTaskScheduleSlot = async (
    const slotToRemove = task.schedule[slotIndex]
 
    // Delete Google event if exists
-   if (slotToRemove.google_event_id) {
+   if (slotToRemove.googleEventId) {
       await deleteGoogleEventsForRemovedSlots([slotToRemove], [], userId)
    }
 
-   task.schedule.splice(slotIndex, 1)
-   task.update_date = new Date()
+   // Create updated schedule without the removed slot and ensure all have IDs
+   const updatedSchedule = [...task.schedule]
+   updatedSchedule.splice(slotIndex, 1)
+   const scheduleWithIds = updatedSchedule.map(ensureSlotId)
 
-   await task.save()
+   // Update task with new schedule
+   const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: {
+         schedule: scheduleWithIds,
+         updateDate: new Date()
+      }
+   })
 
    // Get updated page data
-   const page = await Page.findById(pageId)
-      .populate('progress_order', [
-         'title',
-         'title_color',
-         'color',
-         'visibility'
-      ])
-      .populate('group_order', ['title', 'color', 'visibility'])
-      .populate('tasks', ['title', 'schedule', 'content'])
+   const page = await prisma.page.findUnique({ where: { id: pageId } })
 
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
    }
 
-   // Update page's update_date since task was modified
-   page.update_date = new Date()
-   await page.save()
+   // Populate page with related data
+   const populatedPage = await populatePage(page)
 
-   return { success: true, task, page }
+   // Update page's updateDate since task was modified
+   await prisma.page.update({
+      where: { id: pageId },
+      data: { updateDate: new Date() }
+   })
+
+   return { success: true, task: updatedTask, page: populatedPage }
 }
 
 /**
@@ -823,7 +907,8 @@ const syncTaskSlotWithGoogleHelper = async (
 ) => {
    try {
       // Validation: Check if task exists
-      const task = await Task.findById(taskId)
+
+      const task = await prisma.task.findUnique({ where: { id: taskId } })
       if (!task) {
          return { success: false, message: 'Task not found', statusCode: 404 }
       }
@@ -847,9 +932,9 @@ const syncTaskSlotWithGoogleHelper = async (
       // Handle sync action
       if (syncAction === 'delete') {
          // Clear sync information for unsync action
-         task.schedule[slotIndex].google_event_id = null
-         task.schedule[slotIndex].google_account_email = null
-         task.schedule[slotIndex].google_calendar_id = null
+         task.schedule[slotIndex].googleEventId = null
+         task.schedule[slotIndex].googleAccountEmail = null
+         task.schedule[slotIndex].googleCalendarId = null
          // Create a mock result for unsync action
          result = {
             success: true,
@@ -881,33 +966,38 @@ const syncTaskSlotWithGoogleHelper = async (
          }
 
          // Set sync information for create/update actions
-         task.schedule[slotIndex].google_event_id = result.event.id
-         task.schedule[slotIndex].google_account_email = accountEmail
-         task.schedule[slotIndex].google_calendar_id = calendarId
+         task.schedule[slotIndex].googleEventId = result.event.id
+         task.schedule[slotIndex].googleAccountEmail = accountEmail
+         task.schedule[slotIndex].googleCalendarId = calendarId
       }
 
-      task.update_date = new Date()
-      await task.save()
+      // Update task with new schedule and updateDate, ensuring all slots have IDs
+      const updatedSchedule = [...task.schedule]
+      const scheduleWithIds = updatedSchedule.map(ensureSlotId)
+      const updatedTask = await prisma.task.update({
+         where: { id: taskId },
+         data: {
+            schedule: scheduleWithIds,
+            updateDate: new Date()
+         }
+      })
 
       // Get page to determine group and progress
-      const page = await Page.findOne({ tasks: taskId })
-         .populate('progress_order', [
-            'title',
-            'title_color',
-            'color',
-            'visibility'
-         ])
-         .populate('group_order', ['title', 'color', 'visibility'])
-         .populate('tasks', ['title', 'schedule', 'content'])
+      const page = await prisma.page.findFirst({
+         where: { tasks: { has: taskId } }
+      })
 
       if (!page) {
          return { success: false, message: 'Page not found', statusCode: 404 }
       }
 
+      // Populate page with related data
+      const populatedPage = await populatePage(page)
+
       return {
          success: true,
-         task,
-         page,
+         task: updatedTask,
+         page: populatedPage,
          event: result.event
       }
    } catch (err) {
@@ -916,6 +1006,8 @@ const syncTaskSlotWithGoogleHelper = async (
 }
 
 module.exports = {
+   SCHEDULE_SYNCE_STATUS,
+   extractId,
    getNewMap,
    deleteGoogleEventsForRemovedSlots,
    updateTaskFromGoogleEvent,
