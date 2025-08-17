@@ -4,6 +4,7 @@ const router = express.Router()
 const dotenv = require('dotenv')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 const { check, validationResult } = require('express-validator')
 
 const auth = require('../../middleware/auth')
@@ -79,24 +80,82 @@ router.post(
             return sendErrorResponse(res, 401, 'auth', 'login')
          }
 
-         // Return json web token
-         const payload = { user: { id: user.id } }
-         jwt.sign(
-            payload,
+         // Generate access token (15 minutes)
+         const accessPayload = { user: { id: user.id } }
+         const accessToken = jwt.sign(
+            accessPayload,
             process.env?.JWT_SECRET,
-            { expiresIn: 360000 },
-            (err, token) => {
-               if (err) {
-                  throw Error('Token generation failed')
-               } else {
-                  res.json({ token })
-               }
-            }
+            { expiresIn: 900 }
          )
+
+         // Generate refresh token (7 days)
+         const refreshToken = crypto.randomBytes(32).toString('hex')
+         
+         // Store refresh token in database
+         await prisma.user.update({
+            where: { id: user.id },
+            data: { jwtRefreshToken: refreshToken }
+         })
+
+         res.json({ 
+            token: accessToken,
+            refreshToken: refreshToken
+         })
       } catch (err) {
          sendErrorResponse(res, 500, 'auth', 'login', err)
       }
    }
 )
+
+/**
+ * @route POST api/auth/refresh
+ * @desc Refresh JWT token using refresh token
+ * @access Public
+ * @param {string} refreshToken
+ * @returns {Object} {token, refreshToken} on success, {msg} on error
+ */
+router.post('/refresh', async (req, res) => {
+   try {
+      const { refreshToken } = req.body
+
+      if (!refreshToken) {
+         return res.status(401).json({ msg: 'Refresh token required' })
+      }
+
+      // Find user with this refresh token
+      const user = await prisma.user.findFirst({
+         where: { jwtRefreshToken: refreshToken }
+      })
+
+      if (!user) {
+         return res.status(401).json({ msg: 'Invalid refresh token' })
+      }
+
+      // Generate new access token (15 minutes)
+      const accessPayload = { user: { id: user.id } }
+      const newAccessToken = jwt.sign(
+         accessPayload,
+         process.env?.JWT_SECRET,
+         { expiresIn: 900 }
+      )
+
+      // Generate new refresh token
+      const newRefreshToken = crypto.randomBytes(32).toString('hex')
+      
+      // Update refresh token in database
+      await prisma.user.update({
+         where: { id: user.id },
+         data: { jwtRefreshToken: newRefreshToken }
+      })
+
+      res.json({
+         token: newAccessToken,
+         refreshToken: newRefreshToken
+      })
+
+   } catch (err) {
+      sendErrorResponse(res, 500, 'auth', 'refresh', err)
+   }
+})
 
 module.exports = router

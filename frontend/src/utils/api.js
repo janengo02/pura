@@ -10,21 +10,79 @@ const api = axios.create({
       'Content-Type': 'application/json'
    }
 })
+
+let isRefreshing = false
+let failedQueue = []
+
+const processQueue = (error, token = null) => {
+   failedQueue.forEach(prom => {
+      if (error) {
+         prom.reject(error)
+      } else {
+         prom.resolve(token)
+      }
+   })
+   
+   failedQueue = []
+}
+
 /*
   NOTE: intercept any error responses from the api
  and check if the token is no longer valid.
  ie. Token has expired or user is no longer
  authenticated.
- logout the user if the token has expired
+ Try to refresh the token, or logout if refresh fails
 */
 
 api.interceptors.response.use(
    (res) => res,
-   (err) => {
-      if (err.response.status === 401) {
-         store.dispatch({ type: LOGOUT })
+   async (err) => {
+      const originalRequest = err.config
+
+      if (err.response?.status === 401 && !originalRequest._retry) {
+         if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+               failedQueue.push({ resolve, reject })
+            }).then(token => {
+               originalRequest.headers['x-auth-token'] = token
+               return api(originalRequest)
+            }).catch(err => {
+               return Promise.reject(err)
+            })
+         }
+
+         originalRequest._retry = true
+         isRefreshing = true
+
+         const refreshToken = localStorage.getItem('refreshToken')
+         
+         if (refreshToken) {
+            try {
+               const response = await api.post('/auth/refresh', { refreshToken })
+               const { token, refreshToken: newRefreshToken } = response.data
+               
+               localStorage.setItem('token', token)
+               localStorage.setItem('refreshToken', newRefreshToken)
+               api.defaults.headers.common['x-auth-token'] = token
+               
+               processQueue(null, token)
+               
+               originalRequest.headers['x-auth-token'] = token
+               return api(originalRequest)
+            } catch (refreshError) {
+               processQueue(refreshError, null)
+               store.dispatch({ type: LOGOUT })
+               localStorage.removeItem('token')
+               localStorage.removeItem('refreshToken')
+               return Promise.reject(refreshError)
+            } finally {
+               isRefreshing = false
+            }
+         } else {
+            store.dispatch({ type: LOGOUT })
+         }
       }
-      // console.clear()
+      
       return Promise.reject(err)
    }
 )

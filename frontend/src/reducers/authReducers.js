@@ -10,6 +10,7 @@ import {
 
 const initialState = {
    token: localStorage.getItem('token'),
+   refreshToken: localStorage.getItem('refreshToken'),
    isAuthenticated: null,
    loading: true,
    user: null
@@ -41,6 +42,7 @@ function authReducer(state = initialState, action) {
          return {
             ...state,
             token: null,
+            refreshToken: null,
             isAuthenticated: false,
             loading: false,
             user: null

@@ -52,10 +52,10 @@ const App = () => {
       store.dispatch(initializeLanguageAction())
       store.dispatch(initializeThemeAction())
 
-      // Check for token in localStorage when app first runs
+      // Check for tokens in localStorage when app first runs
       if (localStorage.token) {
          // If there is a token set axios headers for all requests
-         setAuthToken(localStorage.token)
+         setAuthToken(localStorage.token, localStorage.refreshToken)
       }
 
       // Try to fetch a user, if no token or invalid token we

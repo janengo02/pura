@@ -79,6 +79,11 @@ export const registerAction = (formData) => async (dispatch) => {
          payload: res.data
       })
 
+      // Store both tokens if returned
+      if (res.data.token && res.data.refreshToken) {
+         setAuthToken(res.data.token, res.data.refreshToken)
+      }
+
       // Load user data after successful registration
       dispatch(loadUserAction())
 
@@ -108,6 +113,9 @@ export const loginAction = (formData) => async (dispatch) => {
          payload: res.data
       })
       dispatch(clearTaskAction())
+
+      // Store both tokens
+      setAuthToken(res.data.token, res.data.refreshToken)
 
       dispatch(loadUserAction())
    } catch (err) {
