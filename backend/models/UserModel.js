@@ -17,6 +17,10 @@ const UserSchema = new mongoose.Schema({
    avatar: {
       type: String
    },
+   user_refresh_token: {
+      type: String,
+      required: true
+   },
    google_accounts: [
       {
          refresh_token: {

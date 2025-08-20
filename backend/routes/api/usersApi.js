@@ -7,6 +7,7 @@ const router = express.Router()
 const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 const { check, validationResult } = require('express-validator')
 
 // Prisma Client
@@ -140,7 +141,7 @@ const createDefaultPage = async (user, progresses, group, task, language) => {
       data: {
          userId: user.id,
          title: titles.page,
-         progressOrder: progresses.map(p => p.id),
+         progressOrder: progresses.map((p) => p.id),
          groupOrder: [group.id],
          taskMap: [1, 1, 1], // One task across three progress columns
          tasks: [task.id]
@@ -159,7 +160,7 @@ const createDefaultPage = async (user, progresses, group, task, language) => {
  * @desc Register new user with localized default content
  * @access Public
  * @body {string} name, email, password, [language='en']
- * @returns {Object} {token, message} on success
+ * @returns {Object} {token, refreshToken, message} on success
  */
 router.post(
    '/',
@@ -240,28 +241,35 @@ router.post(
          // RESPONSE
          // -------------------------------------------------------------------------
 
-         // Generate JWT token
-         const payload = {
-            user: {
-               id: user.id
-            }
+         // Generate access token (15 minutes)
+         const accessPayload = { user: { id: user.id } }
+         const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
+            expiresIn: 60
+         })
+
+         // Generate refresh token (7 days)
+         const refreshTokenPayload = {
+            user: { id: user.id },
+            type: 'refresh',
+            tokenId: crypto.randomBytes(16).toString('hex')
          }
-
-         jwt.sign(
-            payload,
+         const refreshToken = jwt.sign(
+            refreshTokenPayload,
             process.env?.JWT_SECRET,
-            { expiresIn: 36000 },
-            (err, token) => {
-               if (err) {
-                  return sendErrorResponse(res, 500, 'auth', 'register', err)
-               }
-
-               res.json({
-                  token,
-                  message: 'User registered successfully with localized content'
-               })
-            }
+            { expiresIn: '7d' }
          )
+
+         // Store refresh token in database
+         await prisma.user.update({
+            where: { id: user.id },
+            data: { userRefreshToken: refreshToken }
+         })
+
+         res.json({
+            token: accessToken,
+            refreshToken: refreshToken,
+            message: 'User registered successfully with localized content'
+         })
       } catch (err) {
          sendErrorResponse(res, 500, 'auth', 'register', err)
       }

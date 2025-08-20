@@ -13,6 +13,7 @@ import { PAGE_ERROR } from './types'
  */
 export const fatalErrorHandler = (dispatch, pageId, err) => {
    const errors = err?.response?.data?.errors || ['Unknown error']
+   console.log('Fatal error:', err)
    dispatch({
       type: PAGE_ERROR,
       payload: {

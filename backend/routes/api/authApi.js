@@ -82,22 +82,29 @@ router.post(
 
          // Generate access token (15 minutes)
          const accessPayload = { user: { id: user.id } }
-         const accessToken = jwt.sign(
-            accessPayload,
-            process.env?.JWT_SECRET,
-            { expiresIn: 900 }
-         )
+         const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
+            expiresIn: 60
+         })
 
          // Generate refresh token (7 days)
-         const refreshToken = crypto.randomBytes(32).toString('hex')
-         
+         const refreshTokenPayload = {
+            user: { id: user.id },
+            type: 'refresh',
+            tokenId: crypto.randomBytes(16).toString('hex')
+         }
+         const refreshToken = jwt.sign(
+            refreshTokenPayload,
+            process.env?.JWT_SECRET,
+            { expiresIn: '7d' }
+         )
+
          // Store refresh token in database
          await prisma.user.update({
             where: { id: user.id },
-            data: { jwtRefreshToken: refreshToken }
+            data: { userRefreshToken: refreshToken }
          })
 
-         res.json({ 
+         res.json({
             token: accessToken,
             refreshToken: refreshToken
          })
@@ -119,40 +126,62 @@ router.post('/refresh', async (req, res) => {
       const { refreshToken } = req.body
 
       if (!refreshToken) {
-         return res.status(401).json({ msg: 'Refresh token required' })
+         return sendErrorResponse(res, 401, 'auth', 'refresh-token-required')
+      }
+
+      // Verify and decode refresh token
+      let decoded
+      try {
+         decoded = jwt.verify(refreshToken, process.env?.JWT_SECRET)
+      } catch (err) {
+         return sendErrorResponse(res, 401, 'auth', 'refresh-token-invalid')
+      }
+
+      // Validate refresh token structure
+      if (!decoded.user?.id || decoded.type !== 'refresh') {
+         return sendErrorResponse(res, 401, 'auth', 'refresh-token-format')
       }
 
       // Find user with this refresh token
       const user = await prisma.user.findFirst({
-         where: { jwtRefreshToken: refreshToken }
+         where: {
+            id: decoded.user.id,
+            userRefreshToken: refreshToken
+         }
       })
 
       if (!user) {
-         return res.status(401).json({ msg: 'Invalid refresh token' })
+         return sendErrorResponse(res, 401, 'auth', 'refresh-token-revoked')
       }
 
       // Generate new access token (15 minutes)
       const accessPayload = { user: { id: user.id } }
-      const newAccessToken = jwt.sign(
-         accessPayload,
+      const newAccessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
+         expiresIn: 60
+      })
+
+      // Generate new refresh token (7 days)
+      const newRefreshTokenPayload = {
+         user: { id: user.id },
+         type: 'refresh',
+         tokenId: crypto.randomBytes(16).toString('hex')
+      }
+      const newRefreshToken = jwt.sign(
+         newRefreshTokenPayload,
          process.env?.JWT_SECRET,
-         { expiresIn: 900 }
+         { expiresIn: '7d' }
       )
 
-      // Generate new refresh token
-      const newRefreshToken = crypto.randomBytes(32).toString('hex')
-      
       // Update refresh token in database
       await prisma.user.update({
          where: { id: user.id },
-         data: { jwtRefreshToken: newRefreshToken }
+         data: { userRefreshToken: newRefreshToken }
       })
 
       res.json({
          token: newAccessToken,
          refreshToken: newRefreshToken
       })
-
    } catch (err) {
       sendErrorResponse(res, 500, 'auth', 'refresh', err)
    }

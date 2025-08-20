@@ -8,16 +8,16 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  email          String          @unique
-  password       String
-  name           String
-  avatar         String?
-  jwtRefreshToken String?        @map("jwt_refresh_token")
-  googleAccounts GoogleAccount[]
-  pages          Page[]
-  createDate     DateTime        @default(now()) @map("create_date")
-  updateDate     DateTime        @default(now()) @updatedAt @map("update_date")
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  email             String          @unique
+  password          String
+  name              String
+  avatar            String?
+  userRefreshToken  String?        @map("user_refresh_token")
+  googleAccounts    GoogleAccount[]
+  pages             Page[]
+  createDate        DateTime        @default(now()) @map("create_date")
+  updateDate        DateTime        @default(now()) @updatedAt @map("update_date")
 
   @@map("users")
 }

@@ -7,6 +7,7 @@ const auth = require('../../middleware/auth')
 const prisma = require('../../config/prisma')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
+const { encrypt, decrypt, isEncrypted } = require('../../utils/encryption')
 const { setOAuthCredentials } = require('../../utils/calendarHelpers')
 
 dotenv.config()
@@ -40,8 +41,13 @@ router.post('/create-space', auth, async (req, res) => {
          return sendErrorResponse(res, 404, 'google', 'access')
       }
 
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(account.refreshToken) 
+         ? decrypt(account.refreshToken) 
+         : account.refreshToken
+
       // Use Google Calendar API to create Meet link (since google.meet API is not available)
-      const oauth2Client = setOAuthCredentials(account.refreshToken)
+      const oauth2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
 
       // Generate a unique conference ID

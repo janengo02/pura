@@ -15,6 +15,11 @@ import Terms from './features/landing/Terms'
 import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import ErrorPage from './features/error/ErrorPage'
+import SessionExpiredModal from './components/SessionExpiredModal'
+
+// Context & Utils
+import { useSession } from './context/SessionContext'
+import { setGlobalSessionHandler } from './utils/api'
 
 // External Libraries
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -27,6 +32,9 @@ import { loadUserAction } from './actions/authActions'
 import { initializeLanguageAction } from './actions/languageActions'
 import { initializeThemeAction } from './actions/themeActions'
 import { LOGOUT } from './actions/types'
+
+// Context
+import { SessionProvider } from './context/SessionContext'
 
 // UI & Theme
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
@@ -42,10 +50,10 @@ import { googleAuthClientId } from './config/env'
 // MAIN COMPONENT
 // =============================================================================
 
-const App = () => {
-   // -------------------------------------------------------------------------
-   // EFFECTS
-   // -------------------------------------------------------------------------
+// Inner component that has access to SessionContext
+const AppContent = () => {
+   const { sessionModal, showSessionExpiredModal, hideSessionModal } =
+      useSession()
 
    useEffect(() => {
       // Initialize language and theme first
@@ -68,6 +76,41 @@ const App = () => {
       })
    }, [])
 
+   // Set up global session handler for API interceptor
+   useEffect(() => {
+      setGlobalSessionHandler(showSessionExpiredModal)
+
+      // Cleanup on unmount
+      return () => {
+         setGlobalSessionHandler(null)
+      }
+   }, [showSessionExpiredModal])
+
+   return (
+      <Router>
+         <SessionExpiredModal
+            isOpen={sessionModal.isOpen}
+            onClose={hideSessionModal}
+            reason={sessionModal.reason}
+         />
+         <Routes>
+            <Route path='/' element={<Landing />} />
+            <Route path='register' element={<Register />} />
+            <Route path='login' element={<Login />} />
+            <Route path='recover' element={<PasswordRecover />} />
+            <Route path='error' element={<ErrorPage />} />
+            <Route
+               path='dashboard'
+               element={<PrivateRoute component={Dashboard} />}
+            />
+            <Route path='terms' element={<Terms />} />
+            <Route path='/*' element={<ErrorPage />} />
+         </Routes>
+      </Router>
+   )
+}
+
+const App = () => {
    // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------
@@ -75,36 +118,24 @@ const App = () => {
    return (
       <GoogleOAuthProvider clientId={googleAuthClientId}>
          <Provider store={store}>
-            <ColorModeScript
-               initialColorMode={customTheme.config.initialColorMode}
-            />
-            <ChakraProvider
-               theme={customTheme}
-               toastOptions={{
-                  defaultOptions: {
-                     position: 'top',
-                     duration: 2000,
-                     variant: 'subtle',
-                     isClosable: true
-                  }
-               }}
-            >
-               <Router>
-                  <Routes>
-                     <Route path='/' element={<Landing />} />
-                     <Route path='register' element={<Register />} />
-                     <Route path='login' element={<Login />} />
-                     <Route path='recover' element={<PasswordRecover />} />
-                     <Route path='error' element={<ErrorPage />} />
-                     <Route
-                        path='dashboard'
-                        element={<PrivateRoute component={Dashboard} />}
-                     />
-                     <Route path='terms' element={<Terms />} />
-                     <Route path='/*' element={<ErrorPage />} />
-                  </Routes>
-               </Router>
-            </ChakraProvider>
+            <SessionProvider>
+               <ColorModeScript
+                  initialColorMode={customTheme.config.initialColorMode}
+               />
+               <ChakraProvider
+                  theme={customTheme}
+                  toastOptions={{
+                     defaultOptions: {
+                        position: 'top',
+                        duration: 2000,
+                        variant: 'subtle',
+                        isClosable: true
+                     }
+                  }}
+               >
+                  <AppContent />
+               </ChakraProvider>
+            </SessionProvider>
          </Provider>
       </GoogleOAuthProvider>
    )

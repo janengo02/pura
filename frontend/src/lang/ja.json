@@ -120,6 +120,16 @@
       "error-auth-not-found-desc": "認証情報が見つかりませんでした。再度ログインしてください。",
       "error-auth-registration-failed": "登録に失敗しました",
       "error-auth-registration-failed-desc": "アカウントを作成できません。再度お試しください。",
+      "error-auth-register-failed": "登録に失敗しました",
+      "error-auth-register-failed-desc": "アカウントを作成できません。再度お試しください。",
+      "error-auth-refresh-token-required": "リフレッシュトークンが必要です",
+      "error-auth-refresh-token-required-desc": "セッションを更新するにはリフレッシュトークンが必要です。",
+      "error-auth-refresh-token-invalid": "無効なリフレッシュトークン",
+      "error-auth-refresh-token-invalid-desc": "リフレッシュトークンが無効または期限切れです。再度ログインしてください。",
+      "error-auth-refresh-token-format": "無効なトークン形式",
+      "error-auth-refresh-token-format-desc": "リフレッシュトークンの形式が無効です。再度ログインしてください。",
+      "error-auth-refresh-token-revoked": "トークンが取り消されました",
+      "error-auth-refresh-token-revoked-desc": "リフレッシュトークンが取り消されました。再度ログインしてください。",
       "error-failed-meet-link": "Google Meetリンクの生成に失敗しました。もう一度お試しください。",
       "error-google-access-failed": "Googleアカウントアクセスに失敗しました",
       "error-google-access-failed-desc": "Googleアカウントにアクセスできません。アカウントを再接続してください。",
@@ -416,6 +426,14 @@
       "yup-string-noSpecialChar": "特殊文字を含めることはできません",
       "yup-string-trim": "先頭または末尾にスペースを含めないでください",
       "yup-string-uppercase": "大文字でなければなりません",
-      "yup-string-url": "有効なURLでなければなりません"
+      "yup-string-url": "有効なURLでなければなりません",
+      "session-expired-title": "セッション期限切れ",
+      "session-expired-message": "セキュリティ上の理由により、セッションが期限切れになりました。続行するには再度ログインしてください。",
+      "session-invalid-title": "セッション無効",
+      "session-invalid-message": "セッションが無効です。続行するには再度ログインしてください。",
+      "session-revoked-title": "セッション取り消し",
+      "session-revoked-message": "セッションが取り消されました。続行するには再度ログインしてください。",
+      "session-redirecting-countdown": "{{count}}秒後にログインページに移動します...",
+      "btn-login-now": "今すぐ{{buttonText}}"
    }
 }

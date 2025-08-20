@@ -1,6 +1,7 @@
 const prisma = require('../config/prisma')
 const { ObjectId } = require('mongodb')
 const { google } = require('googleapis')
+const { encrypt, decrypt, isEncrypted } = require('./encryption')
 const { setOAuthCredentials } = require('./calendarHelpers')
 const { populatePage } = require('./pageHelpers')
 
@@ -194,7 +195,12 @@ const syncTaskSlotWithGoogle = async (
          return { success: true } // No sync needed if account not found
       }
 
-      const oauth2Client = setOAuthCredentials(account.refreshToken)
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(account.refreshToken) 
+         ? decrypt(account.refreshToken) 
+         : account.refreshToken
+
+      const oauth2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
       const originalEvent = await calendar.events.get({
          auth: oauth2Client,
@@ -298,7 +304,12 @@ const deleteGoogleEventsForRemovedSlots = async (
          )
          if (!account) continue
 
-         const oauth2Client = setOAuthCredentials(account.refreshToken)
+         // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(account.refreshToken) 
+         ? decrypt(account.refreshToken) 
+         : account.refreshToken
+
+      const oauth2Client = setOAuthCredentials(refreshToken)
          const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
          for (const slot of slots) {
@@ -444,7 +455,12 @@ const calculateSlotSyncStatus = async (slot, userId) => {
 
    let oauth2Client, calendar, event
    try {
-      oauth2Client = setOAuthCredentials(account.refreshToken)
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(account.refreshToken) 
+         ? decrypt(account.refreshToken) 
+         : account.refreshToken
+
+      oauth2Client = setOAuthCredentials(refreshToken)
       calendar = google.calendar({ version: 'v3', auth: oauth2Client })
    } catch (err) {
       return {

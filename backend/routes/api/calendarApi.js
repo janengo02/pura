@@ -7,6 +7,7 @@ const auth = require('../../middleware/auth')
 const prisma = require('../../config/prisma')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
+const { encrypt, decrypt, isEncrypted } = require('../../utils/encryption')
 const {
    setOAuthCredentials,
    listEvent,
@@ -43,8 +44,13 @@ router.get('/list-events', auth, async (req, res) => {
 
       const gAccounts = await Promise.all(
          user.googleAccounts.map(async (account) => {
+            // Decrypt refresh token before use
+            const decryptedToken = isEncrypted(account.refreshToken) 
+               ? decrypt(account.refreshToken) 
+               : account.refreshToken
+            
             const accountCalendars = await listEvent(
-               account.refreshToken,
+               decryptedToken,
                minDate,
                maxDate
             )
@@ -119,11 +125,11 @@ router.post('/add-account', auth, async (req, res) => {
       )
 
       if (existingGoogleAccount) {
-         // Update existing account
+         // Update existing account with encrypted token
          existingGoogleAccount = await prisma.googleAccount.update({
             where: { id: existingGoogleAccount.id },
             data: {
-               refreshToken: refresh_token,
+               refreshToken: encrypt(refresh_token),
                syncStatus: true
             }
          })
@@ -133,11 +139,11 @@ router.post('/add-account', auth, async (req, res) => {
             data: { updateDate: new Date() }
          })
       } else {
-         // Add new account
+         // Add new account with encrypted token
          const isFirstAccount = user.googleAccounts.length === 0
          existingGoogleAccount = await prisma.googleAccount.create({
             data: {
-               refreshToken: refresh_token,
+               refreshToken: encrypt(refresh_token),
                accountEmail: account_email,
                syncStatus: true,
                isDefault: isFirstAccount,
@@ -155,7 +161,7 @@ router.post('/add-account', auth, async (req, res) => {
       await autoSetDefaultForSingleAccount(user)
 
       const newAccountCalendars = await listEvent(
-         refresh_token,
+         refresh_token, // Use the plain token for the immediate sync
          range[0],
          range[1]
       )
@@ -279,13 +285,18 @@ router.post('/create-event', auth, async (req, res) => {
          where: { id: req.user.id },
          include: { googleAccounts: true }
       })
-      const refreshToken = user.googleAccounts.find(
+      const encryptedRefreshToken = user.googleAccounts.find(
          (acc) => acc.accountEmail === accountEmail
       )?.refreshToken
 
-      if (!refreshToken) {
+      if (!encryptedRefreshToken) {
          return sendErrorResponse(res, 404, 'google', 'access')
       }
+
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(encryptedRefreshToken) 
+         ? decrypt(encryptedRefreshToken) 
+         : encryptedRefreshToken
 
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
@@ -356,9 +367,14 @@ router.post('/update-event/:eventId', auth, async (req, res) => {
          where: { id: req.user.id },
          include: { googleAccounts: true }
       })
-      const refreshToken = user.googleAccounts.find(
+      const encryptedRefreshToken = user.googleAccounts.find(
          (acc) => acc.accountEmail === accountEmail
       )?.refreshToken
+
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(encryptedRefreshToken) 
+         ? decrypt(encryptedRefreshToken) 
+         : encryptedRefreshToken
 
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
@@ -528,9 +544,14 @@ router.delete('/delete-event/:eventId', auth, async (req, res) => {
          where: { id: req.user.id },
          include: { googleAccounts: true }
       })
-      const refreshToken = user.googleAccounts.find(
+      const encryptedRefreshToken = user.googleAccounts.find(
          (acc) => acc.accountEmail === accountEmail
       ).refreshToken
+
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(encryptedRefreshToken) 
+         ? decrypt(encryptedRefreshToken) 
+         : encryptedRefreshToken
 
       const oath2Client = setOAuthCredentials(refreshToken)
       const calendar = google.calendar('v3')
