@@ -196,8 +196,8 @@ const syncTaskSlotWithGoogle = async (
       }
 
       // Decrypt the refresh token before use
-      const refreshToken = isEncrypted(account.refreshToken) 
-         ? decrypt(account.refreshToken) 
+      const refreshToken = isEncrypted(account.refreshToken)
+         ? decrypt(account.refreshToken)
          : account.refreshToken
 
       const oauth2Client = setOAuthCredentials(refreshToken)
@@ -305,11 +305,11 @@ const deleteGoogleEventsForRemovedSlots = async (
          if (!account) continue
 
          // Decrypt the refresh token before use
-      const refreshToken = isEncrypted(account.refreshToken) 
-         ? decrypt(account.refreshToken) 
-         : account.refreshToken
+         const refreshToken = isEncrypted(account.refreshToken)
+            ? decrypt(account.refreshToken)
+            : account.refreshToken
 
-      const oauth2Client = setOAuthCredentials(refreshToken)
+         const oauth2Client = setOAuthCredentials(refreshToken)
          const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
          for (const slot of slots) {
@@ -456,8 +456,8 @@ const calculateSlotSyncStatus = async (slot, userId) => {
    let oauth2Client, calendar, event
    try {
       // Decrypt the refresh token before use
-      const refreshToken = isEncrypted(account.refreshToken) 
-         ? decrypt(account.refreshToken) 
+      const refreshToken = isEncrypted(account.refreshToken)
+         ? decrypt(account.refreshToken)
          : account.refreshToken
 
       oauth2Client = setOAuthCredentials(refreshToken)
@@ -661,7 +661,6 @@ const moveTask = async (taskId, pageId, { groupId, progressId }) => {
    if (!page) {
       return { success: false, message: 'Page not found', statusCode: 404 }
    }
-   console.log('getNewMap', page, taskId, groupId, progressId)
 
    const { newTaskArray, newTaskMap } = getNewMap(
       page,

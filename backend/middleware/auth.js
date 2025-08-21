@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
 
    // Check if no token
    if (!token) {
-      return sendErrorResponse(res, 401, 'auth', 'refresh-token-invalid')
+      return sendErrorResponse(res, 401, 'auth', 'get-refresh-token')
    }
 
    // Verify token
@@ -19,6 +19,6 @@ module.exports = function (req, res, next) {
       req.user = decoded.user
       next()
    } catch (err) {
-      return res.status(401).json({ msg: 'No token,authorization denied' })
+      return sendErrorResponse(res, 401, 'auth', 'validate-refresh-token')
    }
 }

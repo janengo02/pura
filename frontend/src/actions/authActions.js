@@ -54,7 +54,9 @@ export const loadUserAction = () => async (dispatch) => {
          payload: res.data
       })
    } catch (err) {
-      authActionErrorHandler(err, dispatch, AUTH_ERROR)
+      dispatch({
+         type: AUTH_ERROR
+      })
    }
    dispatch(setLoadingAction.end)
 }

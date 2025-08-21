@@ -62,7 +62,6 @@ const Kanban = React.memo(
       const navigate = useNavigate()
 
       const errorState = useMemo(() => {
-         console.log('Error state:', error, errors)
          if (!error) return null
 
          const code = errors?.[0]?.code || 400

@@ -2,6 +2,15 @@ import axios from 'axios'
 import store from '../store'
 import { LOGOUT } from '../actions/types'
 
+// Custom error class for authentication session expiration
+class AuthenticationExpiredError extends Error {
+   constructor(message = 'Authentication session expired') {
+      super(message)
+      this.name = 'AuthenticationExpiredError'
+      this.isAuthExpired = true
+   }
+}
+
 // Create an instance of axios
 const API_URL = process.env?.REACT_APP_API_URL || 'http://localhost:2000'
 const api = axios.create({
@@ -97,8 +106,8 @@ api.interceptors.response.use(
                localStorage.removeItem('refreshToken')
                store.dispatch({ type: LOGOUT })
 
-               // Let the original error bubble up so fatalErrorHandler can handle it
-               return Promise.reject(refreshError)
+               // Don't let the error bubble up to fatalErrorHandler since user is being logged out
+               return Promise.reject(new AuthenticationExpiredError())
             } finally {
                isRefreshing = false
             }
@@ -106,7 +115,7 @@ api.interceptors.response.use(
             localStorage.removeItem('token')
             localStorage.removeItem('refreshToken')
             store.dispatch({ type: LOGOUT })
-            return Promise.reject(err)
+            return Promise.reject(new AuthenticationExpiredError())
          }
       }
 

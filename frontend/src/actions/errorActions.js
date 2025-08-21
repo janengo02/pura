@@ -12,8 +12,12 @@ import { PAGE_ERROR } from './types'
  * @returns {void}
  */
 export const fatalErrorHandler = (dispatch, pageId, err) => {
+   if (err?.isAuthExpired) {
+      // Don't dispatch PAGE_ERROR for authentication expired errors since user is already logged out
+      return
+   }
+
    const errors = err?.response?.data?.errors || ['Unknown error']
-   console.log('Fatal error:', err)
    dispatch({
       type: PAGE_ERROR,
       payload: {

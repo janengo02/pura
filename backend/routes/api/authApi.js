@@ -134,7 +134,7 @@ router.post('/refresh', async (req, res) => {
       try {
          decoded = jwt.verify(refreshToken, process.env?.JWT_SECRET)
       } catch (err) {
-         return sendErrorResponse(res, 401, 'auth', 'refresh-token-invalid')
+         return sendErrorResponse(res, 401, 'auth', 'validate-refresh-token')
       }
 
       // Validate refresh token structure
@@ -151,7 +151,7 @@ router.post('/refresh', async (req, res) => {
       })
 
       if (!user) {
-         return sendErrorResponse(res, 401, 'auth', 'refresh-token-revoked')
+         return sendErrorResponse(res, 401, 'auth', 'get-refresh-token')
       }
 
       // Generate new access token (15 minutes)
