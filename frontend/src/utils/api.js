@@ -2,13 +2,6 @@ import axios from 'axios'
 import store from '../store'
 import { LOGOUT } from '../actions/types'
 
-// Global session modal handler
-let globalSessionHandler = null
-
-export const setGlobalSessionHandler = (handler) => {
-   globalSessionHandler = handler
-}
-
 // Create an instance of axios
 const API_URL = process.env?.REACT_APP_API_URL || 'http://localhost:2000'
 const api = axios.create({
@@ -98,24 +91,13 @@ api.interceptors.response.use(
                return api(originalRequest)
             } catch (refreshError) {
                processQueue(refreshError, null)
-               // Determine the reason for failure and show appropriate modal
-               let reason = 'expired'
-               if (refreshError.response?.data?.msg?.includes('invalid')) {
-                  reason = 'invalid'
-               } else if (
-                  refreshError.response?.data?.msg?.includes('revoked')
-               ) {
-                  reason = 'revoked'
-               }
 
+               // Clear localStorage data and dispatch logout to set isAuthenticated to false
                localStorage.removeItem('token')
                localStorage.removeItem('refreshToken')
+               store.dispatch({ type: LOGOUT })
 
-               if (globalSessionHandler) {
-                  globalSessionHandler(reason)
-               }
-
-               // return api(originalRequest)
+               // Let the original error bubble up so fatalErrorHandler can handle it
                return Promise.reject(refreshError)
             } finally {
                isRefreshing = false
@@ -123,11 +105,7 @@ api.interceptors.response.use(
          } else {
             localStorage.removeItem('token')
             localStorage.removeItem('refreshToken')
-
-            if (globalSessionHandler) {
-               globalSessionHandler('invalid')
-            }
-
+            store.dispatch({ type: LOGOUT })
             return Promise.reject(err)
          }
       }

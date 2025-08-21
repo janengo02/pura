@@ -4,7 +4,12 @@
 
 // React & Router
 import React, { useEffect } from 'react'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import {
+   BrowserRouter as Router,
+   Route,
+   Routes,
+   useLocation
+} from 'react-router-dom'
 
 // Components
 import Register from './features/register/Register'
@@ -15,11 +20,6 @@ import Terms from './features/landing/Terms'
 import Dashboard from './features/dashboard/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import ErrorPage from './features/error/ErrorPage'
-import SessionExpiredModal from './components/SessionExpiredModal'
-
-// Context & Utils
-import { useSession } from './context/SessionContext'
-import { setGlobalSessionHandler } from './utils/api'
 
 // External Libraries
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -31,10 +31,8 @@ import { setAuthToken } from './utils'
 import { loadUserAction } from './actions/authActions'
 import { initializeLanguageAction } from './actions/languageActions'
 import { initializeThemeAction } from './actions/themeActions'
+import { removeAllAlertAction } from './actions/alertActions'
 import { LOGOUT } from './actions/types'
-
-// Context
-import { SessionProvider } from './context/SessionContext'
 
 // UI & Theme
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
@@ -50,11 +48,20 @@ import { googleAuthClientId } from './config/env'
 // MAIN COMPONENT
 // =============================================================================
 
+// Component to handle route changes and clear alerts
+const RouteHandler = () => {
+   const location = useLocation()
+
+   useEffect(() => {
+      // Clear all alerts when route changes
+      store.dispatch(removeAllAlertAction())
+   }, [location.pathname])
+
+   return null
+}
+
 // Inner component that has access to SessionContext
 const AppContent = () => {
-   const { sessionModal, showSessionExpiredModal, hideSessionModal } =
-      useSession()
-
    useEffect(() => {
       // Initialize language and theme first
       store.dispatch(initializeLanguageAction())
@@ -76,23 +83,9 @@ const AppContent = () => {
       })
    }, [])
 
-   // Set up global session handler for API interceptor
-   useEffect(() => {
-      setGlobalSessionHandler(showSessionExpiredModal)
-
-      // Cleanup on unmount
-      return () => {
-         setGlobalSessionHandler(null)
-      }
-   }, [showSessionExpiredModal])
-
    return (
       <Router>
-         <SessionExpiredModal
-            isOpen={sessionModal.isOpen}
-            onClose={hideSessionModal}
-            reason={sessionModal.reason}
-         />
+         <RouteHandler />
          <Routes>
             <Route path='/' element={<Landing />} />
             <Route path='register' element={<Register />} />
@@ -118,24 +111,22 @@ const App = () => {
    return (
       <GoogleOAuthProvider clientId={googleAuthClientId}>
          <Provider store={store}>
-            <SessionProvider>
-               <ColorModeScript
-                  initialColorMode={customTheme.config.initialColorMode}
-               />
-               <ChakraProvider
-                  theme={customTheme}
-                  toastOptions={{
-                     defaultOptions: {
-                        position: 'top',
-                        duration: 2000,
-                        variant: 'subtle',
-                        isClosable: true
-                     }
-                  }}
-               >
-                  <AppContent />
-               </ChakraProvider>
-            </SessionProvider>
+            <ColorModeScript
+               initialColorMode={customTheme.config.initialColorMode}
+            />
+            <ChakraProvider
+               theme={customTheme}
+               toastOptions={{
+                  defaultOptions: {
+                     position: 'top',
+                     duration: 2000,
+                     variant: 'subtle',
+                     isClosable: true
+                  }
+               }}
+            >
+               <AppContent />
+            </ChakraProvider>
          </Provider>
       </GoogleOAuthProvider>
    )

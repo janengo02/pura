@@ -46,5 +46,6 @@ export const removeAlertAction = (id) => (dispatch) => {
  * @returns {Function} Redux thunk
  */
 export const removeAllAlertAction = () => (dispatch) => {
+   console.log('Cleared all alerts')
    dispatch({ type: REMOVE_ALL_ALERTS })
 }
