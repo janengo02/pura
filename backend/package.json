@@ -5,7 +5,7 @@
    "main": "server.js",
    "scripts": {
       "start": "node server",
-      "build": "prisma generate --schema=models/schema.prisma",
+      "build": "prisma generate --schema=models/schema.prisma && npm install",
       "server": "nodemon",
       "prisma:generate": "prisma generate --schema=models/schema.prisma",
       "prisma:db:push": "prisma db push --schema=models/schema.prisma",
