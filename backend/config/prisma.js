@@ -1,12 +1,31 @@
 const { PrismaClient } = require('@prisma/client')
 
-const prisma = new PrismaClient({
-   // log: ['query', 'info', 'warn', 'error'],
-})
+let prisma
+
+try {
+   prisma = new PrismaClient({
+      log: ['error'],
+   })
+   
+   console.log('Prisma Client initialized successfully')
+   
+} catch (error) {
+   console.error('Failed to initialize Prisma Client:', error)
+   process.exit(1)
+}
 
 // Handle graceful shutdown
 process.on('beforeExit', async () => {
-   await prisma.$disconnect()
+   if (prisma) {
+      await prisma.$disconnect()
+   }
+})
+
+process.on('SIGINT', async () => {
+   if (prisma) {
+      await prisma.$disconnect()
+   }
+   process.exit(0)
 })
 
 module.exports = prisma
