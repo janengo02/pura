@@ -83,7 +83,7 @@ router.post(
          // Generate access token (15 minutes)
          const accessPayload = { user: { id: user.id } }
          const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
-            expiresIn: 60
+            expiresIn: 900
          })
 
          // Generate refresh token (7 days)
@@ -157,7 +157,7 @@ router.post('/refresh', async (req, res) => {
       // Generate new access token (15 minutes)
       const accessPayload = { user: { id: user.id } }
       const newAccessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
-         expiresIn: 60
+         expiresIn: 900
       })
 
       // Generate new refresh token (7 days)

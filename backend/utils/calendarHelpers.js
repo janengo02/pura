@@ -9,7 +9,7 @@ const newOath2Client = () =>
    new google.auth.OAuth2(
       process.env?.GOOGLE_CLIENT_ID,
       process.env?.GOOGLE_CLIENT_SECRET,
-      process.env?.APP_PATH
+      process.env?.FRONTEND_URL
    )
 
 /**
@@ -103,9 +103,9 @@ const updateGoogleAccountSyncStatus = async (user, notSyncedAccounts) => {
          })
       }
    })
-   
+
    await Promise.all(updatePromises)
-   
+
    // Update user's update date
    await prisma.user.update({
       where: { id: user.id },
@@ -129,9 +129,9 @@ const ensureSingleDefaultAccount = async (user, newDefaultAccountEmail) => {
          })
       }
    })
-   
+
    await Promise.all(updatePromises)
-   
+
    // Update user's update date
    await prisma.user.update({
       where: { id: user.id },
@@ -152,7 +152,7 @@ const autoSetDefaultForSingleAccount = async (user) => {
             data: { isDefault: true }
          })
       }
-      
+
       // Update user's update date
       await prisma.user.update({
          where: { id: user.id },

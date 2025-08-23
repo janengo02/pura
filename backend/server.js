@@ -9,15 +9,11 @@ connectDB()
 // CORS Configuration
 const corsOptions = {
    origin: function (origin, callback) {
-      const allowedOrigins = [
-         'https://pura-production.up.railway.app',
-         'http://localhost:8080',
-         process.env.FRONTEND_URL
-      ].filter(Boolean)
-      
+      const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean)
+
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true)
-      
+
       if (allowedOrigins.includes(origin)) {
          callback(null, true)
       } else {
