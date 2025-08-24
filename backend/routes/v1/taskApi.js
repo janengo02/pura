@@ -14,7 +14,8 @@ const {
    validateAddTaskScheduleSlot,
    validateSyncGoogleEvent
 } = require('../../validators/taskValidators')
-const { sendErrorResponse } = require('../../utils/responseHelper')
+const { asyncHandler } = require('../../utils/asyncHandler')
+const { NotFoundError } = require('../../utils/customErrors')
 const { validatePage } = require('../../utils/pageHelpers')
 const {
    extractId,
@@ -43,29 +44,29 @@ router.get(
    '/:pageId/:taskId',
    auth,
    validate(validateTaskParams),
-   async (req, res) => {
-      try {
-         //   Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-
-         //   Validation: Check if task exists
-         const task = await prisma.task.findUnique({
-            where: { id: req.params.taskId }
-         })
-         if (!task) {
-            return sendErrorResponse(res, 404, 'task', 'access')
-         }
-
-         // Use the enhanced formatTaskResponse with sync status calculation
-         const response = await formatTaskResponse(task, page, req.user.id)
-         res.json(response.task)
-      } catch (err) {
-         sendErrorResponse(res, 500, 'task', 'access', err)
+   asyncHandler(async (req, res) => {
+      //   Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
       }
-   }
+
+      //   Validation: Check if task exists
+      const task = await prisma.task.findUnique({
+         where: { id: req.params.taskId }
+      })
+      if (!task) {
+         throw new NotFoundError('Task not found', 'task', 'access')
+      }
+
+      // Use the enhanced formatTaskResponse with sync status calculation
+      const response = await formatTaskResponse(task, page, req.user.id)
+      res.json(response.task)
+   })
 )
 /**
  * @route POST api/task/new/:pageId
@@ -79,11 +80,15 @@ router.post(
    '/new/:pageId',
    auth,
    validate(validateCreateTask),
-   async (req, res) => {
+   asyncHandler(async (req, res) => {
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'page', 'access')
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
       }
       //   Prepare: Set up new task
       const { groupId, progressId, title, schedule, content } = req.body
@@ -97,10 +102,10 @@ router.post(
       const progressIndex = page.progressOrder.indexOf(progressId)
       //   Validation: Check if group and progress exist
       if (groupIndex === -1) {
-         return sendErrorResponse(res, 404, 'group', 'access')
+         throw new NotFoundError('Group not found', 'group', 'access')
       }
       if (progressIndex === -1) {
-         return sendErrorResponse(res, 404, 'progress', 'access')
+         throw new NotFoundError('Progress not found', 'progress', 'access')
       }
       const taskMapIndex =
          groupIndex * page.progressOrder.length + progressIndex
@@ -108,41 +113,42 @@ router.post(
       for (let i = taskMapIndex; i < newTaskMap.length; i++) {
          newTaskMap[i]++
       }
-      try {
-         // Data: Add new task
-         const task = await prisma.task.create({
-            data: newTask
-         })
 
-         // Get current page
-         const currentPage = await prisma.page.findUnique({
-            where: { id: req.params.pageId }
-         })
+      // Data: Add new task
+      const task = await prisma.task.create({
+         data: newTask
+      })
 
-         // Update task array and insert new task at correct position
-         const updatedTaskIds = [...currentPage.tasks]
-         updatedTaskIds.splice(newTaskMap[taskMapIndex] - 1, 0, task.id)
+      // Get current page
+      const currentPage = await prisma.page.findUnique({
+         where: { id: req.params.pageId }
+      })
 
-         // Data: Update page with new task
-         const newPage = await prisma.page.update({
-            where: { id: req.params.pageId },
-            data: {
-               tasks: updatedTaskIds,
-               updateDate: new Date()
-            }
-         })
-
-         // Data: Update page's taskMap
-         await prisma.page.update({
-            where: { id: req.params.pageId },
-            data: { taskMap: newTaskMap }
-         })
-
-         res.json({ task: task })
-      } catch (error) {
-         sendErrorResponse(res, 500, 'task', 'create', error)
+      if (!currentPage) {
+         throw new NotFoundError('Page not found', 'page', 'find')
       }
-   }
+
+      // Update task array and insert new task at correct position
+      const updatedTaskIds = [...currentPage.tasks]
+      updatedTaskIds.splice(newTaskMap[taskMapIndex] - 1, 0, task.id)
+
+      // Data: Update page with new task
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            tasks: updatedTaskIds,
+            updateDate: new Date()
+         }
+      })
+
+      // Data: Update page's taskMap
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: { taskMap: newTaskMap }
+      })
+
+      res.json({ task: task })
+   })
 )
 
 /**
@@ -156,38 +162,34 @@ router.post(
    '/sync-google-event',
    auth,
    validate(validateSyncGoogleEvent),
-   async (req, res) => {
-      try {
-         const { taskId, slotIndex, accountEmail, calendarId, syncAction } =
-            req.body
+   asyncHandler(async (req, res) => {
+      const { taskId, slotIndex, accountEmail, calendarId, syncAction } =
+         req.body
 
-         const result = await syncTaskSlotWithGoogleHelper(
-            taskId,
-            slotIndex,
-            accountEmail,
-            calendarId,
-            req.user.id,
-            syncAction
-         )
+      const result = await syncTaskSlotWithGoogleHelper(
+         taskId,
+         slotIndex,
+         accountEmail,
+         calendarId,
+         req.user.id,
+         syncAction
+      )
 
-         if (!result.success) {
-            throw new Error(result.message)
-         }
-
-         // Use the enhanced formatTaskResponse with sync status calculation
-         const response = await formatTaskResponse(
-            result.task,
-            result.page,
-            req.user.id
-         )
-         res.json({
-            ...response,
-            event: result.event
-         })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
+      if (!result.success) {
+         throw new Error(result.message)
       }
-   }
+
+      // Use the enhanced formatTaskResponse with sync status calculation
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
+      res.json({
+         ...response,
+         event: result.event
+      })
+   })
 )
 
 /**
@@ -202,39 +204,39 @@ router.put(
    '/basic/:pageId/:taskId',
    auth,
    validate(validateUpdateTaskBasic),
-   async (req, res) => {
-      try {
-         // Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-
-         const { title, content } = req.body
-         const result = await updateTaskBasicInfo(
-            req.params.taskId,
-            req.params.pageId,
-            req.user.id,
-            {
-               title,
-               content
-            }
+   asyncHandler(async (req, res) => {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
          )
-
-         if (!result.success) {
-            throw new Error(result.message)
-         }
-
-         const response = await formatTaskResponse(
-            result.task,
-            result.page,
-            req.user.id
-         )
-         res.json(response)
-      } catch (err) {
-         sendErrorResponse(res, 500, 'task', 'update', err)
       }
-   }
+
+      const { title, content } = req.body
+      const result = await updateTaskBasicInfo(
+         req.params.taskId,
+         req.params.pageId,
+         req.user.id,
+         {
+            title,
+            content
+         }
+      )
+
+      if (!result.success) {
+         throw new Error(result.message)
+      }
+
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
+      res.json(response)
+   })
 )
 
 /**
@@ -249,38 +251,35 @@ router.put(
    '/move/:pageId/:taskId',
    auth,
    validate(validateMoveTask),
-   async (req, res) => {
-      try {
-         // Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-
-         const { groupId, progressId } = req.body
-         if (!groupId && !progressId) {
-            return sendErrorResponse(res, 400, 'validation', 'failed')
-         }
-
-         const result = await moveTask(req.params.taskId, req.params.pageId, {
-            groupId,
-            progressId
-         })
-
-         if (!result.success) {
-            throw new Error(result.message)
-         }
-
-         const response = await formatTaskResponse(
-            result.task,
-            result.page,
-            req.user.id
+   asyncHandler(async (req, res) => {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
          )
-         res.json(response)
-      } catch (err) {
-         sendErrorResponse(res, 500, 'task', 'move', err)
       }
-   }
+
+      const { groupId, progressId } = req.body
+
+      const result = await moveTask(req.params.taskId, req.params.pageId, {
+         groupId,
+         progressId
+      })
+
+      if (!result.success) {
+         throw new Error(result.message)
+      }
+
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
+      res.json(response)
+   })
 )
 
 /**
@@ -295,42 +294,39 @@ router.put(
    '/schedule/:pageId/:taskId/:slotIndex',
    auth,
    validate(validateUpdateTaskSchedule),
-   async (req, res) => {
-      try {
-         // Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-
-         const slotIndex = parseInt(req.params.slotIndex)
-         if (isNaN(slotIndex)) {
-            return sendErrorResponse(res, 400, 'validation', 'failed')
-         }
-
-         const { start, end } = req.body
-
-         const result = await updateTaskSchedule(
-            req.params.taskId,
-            req.params.pageId,
-            req.user.id,
-            { slotIndex, start, end }
+   asyncHandler(async (req, res) => {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
          )
-
-         if (!result.success) {
-            throw new Error(result.message)
-         }
-
-         const response = await formatTaskResponse(
-            result.task,
-            result.page,
-            req.user.id
-         )
-         res.json(response)
-      } catch (err) {
-         sendErrorResponse(res, 500, 'schedule', 'update', err)
       }
-   }
+
+      const slotIndex = parseInt(req.params.slotIndex)
+
+      const { start, end } = req.body
+
+      const result = await updateTaskSchedule(
+         req.params.taskId,
+         req.params.pageId,
+         req.user.id,
+         { slotIndex, start, end }
+      )
+
+      if (!result.success) {
+         throw new Error(result.message)
+      }
+
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
+      res.json(response)
+   })
 )
 
 /**
@@ -345,42 +341,39 @@ router.post(
    '/schedule/:pageId/:taskId',
    auth,
    validate(validateAddTaskScheduleSlot),
-   async (req, res) => {
-      try {
-         // Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-
-         const { start, end } = req.body
-         if (!start || !end) {
-            return sendErrorResponse(res, 400, 'validation', 'failed')
-         }
-
-         const result = await addTaskScheduleSlot(
-            req.params.taskId,
-            req.params.pageId,
-            {
-               start,
-               end
-            }
+   asyncHandler(async (req, res) => {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
          )
-
-         if (!result.success) {
-            throw new Error(result.message)
-         }
-
-         const response = await formatTaskResponse(
-            result.task,
-            result.page,
-            req.user.id
-         )
-         res.json({ ...response, newSlotIndex: result.newSlotIndex })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'schedule', 'create', err)
       }
-   }
+
+      const { start, end } = req.body
+
+      const result = await addTaskScheduleSlot(
+         req.params.taskId,
+         req.params.pageId,
+         {
+            start,
+            end
+         }
+      )
+
+      if (!result.success) {
+         throw new Error(result.message)
+      }
+
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
+      res.json({ ...response, newSlotIndex: result.newSlotIndex })
+   })
 )
 
 /**
@@ -394,40 +387,37 @@ router.delete(
    '/schedule/:pageId/:taskId/:slotIndex',
    auth,
    validate(validateSlotParams),
-   async (req, res) => {
-      try {
-         // Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-
-         const slotIndex = parseInt(req.params.slotIndex)
-         if (isNaN(slotIndex)) {
-            return sendErrorResponse(res, 400, 'validation', 'failed')
-         }
-
-         const result = await removeTaskScheduleSlot(
-            req.params.taskId,
-            req.params.pageId,
-            req.user.id,
-            { slotIndex }
+   asyncHandler(async (req, res) => {
+      // Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
          )
-
-         if (!result.success) {
-            throw new Error(result.message)
-         }
-
-         const response = await formatTaskResponse(
-            result.task,
-            result.page,
-            req.user.id
-         )
-         res.json(response)
-      } catch (err) {
-         sendErrorResponse(res, 500, 'schedule', 'delete', err)
       }
-   }
+
+      const slotIndex = parseInt(req.params.slotIndex)
+
+      const result = await removeTaskScheduleSlot(
+         req.params.taskId,
+         req.params.pageId,
+         req.user.id,
+         { slotIndex }
+      )
+
+      if (!result.success) {
+         throw new Error(result.message)
+      }
+
+      const response = await formatTaskResponse(
+         result.task,
+         result.page,
+         req.user.id
+      )
+      res.json(response)
+   })
 )
 
 /**
@@ -441,12 +431,16 @@ router.delete(
    '/:pageId/:taskId',
    auth,
    validate(validateTaskParams),
-   async (req, res) => {
+   asyncHandler(async (req, res) => {
       const { taskId } = req.params
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'page', 'access')
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
       }
 
       //   Validation: Check if task exists
@@ -454,7 +448,7 @@ router.delete(
          where: { id: taskId }
       })
       if (!task) {
-         return sendErrorResponse(res, 404, 'task', 'access')
+         throw new NotFoundError('Task not found', 'task', 'access')
       }
 
       // Delete associated Google Calendar events
@@ -472,21 +466,17 @@ router.delete(
          if (newTaskMap[i] > taskIndex) newTaskMap[i]--
       }
 
-      try {
-         await prisma.task.delete({ where: { id: taskId } })
-         // Data: Update page's arrays
-         await prisma.page.update({
-            where: { id: req.params.pageId },
-            data: {
-               tasks: newTasks,
-               taskMap: newTaskMap,
-               updateDate: new Date()
-            }
-         })
-         res.json()
-      } catch (error) {
-         sendErrorResponse(res, 500, 'task', 'delete', error)
-      }
-   }
+      await prisma.task.delete({ where: { id: taskId } })
+      // Data: Update page's arrays
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            tasks: newTasks,
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
+      res.json()
+   })
 )
 module.exports = router

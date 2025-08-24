@@ -15,7 +15,8 @@ const prisma = require('../../config/prisma')
 const dotenv = require('dotenv')
 const { validate } = require('../../middleware/validation')
 const { validateRegistration } = require('../../validators/authValidators')
-const { sendErrorResponse } = require('../../utils/responseHelper')
+const { asyncHandler } = require('../../utils/asyncHandler')
+const { ConflictError } = require('../../utils/customErrors')
 
 dotenv.config()
 
@@ -162,24 +163,30 @@ const createDefaultPage = async (user, progresses, group, task, language) => {
  * @body {string} name, email, password, [language='en']
  * @returns {Object} {token, refreshToken, message} on success
  */
-router.post('/', validate(validateRegistration), async (req, res) => {
-   // -------------------------------------------------------------------------
-   // VALIDATION
-   // -------------------------------------------------------------------------
-   // Extract data with language defaulting to English
-   const { name, email, password, language = 'en' } = req.body
+router.post(
+   '/',
+   validate(validateRegistration),
+   asyncHandler(async (req, res) => {
+      // -------------------------------------------------------------------------
+      // VALIDATION
+      // -------------------------------------------------------------------------
+      // Extract data with language defaulting to English
+      const { name, email, password, language = 'en' } = req.body
 
-   // Check if user already exists
-   let user = await prisma.user.findUnique({ where: { email } })
-   if (user) {
-      return sendErrorResponse(res, 400, 'auth', 'register')
-   }
+      // Check if user already exists
+      let user = await prisma.user.findUnique({ where: { email } })
+      if (user) {
+         throw new ConflictError(
+            'User already exists with this email',
+            'auth',
+            'register'
+         )
+      }
 
-   // -------------------------------------------------------------------------
-   // USER CREATION
-   // -------------------------------------------------------------------------
+      // -------------------------------------------------------------------------
+      // USER CREATION
+      // -------------------------------------------------------------------------
 
-   try {
       // Set up avatar
       const avatar = gravatar.url(email, {
          s: '200',
@@ -250,10 +257,8 @@ router.post('/', validate(validateRegistration), async (req, res) => {
          refreshToken: refreshToken,
          message: 'User registered successfully with localized content'
       })
-   } catch (err) {
-      sendErrorResponse(res, 500, 'auth', 'register', err)
-   }
-})
+   })
+)
 
 // =============================================================================
 // EXPORT

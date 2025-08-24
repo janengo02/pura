@@ -44,6 +44,15 @@ app.use('/api/v1/google-meet', require('./routes/v1/googleMeetApi'))
 
 app.get('/', (req, res) => res.send('API Running'))
 
+// Global error handling middleware (must be after all routes)
+const { globalErrorHandler, notFoundHandler } = require('./middleware/errorHandler')
+
+// Handle 404 for undefined routes
+app.use(notFoundHandler)
+
+// Global error handler
+app.use(globalErrorHandler)
+
 const PORT = process.env.PORT || 2000
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`))

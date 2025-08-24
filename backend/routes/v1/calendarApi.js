@@ -16,7 +16,8 @@ const {
 } = require('../../validators/calendarValidators')
 const prisma = require('../../config/prisma')
 
-const { sendErrorResponse } = require('../../utils/responseHelper')
+const { asyncHandler } = require('../../utils/asyncHandler')
+const { NotFoundError } = require('../../utils/customErrors')
 const { encrypt, decrypt, isEncrypted } = require('../../utils/encryption')
 const {
    setOAuthCredentials,
@@ -42,73 +43,73 @@ router.get(
    '/list-events',
    auth,
    validate(validateListEvents),
-   async (req, res) => {
-      try {
-         const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
-         })
+   asyncHandler(async (req, res) => {
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
 
-         if (!user) {
-            return sendErrorResponse(res, 404, 'user', 'not_found')
-         }
-
-         const { minDate, maxDate, pageId } = req.query
-         const notSyncedAccounts = []
-
-         const gAccounts = await Promise.all(
-            user.googleAccounts.map(async (account) => {
-               // Decrypt refresh token before use
-               const decryptedToken = isEncrypted(account.refreshToken)
-                  ? decrypt(account.refreshToken)
-                  : account.refreshToken
-
-               const accountCalendars = await listEvent(
-                  decryptedToken,
-                  minDate,
-                  maxDate
-               )
-               if (accountCalendars.length === 0) {
-                  notSyncedAccounts.push(account.id)
-               }
-               return {
-                  id: account.id,
-                  accountEmail: account.accountEmail,
-                  syncStatus: accountCalendars.length > 0,
-                  isDefault: account.isDefault,
-                  calendars: accountCalendars
-               }
-            })
-         )
-         await updateGoogleAccountSyncStatus(user, notSyncedAccounts)
-         const page = await validatePage(pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
-         // Get page with tasks using Prisma
-         const pageWithTasks = await prisma.page.findUnique({
-            where: { id: page.id }
-         })
-
-         // Get tasks separately since we removed the relation
-         const tasksData = await prisma.task.findMany({
-            where: { id: { in: pageWithTasks.tasks } }
-         })
-
-         // Sort tasks to match the order in pageWithTasks.tasks
-         const taskMap = tasksData.reduce((map, task) => {
-            map[task.id] = task
-            return map
-         }, {})
-         const tasks = pageWithTasks.tasks
-            .map((taskId) => taskMap[taskId])
-            .filter(Boolean)
-
-         res.json({ googleAccounts: gAccounts, tasks: tasks })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
+      if (!user) {
+         throw new NotFoundError('User not found', 'user', 'not_found')
       }
-   }
+
+      const { minDate, maxDate, pageId } = req.query
+      const notSyncedAccounts = []
+
+      const gAccounts = await Promise.all(
+         user.googleAccounts.map(async (account) => {
+            // Decrypt refresh token before use
+            const decryptedToken = isEncrypted(account.refreshToken)
+               ? decrypt(account.refreshToken)
+               : account.refreshToken
+
+            const accountCalendars = await listEvent(
+               decryptedToken,
+               minDate,
+               maxDate
+            )
+            if (accountCalendars.length === 0) {
+               notSyncedAccounts.push(account.id)
+            }
+            return {
+               id: account.id,
+               accountEmail: account.accountEmail,
+               syncStatus: accountCalendars.length > 0,
+               isDefault: account.isDefault,
+               calendars: accountCalendars
+            }
+         })
+      )
+      await updateGoogleAccountSyncStatus(user, notSyncedAccounts)
+      const page = await validatePage(pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
+      }
+      // Get page with tasks using Prisma
+      const pageWithTasks = await prisma.page.findUnique({
+         where: { id: page.id }
+      })
+
+      // Get tasks separately since we removed the relation
+      const tasksData = await prisma.task.findMany({
+         where: { id: { in: pageWithTasks.tasks } }
+      })
+
+      // Sort tasks to match the order in pageWithTasks.tasks
+      const taskMap = tasksData.reduce((map, task) => {
+         map[task.id] = task
+         return map
+      }, {})
+      const tasks = pageWithTasks.tasks
+         .map((taskId) => taskMap[taskId])
+         .filter(Boolean)
+
+      res.json({ googleAccounts: gAccounts, tasks: tasks })
+   })
 )
 
 /**
@@ -123,81 +124,77 @@ router.post(
    '/add-account',
    auth,
    validate(validateAddGoogleAccount),
-   async (req, res) => {
-      try {
-         const { code, range } = req.body
-         const oath2Client = setOAuthCredentials()
-         const { tokens } = await oath2Client.getToken(code)
-         const { refresh_token, id_token } = tokens
+   asyncHandler(async (req, res) => {
+      const { code, range } = req.body
+      const oath2Client = setOAuthCredentials()
+      const { tokens } = await oath2Client.getToken(code)
+      const { refresh_token, id_token } = tokens
 
-         const ticket = await oath2Client.verifyIdToken({
-            idToken: id_token,
-            audience: process.env?.GOOGLE_CLIENT_ID
+      const ticket = await oath2Client.verifyIdToken({
+         idToken: id_token,
+         audience: process.env?.GOOGLE_CLIENT_ID
+      })
+
+      const account_email = ticket.getPayload()['email']
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+
+      let existingGoogleAccount = user.googleAccounts.find(
+         (acc) => acc.accountEmail === account_email
+      )
+
+      if (existingGoogleAccount) {
+         // Update existing account with encrypted token
+         existingGoogleAccount = await prisma.googleAccount.update({
+            where: { id: existingGoogleAccount.id },
+            data: {
+               refreshToken: encrypt(refresh_token),
+               syncStatus: true
+            }
          })
 
-         const account_email = ticket.getPayload()['email']
-         const user = await prisma.user.findUnique({
+         await prisma.user.update({
             where: { id: req.user.id },
-            include: { googleAccounts: true }
+            data: { updateDate: new Date() }
+         })
+      } else {
+         // Add new account with encrypted token
+         const isFirstAccount = user.googleAccounts.length === 0
+         existingGoogleAccount = await prisma.googleAccount.create({
+            data: {
+               refreshToken: encrypt(refresh_token),
+               accountEmail: account_email,
+               syncStatus: true,
+               isDefault: isFirstAccount,
+               userId: req.user.id
+            }
          })
 
-         let existingGoogleAccount = user.googleAccounts.find(
-            (acc) => acc.accountEmail === account_email
-         )
-
-         if (existingGoogleAccount) {
-            // Update existing account with encrypted token
-            existingGoogleAccount = await prisma.googleAccount.update({
-               where: { id: existingGoogleAccount.id },
-               data: {
-                  refreshToken: encrypt(refresh_token),
-                  syncStatus: true
-               }
-            })
-
-            await prisma.user.update({
-               where: { id: req.user.id },
-               data: { updateDate: new Date() }
-            })
-         } else {
-            // Add new account with encrypted token
-            const isFirstAccount = user.googleAccounts.length === 0
-            existingGoogleAccount = await prisma.googleAccount.create({
-               data: {
-                  refreshToken: encrypt(refresh_token),
-                  accountEmail: account_email,
-                  syncStatus: true,
-                  isDefault: isFirstAccount,
-                  userId: req.user.id
-               }
-            })
-
-            await prisma.user.update({
-               where: { id: req.user.id },
-               data: { updateDate: new Date() }
-            })
-         }
-
-         // Auto-set default if only one account
-         await autoSetDefaultForSingleAccount(user)
-
-         const newAccountCalendars = await listEvent(
-            refresh_token, // Use the plain token for the immediate sync
-            range[0],
-            range[1]
-         )
-
-         res.json({
-            id: existingGoogleAccount.id,
-            accountEmail: existingGoogleAccount.accountEmail,
-            syncStatus: true,
-            isDefault: existingGoogleAccount.isDefault,
-            calendars: newAccountCalendars
+         await prisma.user.update({
+            where: { id: req.user.id },
+            data: { updateDate: new Date() }
          })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
       }
-   }
+
+      // Auto-set default if only one account
+      await autoSetDefaultForSingleAccount(user)
+
+      const newAccountCalendars = await listEvent(
+         refresh_token, // Use the plain token for the immediate sync
+         range[0],
+         range[1]
+      )
+
+      res.json({
+         id: existingGoogleAccount.id,
+         accountEmail: existingGoogleAccount.accountEmail,
+         syncStatus: true,
+         isDefault: existingGoogleAccount.isDefault,
+         calendars: newAccountCalendars
+      })
+   })
 )
 
 /**
@@ -211,46 +208,42 @@ router.put(
    '/set-default/:accountEmail',
    auth,
    validate(validateUpdateDefaultCalendar),
-   async (req, res) => {
-      try {
-         const { accountEmail } = req.params
-         const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
-         })
+   asyncHandler(async (req, res) => {
+      const { accountEmail } = req.params
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
 
-         // Verify account exists and belongs to user
-         const targetAccount = user.googleAccounts.find(
-            (acc) => acc.accountEmail === accountEmail
-         )
+      // Verify account exists and belongs to user
+      const targetAccount = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )
 
-         if (!targetAccount) {
-            return sendErrorResponse(res, 404, 'google', 'access')
-         }
-
-         // Set new default account
-         await ensureSingleDefaultAccount(user, accountEmail)
-
-         // Return updated account data
-         const updatedUser = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
-         })
-         const updatedAccount = updatedUser.googleAccounts.find(
-            (acc) => acc.accountEmail === accountEmail
-         )
-
-         res.json({
-            id: updatedAccount.id,
-            accountEmail: updatedAccount.accountEmail,
-            syncStatus: updatedAccount.syncStatus,
-            isDefault: updatedAccount.isDefault,
-            message: 'Default account updated successfully'
-         })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
+      if (!targetAccount) {
+         throw new NotFoundError('Google account not found', 'google', 'access')
       }
-   }
+
+      // Set new default account
+      await ensureSingleDefaultAccount(user, accountEmail)
+
+      // Return updated account data
+      const updatedUser = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const updatedAccount = updatedUser.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )
+
+      res.json({
+         id: updatedAccount.id,
+         accountEmail: updatedAccount.accountEmail,
+         syncStatus: updatedAccount.syncStatus,
+         isDefault: updatedAccount.isDefault,
+         message: 'Default account updated successfully'
+      })
+   })
 )
 
 /**
@@ -259,8 +252,10 @@ router.put(
  * @access Private
  * @returns {Object} Default account details
  */
-router.get('/default', auth, async (req, res) => {
-   try {
+router.get(
+   '/default',
+   auth,
+   asyncHandler(async (req, res) => {
       const user = await prisma.user.findUnique({
          where: { id: req.user.id },
          include: { googleAccounts: true }
@@ -268,7 +263,11 @@ router.get('/default', auth, async (req, res) => {
       const defaultAccount = user.googleAccounts.find((acc) => acc.isDefault)
 
       if (!defaultAccount) {
-         return sendErrorResponse(res, 404, 'google', 'access')
+         throw new NotFoundError(
+            'No default Google account found',
+            'google',
+            'access'
+         )
       }
 
       res.json({
@@ -277,10 +276,8 @@ router.get('/default', auth, async (req, res) => {
          syncStatus: defaultAccount.syncStatus,
          isDefault: defaultAccount.isDefault
       })
-   } catch (err) {
-      sendErrorResponse(res, 500, 'google', 'sync', err)
-   }
-})
+   })
+)
 
 /**
  * @route POST api/calendar/create-event
@@ -300,66 +297,62 @@ router.post(
    '/create-event',
    auth,
    validate(validateCreateEvent),
-   async (req, res) => {
-      try {
-         const {
-            accountEmail,
-            calendarId,
-            summary,
-            start,
-            end,
-            description,
-            colorId
-         } = req.body
+   asyncHandler(async (req, res) => {
+      const {
+         accountEmail,
+         calendarId,
+         summary,
+         start,
+         end,
+         description,
+         colorId
+      } = req.body
 
-         const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
-         })
-         const encryptedRefreshToken = user.googleAccounts.find(
-            (acc) => acc.accountEmail === accountEmail
-         )?.refreshToken
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const encryptedRefreshToken = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )?.refreshToken
 
-         if (!encryptedRefreshToken) {
-            return sendErrorResponse(res, 404, 'google', 'access')
-         }
-
-         // Decrypt the refresh token before use
-         const refreshToken = isEncrypted(encryptedRefreshToken)
-            ? decrypt(encryptedRefreshToken)
-            : encryptedRefreshToken
-
-         const oath2Client = setOAuthCredentials(refreshToken)
-         const calendar = google.calendar('v3')
-
-         const eventData = {
-            summary: summary,
-            description: description || '',
-            colorId: colorId,
-            start: {
-               dateTime: start
-            },
-            end: {
-               dateTime: end
-            }
-         }
-
-         const event = await calendar.events.insert({
-            auth: oath2Client,
-            calendarId: calendarId || 'primary',
-            requestBody: eventData
-         })
-
-         const eventCalendar = await calendar.calendarList.get({
-            auth: oath2Client,
-            calendarId: calendarId || 'primary'
-         })
-
-         res.json({ event: event.data, calendar: eventCalendar.data })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
+      if (!encryptedRefreshToken) {
+         throw new NotFoundError('Google account not found', 'google', 'access')
       }
-   }
+
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(encryptedRefreshToken)
+         ? decrypt(encryptedRefreshToken)
+         : encryptedRefreshToken
+
+      const oath2Client = setOAuthCredentials(refreshToken)
+      const calendar = google.calendar('v3')
+
+      const eventData = {
+         summary: summary,
+         description: description || '',
+         colorId: colorId,
+         start: {
+            dateTime: start
+         },
+         end: {
+            dateTime: end
+         }
+      }
+
+      const event = await calendar.events.insert({
+         auth: oath2Client,
+         calendarId: calendarId || 'primary',
+         requestBody: eventData
+      })
+
+      const eventCalendar = await calendar.calendarList.get({
+         auth: oath2Client,
+         calendarId: calendarId || 'primary'
+      })
+
+      res.json({ event: event.data, calendar: eventCalendar.data })
+   })
 )
 
 /**
@@ -383,180 +376,176 @@ router.post(
    '/update-event/:eventId',
    auth,
    validate(validateUpdateEvent),
-   async (req, res) => {
-      try {
-         const { eventId } = req.params
+   asyncHandler(async (req, res) => {
+      const { eventId } = req.params
+      const {
+         accountEmail,
+         originalCalendarId,
+         calendarId,
+         start,
+         end,
+         summary,
+         location,
+         description,
+         colorId,
+         conferenceData
+      } = req.body
+
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const encryptedRefreshToken = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )?.refreshToken
+
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(encryptedRefreshToken)
+         ? decrypt(encryptedRefreshToken)
+         : encryptedRefreshToken
+
+      const oath2Client = setOAuthCredentials(refreshToken)
+      const calendar = google.calendar('v3')
+
+      const originalEvent = await calendar.events.get({
+         auth: oath2Client,
+         calendarId: originalCalendarId,
+         eventId: eventId
+      })
+      const eventData = originalEvent.data
+
+      // Handle conferenceData updates properly
+      let updatedConferenceData = eventData.conferenceData
+      if (conferenceData !== undefined) {
+         if (conferenceData === null) {
+            // Explicitly remove conference data
+            updatedConferenceData = null
+         } else if (conferenceData.createRequest) {
+            // Creating new conference (Google Meet) - raw API format
+            updatedConferenceData = {
+               createRequest: {
+                  requestId:
+                     conferenceData.createRequest.requestId ||
+                     `req_${Date.now()}`,
+                  conferenceSolutionKey: {
+                     type:
+                        conferenceData.createRequest.conferenceSolutionKey
+                           ?.type || 'hangoutsMeet'
+                  }
+               }
+            }
+         } else if (
+            conferenceData.type === 'google_meet' &&
+            conferenceData.id
+         ) {
+            // Frontend format - convert to Google Calendar API format
+            updatedConferenceData = {
+               conferenceId: conferenceData.id,
+               conferenceSolution: {
+                  key: {
+                     type: 'hangoutsMeet'
+                  },
+                  name: 'Google Meet',
+                  iconUri:
+                     'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-512dp/logo_meet_2020q4_color_2x_web_512dp.png'
+               },
+               entryPoints: [
+                  {
+                     entryPointType: 'video',
+                     uri: conferenceData.joinUrl,
+                     label: conferenceData.joinUrl
+                  },
+                  ...(conferenceData.phoneNumbers || []).map((phone) => ({
+                     entryPointType: 'phone',
+                     uri: `tel:${phone.number}`,
+                     label: phone.number,
+                     pin: phone.pin,
+                     regionCode: phone.regionCode
+                  }))
+               ]
+            }
+         } else {
+            // Raw Google Calendar API format or other format
+            updatedConferenceData = conferenceData
+         }
+      }
+
+      const updatedEventData = {
+         ...eventData, // Preserve other existing properties
+         start: {
+            dateTime: start
+         },
+         end: {
+            dateTime: end
+         },
+         colorId: colorId || eventData.colorId,
+         summary: summary || eventData.summary,
+         description: description || eventData.description,
+         location: location || eventData.location,
+         conferenceData: updatedConferenceData
+      }
+
+      let event
+
+      // Check if calendar is changing
+      if (calendarId && originalCalendarId !== calendarId) {
+         // Create a copy in the new calendar - remove properties that cause conflicts
          const {
-            accountEmail,
-            originalCalendarId,
-            calendarId,
-            start,
-            end,
-            summary,
-            location,
-            description,
-            colorId,
-            conferenceData
-         } = req.body
-
-         const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
+            id,
+            etag,
+            htmlLink,
+            iCalUID,
+            created,
+            updated,
+            creator,
+            organizer,
+            ...eventDataForInsert
+         } = updatedEventData
+         event = await calendar.events.insert({
+            auth: oath2Client,
+            calendarId: calendarId,
+            conferenceDataVersion: 1, // Required for conference data support
+            requestBody: eventDataForInsert
          })
-         const encryptedRefreshToken = user.googleAccounts.find(
-            (acc) => acc.accountEmail === accountEmail
-         )?.refreshToken
 
-         // Decrypt the refresh token before use
-         const refreshToken = isEncrypted(encryptedRefreshToken)
-            ? decrypt(encryptedRefreshToken)
-            : encryptedRefreshToken
-
-         const oath2Client = setOAuthCredentials(refreshToken)
-         const calendar = google.calendar('v3')
-
-         const originalEvent = await calendar.events.get({
+         // Delete the original event
+         await calendar.events.delete({
             auth: oath2Client,
             calendarId: originalCalendarId,
             eventId: eventId
          })
-         const eventData = originalEvent.data
-
-         // Handle conferenceData updates properly
-         let updatedConferenceData = eventData.conferenceData
-         if (conferenceData !== undefined) {
-            if (conferenceData === null) {
-               // Explicitly remove conference data
-               updatedConferenceData = null
-            } else if (conferenceData.createRequest) {
-               // Creating new conference (Google Meet) - raw API format
-               updatedConferenceData = {
-                  createRequest: {
-                     requestId:
-                        conferenceData.createRequest.requestId ||
-                        `req_${Date.now()}`,
-                     conferenceSolutionKey: {
-                        type:
-                           conferenceData.createRequest.conferenceSolutionKey
-                              ?.type || 'hangoutsMeet'
-                     }
-                  }
-               }
-            } else if (
-               conferenceData.type === 'google_meet' &&
-               conferenceData.id
-            ) {
-               // Frontend format - convert to Google Calendar API format
-               updatedConferenceData = {
-                  conferenceId: conferenceData.id,
-                  conferenceSolution: {
-                     key: {
-                        type: 'hangoutsMeet'
-                     },
-                     name: 'Google Meet',
-                     iconUri:
-                        'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-512dp/logo_meet_2020q4_color_2x_web_512dp.png'
-                  },
-                  entryPoints: [
-                     {
-                        entryPointType: 'video',
-                        uri: conferenceData.joinUrl,
-                        label: conferenceData.joinUrl
-                     },
-                     ...(conferenceData.phoneNumbers || []).map((phone) => ({
-                        entryPointType: 'phone',
-                        uri: `tel:${phone.number}`,
-                        label: phone.number,
-                        pin: phone.pin,
-                        regionCode: phone.regionCode
-                     }))
-                  ]
-               }
-            } else {
-               // Raw Google Calendar API format or other format
-               updatedConferenceData = conferenceData
-            }
-         }
-
-         const updatedEventData = {
-            ...eventData, // Preserve other existing properties
-            start: {
-               dateTime: start
-            },
-            end: {
-               dateTime: end
-            },
-            colorId: colorId || eventData.colorId,
-            summary: summary || eventData.summary,
-            description: description || eventData.description,
-            location: location || eventData.location,
-            conferenceData: updatedConferenceData
-         }
-
-         let event
-
-         // Check if calendar is changing
-         if (calendarId && originalCalendarId !== calendarId) {
-            // Create a copy in the new calendar - remove properties that cause conflicts
-            const {
-               id,
-               etag,
-               htmlLink,
-               iCalUID,
-               created,
-               updated,
-               creator,
-               organizer,
-               ...eventDataForInsert
-            } = updatedEventData
-            event = await calendar.events.insert({
-               auth: oath2Client,
-               calendarId: calendarId,
-               conferenceDataVersion: 1, // Required for conference data support
-               requestBody: eventDataForInsert
-            })
-
-            // Delete the original event
-            await calendar.events.delete({
-               auth: oath2Client,
-               calendarId: originalCalendarId,
-               eventId: eventId
-            })
-         } else {
-            // Update event in the same calendar
-            event = await calendar.events.update({
-               auth: oath2Client,
-               calendarId: originalCalendarId,
-               eventId: eventId,
-               conferenceDataVersion: 1, // Required for conference data support
-               requestBody: updatedEventData
-            })
-         }
-
-         // Update Pura task if it exists
-         // Use the new event ID if the event was moved to a different calendar
-         const finalEventId =
-            calendarId && originalCalendarId !== calendarId
-               ? event.data.id
-               : eventId
-
-         await updateTaskFromGoogleEvent(
-            finalEventId,
-            updatedEventData,
-            eventId, // Pass original event ID in case we need to update task references
-            calendarId // Pass new calendar ID for calendar moves
-         )
-
-         const updatedCalendar = await calendar.calendarList.get({
+      } else {
+         // Update event in the same calendar
+         event = await calendar.events.update({
             auth: oath2Client,
-            calendarId: calendarId
+            calendarId: originalCalendarId,
+            eventId: eventId,
+            conferenceDataVersion: 1, // Required for conference data support
+            requestBody: updatedEventData
          })
-
-         res.json({ event: event.data, calendar: updatedCalendar.data })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
       }
-   }
+
+      // Update Pura task if it exists
+      // Use the new event ID if the event was moved to a different calendar
+      const finalEventId =
+         calendarId && originalCalendarId !== calendarId
+            ? event.data.id
+            : eventId
+
+      await updateTaskFromGoogleEvent(
+         finalEventId,
+         updatedEventData,
+         eventId, // Pass original event ID in case we need to update task references
+         calendarId // Pass new calendar ID for calendar moves
+      )
+
+      const updatedCalendar = await calendar.calendarList.get({
+         auth: oath2Client,
+         calendarId: calendarId
+      })
+
+      res.json({ event: event.data, calendar: updatedCalendar.data })
+   })
 )
 
 /**
@@ -572,38 +561,34 @@ router.delete(
    '/delete-event/:eventId',
    auth,
    validate(validateDeleteEvent),
-   async (req, res) => {
-      try {
-         const { eventId } = req.params
-         const { accountEmail, calendarId } = req.body
+   asyncHandler(async (req, res) => {
+      const { eventId } = req.params
+      const { accountEmail, calendarId } = req.body
 
-         const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
-         })
-         const encryptedRefreshToken = user.googleAccounts.find(
-            (acc) => acc.accountEmail === accountEmail
-         ).refreshToken
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+      const encryptedRefreshToken = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      ).refreshToken
 
-         // Decrypt the refresh token before use
-         const refreshToken = isEncrypted(encryptedRefreshToken)
-            ? decrypt(encryptedRefreshToken)
-            : encryptedRefreshToken
+      // Decrypt the refresh token before use
+      const refreshToken = isEncrypted(encryptedRefreshToken)
+         ? decrypt(encryptedRefreshToken)
+         : encryptedRefreshToken
 
-         const oath2Client = setOAuthCredentials(refreshToken)
-         const calendar = google.calendar('v3')
+      const oath2Client = setOAuthCredentials(refreshToken)
+      const calendar = google.calendar('v3')
 
-         await calendar.events.delete({
-            auth: oath2Client,
-            calendarId: calendarId || 'primary',
-            eventId: eventId
-         })
+      await calendar.events.delete({
+         auth: oath2Client,
+         calendarId: calendarId || 'primary',
+         eventId: eventId
+      })
 
-         res.json({ event: { id: eventId, deleted: true } })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
-      }
-   }
+      res.json({ event: { id: eventId, deleted: true } })
+   })
 )
 
 /**
@@ -617,29 +602,25 @@ router.delete(
    '/disconnect/:accountEmail',
    auth,
    validate(validateDisconnectAccount),
-   async (req, res) => {
-      try {
-         const { accountEmail } = req.params
-         const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            include: { googleAccounts: true }
+   asyncHandler(async (req, res) => {
+      const { accountEmail } = req.params
+      const user = await prisma.user.findUnique({
+         where: { id: req.user.id },
+         include: { googleAccounts: true }
+      })
+
+      // Remove the Google account
+      const accountToDelete = user.googleAccounts.find(
+         (acc) => acc.accountEmail === accountEmail
+      )
+
+      if (accountToDelete) {
+         await prisma.googleAccount.delete({
+            where: { id: accountToDelete.id }
          })
-
-         // Remove the Google account
-         const accountToDelete = user.googleAccounts.find(
-            (acc) => acc.accountEmail === accountEmail
-         )
-
-         if (accountToDelete) {
-            await prisma.googleAccount.delete({
-               where: { id: accountToDelete.id }
-            })
-         }
-         res.json({ message: 'Account disconnected' })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'google', 'sync', err)
       }
-   }
+      res.json({ message: 'Account disconnected' })
+   })
 )
 
 module.exports = router

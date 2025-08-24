@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
-const { sendErrorResponse } = require('../utils/responseHelper')
+const { AuthenticationError } = require('../utils/customErrors')
 
 dotenv.config()
 module.exports = function (req, res, next) {
@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
 
    // Check if no token
    if (!token) {
-      return sendErrorResponse(res, 401, 'auth', 'get-refresh-token')
+      return next(new AuthenticationError('Access denied. No token provided', 'auth', 'get-refresh-token'))
    }
 
    // Verify token
@@ -19,6 +19,6 @@ module.exports = function (req, res, next) {
       req.user = decoded.user
       next()
    } catch (err) {
-      return sendErrorResponse(res, 401, 'auth', 'validate-refresh-token')
+      return next(new AuthenticationError('Token is not valid', 'auth', 'validate-refresh-token'))
    }
 }

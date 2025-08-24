@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator')
-const { sendErrorResponse } = require('../utils/responseHelper')
+const { ValidationError } = require('../utils/customErrors')
 
 /**
  * Centralized validation middleware
@@ -20,13 +20,9 @@ const handleValidation = (req, res, next) => {
          location: error.location
       }))
 
-      return sendErrorResponse(
-         res,
-         400,
-         'error-validation-failed',
-         'error-validation-failed-desc',
-         validationErrors
-      )
+      const error = new ValidationError('Validation failed', 'validation', 'validate')
+      error.details = validationErrors
+      return next(error)
    }
 
    next()

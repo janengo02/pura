@@ -8,8 +8,15 @@ const crypto = require('crypto')
 
 const auth = require('../../middleware/auth')
 const { validate } = require('../../middleware/validation')
-const { validateLogin, validateTokenRefresh } = require('../../validators/authValidators')
-const { sendErrorResponse } = require('../../utils/responseHelper')
+const {
+   validateLogin,
+   validateTokenRefresh
+} = require('../../validators/authValidators')
+const { asyncHandler } = require('../../utils/asyncHandler')
+const {
+   AuthenticationError,
+   NotFoundError
+} = require('../../utils/customErrors')
 const prisma = require('../../config/prisma')
 
 dotenv.config()
@@ -20,31 +27,32 @@ dotenv.config()
  * @access Private
  * @returns {Object} User details with email, name, avatar, googleAccounts
  */
-router.get('/', auth, async (req, res) => {
-   try {
+router.get(
+   '/',
+   auth,
+   asyncHandler(async (req, res) => {
       const user = await prisma.user.findUnique({
          where: { id: req.user.id },
          include: { googleAccounts: true }
       })
-      if (user) {
-         res.json({
-            email: user.email,
-            name: user.name,
-            avatar: user.avatar,
-            googleAccounts: user.googleAccounts.map((account) => ({
-               _id: account._id,
-               accountEmail: account.accountEmail,
-               syncStatus: account.syncStatus,
-               isDefault: account.isDefault
-            }))
-         })
-      } else {
-         throw new Error('User not found')
+
+      if (!user) {
+         throw new NotFoundError('User not found', 'auth', 'access')
       }
-   } catch (err) {
-      sendErrorResponse(res, 500, 'auth', 'access', err)
-   }
-})
+
+      res.json({
+         email: user.email,
+         name: user.name,
+         avatar: user.avatar,
+         googleAccounts: user.googleAccounts.map((account) => ({
+            _id: account._id,
+            accountEmail: account.accountEmail,
+            syncStatus: account.syncStatus,
+            isDefault: account.isDefault
+         }))
+      })
+   })
+)
 
 /**
  * @route POST api/auth
@@ -57,55 +65,52 @@ router.get('/', auth, async (req, res) => {
 router.post(
    '/',
    validate(validateLogin),
-   async (req, res) => {
+   asyncHandler(async (req, res) => {
       const { email, password } = req.body
 
-      try {
-         // Check if user exists
-         const user = await prisma.user.findUnique({
-            where: { email }
-         })
-         if (!user) {
-            return sendErrorResponse(res, 401, 'auth', 'login')
-         }
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+         where: { email }
+      })
 
-         const isMatch = await bcrypt.compare(password, user.password)
-         if (!isMatch) {
-            return sendErrorResponse(res, 401, 'auth', 'login')
-         }
-
-         // Generate access token (15 minutes)
-         const accessPayload = { user: { id: user.id } }
-         const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
-            expiresIn: 900
-         })
-
-         // Generate refresh token (7 days)
-         const refreshTokenPayload = {
-            user: { id: user.id },
-            type: 'refresh',
-            tokenId: crypto.randomBytes(16).toString('hex')
-         }
-         const refreshToken = jwt.sign(
-            refreshTokenPayload,
-            process.env?.JWT_SECRET,
-            { expiresIn: '7d' }
-         )
-
-         // Store refresh token in database
-         await prisma.user.update({
-            where: { id: user.id },
-            data: { userRefreshToken: refreshToken }
-         })
-
-         res.json({
-            token: accessToken,
-            refreshToken: refreshToken
-         })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'auth', 'login', err)
+      if (!user) {
+         throw new AuthenticationError('Invalid credentials', 'auth', 'login')
       }
-   }
+
+      const isMatch = await bcrypt.compare(password, user.password)
+      if (!isMatch) {
+         throw new AuthenticationError('Invalid credentials', 'auth', 'login')
+      }
+
+      // Generate access token (15 minutes)
+      const accessPayload = { user: { id: user.id } }
+      const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
+         expiresIn: 900
+      })
+
+      // Generate refresh token (7 days)
+      const refreshTokenPayload = {
+         user: { id: user.id },
+         type: 'refresh',
+         tokenId: crypto.randomBytes(16).toString('hex')
+      }
+      const refreshToken = jwt.sign(
+         refreshTokenPayload,
+         process.env?.JWT_SECRET,
+         { expiresIn: '7d' }
+      )
+
+      // Store refresh token in database
+      await prisma.user.update({
+         where: { id: user.id },
+         data: { userRefreshToken: refreshToken }
+      })
+
+      res.json({
+         token: accessToken,
+         refreshToken: refreshToken
+      })
+   })
 )
 
 /**
@@ -115,8 +120,10 @@ router.post(
  * @param {string} refreshToken
  * @returns {Object} {token, refreshToken} on success, {msg} on error
  */
-router.post('/refresh', validate(validateTokenRefresh), async (req, res) => {
-   try {
+router.post(
+   '/refresh',
+   validate(validateTokenRefresh),
+   asyncHandler(async (req, res) => {
       const { refreshToken } = req.body
 
       // Verify and decode refresh token
@@ -124,12 +131,20 @@ router.post('/refresh', validate(validateTokenRefresh), async (req, res) => {
       try {
          decoded = jwt.verify(refreshToken, process.env?.JWT_SECRET)
       } catch (err) {
-         return sendErrorResponse(res, 401, 'auth', 'validate-refresh-token')
+         throw new AuthenticationError(
+            'Invalid refresh token',
+            'auth',
+            'validate-refresh-token'
+         )
       }
 
       // Validate refresh token structure
       if (!decoded.user?.id || decoded.type !== 'refresh') {
-         return sendErrorResponse(res, 401, 'auth', 'refresh-token-format')
+         throw new AuthenticationError(
+            'Invalid refresh token format',
+            'auth',
+            'refresh-token-format'
+         )
       }
 
       // Find user with this refresh token
@@ -141,7 +156,11 @@ router.post('/refresh', validate(validateTokenRefresh), async (req, res) => {
       })
 
       if (!user) {
-         return sendErrorResponse(res, 401, 'auth', 'get-refresh-token')
+         throw new AuthenticationError(
+            'Refresh token not found or expired',
+            'auth',
+            'get-refresh-token'
+         )
       }
 
       // Generate new access token (15 minutes)
@@ -172,9 +191,7 @@ router.post('/refresh', validate(validateTokenRefresh), async (req, res) => {
          token: newAccessToken,
          refreshToken: newRefreshToken
       })
-   } catch (err) {
-      sendErrorResponse(res, 500, 'auth', 'refresh', err)
-   }
-})
+   })
+)
 
 module.exports = router

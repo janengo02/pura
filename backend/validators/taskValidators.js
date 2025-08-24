@@ -61,7 +61,14 @@ const validateMoveTask = [
    body('progressId')
       .optional({ nullable: true })
       .isMongoId()
-      .withMessage('Progress ID must be a valid ObjectId')
+      .withMessage('Progress ID must be a valid ObjectId'),
+   body().custom((_, { req }) => {
+      const { groupId, progressId } = req.body
+      if (groupId == null && progressId == null) {
+         throw new Error('Either Group ID or Progress ID must be provided')
+      }
+      return true
+   })
 ]
 
 // Update task schedule validation

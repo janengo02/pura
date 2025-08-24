@@ -5,11 +5,20 @@ const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
 const { validate } = require('../../middleware/validation')
-const { validateCreateMeeting, validateUpdateMeeting, validateDeleteMeeting } = require('../../validators/calendarValidators')
+const {
+   validateCreateMeeting,
+   validateUpdateMeeting,
+   validateDeleteMeeting
+} = require('../../validators/calendarValidators')
 const prisma = require('../../config/prisma')
 
-const { sendErrorResponse } = require('../../utils/responseHelper')
-const { encrypt, decrypt, isEncrypted } = require('../../utils/encryption')
+const { asyncHandler } = require('../../utils/asyncHandler')
+const {
+   ValidationError,
+   NotFoundError,
+   ExternalServiceError
+} = require('../../utils/customErrors')
+const { decrypt, isEncrypted } = require('../../utils/encryption')
 const { setOAuthCredentials } = require('../../utils/calendarHelpers')
 
 dotenv.config()
@@ -21,12 +30,19 @@ dotenv.config()
  * @body {string} accountEmail, [config]
  * @returns {Object} {success, meetUri, spaceId, meetingCode, config, activeConference, createTime, updateTime}
  */
-router.post('/create-space', auth, validate(validateCreateMeeting), async (req, res) => {
-   try {
+router.post(
+   '/create-space',
+   auth,
+   validate(validateCreateMeeting),
+   asyncHandler(async (req, res) => {
       const { accountEmail, config = {} } = req.body
 
       if (!accountEmail) {
-         return sendErrorResponse(res, 400, 'validation', 'failed')
+         throw new ValidationError(
+            'Account email is required',
+            'validation',
+            'failed'
+         )
       }
 
       // Note: Config validation removed since we're using Calendar API approach
@@ -40,12 +56,12 @@ router.post('/create-space', auth, validate(validateCreateMeeting), async (req, 
       )
 
       if (!account) {
-         return sendErrorResponse(res, 404, 'google', 'access')
+         throw new NotFoundError('Google account not found', 'google', 'access')
       }
 
       // Decrypt the refresh token before use
-      const refreshToken = isEncrypted(account.refreshToken) 
-         ? decrypt(account.refreshToken) 
+      const refreshToken = isEncrypted(account.refreshToken)
+         ? decrypt(account.refreshToken)
          : account.refreshToken
 
       // Use Google Calendar API to create Meet link (since google.meet API is not available)
@@ -102,7 +118,11 @@ router.post('/create-space', auth, validate(validateCreateMeeting), async (req, 
       })
 
       if (!meetUri) {
-         return sendErrorResponse(res, 500, 'google', 'sync')
+         throw new ExternalServiceError(
+            'Failed to generate Google Meet link',
+            'google',
+            'sync'
+         )
       }
 
       res.json({
@@ -115,10 +135,8 @@ router.post('/create-space', auth, validate(validateCreateMeeting), async (req, 
          createTime: new Date().toISOString(),
          updateTime: new Date().toISOString()
       })
-   } catch (err) {
-      sendErrorResponse(res, 500, 'google', 'sync', err)
-   }
-})
+   })
+)
 
 /**
  * @route GET api/google-meet/space/:spaceId
@@ -128,13 +146,19 @@ router.post('/create-space', auth, validate(validateCreateMeeting), async (req, 
  * @query {string} accountEmail
  * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
  */
-router.get('/space/:spaceId', auth, async (req, res) => {
-   try {
+router.get(
+   '/space/:spaceId',
+   auth,
+   asyncHandler(async (req, res) => {
       const { spaceId } = req.params
       const { accountEmail } = req.query
 
       if (!accountEmail) {
-         return sendErrorResponse(res, 400, 'validation', 'failed')
+         throw new ValidationError(
+            'Account email is required',
+            'validation',
+            'failed'
+         )
       }
 
       const user = await prisma.user.findUnique({
@@ -146,7 +170,7 @@ router.get('/space/:spaceId', auth, async (req, res) => {
       )
 
       if (!account) {
-         return sendErrorResponse(res, 404, 'google', 'access')
+         throw new NotFoundError('Google account not found', 'google', 'access')
       }
 
       // Since Google Meet API v2 is not available, return a message
@@ -156,99 +180,7 @@ router.get('/space/:spaceId', auth, async (req, res) => {
             'Google Meet space details cannot be retrieved. Google Meet API v2 is not available through googleapis library.',
          error: 'API_NOT_AVAILABLE'
       })
-   } catch (err) {
-      sendErrorResponse(res, 500, 'google', 'sync', err)
-   }
-})
-
-/**
- * @route PATCH api/google-meet/space/:spaceId
- * @desc Update Google Meet space (API not available)
- * @access Private
- * @param {string} spaceId
- * @body {string} accountEmail, {Object} config
- * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
- */
-router.patch('/space/:spaceId', auth, validate(validateUpdateMeeting), async (req, res) => {
-   try {
-      const { spaceId } = req.params
-      const { accountEmail, config } = req.body
-
-      if (!accountEmail) {
-         return sendErrorResponse(res, 400, 'validation', 'failed')
-      }
-
-      const user = await prisma.user.findUnique({
-         where: { id: req.user.id },
-         include: { googleAccounts: true }
-      })
-      const account = user.googleAccounts.find(
-         (acc) => acc.accountEmail === accountEmail
-      )
-
-      if (!account) {
-         return sendErrorResponse(res, 404, 'google', 'access')
-      }
-
-      // Since Google Meet API v2 is not available, return a message
-      res.json({
-         success: false,
-         message:
-            'Google Meet space updates are not supported. Google Meet API v2 is not available through googleapis library.',
-         error: 'API_NOT_AVAILABLE'
-      })
-   } catch (err) {
-      if (err.code === 404) {
-         return sendErrorResponse(res, 404, 'google', 'access')
-      }
-
-      sendErrorResponse(res, 500, 'google', 'sync', err)
-   }
-})
-
-/**
- * @route DELETE api/google-meet/space/:spaceId
- * @desc Delete Google Meet space (API not available)
- * @access Private
- * @param {string} spaceId
- * @body {string} accountEmail
- * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
- */
-router.delete('/space/:spaceId', auth, validate(validateDeleteMeeting), async (req, res) => {
-   try {
-      const { spaceId } = req.params
-      const { accountEmail } = req.body
-
-      if (!accountEmail) {
-         return sendErrorResponse(res, 400, 'validation', 'failed')
-      }
-
-      const user = await prisma.user.findUnique({
-         where: { id: req.user.id },
-         include: { googleAccounts: true }
-      })
-      const account = user.googleAccounts.find(
-         (acc) => acc.accountEmail === accountEmail
-      )
-
-      if (!account) {
-         return sendErrorResponse(res, 404, 'google', 'access')
-      }
-
-      // Since Google Meet API v2 is not available, return a message
-      res.json({
-         success: false,
-         message:
-            'Google Meet space deletion is not supported. Google Meet API v2 is not available through googleapis library.',
-         error: 'API_NOT_AVAILABLE'
-      })
-   } catch (err) {
-      if (err.code === 404) {
-         return sendErrorResponse(res, 404, 'google', 'access')
-      }
-
-      sendErrorResponse(res, 500, 'google', 'sync', err)
-   }
-})
+   })
+)
 
 module.exports = router

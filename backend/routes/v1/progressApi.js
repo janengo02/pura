@@ -9,7 +9,8 @@ const {
    validateProgressParams
 } = require('../../validators/progressValidators')
 
-const { sendErrorResponse } = require('../../utils/responseHelper')
+const { asyncHandler } = require('../../utils/asyncHandler')
+const { NotFoundError } = require('../../utils/customErrors')
 const { validatePage } = require('../../utils/pageHelpers')
 const {
    validateProgress,
@@ -32,11 +33,15 @@ router.post(
    '/new/:pageId',
    auth,
    validate(validateCreateProgress),
-   async (req, res) => {
+   asyncHandler(async (req, res) => {
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'page', 'access')
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
       }
       //   Prepare: Set up new progress
       const newProgress = prepareProgressData(req.body)
@@ -49,32 +54,32 @@ router.post(
          newProgress
       })
 
-      try {
-         // Data: Add new progress
-         const progress = await prisma.progress.create({
-            data: newProgress
-         })
+      // Data: Add new progress
+      const progress = await prisma.progress.create({
+         data: newProgress
+      })
 
-         // Get current page
-         const currentPage = await prisma.page.findUnique({
-            where: { id: req.params.pageId }
-         })
+      // Get current page
+      const currentPage = await prisma.page.findUnique({
+         where: { id: req.params.pageId }
+      })
 
-         // Data: Update page with new progress
-         await prisma.page.update({
-            where: { id: req.params.pageId },
-            data: {
-               progressOrder: [...currentPage.progressOrder, progress.id],
-               taskMap: newTaskMap,
-               updateDate: new Date()
-            }
-         })
-
-         res.json({ progress: progress })
-      } catch (error) {
-         return sendErrorResponse(res, 500, 'progress', 'create', error)
+      if (!currentPage) {
+         throw new NotFoundError('Page not found', 'page', 'find')
       }
-   }
+
+      // Data: Update page with new progress
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
+            progressOrder: [...currentPage.progressOrder, progress.id],
+            taskMap: newTaskMap,
+            updateDate: new Date()
+         }
+      })
+
+      res.json({ progress: progress })
+   })
 )
 
 /**
@@ -89,17 +94,21 @@ router.post(
    '/update/:pageId/:progressId',
    auth,
    validate(validateUpdateProgress),
-   async (req, res) => {
+   asyncHandler(async (req, res) => {
       //   Validation: Check if page exists and user is the owner
       const page = await validatePage(req.params.pageId, req.user.id)
       if (!page) {
-         return sendErrorResponse(res, 404, 'page', 'access')
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
       }
 
       //   Validation: Check if progress exists
       const progress = await validateProgress(req.params.progressId)
       if (!progress) {
-         return sendErrorResponse(res, 404, 'progress', 'access')
+         throw new NotFoundError('Progress not found', 'progress', 'access')
       }
       //   Prepare: Set up new progress
       const { title, titleColor, color } = req.body
@@ -108,24 +117,20 @@ router.post(
       if (titleColor) updateData.titleColor = titleColor
       if (color) updateData.color = color
 
-      try {
-         // Data: update progress
-         await prisma.progress.update({
-            where: { id: req.params.progressId },
-            data: updateData
-         })
+      // Data: update progress
+      await prisma.progress.update({
+         where: { id: req.params.progressId },
+         data: updateData
+      })
 
-         // Data: update page
-         await prisma.page.update({
-            where: { id: req.params.pageId },
-            data: { updateDate: new Date() }
-         })
+      // Data: update page
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: { updateDate: new Date() }
+      })
 
-         res.json()
-      } catch (error) {
-         return sendErrorResponse(res, 500, 'progress', 'update', error)
-      }
-   }
+      res.json()
+   })
 )
 
 /**
@@ -139,58 +144,58 @@ router.delete(
    '/:pageId/:progressId',
    auth,
    validate(validateProgressParams),
-   async (req, res) => {
-      try {
-         //   Validation: Check if page exists and user is the owner
-         const page = await validatePage(req.params.pageId, req.user.id)
-         if (!page) {
-            return sendErrorResponse(res, 404, 'page', 'access')
-         }
+   asyncHandler(async (req, res) => {
+      //   Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.pageId, req.user.id)
+      if (!page) {
+         throw new NotFoundError(
+            'Page not found or access denied',
+            'page',
+            'access'
+         )
+      }
 
-         //   Validation: Check if progress exists
-         const progress = await validateProgress(req.params.progressId)
-         if (!progress) {
-            return sendErrorResponse(res, 404, 'progress', 'access')
-         }
-         //   Prepare: Set up new tasks array & taskMap
-         const {
+      //   Validation: Check if progress exists
+      const progress = await validateProgress(req.params.progressId)
+      if (!progress) {
+         throw new NotFoundError('Progress not found', 'progress', 'access')
+      }
+      //   Prepare: Set up new tasks array & taskMap
+      const {
+         progressOrder: newProgressOrder,
+         tasks: newTasks,
+         taskMap: newTaskMap
+      } = deleteProgress({
+         progressIndex: page.progressOrder.indexOf(req.params.progressId),
+         progressOrder: page.progressOrder,
+         groupOrder: page.groupOrder,
+         tasks: page.tasks,
+         taskMap: page.taskMap
+      })
+
+      // Delete tasks from DB if they're not in newTasks
+      const tasksToDelete = page.tasks.filter(
+         (taskId) => !newTasks.includes(taskId)
+      )
+      for (let taskId of tasksToDelete) {
+         await prisma.task.delete({ where: { id: taskId } })
+      }
+
+      // Data: Delete progress
+      await prisma.progress.delete({ where: { id: req.params.progressId } })
+
+      // Data: Update page's arrays
+      await prisma.page.update({
+         where: { id: req.params.pageId },
+         data: {
             progressOrder: newProgressOrder,
             tasks: newTasks,
-            taskMap: newTaskMap
-         } = deleteProgress({
-            progressIndex: page.progressOrder.indexOf(req.params.progressId),
-            progressOrder: page.progressOrder,
-            groupOrder: page.groupOrder,
-            tasks: page.tasks,
-            taskMap: page.taskMap
-         })
-
-         // Delete tasks from DB if they're not in newTasks
-         const tasksToDelete = page.tasks.filter(
-            (taskId) => !newTasks.includes(taskId)
-         )
-         for (let taskId of tasksToDelete) {
-            await prisma.task.delete({ where: { id: taskId } })
+            taskMap: newTaskMap,
+            updateDate: new Date()
          }
-
-         // Data: Delete progress
-         await prisma.progress.delete({ where: { id: req.params.progressId } })
-
-         // Data: Update page's arrays
-         await prisma.page.update({
-            where: { id: req.params.pageId },
-            data: {
-               progressOrder: newProgressOrder,
-               tasks: newTasks,
-               taskMap: newTaskMap,
-               updateDate: new Date()
-            }
-         })
-         res.json()
-      } catch (error) {
-         return sendErrorResponse(res, 500, 'progress', 'delete', error)
-      }
-   }
+      })
+      res.json()
+   })
 )
 
 module.exports = router
