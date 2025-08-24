@@ -33,14 +33,14 @@ app.use(cors(corsOptions))
 app.use(express.json({ extended: false }))
 
 // Define Routes
-app.use('/api/users', require('./routes/api/usersApi'))
-app.use('/api/auth', require('./routes/api/authApi'))
-app.use('/api/page', require('./routes/api/pageApi'))
-app.use('/api/group', require('./routes/api/groupApi'))
-app.use('/api/progress', require('./routes/api/progressApi'))
-app.use('/api/task', require('./routes/api/taskApi'))
-app.use('/api/calendar', require('./routes/api/calendarApi'))
-app.use('/api/google-meet', require('./routes/api/googleMeetApi'))
+app.use('/api/v1/users', require('./routes/v1/usersApi'))
+app.use('/api/v1/auth', require('./routes/v1/authApi'))
+app.use('/api/v1/page', require('./routes/v1/pageApi'))
+app.use('/api/v1/group', require('./routes/v1/groupApi'))
+app.use('/api/v1/progress', require('./routes/v1/progressApi'))
+app.use('/api/v1/task', require('./routes/v1/taskApi'))
+app.use('/api/v1/calendar', require('./routes/v1/calendarApi'))
+app.use('/api/v1/google-meet', require('./routes/v1/googleMeetApi'))
 
 app.get('/', (req, res) => res.send('API Running'))
 
