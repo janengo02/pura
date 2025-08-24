@@ -39,7 +39,7 @@ const validateCreateTask = [
       .withMessage('Progress ID is required')
       .isMongoId()
       .withMessage('Progress ID must be a valid ObjectId'),
-   validateOptionalString('title', 'Title', 1, 200),
+   validateOptionalString('title', 'Title', 1, 2000000),
    validateOptionalString('content', 'Content', 0, 2000000),
    validateSchedule('schedule')
 ]
@@ -47,7 +47,7 @@ const validateCreateTask = [
 // Update task basic info validation
 const validateUpdateTaskBasic = [
    ...validateTaskParams,
-   validateOptionalString('title', 'Title', 1, 200),
+   validateOptionalString('title', 'Title', 1, 2000000),
    validateOptionalString('content', 'Content', 0, 2000000)
 ]
 

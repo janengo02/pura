@@ -26,7 +26,6 @@ const validateRequiredString = (
       .withMessage(
          `${fieldLabel} must be between ${minLength} and ${maxLength} characters`
       )
-      .escape() // HTML escape for security
 }
 
 // Optional string validation
@@ -43,7 +42,6 @@ const validateOptionalString = (
       .withMessage(
          `${fieldLabel} must be between ${minLength} and ${maxLength} characters`
       )
-      .escape()
 }
 
 // Email validation
