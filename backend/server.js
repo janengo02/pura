@@ -9,7 +9,7 @@ connectDB()
 // CORS Configuration
 const corsOptions = {
    origin: function (origin, callback) {
-      const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean)
+      const allowedOrigins = [process.env?.FRONTEND_URL].filter(Boolean)
 
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true)
