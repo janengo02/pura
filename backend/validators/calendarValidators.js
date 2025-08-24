@@ -54,7 +54,7 @@ const validateCreateEvent = [
       .isString()
       .withMessage('Calendar ID is required'),
    validateRequiredString('summary', 'Event title', 1, 200),
-   validateOptionalString('description', 'Event description', 0, 2000),
+   validateOptionalString('description', 'Event description', 0, 2000000),
    body('start')
       .notEmpty()
       .withMessage('Start time is required')
@@ -90,7 +90,7 @@ const validateUpdateEvent = [
       .isString()
       .withMessage('Calendar ID must be a string'),
    validateOptionalString('summary', 'Event title', 1, 200),
-   validateOptionalString('description', 'Event description', 0, 2000),
+   validateOptionalString('description', 'Event description', 0, 2000000),
    validateOptionalString('location', 'Location', 0, 500),
    body('start')
       .notEmpty()

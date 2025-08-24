@@ -64,7 +64,11 @@ const EventDescriptionInput = React.memo(({ description, setDescription }) => {
    const { t } = useReactiveTranslation()
    const handleDescriptionChange = useCallback(
       (content) => {
-         setDescription(content)
+         // Sanitize content to prevent double encoding and empty content
+         const isEmptyContent = content === '<p><br></p>' || content === '<p></p>' || 
+                               !content || content.replace(/<[^>]*>/g, '').trim() === ''
+         const sanitizedContent = isEmptyContent ? '' : content
+         setDescription(sanitizedContent)
       },
       [setDescription]
    )

@@ -55,9 +55,47 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import { NAVBAR_HEIGHT } from '../../Navbar'
 
 // =============================================================================
-// CONSTANTS
+// CONSTANTS & UTILITIES
 // =============================================================================
 const FOCUS_DELAY = 100 // Delay before focusing to ensure modal is fully rendered
+
+// Utility function to decode HTML entities (handles multiple levels of encoding)
+const decodeHtmlEntities = (str) => {
+   if (!str || typeof str !== 'string') return ''
+
+   let decoded = str
+   let prevDecoded = ''
+
+   // Keep decoding until no more changes occur (handles multiple levels of encoding)
+   while (decoded !== prevDecoded) {
+      prevDecoded = decoded
+      const textarea = document.createElement('textarea')
+      textarea.innerHTML = decoded
+      decoded = textarea.value
+   }
+
+   return decoded
+}
+
+// Utility function to check if content is empty ReactQuill content
+const isEmptyQuillContent = (content) => {
+   if (!content) return true
+
+   // Common empty ReactQuill patterns
+   const emptyPatterns = [
+      '<p><br></p>',
+      '<p></p>',
+      '<br>',
+      '<div><br></div>',
+      '<div></div>'
+   ]
+
+   if (emptyPatterns.includes(content.trim())) return true
+
+   // Remove all HTML tags and check if there's meaningful text left
+   const textContent = content.replace(/<[^>]*>/g, '').trim()
+   return !textContent
+}
 
 // =============================================================================
 // MAIN COMPONENT
@@ -95,6 +133,7 @@ const TaskModal = React.memo(
       // Ref for title input focus
       const titleInputRef = useRef(null)
       const previousTaskIdRef = useRef(null)
+      const quillRef = useRef(null)
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -108,7 +147,7 @@ const TaskModal = React.memo(
       )
 
       const hasTaskContentChanged = useMemo(
-         () => taskContent && taskContent !== task?.content,
+         () => taskContent !== task?.content,
          [taskContent, task?.content]
       )
 
@@ -137,10 +176,14 @@ const TaskModal = React.memo(
 
       const handleUpdateContent = useCallback(async () => {
          if (!task?.id) return
+         // Clean the content before sending to API
+         const cleanContent = isEmptyQuillContent(taskContent)
+            ? ''
+            : taskContent
          const formData = {
             pageId: id,
             taskId: task?.id,
-            content: taskContent
+            content: cleanContent
          }
          await updateTaskBasicInfoAction(formData)
       }, [id, task?.id, taskContent, updateTaskBasicInfoAction])
@@ -156,12 +199,43 @@ const TaskModal = React.memo(
       }, [])
 
       const handleContentChange = useCallback((content) => {
-         setTaskContent(content)
+         // Sanitize content to prevent double encoding
+         const sanitizedContent = isEmptyQuillContent(content) ? '' : content
+         setTaskContent(sanitizedContent)
       }, [])
 
-      const handleContentBlur = useCallback(() => {
-         // ReactQuill doesn't need event handling for blur
-      }, [])
+      // Handle keyboard events to catch delete operations
+      useEffect(() => {
+         if (!isModalOpen || !quillRef.current) return
+
+         const handleKeyUp = (e) => {
+            // Check for delete/backspace keys
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+               setTimeout(() => {
+                  const quillEditor = quillRef.current?.getEditor()
+                  if (quillEditor) {
+                     const content = quillEditor.root.innerHTML
+                     const sanitizedContent = isEmptyQuillContent(content)
+                        ? ''
+                        : content
+
+                     if (sanitizedContent !== taskContent) {
+                        setTaskContent(sanitizedContent)
+                     }
+                  }
+               }, 10) // Small delay to ensure DOM is updated
+            }
+         }
+
+         // Add event listener to the Quill editor
+         const quillEditor = quillRef.current?.getEditor()
+         if (quillEditor) {
+            quillEditor.root.addEventListener('keyup', handleKeyUp)
+            return () => {
+               quillEditor.root.removeEventListener('keyup', handleKeyUp)
+            }
+         }
+      }, [isModalOpen, taskContent])
 
       const handleMenuDelete = useCallback(
          async (e) => {
@@ -200,7 +274,11 @@ const TaskModal = React.memo(
       useEffect(() => {
          if (task) {
             setTaskTitle(task.title || '')
-            setTaskContent(task.content || '')
+            // Decode HTML entities to prevent double encoding
+            const decodedContent = decodeHtmlEntities(task.content || '')
+            setTaskContent(
+               isEmptyQuillContent(decodedContent) ? '' : decodedContent
+            )
          }
       }, [task])
 
@@ -316,14 +394,31 @@ const TaskModal = React.memo(
                }}
             >
                <ReactQuill
+                  ref={quillRef}
                   theme='bubble'
                   value={taskContent}
                   onChange={handleContentChange}
-                  onBlur={handleContentBlur}
                   placeholder={t('placeholder-add-note')}
                   style={{
                      width: '100%',
                      minHeight: '100px'
+                  }}
+                  formats={[
+                     'bold',
+                     'italic',
+                     'underline',
+                     'strike',
+                     'list',
+                     'bullet',
+                     'indent',
+                     'link'
+                  ]}
+                  modules={{
+                     toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        ['link']
+                     ]
                   }}
                />
             </Box>
@@ -349,9 +444,7 @@ const TaskModal = React.memo(
                paddingY={4}
                borderRadius={8}
                boxShadow='xl'
-               w='680px'
-               minW='fit-content'
-               maxW='80vw'
+               w='800px'
             >
                {renderModalHeader()}
                {renderModalBody()}
