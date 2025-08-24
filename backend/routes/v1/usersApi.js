@@ -8,13 +8,13 @@ const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
-const { check, validationResult } = require('express-validator')
-
 // Prisma Client
 const prisma = require('../../config/prisma')
 
 // Utils
 const dotenv = require('dotenv')
+const { validate } = require('../../middleware/validation')
+const { validateRegistration } = require('../../validators/authValidators')
 const { sendErrorResponse } = require('../../utils/responseHelper')
 
 dotenv.config()
@@ -162,119 +162,98 @@ const createDefaultPage = async (user, progresses, group, task, language) => {
  * @body {string} name, email, password, [language='en']
  * @returns {Object} {token, refreshToken, message} on success
  */
-router.post(
-   '/',
-   [
-      check('name', 'Name is required').not().isEmpty(),
-      check('email', 'Please include a valid email').isEmail(),
-      check(
-         'password',
-         'Please enter a password with 6 or more characters'
-      ).isLength({ min: 6 }),
-      check('language', 'Language must be a valid language code')
-         .optional()
-         .isIn(['en', 'ja'])
-   ],
-   async (req, res) => {
-      // -------------------------------------------------------------------------
-      // VALIDATION
-      // -------------------------------------------------------------------------
+router.post('/', validate(validateRegistration), async (req, res) => {
+   // -------------------------------------------------------------------------
+   // VALIDATION
+   // -------------------------------------------------------------------------
+   // Extract data with language defaulting to English
+   const { name, email, password, language = 'en' } = req.body
 
-      // Validate form input
-      const result = validationResult(req)
-      if (!result.isEmpty()) {
-         return sendErrorResponse(res, 400, 'validation', 'failed')
-      }
-
-      // Extract data with language defaulting to English
-      const { name, email, password, language = 'en' } = req.body
-
-      // Check if user already exists
-      let user = await prisma.user.findUnique({ where: { email } })
-      if (user) {
-         return sendErrorResponse(res, 400, 'auth', 'register')
-      }
-
-      // -------------------------------------------------------------------------
-      // USER CREATION
-      // -------------------------------------------------------------------------
-
-      try {
-         // Set up avatar
-         const avatar = gravatar.url(email, {
-            s: '200',
-            r: 'pg',
-            d: 'mm'
-         })
-
-         // Encrypt password
-         const salt = await bcrypt.genSalt(10)
-         const hashedPassword = await bcrypt.hash(password, salt)
-
-         // Create new user
-         user = await prisma.user.create({
-            data: {
-               name,
-               email,
-               avatar,
-               password: hashedPassword
-            }
-         })
-
-         // -------------------------------------------------------------------------
-         // DEFAULT CONTENT CREATION
-         // -------------------------------------------------------------------------
-
-         // Create default content with localized titles
-         const progresses = await createDefaultProgresses(language)
-         const group = await createDefaultGroup(language)
-         const task = await createDefaultTask(language)
-         const page = await createDefaultPage(
-            user,
-            progresses,
-            group,
-            task,
-            language
-         )
-
-         // -------------------------------------------------------------------------
-         // RESPONSE
-         // -------------------------------------------------------------------------
-
-         // Generate access token (15 minutes)
-         const accessPayload = { user: { id: user.id } }
-         const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
-            expiresIn: 900
-         })
-
-         // Generate refresh token (7 days)
-         const refreshTokenPayload = {
-            user: { id: user.id },
-            type: 'refresh',
-            tokenId: crypto.randomBytes(16).toString('hex')
-         }
-         const refreshToken = jwt.sign(
-            refreshTokenPayload,
-            process.env?.JWT_SECRET,
-            { expiresIn: '7d' }
-         )
-
-         // Store refresh token in database
-         await prisma.user.update({
-            where: { id: user.id },
-            data: { userRefreshToken: refreshToken }
-         })
-
-         res.json({
-            token: accessToken,
-            refreshToken: refreshToken,
-            message: 'User registered successfully with localized content'
-         })
-      } catch (err) {
-         sendErrorResponse(res, 500, 'auth', 'register', err)
-      }
+   // Check if user already exists
+   let user = await prisma.user.findUnique({ where: { email } })
+   if (user) {
+      return sendErrorResponse(res, 400, 'auth', 'register')
    }
-)
+
+   // -------------------------------------------------------------------------
+   // USER CREATION
+   // -------------------------------------------------------------------------
+
+   try {
+      // Set up avatar
+      const avatar = gravatar.url(email, {
+         s: '200',
+         r: 'pg',
+         d: 'mm'
+      })
+
+      // Encrypt password
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = await bcrypt.hash(password, salt)
+
+      // Create new user
+      user = await prisma.user.create({
+         data: {
+            name,
+            email,
+            avatar,
+            password: hashedPassword
+         }
+      })
+
+      // -------------------------------------------------------------------------
+      // DEFAULT CONTENT CREATION
+      // -------------------------------------------------------------------------
+
+      // Create default content with localized titles
+      const progresses = await createDefaultProgresses(language)
+      const group = await createDefaultGroup(language)
+      const task = await createDefaultTask(language)
+      const page = await createDefaultPage(
+         user,
+         progresses,
+         group,
+         task,
+         language
+      )
+
+      // -------------------------------------------------------------------------
+      // RESPONSE
+      // -------------------------------------------------------------------------
+
+      // Generate access token (15 minutes)
+      const accessPayload = { user: { id: user.id } }
+      const accessToken = jwt.sign(accessPayload, process.env?.JWT_SECRET, {
+         expiresIn: 900
+      })
+
+      // Generate refresh token (7 days)
+      const refreshTokenPayload = {
+         user: { id: user.id },
+         type: 'refresh',
+         tokenId: crypto.randomBytes(16).toString('hex')
+      }
+      const refreshToken = jwt.sign(
+         refreshTokenPayload,
+         process.env?.JWT_SECRET,
+         { expiresIn: '7d' }
+      )
+
+      // Store refresh token in database
+      await prisma.user.update({
+         where: { id: user.id },
+         data: { userRefreshToken: refreshToken }
+      })
+
+      res.json({
+         token: accessToken,
+         refreshToken: refreshToken,
+         message: 'User registered successfully with localized content'
+      })
+   } catch (err) {
+      sendErrorResponse(res, 500, 'auth', 'register', err)
+   }
+})
 
 // =============================================================================
 // EXPORT

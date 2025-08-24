@@ -4,6 +4,8 @@ const router = express.Router()
 const { google } = require('googleapis')
 
 const auth = require('../../middleware/auth')
+const { validate } = require('../../middleware/validation')
+const { validateCreateMeeting, validateUpdateMeeting, validateDeleteMeeting } = require('../../validators/calendarValidators')
 const prisma = require('../../config/prisma')
 
 const { sendErrorResponse } = require('../../utils/responseHelper')
@@ -19,7 +21,7 @@ dotenv.config()
  * @body {string} accountEmail, [config]
  * @returns {Object} {success, meetUri, spaceId, meetingCode, config, activeConference, createTime, updateTime}
  */
-router.post('/create-space', auth, async (req, res) => {
+router.post('/create-space', auth, validate(validateCreateMeeting), async (req, res) => {
    try {
       const { accountEmail, config = {} } = req.body
 
@@ -167,7 +169,7 @@ router.get('/space/:spaceId', auth, async (req, res) => {
  * @body {string} accountEmail, {Object} config
  * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
  */
-router.patch('/space/:spaceId', auth, async (req, res) => {
+router.patch('/space/:spaceId', auth, validate(validateUpdateMeeting), async (req, res) => {
    try {
       const { spaceId } = req.params
       const { accountEmail, config } = req.body
@@ -212,7 +214,7 @@ router.patch('/space/:spaceId', auth, async (req, res) => {
  * @body {string} accountEmail
  * @returns {Object} {success: false, message, error: 'API_NOT_AVAILABLE'}
  */
-router.delete('/space/:spaceId', auth, async (req, res) => {
+router.delete('/space/:spaceId', auth, validate(validateDeleteMeeting), async (req, res) => {
    try {
       const { spaceId } = req.params
       const { accountEmail } = req.body

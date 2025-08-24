@@ -110,7 +110,7 @@ function taskReducer(state = initialState, action) {
                              ? {
                                   ...slot,
                                   googleEventId: payload.googleEventId,
-                                  googleCalendarId: payload.calendar_id,
+                                  googleCalendarId: payload.calendarId,
                                   googleAccountEmail: payload.accountEmail,
                                   syncStatus: payload.syncStatus || '0'
                                }

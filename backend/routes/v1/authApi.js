@@ -5,9 +5,10 @@ const dotenv = require('dotenv')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
-const { check, validationResult } = require('express-validator')
 
 const auth = require('../../middleware/auth')
+const { validate } = require('../../middleware/validation')
+const { validateLogin, validateTokenRefresh } = require('../../validators/authValidators')
 const { sendErrorResponse } = require('../../utils/responseHelper')
 const prisma = require('../../config/prisma')
 
@@ -55,15 +56,8 @@ router.get('/', auth, async (req, res) => {
  */
 router.post(
    '/',
-   [
-      check('email', 'Please include a valid email').isEmail(),
-      check('password', 'Password is required').exists()
-   ],
+   validate(validateLogin),
    async (req, res) => {
-      const result = validationResult(req)
-      if (!result.isEmpty()) {
-         return res.status(400).json({ errors: result.array() })
-      }
       const { email, password } = req.body
 
       try {
@@ -121,13 +115,9 @@ router.post(
  * @param {string} refreshToken
  * @returns {Object} {token, refreshToken} on success, {msg} on error
  */
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', validate(validateTokenRefresh), async (req, res) => {
    try {
       const { refreshToken } = req.body
-
-      if (!refreshToken) {
-         return sendErrorResponse(res, 401, 'auth', 'refresh-token-required')
-      }
 
       // Verify and decode refresh token
       let decoded

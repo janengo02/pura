@@ -4,7 +4,12 @@ const router = express.Router()
 const dotenv = require('dotenv')
 dotenv.config()
 
-const { validationResult } = require('express-validator')
+const { validate } = require('../../middleware/validation')
+const {
+   validatePageParam,
+   validateCreatePage,
+   validateDropTask
+} = require('../../validators/pageValidators')
 
 const auth = require('../../middleware/auth')
 const { sendErrorResponse } = require('../../utils/responseHelper')
@@ -42,7 +47,7 @@ router.get('/', auth, async (req, res) => {
  * @param {string} id
  * @returns {Object} Page with populated data
  */
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, validate(validatePageParam), async (req, res) => {
    try {
       const page = await validatePage(req.params.id, req.user.id)
       if (!page) {
@@ -63,13 +68,7 @@ router.get('/:id', auth, async (req, res) => {
  * @body {string} [title]
  * @returns {Object} Created page object
  */
-router.post('/', [auth], async (req, res) => {
-   //   Validation: Form input
-   const result = validationResult(req)
-   if (!result.isEmpty()) {
-      return sendErrorResponse(res, 400, 'validation', 'failed')
-   }
-
+router.post('/', auth, validate(validateCreatePage), async (req, res) => {
    //   Prepare: Set up new page
    const newPageData = {
       userId: req.user.id,
@@ -101,35 +100,40 @@ router.post('/', [auth], async (req, res) => {
  * @body {Object} result - drag/drop result with destination, source, draggableId
  * @returns {Object} Empty response on success
  */
-router.post('/move-task/:id', [auth], async (req, res) => {
-   //   Validation: Check if page exists and user is the owner
-   const page = await validatePage(req.params.id, req.user.id)
-   if (!page) {
-      return sendErrorResponse(res, 404, 'page', 'access')
-   }
-   const { destination, source, draggableId } = req.body.result
+router.post(
+   '/move-task/:id',
+   auth,
+   validate(validateDropTask),
+   async (req, res) => {
+      //   Validation: Check if page exists and user is the owner
+      const page = await validatePage(req.params.id, req.user.id)
+      if (!page) {
+         return sendErrorResponse(res, 404, 'page', 'access')
+      }
+      const { destination, source, draggableId } = req.body.result
 
-   try {
-      const { tasks: newTaskArray, taskMap: newTaskMap } = moveTask({
-         tasks: page.tasks,
-         taskMap: page.taskMap,
-         destination,
-         source,
-         draggableId
-      })
+      try {
+         const { tasks: newTaskArray, taskMap: newTaskMap } = moveTask({
+            tasks: page.tasks,
+            taskMap: page.taskMap,
+            destination,
+            source,
+            draggableId
+         })
 
-      // Data: Update page with new tasks and taskMap
-      await prisma.page.update({
-         where: { id: req.params.id },
-         data: {
-            tasks: newTaskArray,
-            taskMap: newTaskMap,
-            updateDate: new Date()
-         }
-      })
-      res.json()
-   } catch (err) {
-      sendErrorResponse(res, 500, 'page', 'update', err)
+         // Data: Update page with new tasks and taskMap
+         await prisma.page.update({
+            where: { id: req.params.id },
+            data: {
+               tasks: newTaskArray,
+               taskMap: newTaskMap,
+               updateDate: new Date()
+            }
+         })
+         res.json()
+      } catch (err) {
+         sendErrorResponse(res, 500, 'page', 'update', err)
+      }
    }
-})
+)
 module.exports = router
