@@ -130,31 +130,26 @@ const sendErrorDev = (err, res) => {
  * @param {Object} res - Express response object
  */
 const sendErrorProd = (err, res) => {
+   logger.error(
+      'Error details in development mode',
+      {
+         name: err.name,
+         message: err.message,
+         statusCode: err.statusCode,
+         status: err.status,
+         operation: err.operation,
+         action: err.action,
+         stack: err.stack,
+         details: err.details
+      },
+      err
+   )
    // Operational, trusted error: send message to client
    if (err.isOperational) {
       // Use existing responseHelper for consistent format
-      logger.error(
-         'Operational error in production',
-         {
-            message: err.message,
-            statusCode: err.statusCode,
-            operation: err.operation,
-            action: err.action
-         },
-         err
-      )
       sendErrorResponse(res, err.statusCode, err.operation, err.action, err)
    } else {
       // Programming or other unknown error: don't leak error details
-      logger.error(
-         'Unknown system error in production',
-         {
-            message: err.message,
-            stack: err.stack,
-            name: err.name
-         },
-         err
-      )
       sendErrorResponse(
          res,
          500,
