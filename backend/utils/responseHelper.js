@@ -62,11 +62,6 @@ const sendErrorResponse = (res, code, operation, action, error = null) => {
       title: errorMessages.title,
       msg: errorMessages.msg
    }
-   console.error(`Error: ${errorMessages.title} - ${errorMessages.msg}`)
-   if (error) {
-      console.error('Error details:', error)
-   }
-
    res.status(code).json({
       errors: [errorResponse]
    })

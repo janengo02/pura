@@ -1,16 +1,21 @@
 const { PrismaClient } = require('@prisma/client')
+const logger = require('../utils/logger')
 
 let prisma
 
 try {
    prisma = new PrismaClient({
-      log: ['error'],
+      log: ['error']
    })
-   
-   console.log('Prisma Client initialized successfully')
-   
 } catch (error) {
-   console.error('Failed to initialize Prisma Client:', error)
+   logger.error(
+      'Failed to initialize Prisma Client',
+      {
+         database: 'prisma',
+         operation: 'initialize'
+      },
+      error
+   )
    process.exit(1)
 }
 

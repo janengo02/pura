@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const dotenv = require('dotenv')
+const logger = require('./logger')
 
 dotenv.config()
 
@@ -38,7 +39,10 @@ const encrypt = (text) => {
       // Return iv:encryptedData format
       return `${iv.toString('hex')}:${encrypted}`
    } catch (error) {
-      console.error('Encryption error:', error)
+      logger.error('Encryption operation failed', {
+         operation: 'encrypt',
+         algorithm
+      }, error)
       throw new Error('Failed to encrypt data')
    }
 }
@@ -68,7 +72,10 @@ const decrypt = (encryptedText) => {
       
       return decrypted
    } catch (error) {
-      console.error('Decryption error:', error)
+      logger.error('Decryption operation failed', {
+         operation: 'decrypt',
+         algorithm
+      }, error)
       throw new Error('Failed to decrypt data')
    }
 }

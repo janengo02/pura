@@ -1,5 +1,6 @@
 const { sendErrorResponse } = require('../utils/responseHelper')
 const { AppError } = require('../utils/customErrors')
+const logger = require('../utils/logger')
 
 /**
  * Global Error Handler Middleware
@@ -15,7 +16,9 @@ const { AppError } = require('../utils/customErrors')
 const handleKnownErrors = (error) => {
    // Handle Mongoose validation errors
    if (error.name === 'ValidationError' && error.errors) {
-      const message = Object.values(error.errors).map(val => val.message).join(', ')
+      const message = Object.values(error.errors)
+         .map((val) => val.message)
+         .join(', ')
       return new AppError(message, 400, 'validation', 'validate')
    }
 
@@ -63,15 +66,30 @@ const handleKnownErrors = (error) => {
 const handlePrismaError = (error) => {
    switch (error.code) {
       case 'P2002':
-         return new AppError('Duplicate entry. Resource already exists', 409, 'database', 'create')
+         return new AppError(
+            'Duplicate entry. Resource already exists',
+            409,
+            'database',
+            'create'
+         )
       case 'P2025':
          return new AppError('Record not found', 404, 'database', 'find')
       case 'P2003':
-         return new AppError('Foreign key constraint failed', 400, 'database', 'constraint')
+         return new AppError(
+            'Foreign key constraint failed',
+            400,
+            'database',
+            'constraint'
+         )
       case 'P2021':
          return new AppError('Table does not exist', 500, 'database', 'schema')
       default:
-         return new AppError('Database operation failed', 500, 'database', 'operation')
+         return new AppError(
+            'Database operation failed',
+            500,
+            'database',
+            'operation'
+         )
    }
 }
 
@@ -82,30 +100,27 @@ const handlePrismaError = (error) => {
  * @param {Object} res - Express response object
  */
 const sendErrorDev = (err, res) => {
-   console.error('ERROR DETAILS:', {
-      name: err.name,
-      message: err.message,
-      statusCode: err.statusCode,
-      status: err.status,
-      operation: err.operation,
-      action: err.action,
-      stack: err.stack,
-      details: err.details
-   })
-
-   // Use existing responseHelper but with additional debug info
-   const response = {
-      error: {
-         status: err.status,
+   logger.error(
+      'Error details in development mode',
+      {
+         name: err.name,
          message: err.message,
+         statusCode: err.statusCode,
+         status: err.status,
          operation: err.operation,
          action: err.action,
          stack: err.stack,
          details: err.details
-      }
-   }
+      },
+      err
+   )
 
-   res.status(err.statusCode).json(response)
+   // Use existing responseHelper for consistent format
+   sendErrorResponse(res, err.statusCode, err.operation, err.action, {
+      message: err.message,
+      stack: err.stack,
+      details: err.details
+   })
 }
 
 /**
@@ -118,11 +133,35 @@ const sendErrorProd = (err, res) => {
    // Operational, trusted error: send message to client
    if (err.isOperational) {
       // Use existing responseHelper for consistent format
+      logger.error(
+         'Operational error in production',
+         {
+            message: err.message,
+            statusCode: err.statusCode,
+            operation: err.operation,
+            action: err.action
+         },
+         err
+      )
       sendErrorResponse(res, err.statusCode, err.operation, err.action, err)
    } else {
       // Programming or other unknown error: don't leak error details
-      console.error('ERROR:', err)
-      sendErrorResponse(res, 500, 'system', 'error', new Error('Something went wrong'))
+      logger.error(
+         'Unknown system error in production',
+         {
+            message: err.message,
+            stack: err.stack,
+            name: err.name
+         },
+         err
+      )
+      sendErrorResponse(
+         res,
+         500,
+         'system',
+         'error',
+         new Error('Something went wrong')
+      )
    }
 }
 
@@ -156,7 +195,12 @@ const globalErrorHandler = (err, req, res, next) => {
  * @param {Function} next - Express next function
  */
 const notFoundHandler = (req, res, next) => {
-   const err = new AppError(`Route ${req.originalUrl} not found`, 404, 'route', 'find')
+   const err = new AppError(
+      `Route ${req.originalUrl} not found`,
+      404,
+      'route',
+      'find'
+   )
    next(err)
 }
 

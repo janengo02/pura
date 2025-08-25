@@ -1,6 +1,8 @@
 const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
+const logger = require('./utils/logger')
+const requestLogger = require('./middleware/requestLogger')
 const app = express()
 
 // Connect database
@@ -17,7 +19,7 @@ const corsOptions = {
       if (allowedOrigins.includes(origin)) {
          callback(null, true)
       } else {
-         console.log('CORS blocked origin:', origin)
+         logger.warn('CORS blocked origin', { origin, blockedBy: 'CORS policy' })
          callback(new Error('Not allowed by CORS'))
       }
    },
@@ -28,6 +30,9 @@ const corsOptions = {
 }
 
 app.use(cors(corsOptions))
+
+// Request logging middleware
+app.use(requestLogger)
 
 // Init Middleware
 app.use(express.json({ extended: false }))
@@ -55,4 +60,10 @@ app.use(globalErrorHandler)
 
 const PORT = process.env.PORT || 2000
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
+app.listen(PORT, () => {
+  logger.info('Server started', { 
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  })
+})
