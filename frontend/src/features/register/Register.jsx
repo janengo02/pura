@@ -315,7 +315,7 @@ Register.propTypes = {
 // =============================================================================
 
 const selectAuthData = createSelector(
-   [(state) => state.loading, (state) => state.auth.isAuthenticated],
+   [(state) => state.loading.isLoading, (state) => state.auth.isAuthenticated],
    (isLoading, isAuthenticated) => ({
       isLoading,
       isAuthenticated

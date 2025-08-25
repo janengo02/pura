@@ -20,7 +20,7 @@ PrivateRoute.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-   isLoading: state.loading,
+   isLoading: state.loading.isLoading,
    auth: state.auth
 })
 

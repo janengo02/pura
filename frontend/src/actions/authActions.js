@@ -14,7 +14,7 @@ import {
    LOGOUT
 } from './types'
 import { setAlertAction, removeAllAlertAction } from './alertActions'
-import { setLoadingAction } from './loadingActions'
+import { startLoading, endLoading } from '../reducers/loadingSlice'
 import { clearTaskAction } from './taskActions'
 
 // =============================================================================
@@ -46,7 +46,7 @@ const authActionErrorHandler = (err, dispatch, failType) => {
  * Fetches the authenticated user's data
  */
 export const loadUserAction = () => async (dispatch) => {
-   dispatch(setLoadingAction.start)
+   dispatch(startLoading())
    try {
       const res = await api.get('/auth')
       dispatch({
@@ -58,7 +58,7 @@ export const loadUserAction = () => async (dispatch) => {
          type: AUTH_ERROR
       })
    }
-   dispatch(setLoadingAction.end)
+   dispatch(endLoading())
 }
 
 /**
@@ -71,7 +71,7 @@ export const loadUserAction = () => async (dispatch) => {
  * @param {string} formData.language - User's preferred language ('en' or 'ja')
  */
 export const registerAction = (formData) => async (dispatch) => {
-   dispatch(setLoadingAction.start)
+   dispatch(startLoading())
    try {
       // Send registration data including language preference
       const res = await api.post('/users', formData)
@@ -94,7 +94,7 @@ export const registerAction = (formData) => async (dispatch) => {
    } catch (err) {
       authActionErrorHandler(err, dispatch, REGISTER_FAIL)
    }
-   dispatch(setLoadingAction.end)
+   dispatch(endLoading())
 }
 
 /**
@@ -105,7 +105,7 @@ export const registerAction = (formData) => async (dispatch) => {
  * @param {string} formData.password - User's password
  */
 export const loginAction = (formData) => async (dispatch) => {
-   dispatch(setLoadingAction.start)
+   dispatch(startLoading())
    try {
       const res = await api.post('/auth', formData)
 
@@ -123,7 +123,7 @@ export const loginAction = (formData) => async (dispatch) => {
    } catch (err) {
       authActionErrorHandler(err, dispatch, LOGIN_FAIL)
    }
-   dispatch(setLoadingAction.end)
+   dispatch(endLoading())
 }
 
 /**
