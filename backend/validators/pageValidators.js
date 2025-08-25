@@ -19,9 +19,13 @@ const validateDropTask = [
    validateObjectId('id', 'Page ID'),
    body('result').isObject().withMessage('Result must be an object'),
    body('result.destination')
+      .optional({ nullable: true }) // Allow null for drops outside any droppable area.
       .isObject()
       .withMessage('Destination must be an object'),
-   body('result.source').isObject().withMessage('Source must be an object'),
+   body('result.source')
+      .optional({ nullable: true })
+      .isObject()
+      .withMessage('Source must be an object'),
    body('result.draggableId')
       .notEmpty()
       .withMessage('Draggable ID is required')

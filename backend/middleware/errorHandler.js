@@ -131,7 +131,7 @@ const sendErrorDev = (err, res) => {
  */
 const sendErrorProd = (err, res) => {
    logger.error(
-      'Error details in development mode',
+      'Error details in production mode',
       {
          name: err.name,
          message: err.message,
