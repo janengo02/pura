@@ -30,7 +30,7 @@ import store from './store'
 import { setAuthToken } from './utils'
 import { loadUserAction } from './actions/authActions'
 import { initializeLanguageAction } from './actions/languageActions'
-import { initializeThemeAction } from './actions/themeActions'
+import { initializeThemeAction } from './reducers/themeSlice'
 import { removeAllAlertAction } from './actions/alertActions'
 import { LOGOUT } from './actions/types'
 

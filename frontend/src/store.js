@@ -1,18 +1,17 @@
-import { legacy_createStore as createStore, applyMiddleware } from 'redux'
-import { composeWithDevTools } from 'redux-devtools-extension'
-import thunk from 'redux-thunk'
+import { configureStore } from '@reduxjs/toolkit'
 import rootReducer from './reducers'
 import setAuthToken from './utils/setAuthToken'
 
-const initialState = {}
-
-const middleware = [thunk]
-
-const store = createStore(
-   rootReducer,
-   initialState,
-   composeWithDevTools(applyMiddleware(...middleware))
-)
+const store = configureStore({
+   reducer: rootReducer,
+   middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+         serializableCheck: {
+            ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
+         }
+      }),
+   devTools: process.env.NODE_ENV !== 'production'
+})
 
 /*
   NOTE: set up a store subscription listener

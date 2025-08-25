@@ -6,7 +6,7 @@ import page from './pageReducers'
 import task from './taskReducers'
 import calendar from './calendarReducers'
 import language from './languageReducer'
-import theme from '../reducers/themeReducer'
+import theme from './themeSlice'
 import event from '../reducers/eventReducers'
 
 export default combineReducers({
