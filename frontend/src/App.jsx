@@ -31,7 +31,7 @@ import { setAuthToken } from './utils'
 import { loadUserAction } from './actions/authActions'
 import { initializeLanguage } from './reducers/languageSlice'
 import { initializeTheme } from './reducers/themeSlice'
-import { removeAllAlertAction } from './actions/alertActions'
+import { removeAllAlerts } from './reducers/alertSlice'
 import { LOGOUT } from './actions/types'
 
 // UI & Theme
@@ -54,7 +54,7 @@ const RouteHandler = () => {
 
    useEffect(() => {
       // Clear all alerts when route changes
-      store.dispatch(removeAllAlertAction())
+      store.dispatch(removeAllAlerts())
    }, [location.pathname])
 
    return null

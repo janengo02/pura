@@ -1,4 +1,4 @@
-import { setAlertAction } from './alertActions'
+import { setAlert } from '../reducers/alertSlice'
 import { loadCalendarAction } from './calendarActions'
 import { getFirstPageAction } from './pageActions'
 import { showTaskModalAction } from './taskActions'
@@ -40,7 +40,7 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
    const errors = err?.response?.data?.errors || ['Unknown error']
    if (errors) {
       errors.forEach((error) =>
-         dispatch(setAlertAction(error.title, error.msg, 'error'))
+         dispatch(setAlert(error.title, error.msg, 'error'))
       )
    }
    dispatch(getFirstPageAction())

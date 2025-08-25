@@ -21,7 +21,7 @@ import {
    addGoogleAccountAction,
    navigateCalendarToDateAction
 } from '../../../../actions/calendarActions'
-import { setAlertAction } from '../../../../actions/alertActions'
+import { setAlert } from '../../../../reducers/alertSlice'
 
 // UI Components
 import {
@@ -77,7 +77,7 @@ const ScheduleTimeSlot = React.memo(
       syncTaskWithGoogleAction,
       addGoogleAccountAction,
       navigateCalendarToDateAction,
-      setAlertAction,
+      setAlert,
       showTaskModalAction,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars },
@@ -114,7 +114,7 @@ const ScheduleTimeSlot = React.memo(
             await refetchTaskModalIfOpen()
          },
          onError: () => {
-            setAlertAction(
+            setAlert(
                'alert-google_calendar-account-connect_failed',
                '',
                'error'
@@ -885,7 +885,7 @@ ScheduleTimeSlot.propTypes = {
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    syncTaskWithGoogleAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
-   setAlertAction: PropTypes.func.isRequired,
+   setAlert: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
@@ -946,7 +946,7 @@ const mapDispatchToProps = {
    syncTaskWithGoogleAction,
    addGoogleAccountAction,
    navigateCalendarToDateAction,
-   setAlertAction,
+   setAlert,
    showTaskModalAction
 }
 

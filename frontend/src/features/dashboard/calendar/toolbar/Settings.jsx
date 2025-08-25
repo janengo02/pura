@@ -44,7 +44,7 @@ import {
    disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction
 } from '../../../../actions/calendarActions'
-import { setAlertAction } from '../../../../actions/alertActions'
+import { setAlert } from '../../../../reducers/alertSlice'
 import { showTaskModalAction } from '../../../../actions/taskActions'
 
 // Utils
@@ -87,7 +87,7 @@ const Settings = React.memo(
       addGoogleAccountAction,
       disconnectGoogleAccountAction,
       setDefaultGoogleAccountAction,
-      setAlertAction,
+      setAlert,
       showTaskModalAction,
       settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
       taskData: { task, pageId }
@@ -120,7 +120,7 @@ const Settings = React.memo(
             await refetchTaskModalIfOpen()
          },
          onError: () => {
-            setAlertAction(
+            setAlert(
                'alert-google_calendar-account-connect_failed',
                '',
                'error'
@@ -351,7 +351,7 @@ Settings.propTypes = {
    addGoogleAccountAction: PropTypes.func.isRequired,
    disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setDefaultGoogleAccountAction: PropTypes.func.isRequired,
-   setAlertAction: PropTypes.func.isRequired,
+   setAlert: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
@@ -406,7 +406,7 @@ const mapDispatchToProps = {
    addGoogleAccountAction,
    disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction,
-   setAlertAction,
+   setAlert,
    showTaskModalAction
 }
 

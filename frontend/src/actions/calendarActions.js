@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { api } from '../utils'
-import { setAlertAction } from './alertActions'
+import { setAlert } from '../reducers/alertSlice'
 import { commonErrorHandler, fatalErrorHandler } from './errorActions'
 import {
    GET_CALENDAR,
@@ -453,7 +453,7 @@ export const createGoogleMeetSpaceAction = (reqData) => async (dispatch) => {
       }
    } catch (err) {
       dispatch(
-         setAlertAction(
+         setAlert(
             'Oops!',
             'Failed to generate Google Meet link. Please try again.',
             'error'

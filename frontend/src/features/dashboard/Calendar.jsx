@@ -42,9 +42,9 @@ import {
 } from '../../actions/calendarActions'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
 import {
-   setAlertAction,
-   removeAllAlertAction
-} from '../../actions/alertActions'
+   setAlert,
+   removeAllAlerts
+} from '../../reducers/alertSlice'
 
 // Utils
 import { getRangeStart, getRangeEnd } from '../../utils/dates'
@@ -119,8 +119,8 @@ const Calendar = React.memo(
       updateGoogleEventTimeAction,
       createCalendarEventAction,
       updateTaskScheduleAction,
-      setAlertAction,
-      removeAllAlertAction,
+      setAlert,
+      removeAllAlerts,
       googleAccount: {
          googleEvents,
          googleCalendars,
@@ -201,7 +201,7 @@ const Calendar = React.memo(
          }
 
          // Set the alert (this will replace any existing alert)
-         setAlertAction(
+         setAlert(
             'calendar-connect-required',
             'calendar-connect-google-account-message',
             'info'
@@ -209,10 +209,10 @@ const Calendar = React.memo(
 
          // Set new timeout to remove all alerts after 3 seconds
          alertTimeoutRef.current = setTimeout(() => {
-            removeAllAlertAction()
+            removeAllAlerts()
             alertTimeoutRef.current = null
          }, 5000)
-      }, [setAlertAction, removeAllAlertAction])
+      }, [setAlert, removeAllAlerts])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -668,8 +668,8 @@ Calendar.propTypes = {
    updateGoogleEventTimeAction: PropTypes.func.isRequired,
    createCalendarEventAction: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
-   setAlertAction: PropTypes.func.isRequired,
-   removeAllAlertAction: PropTypes.func.isRequired,
+   setAlert: PropTypes.func.isRequired,
+   removeAllAlerts: PropTypes.func.isRequired,
    googleAccount: PropTypes.object.isRequired,
    currentLanguage: PropTypes.string.isRequired,
    pageId: PropTypes.string,
@@ -710,8 +710,8 @@ const mapDispatchToProps = {
    updateGoogleEventTimeAction,
    createCalendarEventAction,
    updateTaskScheduleAction,
-   setAlertAction,
-   removeAllAlertAction
+   setAlert,
+   removeAllAlerts
 }
 
 // =============================================================================

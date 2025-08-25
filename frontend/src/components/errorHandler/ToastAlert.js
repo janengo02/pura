@@ -26,7 +26,7 @@ import {
 // Internal Components
 
 // Actions & Utils
-import { removeAlertAction } from '../../actions/alertActions'
+import { removeAlert } from '../../reducers/alertSlice'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // =============================================================================
@@ -122,7 +122,7 @@ ToastItem.propTypes = {
 // MAIN COMPONENT
 // =============================================================================
 
-const ToastAlert = React.memo(({ alerts, removeAlertAction }) => {
+const ToastAlert = React.memo(({ alerts, removeAlert }) => {
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
@@ -133,10 +133,10 @@ const ToastAlert = React.memo(({ alerts, removeAlertAction }) => {
             <ToastItem
                key={alert.id}
                alert={alert}
-               onRemove={removeAlertAction}
+               onRemove={removeAlert}
             />
          )),
-      [alerts, removeAlertAction]
+      [alerts, removeAlert]
    )
 
    // -------------------------------------------------------------------------
@@ -162,7 +162,7 @@ ToastAlert.displayName = 'ToastAlert'
 
 ToastAlert.propTypes = {
    alerts: PropTypes.array.isRequired,
-   removeAlertAction: PropTypes.func.isRequired
+   removeAlert: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -174,7 +174,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   removeAlertAction
+   removeAlert
 }
 
 // =============================================================================

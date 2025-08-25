@@ -13,7 +13,7 @@ import {
    LOGIN_FAIL,
    LOGOUT
 } from './types'
-import { setAlertAction, removeAllAlertAction } from './alertActions'
+import { setAlert, removeAllAlerts } from '../reducers/alertSlice'
 import { startLoading, endLoading } from '../reducers/loadingSlice'
 import { clearTaskAction } from './taskActions'
 
@@ -31,7 +31,7 @@ const authActionErrorHandler = (err, dispatch, failType) => {
    const errors = err?.response?.data?.errors
    if (errors) {
       errors.forEach((error) =>
-         dispatch(setAlertAction(error.title, error.msg, 'error'))
+         dispatch(setAlert(error.title, error.msg, 'error'))
       )
    }
    dispatch({ type: failType })
@@ -90,7 +90,7 @@ export const registerAction = (formData) => async (dispatch) => {
       dispatch(loadUserAction())
 
       // Clear any existing alerts
-      dispatch(removeAllAlertAction())
+      dispatch(removeAllAlerts())
    } catch (err) {
       authActionErrorHandler(err, dispatch, REGISTER_FAIL)
    }
@@ -109,7 +109,7 @@ export const loginAction = (formData) => async (dispatch) => {
    try {
       const res = await api.post('/auth', formData)
 
-      dispatch(removeAllAlertAction())
+      dispatch(removeAllAlerts())
       dispatch({
          type: LOGIN_SUCCESS,
          payload: res.data
