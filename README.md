@@ -52,6 +52,9 @@ cp backend/.env.example backend/.env
 Edit `backend/.env` with your configuration:
 
 ```env
+# Environment Configuration
+NODE_ENV=development
+
 # Server Configuration
 PORT=2000
 
@@ -72,7 +75,14 @@ FRONTEND_URL=http://localhost:8080
 
 #### Frontend Environment
 
-Create a `.env` file in the frontend directory if needed for any additional configuration.
+Edit `frontend/.env` with your configuration:
+```env
+# Google OAuth Configuration
+REACT_APP_GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
+
+# API Configuration
+REACT_APP_API_URL=http://localhost:2000
+```
 
 ### 4. Database Setup
 
