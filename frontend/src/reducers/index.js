@@ -5,7 +5,7 @@ import loading from './loadingReducers'
 import page from './pageReducers'
 import task from './taskReducers'
 import calendar from './calendarReducers'
-import language from './languageReducer'
+import language from './languageSlice'
 import theme from './themeSlice'
 import event from '../reducers/eventReducers'
 

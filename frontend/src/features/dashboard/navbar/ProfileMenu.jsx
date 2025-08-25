@@ -12,7 +12,7 @@ import { createSelector } from 'reselect'
 
 // Actions
 import { logoutAction } from '../../../actions/authActions'
-import { changeLanguageAction } from '../../../actions/languageActions'
+import { changeLanguage } from '../../../reducers/languageSlice'
 import { toggleTheme } from '../../../reducers/themeSlice'
 
 // Components
@@ -162,7 +162,7 @@ ProfileActions.propTypes = {
 const ProfileMenu = React.memo(
    ({
       logoutAction,
-      changeLanguageAction,
+      changeLanguage,
       toggleTheme,
       profileData: { user, currentLanguage }
    }) => {
@@ -176,9 +176,9 @@ const ProfileMenu = React.memo(
 
       const handleLanguageChange = useCallback(
          (language) => {
-            changeLanguageAction(language)
+            changeLanguage(language)
          },
-         [changeLanguageAction]
+         [changeLanguage]
       )
 
       const handleThemeToggle = useCallback(() => {
@@ -217,7 +217,7 @@ ProfileMenu.displayName = 'ProfileMenu'
 // PropTypes validation
 ProfileMenu.propTypes = {
    logoutAction: PropTypes.func.isRequired,
-   changeLanguageAction: PropTypes.func.isRequired,
+   changeLanguage: PropTypes.func.isRequired,
    toggleTheme: PropTypes.func.isRequired,
    profileData: PropTypes.shape({
       user: PropTypes.object,
@@ -248,7 +248,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    logoutAction,
-   changeLanguageAction,
+   changeLanguage,
    toggleTheme
 }
 

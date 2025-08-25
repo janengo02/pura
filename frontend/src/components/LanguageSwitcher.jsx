@@ -11,7 +11,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { changeLanguageAction } from '../actions/languageActions'
+import { changeLanguage } from '../reducers/languageSlice'
 
 // UI Components
 import {
@@ -162,16 +162,16 @@ LanguageMenuOptions.propTypes = {
 // =============================================================================
 
 const LanguageSwitcher = React.memo(
-   ({ changeLanguageAction, languageData: { currentLanguage } }) => {
+   ({ changeLanguage, languageData: { currentLanguage } }) => {
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
       const handleLanguageChange = useCallback(
          (language) => {
-            changeLanguageAction(language)
+            changeLanguage(language)
          },
-         [changeLanguageAction]
+         [changeLanguage]
       )
 
       // -------------------------------------------------------------------------
@@ -201,7 +201,7 @@ LanguageSwitcher.displayName = 'LanguageSwitcher'
 
 // PropTypes validation
 LanguageSwitcher.propTypes = {
-   changeLanguageAction: PropTypes.func.isRequired,
+   changeLanguage: PropTypes.func.isRequired,
    languageData: PropTypes.shape({
       currentLanguage: PropTypes.string.isRequired
    }).isRequired
@@ -226,7 +226,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   changeLanguageAction
+   changeLanguage
 }
 
 // =============================================================================

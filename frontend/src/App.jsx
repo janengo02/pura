@@ -29,8 +29,8 @@ import { Provider } from 'react-redux'
 import store from './store'
 import { setAuthToken } from './utils'
 import { loadUserAction } from './actions/authActions'
-import { initializeLanguageAction } from './actions/languageActions'
-import { initializeThemeAction } from './reducers/themeSlice'
+import { initializeLanguage } from './reducers/languageSlice'
+import { initializeTheme } from './reducers/themeSlice'
 import { removeAllAlertAction } from './actions/alertActions'
 import { LOGOUT } from './actions/types'
 
@@ -64,8 +64,8 @@ const RouteHandler = () => {
 const AppContent = () => {
    useEffect(() => {
       // Initialize language and theme first
-      store.dispatch(initializeLanguageAction())
-      store.dispatch(initializeThemeAction())
+      store.dispatch(initializeLanguage())
+      store.dispatch(initializeTheme())
 
       // Check for tokens in localStorage when app first runs
       if (localStorage.token) {
