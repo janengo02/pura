@@ -25,7 +25,6 @@ import {
    Text,
    VStack,
    Button,
-   Box,
    Image
 } from '@chakra-ui/react'
 
@@ -35,7 +34,7 @@ import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 // Actions & Schema
-import { loginAction } from '../../actions/authActions'
+import { login } from '../../reducers/authSlice'
 import { loginSchema as s } from './LoginSchema'
 
 // Utils
@@ -47,7 +46,7 @@ import { LandingHeader } from '../landing/Landing'
 // =============================================================================
 
 const Login = React.memo(
-   ({ loginAction, authData: { isLoading, isAuthenticated } }) => {
+   ({ login, authData: { isLoading, isAuthenticated } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -64,12 +63,13 @@ const Login = React.memo(
 
       const formConfig = useMemo(
          () => ({
-            onSubmit: methods.handleSubmit((data) => {
+            onSubmit: methods.handleSubmit(async (data) => {
                const { email, password } = data
-               loginAction({ email, password })
+               // Attempt login
+               await login({ email, password })
             })
          }),
-         [methods, loginAction]
+         [methods, login]
       )
 
       // -------------------------------------------------------------------------
@@ -219,7 +219,7 @@ Login.displayName = 'Login'
 
 // PropTypes validation
 Login.propTypes = {
-   loginAction: PropTypes.func.isRequired,
+   login: PropTypes.func.isRequired,
    authData: PropTypes.shape({
       isLoading: PropTypes.bool.isRequired,
       isAuthenticated: PropTypes.bool
@@ -247,7 +247,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   loginAction
+   login,
 }
 
 // =============================================================================

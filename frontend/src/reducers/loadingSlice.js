@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-   isLoading: true
+   isLoading: !!localStorage.getItem('token') // Only show loading if we have a token to validate
 }
 
 const loadingSlice = createSlice({

@@ -68,3 +68,22 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
       }
    }
 }
+
+/**
+ * Handle auth action errors
+ * @param {Function} dispatch - Redux dispatch function  
+ * @param {Object} err - Error object
+ * @returns {void}
+ */
+export const authActionErrorHandler = (dispatch, err) => {
+   const errors = err?.response?.data?.errors || []
+   if (errors.length > 0) {
+      errors.forEach((error) =>
+         dispatch(setAlert(error.title, error.msg, 'error'))
+      )
+   } else {
+      // Fallback for non-API errors
+      const message = err?.message || err?.response?.data?.message || 'Authentication failed'
+      dispatch(setAlert('Authentication Error', message, 'error'))
+   }
+}

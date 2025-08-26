@@ -28,11 +28,10 @@ import {
    Image,
    Box,
    HStack,
-   Divider
 } from '@chakra-ui/react'
 
 // Icons
-import { PiDice1, PiDiceFive, PiMagicWand, PiUser } from 'react-icons/pi'
+import { PiMagicWand } from 'react-icons/pi'
 
 // Internal Components
 import { MultiInput } from '../../components/MultiInput'
@@ -40,7 +39,7 @@ import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 // Actions & Schema
-import { registerAction } from '../../actions/authActions'
+import { register } from '../../reducers/authSlice'
 import { registerSchema as s } from './RegisterSchema'
 
 // Utils
@@ -52,7 +51,7 @@ import { LandingHeader } from '../landing/Landing'
 // =============================================================================
 
 const Register = React.memo(
-   ({ registerAction, authData: { isLoading, isAuthenticated } }) => {
+   ({ register, authData: { isLoading, isAuthenticated } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -96,7 +95,7 @@ const Register = React.memo(
 
       const formConfig = useMemo(
          () => ({
-            onSubmit: methods.handleSubmit((data) => {
+            onSubmit: methods.handleSubmit(async (data) => {
                const { name, email, password } = data
 
                // Include language in registration data
@@ -107,10 +106,11 @@ const Register = React.memo(
                   language: i18n.language || 'en'
                }
 
-               registerAction(registrationData)
+               // Attempt registration
+               await register(registrationData)
             })
          }),
-         [methods, registerAction, i18n.language]
+         [methods, register, i18n.language]
       )
 
       // -------------------------------------------------------------------------
@@ -303,7 +303,7 @@ Register.displayName = 'Register'
 
 // PropTypes validation
 Register.propTypes = {
-   registerAction: PropTypes.func.isRequired,
+   register: PropTypes.func.isRequired,
    authData: PropTypes.shape({
       isLoading: PropTypes.bool.isRequired,
       isAuthenticated: PropTypes.bool
@@ -331,7 +331,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   registerAction
+   register
 }
 
 // =============================================================================

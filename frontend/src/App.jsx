@@ -28,7 +28,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Provider } from 'react-redux'
 import store from './store'
 import { setAuthToken } from './utils'
-import { loadUserAction } from './actions/authActions'
+import { loadUser } from './reducers/authSlice'
 import { initializeLanguage } from './reducers/languageSlice'
 import { initializeTheme } from './reducers/themeSlice'
 import { removeAllAlerts } from './reducers/alertSlice'
@@ -75,7 +75,7 @@ const AppContent = () => {
 
       // Try to fetch a user, if no token or invalid token we
       // will get a 401 response from our API
-      store.dispatch(loadUserAction())
+      store.dispatch(loadUser())
 
       // Log user out from all tabs if they log out in one tab
       window.addEventListener('storage', () => {

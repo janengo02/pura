@@ -11,7 +11,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { logoutAction } from '../../../actions/authActions'
+import { logout } from '../../../reducers/authSlice'
 import { changeLanguage } from '../../../reducers/languageSlice'
 import { toggleTheme } from '../../../reducers/themeSlice'
 
@@ -161,7 +161,7 @@ ProfileActions.propTypes = {
 
 const ProfileMenu = React.memo(
    ({
-      logoutAction,
+      logout,
       changeLanguage,
       toggleTheme,
       profileData: { user, currentLanguage }
@@ -171,8 +171,8 @@ const ProfileMenu = React.memo(
       // -------------------------------------------------------------------------
 
       const handleLogout = useCallback(() => {
-         logoutAction()
-      }, [logoutAction])
+         logout()
+      }, [logout])
 
       const handleLanguageChange = useCallback(
          (language) => {
@@ -216,7 +216,7 @@ ProfileMenu.displayName = 'ProfileMenu'
 
 // PropTypes validation
 ProfileMenu.propTypes = {
-   logoutAction: PropTypes.func.isRequired,
+   logout: PropTypes.func.isRequired,
    changeLanguage: PropTypes.func.isRequired,
    toggleTheme: PropTypes.func.isRequired,
    profileData: PropTypes.shape({
@@ -247,7 +247,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   logoutAction,
+   logout,
    changeLanguage,
    toggleTheme
 }

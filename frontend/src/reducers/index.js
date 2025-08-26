@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
 import alert from './alertSlice'
-import auth from './authReducers'
+import auth from './authSlice'
 import loading from './loadingSlice'
 import page from './pageReducers'
 import task from './taskReducers'
