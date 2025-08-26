@@ -45,7 +45,7 @@ import {
    removeTaskScheduleSlotAction,
    showTaskModalAction
 } from '../../../../actions/taskActions'
-import { showEventEditModalAction } from '../../../../actions/eventActions'
+import { showEventEditModal } from '../../../../reducers/eventSlice'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Constants
@@ -101,7 +101,7 @@ const EventPreview = React.memo(
       deleteGoogleEventAction,
       removeTaskScheduleSlotAction,
       showTaskModalAction,
-      showEventEditModalAction,
+      showEventEditModal,
       eventData: { pageId }
    }) => {
       // -------------------------------------------------------------------------
@@ -174,8 +174,8 @@ const EventPreview = React.memo(
             pageId
          }
 
-         showEventEditModalAction(formData)
-      }, [showEventEditModalAction, event, pageId])
+         showEventEditModal(formData)
+      }, [showEventEditModal, event, pageId])
 
       // -------------------------------------------------------------------------
       // RENDER HELPERS
@@ -417,7 +417,7 @@ EventPreview.propTypes = {
    deleteGoogleEventAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
-   showEventEditModalAction: PropTypes.func.isRequired,
+   showEventEditModal: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
       pageId: PropTypes.string.isRequired
    }).isRequired
@@ -446,7 +446,7 @@ const mapDispatchToProps = {
    deleteGoogleEventAction,
    removeTaskScheduleSlotAction,
    showTaskModalAction,
-   showEventEditModalAction
+   showEventEditModal
 }
 
 // =============================================================================

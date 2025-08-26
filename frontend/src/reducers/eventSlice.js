@@ -1,8 +1,4 @@
-// =============================================================================
-// EVENT REDUCER
-// =============================================================================
-
-import { SHOW_EVENT_EDIT_MODAL, CLEAR_EVENT_EDIT_MODAL } from '../actions/types'
+import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
    id: null,
@@ -19,17 +15,17 @@ const initialState = {
    googleEventId: null
 }
 
-function eventReducer(state = initialState, action) {
-   const { type, payload } = action
-
-   switch (type) {
-      case SHOW_EVENT_EDIT_MODAL:
+const eventSlice = createSlice({
+   name: 'event',
+   initialState,
+   reducers: {
+      showEventEditModal: (state, action) => {
          return {
             ...state,
-            ...payload
+            ...action.payload
          }
-
-      case CLEAR_EVENT_EDIT_MODAL:
+      },
+      clearEventEditModal: (state) => {
          return {
             ...state,
             id: null,
@@ -45,10 +41,9 @@ function eventReducer(state = initialState, action) {
             puraScheduleIndex: null,
             googleEventId: null
          }
-
-      default:
-         return state
+      }
    }
-}
+})
 
-export default eventReducer
+export const { showEventEditModal, clearEventEditModal } = eventSlice.actions
+export default eventSlice.reducer

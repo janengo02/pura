@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 // Actions
-import { clearEventEditModalAction } from '../../actions/eventActions'
+import { clearEventEditModal } from '../../reducers/eventSlice'
 
 // UI Components
 import { Flex, Heading, IconButton, Spacer } from '@chakra-ui/react'
@@ -71,7 +71,7 @@ NavbarLeft.propTypes = {
 /**
  * Right section of navbar containing calendar toggle and profile menu
  */
-const NavbarRight = React.memo(({ clearEventEditModalAction }) => {
+const NavbarRight = React.memo(({ clearEventEditModal }) => {
    const { viewCalendar, setViewCalendar } = useContext(SplitPaneContext)
 
    return (
@@ -83,7 +83,7 @@ const NavbarRight = React.memo(({ clearEventEditModalAction }) => {
             icon={<PiCalendarFill size={18} />}
             onClick={() => {
                setViewCalendar((prev) => !prev)
-               clearEventEditModalAction()
+               clearEventEditModal()
             }}
          />
          <ProfileMenu />
@@ -97,7 +97,7 @@ NavbarRight.displayName = 'NavbarRight'
 // MAIN COMPONENT
 // =============================================================================
 
-const Navbar = React.memo(({ clearEventEditModalAction }) => {
+const Navbar = React.memo(({ clearEventEditModal }) => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
@@ -112,9 +112,7 @@ const Navbar = React.memo(({ clearEventEditModalAction }) => {
          <NavbarWrapper>
             <NavbarLeft title={t('label-page-title')} />
             <Spacer />
-            <NavbarRight
-               clearEventEditModalAction={clearEventEditModalAction}
-            />
+            <NavbarRight clearEventEditModal={clearEventEditModal} />
          </NavbarWrapper>
       </>
    )
@@ -130,7 +128,7 @@ Navbar.displayName = 'Navbar'
 // PropTypes validation
 Navbar.propTypes = {
    title: PropTypes.string,
-   clearEventEditModalAction: PropTypes.func.isRequired
+   clearEventEditModal: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -142,7 +140,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   clearEventEditModalAction
+   clearEventEditModal
 }
 // =============================================================================
 // EXPORT

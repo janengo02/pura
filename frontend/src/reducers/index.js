@@ -7,7 +7,7 @@ import task from './taskReducers'
 import calendar from './calendarReducers'
 import language from './languageSlice'
 import theme from './themeSlice'
-import event from '../reducers/eventReducers'
+import event from './eventSlice'
 
 export default combineReducers({
    loading,

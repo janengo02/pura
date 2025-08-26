@@ -38,7 +38,7 @@ import {
    updateTaskScheduleAction,
    updateTaskBasicInfoAction
 } from '../../../../actions/taskActions'
-import { clearEventEditModalAction } from '../../../../actions/eventActions'
+import { clearEventEditModal } from '../../../../reducers/eventSlice'
 
 // Utils
 import { stringToDateTimeLocal } from '../../../../utils/dates'
@@ -69,7 +69,7 @@ const EventEditModal = React.memo(
       updateGoogleEventAction,
       updateTaskScheduleAction,
       updateTaskBasicInfoAction,
-      clearEventEditModalAction,
+      clearEventEditModal,
       deleteGoogleEventAction
    }) => {
       // -------------------------------------------------------------------------
@@ -106,8 +106,8 @@ const EventEditModal = React.memo(
       // -------------------------------------------------------------------------
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
-         clearEventEditModalAction()
-      }, [clearEventEditModalAction])
+         clearEventEditModal()
+      }, [clearEventEditModal])
 
       const handleSave = useCallback(async () => {
          // Validate time inputs before proceeding
@@ -469,7 +469,7 @@ EventEditModal.propTypes = {
    }).isRequired,
    updateGoogleEventAction: PropTypes.func.isRequired,
    updateTaskBasicInfoAction: PropTypes.func.isRequired,
-   clearEventEditModalAction: PropTypes.func.isRequired,
+   clearEventEditModal: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
    showTaskModalAction: PropTypes.func.isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired
@@ -532,7 +532,7 @@ const mapDispatchToProps = {
    updateGoogleEventAction,
    updateTaskScheduleAction,
    updateTaskBasicInfoAction,
-   clearEventEditModalAction,
+   clearEventEditModal,
    showTaskModalAction,
    deleteGoogleEventAction
 }
