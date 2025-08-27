@@ -1,15 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { baseApi } from './api/baseApi'
 import rootReducer from './reducers'
 import setAuthToken from './utils/setAuthToken'
 
 const store = configureStore({
-   reducer: rootReducer,
+   reducer: {
+      ...rootReducer,
+      [baseApi.reducerPath]: baseApi.reducer
+   },
    middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
          serializableCheck: {
             ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
          }
-      }),
+      }).concat(baseApi.middleware),
    devTools: process.env.NODE_ENV !== 'production'
 })
 
