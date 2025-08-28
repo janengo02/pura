@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux'
 import alert from './alertSlice'
 import auth from './authSlice'
-import loading from './loadingSlice'
 import page from './pageReducers'
 import task from './taskReducers'
 import calendar from './calendarReducers'
@@ -11,7 +10,6 @@ import event from './eventSlice'
 import { baseApi } from '../api/baseApi'
 
 export default combineReducers({
-   loading,
    alert,
    auth,
    page,

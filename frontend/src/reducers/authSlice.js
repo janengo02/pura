@@ -20,18 +20,6 @@ const authSlice = createSlice({
          state.isAuthenticated = false
          state.user = null
       },
-      setCredentials: (state, action) => {
-         const { token, refreshToken, user } = action.payload
-         if (token && refreshToken) {
-            setAuthToken(token, refreshToken)
-            state.token = token
-            state.refreshToken = refreshToken
-            state.isAuthenticated = true
-         }
-         if (user) {
-            state.user = user
-         }
-      }
    },
    extraReducers: (builder) => {
       builder
@@ -98,7 +86,7 @@ const authSlice = createSlice({
 })
 
 // Export actions
-export const { logout, setCredentials } = authSlice.actions
+export const { logout } = authSlice.actions
 
 // Export reducer
 export default authSlice.reducer
