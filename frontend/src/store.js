@@ -4,10 +4,7 @@ import rootReducer from './reducers'
 import setAuthToken from './utils/setAuthToken'
 
 const store = configureStore({
-   reducer: {
-      ...rootReducer,
-      [baseApi.reducerPath]: baseApi.reducer
-   },
+   reducer: rootReducer,
    middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
          serializableCheck: {

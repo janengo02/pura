@@ -8,6 +8,7 @@ import calendar from './calendarReducers'
 import language from './languageSlice'
 import theme from './themeSlice'
 import event from './eventSlice'
+import { baseApi } from '../api/baseApi'
 
 export default combineReducers({
    loading,
@@ -18,5 +19,6 @@ export default combineReducers({
    calendar,
    language,
    theme,
-   event
+   event,
+   [baseApi.reducerPath]: baseApi.reducer
 })
