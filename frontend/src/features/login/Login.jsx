@@ -34,7 +34,7 @@ import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 // Actions & Schema
-import { login } from '../../reducers/authSlice'
+import { useLoginMutation } from '../../api/authApi'
 import { loginSchema as s } from './LoginSchema'
 
 // Utils
@@ -46,7 +46,7 @@ import { LandingHeader } from '../landing/Landing'
 // =============================================================================
 
 const Login = React.memo(
-   ({ login, authData: { isLoading, isAuthenticated } }) => {
+   ({ authData: { isAuthenticated } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -57,6 +57,8 @@ const Login = React.memo(
 
       const { t } = useReactiveTranslation()
 
+      const [loginUser, { isLoading: isLoginLoading }] = useLoginMutation()
+
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -65,11 +67,10 @@ const Login = React.memo(
          () => ({
             onSubmit: methods.handleSubmit(async (data) => {
                const { email, password } = data
-               // Attempt login
-               await login({ email, password })
+               await loginUser({ email, password }).unwrap()
             })
          }),
-         [methods, login]
+         [methods, loginUser]
       )
 
       // -------------------------------------------------------------------------
@@ -130,7 +131,7 @@ const Login = React.memo(
                         size='lg'
                         w='full'
                         colorScheme='purple'
-                        isLoading={isLoading}
+                        isLoading={isLoginLoading}
                         loadingText={t('btn-submitting')}
                         type='submit'
                      >
@@ -219,9 +220,7 @@ Login.displayName = 'Login'
 
 // PropTypes validation
 Login.propTypes = {
-   login: PropTypes.func.isRequired,
    authData: PropTypes.shape({
-      isLoading: PropTypes.bool.isRequired,
       isAuthenticated: PropTypes.bool
    }).isRequired
 }
@@ -231,9 +230,8 @@ Login.propTypes = {
 // =============================================================================
 
 const selectAuthData = createSelector(
-   [(state) => state.loading.isLoading, (state) => state.auth.isAuthenticated],
-   (isLoading, isAuthenticated) => ({
-      isLoading,
+   [(state) => state.auth?.isAuthenticated],
+   (isAuthenticated) => ({
       isAuthenticated
    })
 )
@@ -246,9 +244,7 @@ const mapStateToProps = (state) => ({
    authData: selectAuthData(state)
 })
 
-const mapDispatchToProps = {
-   login,
-}
+const mapDispatchToProps = {}
 
 // =============================================================================
 // EXPORT

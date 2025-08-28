@@ -39,7 +39,7 @@ import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 // Actions & Schema
-import { register } from '../../reducers/authSlice'
+import { useRegisterMutation } from '../../api/authApi'
 import { registerSchema as s } from './RegisterSchema'
 
 // Utils
@@ -51,11 +51,13 @@ import { LandingHeader } from '../landing/Landing'
 // =============================================================================
 
 const Register = React.memo(
-   ({ register, authData: { isLoading, isAuthenticated } }) => {
+   ({ authData: { isAuthenticated } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t, i18n } = useReactiveTranslation()
+
+      const [registerUser, { isLoading: isRegisterLoading }] = useRegisterMutation()
 
       const methods = useForm({
          resolver: yupResolver(s(t))
@@ -106,11 +108,10 @@ const Register = React.memo(
                   language: i18n.language || 'en'
                }
 
-               // Attempt registration
-               await register(registrationData)
+               await registerUser(registrationData).unwrap()
             })
          }),
-         [methods, register, i18n.language]
+         [methods, registerUser, i18n.language]
       )
 
       // -------------------------------------------------------------------------
@@ -213,7 +214,7 @@ const Register = React.memo(
                         size='lg'
                         w='full'
                         colorScheme='purple'
-                        isLoading={isLoading}
+                        isLoading={isRegisterLoading}
                         loadingText={t('btn-submitting')}
                         type='submit'
                      >
@@ -303,9 +304,7 @@ Register.displayName = 'Register'
 
 // PropTypes validation
 Register.propTypes = {
-   register: PropTypes.func.isRequired,
    authData: PropTypes.shape({
-      isLoading: PropTypes.bool.isRequired,
       isAuthenticated: PropTypes.bool
    }).isRequired
 }
@@ -315,9 +314,8 @@ Register.propTypes = {
 // =============================================================================
 
 const selectAuthData = createSelector(
-   [(state) => state.loading.isLoading, (state) => state.auth.isAuthenticated],
-   (isLoading, isAuthenticated) => ({
-      isLoading,
+   [(state) => state.auth?.isAuthenticated],
+   (isAuthenticated) => ({
       isAuthenticated
    })
 )
@@ -330,9 +328,7 @@ const mapStateToProps = (state) => ({
    authData: selectAuthData(state)
 })
 
-const mapDispatchToProps = {
-   register
-}
+const mapDispatchToProps = {}
 
 // =============================================================================
 // EXPORT

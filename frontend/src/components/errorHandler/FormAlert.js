@@ -70,7 +70,7 @@ FormAlert.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-   alerts: state.alert
+   alerts: state.alert || []
 })
 
 export default connect(mapStateToProps, { removeAlert })(FormAlert)
