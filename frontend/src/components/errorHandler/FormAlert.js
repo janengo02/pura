@@ -4,73 +4,51 @@ import {
    AlertTitle,
    AlertDescription,
    SlideFade,
-   CloseButton,
-   Spinner,
-   Spacer,
-   VStack,
-   HStack
+   VStack
 } from '@chakra-ui/react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { removeAlert } from '../../reducers/alertSlice'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
-const FormAlert = ({ alerts, removeAlert, ...props }) => {
+const FormAlert = ({ error, ...props }) => {
    const { t } = useReactiveTranslation()
-   return (
-      alerts.length > 0 &&
-      alerts.map((alert, index) =>
-         alert.alertType === 'loading' ? (
-            <SlideFade in={true} offsetY='-20px' key={alert.id}>
-               <Alert
-                  borderRadius='0.375rem;'
-                  mb={index < alerts.length - 1 ? '6' : '0'}
-                  bg='bg.surface'
-                  {...props}
-               >
-                  <Spinner size='md' marginInlineEnd={3} />
-                  <AlertTitle>{t(alert.title)}</AlertTitle>
-                  <AlertDescription>{t(alert.msg)}</AlertDescription>
-               </Alert>
-            </SlideFade>
-         ) : (
-            <SlideFade in={true} offsetY='-20px' key={alert.id}>
-               <Alert
-                  status={alert.alertType}
-                  borderRadius='0.375rem;'
-                  mb={index < alerts.length - 1 ? '6' : '0'}
-                  {...props}
-               >
-                  <HStack align='start'>
+
+   if (!error) return null
+
+   const errors = error?.data?.errors || []
+
+   if (errors.length > 0) {
+      // Handle structured API errors (array of error objects with title/msg)
+      return (
+         <VStack spacing={2} align="stretch">
+            {errors.map((errorItem, index) => (
+               <SlideFade in={true} offsetY='-20px' key={index}>
+                  <Alert status='error' borderRadius='md' alignItems='flex-start' {...props}>
                      <AlertIcon />
-                     <VStack align='start'>
-                        <AlertTitle>{t(alert.title)}</AlertTitle>
-                        <HStack>
-                           <AlertDescription>{t(alert.msg)}</AlertDescription>
-                        </HStack>
+                     <VStack align="start" spacing={1}>
+                        {errorItem.title && <AlertTitle>{t(errorItem.title)}</AlertTitle>}
+                        <AlertDescription>{t(errorItem.msg)}</AlertDescription>
                      </VStack>
-                     <Spacer />
-                     <CloseButton
-                        onClick={async (e) => {
-                           e.preventDefault()
-                           removeAlert(alert.id)
-                        }}
-                     />
-                  </HStack>
-               </Alert>
-            </SlideFade>
-         )
+                  </Alert>
+               </SlideFade>
+            ))}
+         </VStack>
       )
-   )
+   } else {
+      // Fallback for non-API errors (single message)
+      const message = error?.message || error?.data?.message || 'Operation failed'
+      return (
+         <SlideFade in={true} offsetY='-20px'>
+            <Alert status='error' borderRadius='md' alignItems='flex-start' {...props}>
+               <AlertIcon />
+               <AlertDescription>{message}</AlertDescription>
+            </Alert>
+         </SlideFade>
+      )
+   }
 }
 
 FormAlert.propTypes = {
-   alerts: PropTypes.array.isRequired,
-   removeAlert: PropTypes.func.isRequired
+   error: PropTypes.object // RTK Query error object
 }
 
-const mapStateToProps = (state) => ({
-   alerts: state.alert || []
-})
-
-export default connect(mapStateToProps, { removeAlert })(FormAlert)
+export default FormAlert

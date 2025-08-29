@@ -34,7 +34,7 @@ import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 // Actions & Schema
-import { useLoginMutation } from '../../api/authApi'
+import { useLazyLoadUserQuery, useLoginMutation } from '../../api/authApi'
 import { loginSchema as s } from './LoginSchema'
 
 // Utils
@@ -57,7 +57,8 @@ const Login = React.memo(
 
       const { t } = useReactiveTranslation()
 
-      const [loginUser, { isLoading: isLoginLoading }] = useLoginMutation()
+      const [loginUser, { isLoading: isLoginLoading, error: loginError }] = useLoginMutation()
+      const [loadUser, { isLoading: isLoadUserLoading, error: loadUserError }] = useLazyLoadUserQuery()
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -67,10 +68,13 @@ const Login = React.memo(
          () => ({
             onSubmit: methods.handleSubmit(async (data) => {
                const { email, password } = data
-               await loginUser({ email, password }).unwrap()
+               const result = await loginUser({ email, password })
+               if (result?.data?.token) {
+                  await loadUser()
+               }
             })
          }),
-         [methods, loginUser]
+         [methods, loginUser, loadUser]
       )
 
       // -------------------------------------------------------------------------
@@ -86,6 +90,7 @@ const Login = React.memo(
       // UTIL COMPONENTS
       // -------------------------------------------------------------------------
 
+
       const LoginForm = () => (
          <FormProvider {...methods}>
             <form
@@ -99,7 +104,7 @@ const Login = React.memo(
             >
                <SimpleGrid columns={1} rowGap={6} w='full'>
                   <GridItem colSpan={1}>
-                     <FormAlert />
+                     <FormAlert error={loginError || loadUserError} />
                   </GridItem>
 
                   <GridItem colSpan={1}>
@@ -131,7 +136,7 @@ const Login = React.memo(
                         size='lg'
                         w='full'
                         colorScheme='purple'
-                        isLoading={isLoginLoading}
+                        isLoading={isLoginLoading || isLoadUserLoading}
                         loadingText={t('btn-submitting')}
                         type='submit'
                      >

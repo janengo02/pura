@@ -39,7 +39,7 @@ import Link from '../../components/typography/Link'
 import FormAlert from '../../components/errorHandler/FormAlert'
 
 // Actions & Schema
-import { useRegisterMutation } from '../../api/authApi'
+import { useLazyLoadUserQuery, useRegisterMutation } from '../../api/authApi'
 import { registerSchema as s } from './RegisterSchema'
 
 // Utils
@@ -57,7 +57,8 @@ const Register = React.memo(
       // -------------------------------------------------------------------------
       const { t, i18n } = useReactiveTranslation()
 
-      const [registerUser, { isLoading: isRegisterLoading }] = useRegisterMutation()
+      const [registerUser, { isLoading: isRegisterLoading, error: registerError }] = useRegisterMutation()
+      const [loadUser, { isLoading: isLoadUserLoading, error: loadUserError }] = useLazyLoadUserQuery()
 
       const methods = useForm({
          resolver: yupResolver(s(t))
@@ -108,10 +109,13 @@ const Register = React.memo(
                   language: i18n.language || 'en'
                }
 
-               await registerUser(registrationData).unwrap()
+               const result = await registerUser(registrationData)
+               if (result?.data?.token) {
+                  await loadUser()
+               }
             })
          }),
-         [methods, registerUser, i18n.language]
+         [methods, registerUser, i18n.language, loadUser]
       )
 
       // -------------------------------------------------------------------------
@@ -140,11 +144,11 @@ const Register = React.memo(
             >
                <SimpleGrid columns={1} rowGap={6} w='full'>
                   <GridItem colSpan={1}>
-                     <FormAlert />
+                     <FormAlert error={registerError || loadUserError} />
                   </GridItem>
                   <GridItem colSpan={1}>
                      <Box>
-                        <HStack justify='space-between' align='center'>
+                        <HStack justify='space-between' align='center' flexWrap='wrap'>
                            <Text fontWeight='semibold' color='text.primary'>
                               {t('desc-auto-generate-demo-cta')}
                            </Text>
@@ -214,7 +218,7 @@ const Register = React.memo(
                         size='lg'
                         w='full'
                         colorScheme='purple'
-                        isLoading={isRegisterLoading}
+                        isLoading={isRegisterLoading || isLoadUserLoading}
                         loadingText={t('btn-submitting')}
                         type='submit'
                      >

@@ -1,6 +1,4 @@
 import { baseApi } from './baseApi'
-import { removeAllAlerts } from '../reducers/alertSlice'
-import { authActionErrorHandler } from '../actions/errorActions'
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -16,18 +14,6 @@ export const authApi = baseApi.injectEndpoints({
         body: formData
       }),
       invalidatesTags: ['Auth'],
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        dispatch(removeAllAlerts())
-        try {
-          const result = await queryFulfilled
-          // Trigger loadUser after successful registration
-          if (result.data.token) {
-            dispatch(authApi.endpoints.loadUser.initiate())
-          }
-        } catch (err) {
-          authActionErrorHandler(dispatch, err)
-        }
-      }
     }),
 
     login: builder.mutation({
@@ -37,18 +23,6 @@ export const authApi = baseApi.injectEndpoints({
         body: formData
       }),
       invalidatesTags: ['Auth'],
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        dispatch(removeAllAlerts())
-        try {
-          const result = await queryFulfilled
-          // Trigger loadUser after successful login
-          if (result.data.token) {
-            dispatch(authApi.endpoints.loadUser.initiate())
-          }
-        } catch (err) {
-          authActionErrorHandler(dispatch, err)
-        }
-      }
     })
   })
 })
