@@ -1,6 +1,6 @@
 import { api } from '../utils'
-import { commonErrorHandler, fatalErrorHandler } from './errorActions'
-import { FILTER_SCHEDULE, FILTER_NAME, DROP_TASK } from './types'
+import { commonErrorHandler } from './errorActions'
+import { DROP_TASK } from './types'
 
 
 /**
@@ -21,35 +21,4 @@ export const dropTaskAction = (reqData) => async (dispatch, getState) => {
    } catch (err) {
       commonErrorHandler(dispatch, err, getState)
    }
-}
-/**
- * Filter tasks by schedule
- * @param {Object} reqData - Filter criteria
- * @returns {Function} Redux thunk
- */
-export const filterSchedule = (reqData) => async (dispatch) => {
-   // Save reqData to cache (localStorage as an example)
-   localStorage.setItem('filteredSchedule', JSON.stringify(reqData))
-   dispatch({
-      type: FILTER_SCHEDULE,
-      payload: {
-         schedule: reqData
-      }
-   })
-}
-
-/**
- * Filter tasks by name
- * @param {Object} reqData - Filter criteria
- * @returns {Function} Redux thunk
- */
-export const filterName = (reqData) => async (dispatch) => {
-   // Save reqData to cache (localStorage as an example)
-   localStorage.setItem('filteredName', JSON.stringify(reqData))
-   dispatch({
-      type: FILTER_NAME,
-      payload: {
-         name: reqData
-      }
-   })
 }

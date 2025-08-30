@@ -21,7 +21,16 @@ const pageSlice = createSlice({
   },
   reducers: {
     updateFilter: (state, action) => {
-      state.filter = { ...state.filter, ...action.payload }
+      const updates = action.payload
+      state.filter = { ...state.filter, ...updates }
+      
+      // Persist to localStorage based on what was updated
+      if (updates.schedule !== undefined) {
+        localStorage.setItem('filteredSchedule', JSON.stringify(updates.schedule))
+      }
+      if (updates.name !== undefined) {
+        localStorage.setItem('filteredName', JSON.stringify(updates.name))
+      }
     },
     setPageError: (state, action) => {
       state.error = action.payload

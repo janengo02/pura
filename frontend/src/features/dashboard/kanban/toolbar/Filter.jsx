@@ -11,7 +11,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { filterName, filterSchedule } from '../../../../actions/pageActions'
+import { updateFilter } from '../../../../reducers/pageSlice'
 
 // UI Components
 import {
@@ -41,7 +41,7 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const Filter = React.memo(
-   ({ filterSchedule, filterName, filterData: { filter } }) => {
+   ({ updateFilter, filterData: { filter } }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -78,9 +78,9 @@ const Filter = React.memo(
             } else {
                newScheduleFilter.push(value)
             }
-            filterSchedule(newScheduleFilter)
+            updateFilter({ schedule: newScheduleFilter })
          },
-         [filter.schedule, filterSchedule]
+         [filter.schedule, updateFilter]
       )
 
       // -------------------------------------------------------------------------
@@ -97,10 +97,12 @@ const Filter = React.memo(
       // Auto-save name filter changes with debounce
       useEffect(() => {
          if (hasNameFilterChanged) {
-            const timeoutId = setTimeout(() => filterName(nameFilter), 500)
+            const timeoutId = setTimeout(() => {
+               updateFilter({ name: nameFilter })
+            }, 500)
             return () => clearTimeout(timeoutId)
          }
-      }, [hasNameFilterChanged, nameFilter, filterName])
+      }, [hasNameFilterChanged, nameFilter, updateFilter])
 
       // -------------------------------------------------------------------------
       // RENDER
@@ -190,8 +192,7 @@ Filter.propTypes = {
    filterData: PropTypes.shape({
       filter: PropTypes.object.isRequired
    }).isRequired,
-   filterSchedule: PropTypes.func.isRequired,
-   filterName: PropTypes.func.isRequired
+   updateFilter: PropTypes.func.isRequired
 }
 // =============================================================================
 // REDUX SELECTORS
@@ -216,8 +217,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   filterSchedule,
-   filterName
+   updateFilter
 }
 
 // =============================================================================
