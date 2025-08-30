@@ -14,6 +14,7 @@ const authSlice = createSlice({
    initialState,
    reducers: {
       logout: (state) => {
+         // @todo: Reset state of other slices
          setAuthToken()
          state.token = null
          state.refreshToken = null

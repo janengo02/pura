@@ -480,7 +480,7 @@ EventEditModal.propTypes = {
 // =============================================================================
 
 const selectEventData = createSelector(
-   [(state) => state.event, (state) => state.page.id],
+   [(state) => state.event, (state) => state.pageSlice.id],
    (eventState, id) => ({
       id: eventState.id,
       title: eventState.title,
@@ -510,7 +510,7 @@ const selectGoogleCalendars = createSelector(
 )
 
 const selectTaskData = createSelector(
-   [(state) => state.task.task, (state) => state.page.id],
+   [(state) => state.task.task, (state) => state.pageSlice.id],
    (task, pageId) => ({
       task,
       pageId

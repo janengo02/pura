@@ -63,6 +63,8 @@ export const deleteGroupAction = (reqData) => async (dispatch, getState) => {
          groupId: reqData.groupId
       }
    })
+   // @todo: Update calendar events or reload calendar
+
    try {
       await api.delete(`/group/${reqData.pageId}/${reqData.groupId}`)
    } catch (err) {

@@ -158,8 +158,8 @@ GroupSelect.propTypes = {
 const selectGroupSelectData = createSelector(
    [
       (state) => state.task.task,
-      (state) => state.page.id,
-      (state) => state.page.groupOrder
+      (state) => state.pageSlice.id,
+      (state) => state.pageSlice.groupOrder
    ],
    (task, id, groupOrder) => ({
       task,

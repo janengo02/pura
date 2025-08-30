@@ -365,8 +365,8 @@ ProgressHeader.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-   id: state.page.id,
-   progressOrder: state.page.progressOrder
+   id: state.pageSlice.id,
+   progressOrder: state.pageSlice.progressOrder
 })
 
 const mapDispatchToProps = {

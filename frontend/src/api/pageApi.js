@@ -2,6 +2,11 @@ import { baseApi } from './baseApi'
 
 export const pageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getFirstPage: builder.query({
+      query: () => '/page',
+      providesTags: ['Page']
+    }),
+    
     getPage: builder.query({
       query: (pageId) => `/page/${pageId}`,
       providesTags: ['Page']
@@ -64,6 +69,8 @@ export const pageApi = baseApi.injectEndpoints({
 })
 
 export const {
+  useGetFirstPageQuery,
+  useLazyGetFirstPageQuery,
   useGetPageQuery,
   useCreateProgressMutation,
   useUpdateProgressMutation,

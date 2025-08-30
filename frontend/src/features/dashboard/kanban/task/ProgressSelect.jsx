@@ -155,8 +155,8 @@ ProgressSelect.propTypes = {
 const selectProgressSelectData = createSelector(
    [
       (state) => state.task.task,
-      (state) => state.page.id,
-      (state) => state.page.progressOrder
+      (state) => state.pageSlice.id,
+      (state) => state.pageSlice.progressOrder
    ],
    (task, id, progressOrder) => ({
       task,

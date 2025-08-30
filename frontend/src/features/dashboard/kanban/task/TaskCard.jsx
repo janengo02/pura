@@ -74,7 +74,6 @@ const TaskCard = React.memo(
       const taskHover = useHover()
       const titleEditing = useEditing()
       const dropdownMenu = useDisclosure()
-
       const methods = useForm({
          resolver: yupResolver(s),
          defaultValues: {
@@ -400,8 +399,8 @@ TaskCard.propTypes = {
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   id: state.page.id,
-   filter: state.page.filter
+   id: state.pageSlice.id,
+   filter: state.pageSlice.filter
 })
 
 const mapDispatchToProps = {

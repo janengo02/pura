@@ -198,7 +198,7 @@ Filter.propTypes = {
 // =============================================================================
 
 const selectFilterSelectData = createSelector(
-   [(state) => state.page.filter],
+   [(state) => state.pageSlice.filter],
    (filter) => ({
       filter: filter || {
          schedule: [],

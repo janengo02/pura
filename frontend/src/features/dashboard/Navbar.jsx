@@ -136,7 +136,7 @@ Navbar.propTypes = {
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   title: state.page.title
+   title: state.pageSlice.title
 })
 
 const mapDispatchToProps = {

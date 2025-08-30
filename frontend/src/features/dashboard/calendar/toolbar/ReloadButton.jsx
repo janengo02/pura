@@ -105,7 +105,7 @@ ReloadButton.propTypes = {
 // =============================================================================
 
 const selectReloadButtonData = createSelector(
-   [(state) => state.page.id, (state) => state.calendar.range],
+   [(state) => state.pageSlice.id, (state) => state.calendar.range],
    (pageId, range) => ({
       pageId: pageId || '',
       range: range || []

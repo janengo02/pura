@@ -428,7 +428,7 @@ EventPreview.propTypes = {
 // =============================================================================
 
 const selectEventWrapperData = createSelector(
-   [(state) => state.page.id],
+   [(state) => state.pageSlice.id],
    (id) => ({
       pageId: id
    })

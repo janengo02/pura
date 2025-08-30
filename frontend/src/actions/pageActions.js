@@ -1,22 +1,7 @@
 import { api } from '../utils'
 import { commonErrorHandler, fatalErrorHandler } from './errorActions'
-import { FILTER_SCHEDULE, FILTER_NAME, GET_PAGE, DROP_TASK } from './types'
+import { FILTER_SCHEDULE, FILTER_NAME, DROP_TASK } from './types'
 
-/**
- * Get the first page of a user
- * @returns {Function} Redux thunk
- */
-export const getFirstPageAction = () => async (dispatch) => {
-   try {
-      const res = await api.get('/page')
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data
-      })
-   } catch (err) {
-      fatalErrorHandler(dispatch, null, err)
-   }
-}
 
 /**
  * Drop task to new position (drag and drop)

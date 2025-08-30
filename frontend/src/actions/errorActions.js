@@ -1,8 +1,8 @@
 import { setAlert } from '../reducers/alertSlice'
 import { loadCalendarAction } from './calendarActions'
-import { getFirstPageAction } from './pageActions'
 import { showTaskModalAction } from './taskActions'
 import { PAGE_ERROR } from './types'
+import { pageApi } from '../api/pageApi'
 
 /**
  * Handle fatal page errors
@@ -43,13 +43,14 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
          dispatch(setAlert(error.title, error.msg, 'error'))
       )
    }
-   dispatch(getFirstPageAction())
+   // Trigger refetch of first page data using RTK Query
+   dispatch(pageApi.util.invalidateTags(['Page']))
 
    // If getState is provided, handle calendar reload and task modal
    if (getState) {
       const state = getState()
       const calendarRange = state.calendar?.range
-      const currentPageId = state.page?.id
+      const currentPageId = state.pageSlice?.id
       const currentTaskId = state.task?.task?.id
 
       // Reload calendar if range and page ID are available
@@ -71,7 +72,7 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
 
 /**
  * Handle auth action errors
- * @param {Function} dispatch - Redux dispatch function  
+ * @param {Function} dispatch - Redux dispatch function
  * @param {Object} err - Error object
  * @returns {void}
  */

@@ -64,6 +64,7 @@ export const deleteProgressAction = (reqData) => async (dispatch, getState) => {
          progressId: reqData.progressId
       }
    })
+   // @todo: Update calendar events or reload calendar
    try {
       await api.delete(`/progress/${reqData.pageId}/${reqData.progressId}`)
    } catch (err) {

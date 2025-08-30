@@ -319,8 +319,8 @@ Group.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-   id: state.page.id,
-   groupOrder: state.page.groupOrder
+   id: state.pageSlice.id,
+   groupOrder: state.pageSlice.groupOrder
 })
 
 const mapDispatchToProps = {

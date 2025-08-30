@@ -123,9 +123,9 @@ Toolbar.propTypes = {
 // Memoized selectors for better Redux performance
 const selectPageData = createSelector(
    [
-      (state) => state.page.id,
-      (state) => state.page.groupOrder,
-      (state) => state.page.progressOrder
+      (state) => state.pageSlice.id,
+      (state) => state.pageSlice.groupOrder,
+      (state) => state.pageSlice.progressOrder
    ],
    (id, groupOrder, progressOrder) => ({
       id,

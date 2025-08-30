@@ -385,7 +385,7 @@ const selectSettingsData = createSelector(
 )
 
 const selectTaskData = createSelector(
-   [(state) => state.task.task, (state) => state.page.id],
+   [(state) => state.task.task, (state) => state.pageSlice.id],
    (task, pageId) => ({
       task,
       pageId

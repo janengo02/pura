@@ -12,9 +12,12 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { getFirstPageAction, dropTaskAction } from '../../actions/pageActions'
+import { dropTaskAction } from '../../actions/pageActions'
 import { createGroupAction } from '../../actions/groupActions'
 import { createProgressAction } from '../../actions/progressActions'
+
+// RTK Query
+import { useGetFirstPageQuery } from '../../api/pageApi'
 
 // External Libraries
 import { DragDropContext } from '@hello-pangea/dnd'
@@ -48,11 +51,10 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 const Kanban = React.memo(
    ({
       // Redux props
-      getFirstPageAction,
       dropTaskAction,
       createGroupAction,
       createProgressAction,
-      pageData: { id, groupOrder, progressOrder, errors, error, loading }
+      pageData: { id, groupOrder, progressOrder }
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
@@ -61,17 +63,8 @@ const Kanban = React.memo(
 
       const navigate = useNavigate()
 
-      const errorState = useMemo(() => {
-         if (!error) return null
-
-         const code = errors?.[0]?.code || 400
-         const msg = errors?.[0]?.msg || 'alert-bad-request'
-
-         return {
-            code: `${code}`,
-            msg: `${msg}`
-         }
-      }, [error, errors])
+      // RTK Query hook to trigger initial data fetch (but use Redux state for data access)
+      const { error, isLoading } = useGetFirstPageQuery()
 
       // -------------------------------------------------------------------------
       // UTIL COMPONENTS
@@ -139,15 +132,16 @@ const Kanban = React.memo(
       // EFFECTS
       // -------------------------------------------------------------------------
 
-      useEffect(() => {
-         getFirstPageAction()
-      }, [getFirstPageAction])
 
       useEffect(() => {
-         if (errorState) {
+         if (error) {
+            const errorState = {
+                  code: error.status || 400,
+                  msg: error.data?.message || error.message || 'alert-bad-request'
+               }
             navigate('/error', { state: errorState })
          }
-      }, [errorState, navigate])
+      }, [error, navigate])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC
@@ -158,7 +152,7 @@ const Kanban = React.memo(
       }
 
       return (
-         <Skeleton isLoaded={!loading}>
+         <Skeleton isLoaded={!isLoading}>
             <VStack
                w='fit-content'
                h='fit-content'
@@ -238,40 +232,25 @@ Kanban.displayName = 'Kanban'
 
 // PropTypes validation
 Kanban.propTypes = {
-   getFirstPageAction: PropTypes.func.isRequired,
    dropTaskAction: PropTypes.func.isRequired,
    createGroupAction: PropTypes.func.isRequired,
    createProgressAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
       id: PropTypes.string,
       groupOrder: PropTypes.array.isRequired,
-      progressOrder: PropTypes.array.isRequired,
-      loading: PropTypes.bool.isRequired,
-      errors: PropTypes.array,
-      error: PropTypes.bool
+      progressOrder: PropTypes.array.isRequired
    }).isRequired
 }
 // =============================================================================
 // REDUX SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
 const selectPageData = createSelector(
-   [
-      (state) => state.page.id,
-      (state) => state.page.groupOrder,
-      (state) => state.page.progressOrder,
-      (state) => state.page.loading,
-      (state) => state.page.error,
-      (state) => state.page.errors
-   ],
-   (id, groupOrder, progressOrder, loading, error, errors) => ({
-      id,
-      groupOrder,
-      progressOrder,
-      loading,
-      error,
-      errors
+   [(state) => state.pageSlice],
+   (pageSlice) => ({
+      id: pageSlice.id,
+      groupOrder: pageSlice.groupOrder,
+      progressOrder: pageSlice.progressOrder
    })
 )
 
@@ -284,7 +263,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   getFirstPageAction,
    dropTaskAction,
    createGroupAction,
    createProgressAction

@@ -43,7 +43,6 @@ const Column = ({
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
-
    const { t } = useReactiveTranslation()
    const { colorMode } = useColorMode()
 
@@ -77,7 +76,6 @@ const Column = ({
 
       const droppableId = taskMapIndex.toString()
       const taskPointer = taskMap[taskMapIndex] - taskArray?.length
-
       return {
          taskArray,
          droppableId,
@@ -97,7 +95,7 @@ const Column = ({
                progressColor={progress.color}
             />
          )) || [],
-      [taskData.taskArray, taskData.taskPointer, progress.color]
+      [taskData, progress.color]
    )
 
    // -------------------------------------------------------------------------
@@ -200,11 +198,11 @@ Column.propTypes = {
 // =============================================================================
 
 const mapStateToProps = (state) => ({
-   id: state.page.id,
-   groupOrder: state.page.groupOrder,
-   progressOrder: state.page.progressOrder,
-   taskMap: state.page.taskMap,
-   tasks: state.page.tasks
+   id: state.pageSlice.id,
+   groupOrder: state.pageSlice.groupOrder,
+   progressOrder: state.pageSlice.progressOrder,
+   taskMap: state.pageSlice.taskMap,
+   tasks: state.pageSlice.tasks
 })
 
 const mapDispatchToProps = {

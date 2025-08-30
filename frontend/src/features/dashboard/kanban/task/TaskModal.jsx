@@ -502,7 +502,7 @@ TaskModal.propTypes = {
 // =============================================================================
 
 const selectTaskModalData = createSelector(
-   [(state) => state.task.task, (state) => state.page.id],
+   [(state) => state.task.task, (state) => state.pageSlice.id],
    (task, id) => ({
       task,
       id

@@ -163,7 +163,7 @@ export const syncTaskWithGoogleAction =
          if (getState) {
             const state = getState()
             const calendarRange = state.calendar?.range
-            const currentPageId = state.page?.id
+            const currentPageId = state.pageSlice?.id
             const currentTaskId = state.task?.task?.id
 
             // Reload calendar if range and page ID are available
