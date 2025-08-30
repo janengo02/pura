@@ -37,7 +37,7 @@ export const fatalErrorHandler = (dispatch, pageId, err) => {
  * @returns {void}
  */
 export const commonErrorHandler = (dispatch, err, getState = null) => {
-   const errors = err?.response?.data?.errors || ['Unknown error']
+   const errors = err?.error?.data?.errors || err?.response?.data?.errors || [{title: 'Unknown error', msg: 'An unknown error occurred'}]
    if (errors) {
       errors.forEach((error) =>
          dispatch(setAlert(error.title, error.msg, 'error'))

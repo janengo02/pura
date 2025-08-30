@@ -1,4 +1,6 @@
 import { baseApi } from './baseApi'
+import { optimisticMoveTask, restoreState } from '../reducers/pageSlice'
+import { commonErrorHandler } from '../actions/errorActions'
 
 export const pageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -6,12 +8,12 @@ export const pageApi = baseApi.injectEndpoints({
       query: () => '/page',
       providesTags: ['Page']
     }),
-    
+
     getPage: builder.query({
       query: (pageId) => `/page/${pageId}`,
       providesTags: ['Page']
     }),
-    
+
     // Progress Management
     createProgress: builder.mutation({
       query: ({ pageId, ...progressData }) => ({
@@ -21,7 +23,7 @@ export const pageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Page']
     }),
-    
+
     updateProgress: builder.mutation({
       query: ({ pageId, progressId, ...updates }) => ({
         url: `/progress/${pageId}/${progressId}`,
@@ -30,7 +32,7 @@ export const pageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Page']
     }),
-    
+
     deleteProgress: builder.mutation({
       query: ({ pageId, progressId }) => ({
         url: `/progress/${pageId}/${progressId}`,
@@ -38,7 +40,7 @@ export const pageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Page']
     }),
-    
+
     // Group Management
     createGroup: builder.mutation({
       query: ({ pageId, ...groupData }) => ({
@@ -48,7 +50,7 @@ export const pageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Page']
     }),
-    
+
     updateGroup: builder.mutation({
       query: ({ pageId, groupId, ...updates }) => ({
         url: `/group/${pageId}/${groupId}`,
@@ -57,12 +59,39 @@ export const pageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Page']
     }),
-    
+
     deleteGroup: builder.mutation({
       query: ({ pageId, groupId }) => ({
         url: `/group/${pageId}/${groupId}`,
         method: 'DELETE'
       }),
+      invalidatesTags: ['Page']
+    }),
+
+    // Task Management
+    moveTask: builder.mutation({
+      query: ({ pageId, ...taskData }) => ({
+        url: `/page/move-task/${pageId}`,
+        method: 'POST',
+        body: taskData
+      }),
+      async onQueryStarted({ result }, { dispatch, queryFulfilled, getState }) {
+        // Get current state before optimistic update for potential rollback
+        const stateBefore = getState().pageSlice
+
+        // Optimistic update - immediately update the UI
+        dispatch(optimisticMoveTask(result))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // On failure, restore the original state
+          dispatch(restoreState(stateBefore))
+
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err, getState)
+        }
+      },
       invalidatesTags: ['Page']
     })
   })
@@ -77,5 +106,6 @@ export const {
   useDeleteProgressMutation,
   useCreateGroupMutation,
   useUpdateGroupMutation,
-  useDeleteGroupMutation
+  useDeleteGroupMutation,
+  useMoveTaskMutation
 } = pageApi

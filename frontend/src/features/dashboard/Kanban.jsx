@@ -12,12 +12,11 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { dropTaskAction } from '../../actions/pageActions'
 import { createGroupAction } from '../../actions/groupActions'
 import { createProgressAction } from '../../actions/progressActions'
 
 // RTK Query
-import { useGetFirstPageQuery } from '../../api/pageApi'
+import { useGetFirstPageQuery, useMoveTaskMutation } from '../../api/pageApi'
 
 // External Libraries
 import { DragDropContext } from '@hello-pangea/dnd'
@@ -51,7 +50,6 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 const Kanban = React.memo(
    ({
       // Redux props
-      dropTaskAction,
       createGroupAction,
       createProgressAction,
       pageData: { id, groupOrder, progressOrder }
@@ -60,11 +58,11 @@ const Kanban = React.memo(
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
-
       const navigate = useNavigate()
 
-      // RTK Query hook to trigger initial data fetch (but use Redux state for data access)
+      // RTK Query hooks
       const { error, isLoading } = useGetFirstPageQuery()
+      const [moveTaskMutation] = useMoveTaskMutation()
 
       // -------------------------------------------------------------------------
       // UTIL COMPONENTS
@@ -103,13 +101,13 @@ const Kanban = React.memo(
 
       const onDragEnd = useCallback(
          (result) => {
-            const reqData = {
+            // RTK Query mutation handles optmistic update and rollback automatically
+            moveTaskMutation({
                pageId: id,
                result: result
-            }
-            dropTaskAction(reqData)
+            })
          },
-         [id, dropTaskAction]
+         [id, moveTaskMutation]
       )
 
       const handleCreateProgress = useCallback(
@@ -232,7 +230,6 @@ Kanban.displayName = 'Kanban'
 
 // PropTypes validation
 Kanban.propTypes = {
-   dropTaskAction: PropTypes.func.isRequired,
    createGroupAction: PropTypes.func.isRequired,
    createProgressAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
@@ -263,7 +260,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   dropTaskAction,
    createGroupAction,
    createProgressAction
 }

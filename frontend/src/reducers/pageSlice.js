@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { pageApi } from '../api/pageApi'
-import { getDefaultName, getDefaultSchedule } from './pageReducersHelpers'
+import { getDefaultName, getDefaultSchedule, moveTask as moveTaskHelper } from './pageReducersHelpers'
 
 const pageSlice = createSlice({
   name: 'pageSlice', // Different name to avoid conflicts with pageReducers
@@ -23,7 +23,7 @@ const pageSlice = createSlice({
     updateFilter: (state, action) => {
       const updates = action.payload
       state.filter = { ...state.filter, ...updates }
-      
+
       // Persist to localStorage based on what was updated
       if (updates.schedule !== undefined) {
         localStorage.setItem('filteredSchedule', JSON.stringify(updates.schedule))
@@ -32,11 +32,18 @@ const pageSlice = createSlice({
         localStorage.setItem('filteredName', JSON.stringify(updates.name))
       }
     },
-    setPageError: (state, action) => {
-      state.error = action.payload
+    optimisticMoveTask: (state, action) => {
+      const result = moveTaskHelper({
+        tasks: state.tasks,
+        taskMap: state.taskMap,
+        ...action.payload
+      })
+      state.tasks = result.tasks
+      state.taskMap = result.taskMap
     },
-    clearPageError: (state) => {
-      state.error = null
+    restoreState: (state, action) => {
+      // Restore any state properties provided in payload
+      Object.assign(state, action.payload)
     }
   },
   extraReducers: (builder) => {
@@ -56,5 +63,5 @@ const pageSlice = createSlice({
   }
 })
 
-export const { updateFilter, setPageError, clearPageError } = pageSlice.actions
+export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, restoreState } = pageSlice.actions
 export default pageSlice.reducer
