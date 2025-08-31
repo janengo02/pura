@@ -14,9 +14,11 @@ import { createSelector } from 'reselect'
 import {
    updateTaskScheduleAction,
    removeTaskScheduleSlotAction,
-   syncTaskWithGoogleAction,
-   showTaskModalAction
+   syncTaskWithGoogleAction
 } from '../../../../actions/taskActions'
+
+// RTK Query
+import { useShowTaskModalMutation } from '../../../../api/taskApi'
 import {
    addGoogleAccountAction,
    navigateCalendarToDateAction
@@ -78,7 +80,6 @@ const ScheduleTimeSlot = React.memo(
       addGoogleAccountAction,
       navigateCalendarToDateAction,
       setAlert,
-      showTaskModalAction,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars },
       settingsData: { range }
@@ -87,6 +88,9 @@ const ScheduleTimeSlot = React.memo(
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+
+      // RTK Query hooks
+      const [showTaskModalMutation] = useShowTaskModalMutation()
 
       // -------------------------------------------------------------------------
       // ANIMATION STATE
@@ -103,9 +107,9 @@ const ScheduleTimeSlot = React.memo(
                pageId: pageId,
                taskId: task.id
             }
-            await showTaskModalAction(formData)
+            await showTaskModalMutation(formData)
          }
-      }, [task, pageId, showTaskModalAction])
+      }, [task, pageId, showTaskModalMutation])
 
       const googleReconnectLogin = useGoogleAccountLogin({
          onSuccess: async (code, range) => {
@@ -886,7 +890,6 @@ ScheduleTimeSlot.propTypes = {
    syncTaskWithGoogleAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
-   showTaskModalAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       pageId: PropTypes.string.isRequired
@@ -905,7 +908,7 @@ ScheduleTimeSlot.propTypes = {
 // =============================================================================
 
 const selectScheduleData = createSelector(
-   [(state) => state.task.task, (state) => state.pageSlice.id],
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
    (task, pageId) => ({
       task,
       pageId
@@ -946,8 +949,7 @@ const mapDispatchToProps = {
    syncTaskWithGoogleAction,
    addGoogleAccountAction,
    navigateCalendarToDateAction,
-   setAlert,
-   showTaskModalAction
+   setAlert
 }
 
 // =============================================================================

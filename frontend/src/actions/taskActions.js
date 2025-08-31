@@ -14,6 +14,7 @@ import {
 } from './types'
 import { commonErrorHandler, fatalErrorHandler } from './errorActions'
 import { loadCalendarAction } from './calendarActions'
+import { taskApi } from '../api/taskApi'
 
 /**
  * Delete a task
@@ -36,31 +37,7 @@ export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
       commonErrorHandler(dispatch, err, getState)
    }
 }
-/**
- * Show task modal with task details
- * @param {Object} formData - Form data
- * @param {string} formData.pageId - Page ID
- * @param {string} formData.taskId - Task ID
- * @param {number} [formData.targetEventIndex] - Target event index
- * @returns {Function} Redux thunk
- */
-export const showTaskModalAction = (formData) => async (dispatch) => {
-   try {
-      const res = await api.get(`/task/${formData.pageId}/${formData.taskId}`)
-      dispatch({
-         type: SHOW_TASK,
-         payload: {
-            ...res.data,
-            ...(typeof formData.targetEventIndex === 'number' && {
-               targetEventIndex: formData.targetEventIndex,
-               viewTargetEventAt: new Date()
-            })
-         }
-      })
-   } catch (err) {
-      fatalErrorHandler(dispatch, formData.pageId, err)
-   }
-}
+
 /**
  * Create new task and show modal
  * @param {Object} reqData - Request data
@@ -139,7 +116,7 @@ export const syncTaskWithGoogleAction =
             const state = getState()
             const calendarRange = state.calendar?.range
             const currentPageId = state.pageSlice?.id
-            const currentTaskId = state.task?.task?.id
+            const currentTaskId = state.taskSlice?.task?.id
 
             // Reload calendar if range and page ID are available
             if (calendarRange && calendarRange.length > 0 && currentPageId) {
@@ -148,12 +125,10 @@ export const syncTaskWithGoogleAction =
 
             // Show task modal if both page ID and task ID are available
             if (currentPageId && currentTaskId) {
-               dispatch(
-                  showTaskModalAction({
-                     pageId: currentPageId,
-                     taskId: currentTaskId
-                  })
-               )
+               dispatch(taskApi.endpoints.showTaskModal.initiate({
+                  pageId: currentPageId,
+                  taskId: currentTaskId
+               }))
             }
          }
       } catch (err) {

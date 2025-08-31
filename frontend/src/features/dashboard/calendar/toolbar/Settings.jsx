@@ -45,7 +45,7 @@ import {
    setDefaultGoogleAccountAction
 } from '../../../../actions/calendarActions'
 import { setAlert } from '../../../../reducers/alertSlice'
-import { showTaskModalAction } from '../../../../actions/taskActions'
+import { useShowTaskModalMutation } from '../../../../api/taskApi'
 
 // Utils
 import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
@@ -88,7 +88,6 @@ const Settings = React.memo(
       disconnectGoogleAccountAction,
       setDefaultGoogleAccountAction,
       setAlert,
-      showTaskModalAction,
       settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
       taskData: { task, pageId }
    }) => {
@@ -97,6 +96,9 @@ const Settings = React.memo(
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const [isSettingDefault, setIsSettingDefault] = useState(false)
+      
+      // RTK Query hooks
+      const [showTaskModalMutation] = useShowTaskModalMutation()
 
       // -------------------------------------------------------------------------
       // TASK MODAL REFRESH HELPER
@@ -109,9 +111,9 @@ const Settings = React.memo(
                pageId: pageId,
                taskId: task.id
             }
-            await showTaskModalAction(formData)
+            await showTaskModalMutation(formData)
          }
-      }, [task, pageId, showTaskModalAction])
+      }, [task, pageId, showTaskModalMutation])
 
       const googleLogin = useGoogleAccountLogin({
          onSuccess: async (code, range) => {
@@ -352,7 +354,6 @@ Settings.propTypes = {
    disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setDefaultGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
-   showTaskModalAction: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
       googleCalendars: PropTypes.array.isRequired,
@@ -385,7 +386,7 @@ const selectSettingsData = createSelector(
 )
 
 const selectTaskData = createSelector(
-   [(state) => state.task.task, (state) => state.pageSlice.id],
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
    (task, pageId) => ({
       task,
       pageId
@@ -406,8 +407,7 @@ const mapDispatchToProps = {
    addGoogleAccountAction,
    disconnectGoogleAccountAction,
    setDefaultGoogleAccountAction,
-   setAlert,
-   showTaskModalAction
+   setAlert
 }
 
 // =============================================================================

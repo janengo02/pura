@@ -11,15 +11,16 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.bubble.css'
 
 // Redux
-import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
+import { useSelector, useDispatch } from 'react-redux'
 
 // Actions
 import {
-   clearTaskAction,
    deleteTaskAction,
    updateTaskBasicInfoAction
 } from '../../../../actions/taskActions'
+
+// RTK Query & Slice
+import { clearTask } from '../../../../reducers/taskSlice'
 
 // Form Handling
 import { FormProvider, useForm } from 'react-hook-form'
@@ -103,19 +104,18 @@ const isEmptyQuillContent = (content) => {
 
 const TaskModal = React.memo(
    ({
-      leftWidth = '100%',
-
-      // Redux props
-      taskData: { task, id },
-      deleteTaskAction,
-      updateTaskBasicInfoAction,
-      clearTaskAction
+      leftWidth = '100%'
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
 
       const { t } = useReactiveTranslation()
+      const dispatch = useDispatch()
+
+      // Redux state
+      const task = useSelector((state) => state.taskSlice.task)
+      const id = useSelector((state) => state.pageSlice.id)
 
       // Modal state management
       const modalMenu = useDisclosure()
@@ -161,8 +161,8 @@ const TaskModal = React.memo(
             pageId: id,
             taskId: task?.id
          }
-         deleteTaskAction(formData)
-      }, [id, task?.id, deleteTaskAction])
+         dispatch(deleteTaskAction(formData))
+      }, [id, task?.id, dispatch])
 
       const handleUpdateTitle = useCallback(async () => {
          if (!task?.id) return
@@ -171,8 +171,8 @@ const TaskModal = React.memo(
             taskId: task?.id,
             title: taskTitle || t('placeholder-untitled')
          }
-         await updateTaskBasicInfoAction(formData)
-      }, [id, task?.id, taskTitle, updateTaskBasicInfoAction, t])
+         await dispatch(updateTaskBasicInfoAction(formData))
+      }, [id, task?.id, taskTitle, dispatch, t])
 
       const handleUpdateContent = useCallback(async () => {
          if (!task?.id) return
@@ -185,8 +185,8 @@ const TaskModal = React.memo(
             taskId: task?.id,
             content: cleanContent
          }
-         await updateTaskBasicInfoAction(formData)
-      }, [id, task?.id, taskContent, updateTaskBasicInfoAction])
+         await dispatch(updateTaskBasicInfoAction(formData))
+      }, [id, task?.id, taskContent, dispatch])
 
       const handleTitleChange = useCallback((e) => {
          e.preventDefault()
@@ -248,8 +248,8 @@ const TaskModal = React.memo(
 
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
-         clearTaskAction()
-      }, [clearTaskAction])
+         dispatch(clearTask())
+      }, [dispatch])
       // -------------------------------------------------------------------------
       // FOCUS MANAGEMENT
       // -------------------------------------------------------------------------
@@ -488,43 +488,10 @@ TaskModal.displayName = 'TaskModal'
 // PropTypes validation
 TaskModal.propTypes = {
    leftWidth: PropTypes.string,
-   taskData: PropTypes.shape({
-      task: PropTypes.object,
-      id: PropTypes.string
-   }).isRequired,
-   updateTaskBasicInfoAction: PropTypes.func.isRequired,
-   deleteTaskAction: PropTypes.func.isRequired,
-   clearTaskAction: PropTypes.func.isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectTaskModalData = createSelector(
-   [(state) => state.task.task, (state) => state.pageSlice.id],
-   (task, id) => ({
-      task,
-      id
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   taskData: selectTaskModalData(state)
-})
-
-const mapDispatchToProps = {
-   updateTaskBasicInfoAction,
-   deleteTaskAction,
-   clearTaskAction
 }
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(TaskModal)
+export default TaskModal

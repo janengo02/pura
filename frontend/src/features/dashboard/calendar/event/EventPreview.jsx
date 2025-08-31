@@ -41,10 +41,10 @@ import EventCalendarInfo from './EventCalendarInfo'
 
 // Actions & Hooks
 import { deleteGoogleEventAction } from '../../../../actions/calendarActions'
-import {
-   removeTaskScheduleSlotAction,
-   showTaskModalAction
-} from '../../../../actions/taskActions'
+import { removeTaskScheduleSlotAction } from '../../../../actions/taskActions'
+
+// RTK Query
+import { useShowTaskModalMutation } from '../../../../api/taskApi'
 import { showEventEditModal } from '../../../../reducers/eventSlice'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
@@ -100,7 +100,6 @@ const EventPreview = React.memo(
       // Redux props
       deleteGoogleEventAction,
       removeTaskScheduleSlotAction,
-      showTaskModalAction,
       showEventEditModal,
       eventData: { pageId }
    }) => {
@@ -110,6 +109,9 @@ const EventPreview = React.memo(
 
       const { t } = useReactiveTranslation()
       const { colorMode } = useColorMode()
+      
+      // RTK Query hooks
+      const [showTaskModalMutation] = useShowTaskModalMutation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -159,8 +161,8 @@ const EventPreview = React.memo(
             taskId: taskId,
             targetEventIndex: event.puraScheduleIndex
          }
-         await showTaskModalAction(formData)
-      }, [showTaskModalAction, pageId, taskId, event.puraScheduleIndex])
+         await showTaskModalMutation(formData)
+      }, [showTaskModalMutation, pageId, taskId, event.puraScheduleIndex])
 
       const handleOpenGoogleEvent = () => {
          if (event.htmlLink) {
@@ -416,7 +418,6 @@ EventPreview.propTypes = {
    }).isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
-   showTaskModalAction: PropTypes.func.isRequired,
    showEventEditModal: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
       pageId: PropTypes.string.isRequired
@@ -445,7 +446,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    deleteGoogleEventAction,
    removeTaskScheduleSlotAction,
-   showTaskModalAction,
    showEventEditModal
 }
 

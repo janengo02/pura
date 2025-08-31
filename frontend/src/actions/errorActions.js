@@ -1,8 +1,8 @@
 import { setAlert } from '../reducers/alertSlice'
 import { loadCalendarAction } from './calendarActions'
-import { showTaskModalAction } from './taskActions'
 import { PAGE_ERROR } from './types'
 import { pageApi } from '../api/pageApi'
+import { taskApi } from '../api/taskApi'
 
 /**
  * Handle fatal page errors
@@ -51,7 +51,7 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
       const state = getState()
       const calendarRange = state.calendar?.range
       const currentPageId = state.pageSlice?.id
-      const currentTaskId = state.task?.task?.id
+      const currentTaskId = state.taskSlice?.task?.id
 
       // Reload calendar if range and page ID are available
       if (calendarRange && calendarRange.length > 0 && currentPageId) {
@@ -60,12 +60,10 @@ export const commonErrorHandler = (dispatch, err, getState = null) => {
 
       // Show task modal if both page ID and task ID are available
       if (currentPageId && currentTaskId) {
-         dispatch(
-            showTaskModalAction({
-               pageId: currentPageId,
-               taskId: currentTaskId
-            })
-         )
+         dispatch(taskApi.endpoints.showTaskModal.initiate({
+            pageId: currentPageId,
+            taskId: currentTaskId
+         }))
       }
    }
 }

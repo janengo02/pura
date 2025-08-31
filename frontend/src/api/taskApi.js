@@ -7,6 +7,24 @@ export const taskApi = baseApi.injectEndpoints({
       providesTags: ['Task']
     }),
 
+    showTaskModal: builder.mutation({
+      query: ({ pageId, taskId }) => ({
+        url: `/task/${pageId}/${taskId}`,
+        method: 'GET'
+      }),
+      transformResponse: (response, meta, arg) => {
+        // Add targetEventIndex and viewTargetEventAt if provided
+        return {
+          ...response,
+          ...(typeof arg.targetEventIndex === 'number' && {
+            targetEventIndex: arg.targetEventIndex,
+            viewTargetEventAt: new Date()
+          })
+        }
+      },
+      providesTags: ['Task']
+    }),
+
     createTask: builder.mutation({
       query: ({ pageId, ...taskData }) => ({
         url: `/task/new/${pageId}`,
@@ -82,6 +100,7 @@ export const taskApi = baseApi.injectEndpoints({
 
 export const {
   useGetTaskQuery,
+  useShowTaskModalMutation,
   useCreateTaskMutation,
   useUpdateTaskBasicMutation,
   useDeleteTaskMutation,

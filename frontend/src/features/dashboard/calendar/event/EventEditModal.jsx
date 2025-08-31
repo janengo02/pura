@@ -34,7 +34,6 @@ import {
    updateGoogleEventAction
 } from '../../../../actions/calendarActions'
 import {
-   showTaskModalAction,
    updateTaskScheduleAction,
    updateTaskBasicInfoAction
 } from '../../../../actions/taskActions'
@@ -471,7 +470,6 @@ EventEditModal.propTypes = {
    updateTaskBasicInfoAction: PropTypes.func.isRequired,
    clearEventEditModal: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
-   showTaskModalAction: PropTypes.func.isRequired,
    deleteGoogleEventAction: PropTypes.func.isRequired
 }
 
@@ -510,7 +508,7 @@ const selectGoogleCalendars = createSelector(
 )
 
 const selectTaskData = createSelector(
-   [(state) => state.task.task, (state) => state.pageSlice.id],
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
    (task, pageId) => ({
       task,
       pageId
@@ -533,7 +531,6 @@ const mapDispatchToProps = {
    updateTaskScheduleAction,
    updateTaskBasicInfoAction,
    clearEventEditModal,
-   showTaskModalAction,
    deleteGoogleEventAction
 }
 

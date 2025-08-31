@@ -136,7 +136,7 @@ ScheduleSelect.propTypes = {
 // =============================================================================
 
 const selectScheduleSelectData = createSelector(
-   [(state) => state.task.task, (state) => state.pageSlice.id],
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
    (task, id) => ({
       task,
       id

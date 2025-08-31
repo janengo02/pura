@@ -7,14 +7,10 @@ import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-// Actions
-import {
-   deleteTaskAction,
-   updateTaskBasicInfoAction,
-   showTaskModalAction
-} from '../../../../actions/taskActions'
+// RTK Query
+import { useShowTaskModalMutation, useDeleteTaskMutation, useUpdateTaskBasicMutation } from '../../../../api/taskApi'
 
 // External Libraries
 import { Draggable } from '@hello-pangea/dnd'
@@ -59,13 +55,7 @@ const TaskCard = React.memo(
       isNew = false,
       draggableId,
       taskIndex,
-      progressColor,
-      // Redux props
-      id,
-      filter,
-      deleteTaskAction,
-      updateTaskBasicInfoAction,
-      showTaskModalAction
+      progressColor
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
@@ -80,6 +70,14 @@ const TaskCard = React.memo(
             title: isNew ? '' : task.title
          }
       })
+
+      // Redux state
+      const { id, filter } = useSelector((state) => state.pageSlice)
+
+      // RTK Query hooks
+      const [showTaskModalMutation] = useShowTaskModalMutation()
+      const [deleteTaskMutation] = useDeleteTaskMutation()
+      const [updateTaskBasicMutation] = useUpdateTaskBasicMutation()
 
       // -------------------------------------------------------------------------
       // EFFECTS
@@ -167,8 +165,8 @@ const TaskCard = React.memo(
             pageId: id,
             taskId: task.id
          }
-         deleteTaskAction(formData)
-      }, [id, task.id, deleteTaskAction])
+         deleteTaskMutation(formData)
+      }, [id, task.id, deleteTaskMutation])
 
       const handleSubmitTitle = methods.handleSubmit(async (data) => {
          const formData = {
@@ -176,7 +174,7 @@ const TaskCard = React.memo(
             taskId: task.id,
             title: data.title || t('placeholder-untitled')
          }
-         await updateTaskBasicInfoAction(formData)
+         await updateTaskBasicMutation(formData)
          titleEditing.end()
       })
 
@@ -185,8 +183,8 @@ const TaskCard = React.memo(
             pageId: id,
             taskId: task.id
          }
-         await showTaskModalAction(formData)
-      }, [id, task.id, showTaskModalAction])
+         await showTaskModalMutation(formData)
+      }, [id, task.id, showTaskModalMutation])
 
       const handleMouseEnter = useCallback(
          (e) => {
@@ -385,32 +383,11 @@ TaskCard.propTypes = {
    isNew: PropTypes.bool,
    draggableId: PropTypes.string.isRequired,
    taskIndex: PropTypes.number.isRequired,
-   progressColor: PropTypes.string.isRequired,
-   // Redux props
-   id: PropTypes.string.isRequired,
-   filter: PropTypes.object.isRequired,
-   updateTaskBasicInfoAction: PropTypes.func.isRequired,
-   deleteTaskAction: PropTypes.func.isRequired,
-   showTaskModalAction: PropTypes.func.isRequired
-}
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   id: state.pageSlice.id,
-   filter: state.pageSlice.filter
-})
-
-const mapDispatchToProps = {
-   updateTaskBasicInfoAction,
-   deleteTaskAction,
-   showTaskModalAction
+   progressColor: PropTypes.string.isRequired
 }
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(TaskCard)
+export default TaskCard

@@ -686,7 +686,7 @@ const selectCalendarData = createSelector(
       (state) => state.calendar,
       (state) => state.language?.current || 'en',
       (state) => state.pageSlice.id,
-      (state) => state.task.task?.id
+      (state) => state.taskSlice.task?.id
    ],
    (googleAccount, currentLanguage, pageId, currentTaskId) => ({
       googleAccount,
