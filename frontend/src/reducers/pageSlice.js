@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { pageApi } from '../api/pageApi'
-import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper } from './pageReducersHelpers'
+import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper } from './pageReducersHelpers'
 
 const pageSlice = createSlice({
   name: 'pageSlice', // Different name to avoid conflicts with pageReducers
@@ -48,6 +48,22 @@ const pageSlice = createSlice({
       })
       state.groupOrder = result.groupOrder
     },
+    optimisticDeleteGroup: (state, action) => {
+      const { groupId } = action.payload
+      const groupIndex = state.groupOrder.findIndex(g => g.id === groupId)
+
+      const result = deleteGroupHelper({
+        groupIndex,
+        progressOrder: state.progressOrder,
+        groupOrder: state.groupOrder,
+        tasks: state.tasks,
+        taskMap: state.taskMap
+      })
+
+      state.groupOrder = result.groupOrder
+      state.tasks = result.tasks
+      state.taskMap = result.taskMap
+    },
     restoreState: (state, action) => {
       // Restore any state properties provided in payload
       Object.assign(state, action.payload)
@@ -70,5 +86,5 @@ const pageSlice = createSlice({
   }
 })
 
-export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, optimisticUpdateGroup, restoreState } = pageSlice.actions
+export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, optimisticUpdateGroup, optimisticDeleteGroup, restoreState } = pageSlice.actions
 export default pageSlice.reducer

@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi'
-import { optimisticMoveTask, optimisticUpdateGroup, restoreState } from '../reducers/pageSlice'
+import { optimisticMoveTask, optimisticUpdateGroup, optimisticDeleteGroup, restoreState } from '../reducers/pageSlice'
 import { commonErrorHandler } from '../actions/errorActions'
 
 export const pageApi = baseApi.injectEndpoints({
@@ -82,6 +82,25 @@ export const pageApi = baseApi.injectEndpoints({
         url: `/group/${pageId}/${groupId}`,
         method: 'DELETE'
       }),
+      async onQueryStarted({ groupId }, { dispatch, queryFulfilled, getState }) {
+        // Get current state before optimistic update for potential rollback
+        const stateBefore = getState().pageSlice
+
+        // Optimistic update - immediately remove the group from UI
+        dispatch(optimisticDeleteGroup({ groupId }))
+
+        // @todo: Update calendar events or reload calendar
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // On failure, restore the original state
+          dispatch(restoreState(stateBefore))
+
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err, getState)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 

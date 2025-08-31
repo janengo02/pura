@@ -327,7 +327,7 @@ export const createGroup = ({
    return { groupOrder: newGroupOrder, taskMap: newTaskMap }
 }
 
-export const deleteGroup = ({
+export const deleteGroupHelper = ({
    groupIndex,
    progressOrder,
    groupOrder,

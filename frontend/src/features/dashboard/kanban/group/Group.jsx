@@ -9,13 +9,9 @@ import PropTypes from 'prop-types'
 // Redux
 import { connect } from 'react-redux'
 
-// Actions
-import {
-   deleteGroupAction
-} from '../../../../actions/groupActions'
 
 // RTK Query
-import { useUpdateGroupMutation } from '../../../../api/pageApi'
+import { useUpdateGroupMutation, useDeleteGroupMutation } from '../../../../api/pageApi'
 
 // UI Components
 import {
@@ -70,8 +66,7 @@ const Group = React.memo(
       children = null,
       // Redux props
       id,
-      groupOrder,
-      deleteGroupAction
+      groupOrder
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
@@ -81,6 +76,7 @@ const Group = React.memo(
       
       // RTK Query hooks
       const [updateGroupMutation] = useUpdateGroupMutation()
+      const [deleteGroupMutation] = useDeleteGroupMutation()
 
       const groupHover = useHover()
       const titleEditing = useEditing()
@@ -115,8 +111,8 @@ const Group = React.memo(
             pageId: id,
             groupId: group.id
          }
-         deleteGroupAction(formData)
-      }, [id, group.id, deleteGroupAction])
+         deleteGroupMutation(formData)
+      }, [id, group.id, deleteGroupMutation])
 
       const handleSubmitTitle = methods.handleSubmit(async (data) => {
          const formData = {
@@ -318,7 +314,6 @@ Group.propTypes = {
    // Redux props
    id: PropTypes.string.isRequired,
    groupOrder: PropTypes.array.isRequired,
-   deleteGroupAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -326,8 +321,6 @@ const mapStateToProps = (state) => ({
    groupOrder: state.pageSlice.groupOrder
 })
 
-const mapDispatchToProps = {
-   deleteGroupAction
-}
+const mapDispatchToProps = {}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Group)

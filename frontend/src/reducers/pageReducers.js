@@ -25,7 +25,6 @@ import {
    findGroupIndex,
    getDefaultSchedule,
    getDefaultName,
-   deleteGroup,
    createProgress,
    deleteProgress,
    createTask,
@@ -96,19 +95,6 @@ function pageReducer(state = initialState, action) {
          }
 
 
-      case DELETE_GROUP:
-         return {
-            ...state,
-            ...deleteGroup({
-               groupIndex: findGroupIndex(state.groupOrder, payload.groupId),
-               progressOrder: state.progressOrder,
-               groupOrder: state.groupOrder,
-               tasks: state.tasks,
-               taskMap: state.taskMap
-            }),
-            loading: false,
-            error: false
-         }
       case CREATE_TASK:
          return {
             ...state,
