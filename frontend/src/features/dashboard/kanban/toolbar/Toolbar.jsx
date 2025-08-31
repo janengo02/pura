@@ -10,8 +10,6 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
-// Actions
-import { createTaskModalAction } from '../../../../actions/taskActions'
 
 // UI Components
 import { Flex, Spacer, Button } from '@chakra-ui/react'
@@ -25,6 +23,7 @@ import Filter from './Filter'
 
 // Utils
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
+import { useCreateTaskMutation, useShowTaskModalMutation } from '../../../../api/taskApi'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -33,10 +32,17 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 const Toolbar = React.memo(
    ({
       // Redux props
-      createTaskModalAction,
       pageData: { id, groupOrder, progressOrder }
    }) => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+
+      // RTK Query hooks
+      const [createTaskMutation] = useCreateTaskMutation()
+      const [showTaskModalMutation] = useShowTaskModalMutation()
+
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -58,10 +64,18 @@ const Toolbar = React.memo(
          async (e) => {
             e.preventDefault()
             if (groupOrder.length > 0 && progressOrder.length > 0) {
-               await createTaskModalAction(newTaskInfo)
+               const result = await createTaskMutation(newTaskInfo)
+               if (result?.data?.task?.id) {
+                  const taskData = {
+                     pageId: id,
+                     taskId: result.data.task.id
+                  }
+                  await showTaskModalMutation(taskData)
+               }
+
             }
          },
-         [createTaskModalAction, newTaskInfo, groupOrder, progressOrder]
+         [createTaskMutation, showTaskModalMutation, newTaskInfo, groupOrder, progressOrder, id]
       )
 
       // -------------------------------------------------------------------------
@@ -109,7 +123,6 @@ Toolbar.displayName = 'Toolbar'
 
 // PropTypes validation
 Toolbar.propTypes = {
-   createTaskModalAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
       id: PropTypes.string,
       groupOrder: PropTypes.array.isRequired,
@@ -143,7 +156,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   createTaskModalAction
 }
 
 // =============================================================================

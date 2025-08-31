@@ -4,7 +4,6 @@
 
 import {
    SHOW_TASK,
-   CLEAR_TASK,
    UPDATE_TASK_BASIC,
    UPDATE_TASK_SCHEDULE,
    CREATE_TASK_SCHEDULE,
@@ -151,7 +150,6 @@ function taskReducer(state = initialState, action) {
                   : state.task
          }
 
-      case CLEAR_TASK:
       case DELETE_TASK:
          return {
             ...state,

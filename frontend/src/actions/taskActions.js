@@ -1,10 +1,7 @@
 import { api } from '../utils'
 import {
-   CLEAR_TASK,
-   CREATE_TASK,
    DELETE_TASK,
    GET_PAGE,
-   SHOW_TASK,
    MOVE_TASK,
    UPDATE_TASK_BASIC,
    UPDATE_TASK_SCHEDULE,
@@ -36,50 +33,6 @@ export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
    } catch (err) {
       commonErrorHandler(dispatch, err, getState)
    }
-}
-
-/**
- * Create new task and show modal
- * @param {Object} reqData - Request data
- * @param {string} reqData.pageId - Page ID
- * @param {string} reqData.groupId - Group ID
- * @param {string} reqData.progressId - Progress ID
- * @returns {Function} Redux thunk
- */
-export const createTaskModalAction =
-   (reqData) => async (dispatch, getState) => {
-      try {
-         const res = await api.post(`/task/new/${reqData.pageId}`, reqData)
-         const res_task = await api.get(
-            `/task/${reqData.pageId}/${res.data.task.id}`
-         )
-         dispatch({
-            type: SHOW_TASK,
-            payload: {
-               ...res_task.data
-            }
-         })
-         dispatch({
-            type: CREATE_TASK,
-            payload: {
-               ...reqData,
-               newTask: res.data.task
-            }
-         })
-      } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
-      }
-   }
-
-/**
- * Clear task modal state
- * @returns {Function} Redux thunk
- */
-export const clearTaskAction = () => (dispatch) => {
-   dispatch({
-      type: CLEAR_TASK,
-      payload: null
-   })
 }
 
 /**
