@@ -434,39 +434,6 @@ export const deleteProgressHelper = ({
    }
 }
 
-export const createTask = ({
-   new_task_info,
-   groupOrder,
-   progressOrder,
-   taskMap,
-   tasks
-}) => {
-   const { groupId, progressId, newTask } = new_task_info
-
-   const progressIndex = progressOrder.findIndex((p) => p.id === progressId)
-   const groupIndex = groupOrder.findIndex((g) => g.id === groupId)
-   if (progressIndex === -1 || groupIndex === -1) {
-      return { tasks: [...tasks], taskMap: [...taskMap] }
-   }
-
-   const progressCount = progressOrder.length
-   const taskMapIndex = groupIndex * progressCount + progressIndex
-
-   const newTaskMap = [...taskMap]
-   for (let i = taskMapIndex; i < newTaskMap.length; i++) {
-      newTaskMap[i]++
-   }
-
-   const insertIndex = newTaskMap[taskMapIndex] - 1
-   const newTasks = [...tasks]
-   newTasks.splice(insertIndex, 0, newTask)
-
-   return {
-      tasks: newTasks,
-      taskMap: newTaskMap
-   }
-}
-
 export const deleteTask = ({ taskId, taskMap, tasks }) => {
    const taskIndex = tasks.findIndex((t) => t.id === taskId)
    if (taskIndex === -1) {

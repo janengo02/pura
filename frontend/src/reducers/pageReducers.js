@@ -1,6 +1,5 @@
 import {
    PAGE_ERROR,
-   CREATE_TASK,
    UPDATE_TASK_BASIC,
    DELETE_TASK,
    CREATE_TASK_SCHEDULE,
@@ -18,7 +17,6 @@ import {
    syncTaskScheduleInPage,
    getDefaultSchedule,
    getDefaultName,
-   createTask,
    deleteTask
 } from './pageReducersHelpers'
 
@@ -44,20 +42,6 @@ function pageReducer(state = initialState, action) {
    const { type, payload } = action
 
    switch (type) {
-
-      case CREATE_TASK:
-         return {
-            ...state,
-            ...createTask({
-               new_task_info: payload,
-               groupOrder: state.groupOrder,
-               progressOrder: state.progressOrder,
-               taskMap: state.taskMap,
-               tasks: state.tasks
-            }),
-            loading: false,
-            error: false
-         }
       case UPDATE_TASK_BASIC:
          return {
             ...state,

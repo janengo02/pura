@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { pageApi } from '../api/pageApi'
-import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper, createTask as createTaskHelper } from './pageReducersHelpers'
+import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper } from './pageReducersHelpers'
 
 const pageSlice = createSlice({
   name: 'pageSlice', // Different name to avoid conflicts with pageReducers
