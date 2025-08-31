@@ -13,7 +13,7 @@ export const updateProgress = ({ progressOrder, updatedProgress }) => {
    return { progressOrder: newProgressOrder }
 }
 
-export const updateGroup = ({ groupOrder, updatedGroup }) => {
+export const updateGroupHelper = ({ groupOrder, updatedGroup }) => {
    const { title, color, groupId } = updatedGroup
    const newGroupOrder = groupOrder.map((g) =>
       g.id === groupId
@@ -250,7 +250,7 @@ export const getDefaultName = () => {
  * @param {string} params.draggableId - ID of the dragged task
  * @returns {Object} Updated tasks and taskMap arrays
  */
-export const moveTask = ({
+export const moveTaskHelper = ({
    tasks,
    taskMap,
    destination,

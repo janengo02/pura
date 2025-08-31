@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi'
-import { optimisticMoveTask, restoreState } from '../reducers/pageSlice'
+import { optimisticMoveTask, optimisticUpdateGroup, restoreState } from '../reducers/pageSlice'
 import { commonErrorHandler } from '../actions/errorActions'
 
 export const pageApi = baseApi.injectEndpoints({
@@ -53,10 +53,27 @@ export const pageApi = baseApi.injectEndpoints({
 
     updateGroup: builder.mutation({
       query: ({ pageId, groupId, ...updates }) => ({
-        url: `/group/${pageId}/${groupId}`,
-        method: 'PATCH',
+        url: `/group/update/${pageId}/${groupId}`,
+        method: 'POST',
         body: updates
       }),
+      async onQueryStarted({ groupId, ...updates }, { dispatch, queryFulfilled, getState }) {
+        // Get current state before optimistic update for potential rollback
+        const stateBefore = getState().pageSlice
+
+        // Optimistic update - immediately update the UI
+        dispatch(optimisticUpdateGroup({ groupId, ...updates }))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // On failure, restore the original state
+          dispatch(restoreState(stateBefore))
+
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err, getState)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 

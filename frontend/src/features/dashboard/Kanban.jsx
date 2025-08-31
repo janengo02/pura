@@ -12,11 +12,10 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
-import { createGroupAction } from '../../actions/groupActions'
 import { createProgressAction } from '../../actions/progressActions'
 
 // RTK Query
-import { useGetFirstPageQuery, useMoveTaskMutation } from '../../api/pageApi'
+import { useGetFirstPageQuery, useMoveTaskMutation, useCreateGroupMutation } from '../../api/pageApi'
 
 // External Libraries
 import { DragDropContext } from '@hello-pangea/dnd'
@@ -50,7 +49,6 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 const Kanban = React.memo(
    ({
       // Redux props
-      createGroupAction,
       createProgressAction,
       pageData: { id, groupOrder, progressOrder }
    }) => {
@@ -63,6 +61,7 @@ const Kanban = React.memo(
       // RTK Query hooks
       const { error, isLoading } = useGetFirstPageQuery()
       const [moveTaskMutation] = useMoveTaskMutation()
+      const [createGroupMutation] = useCreateGroupMutation()
 
       // -------------------------------------------------------------------------
       // UTIL COMPONENTS
@@ -121,9 +120,9 @@ const Kanban = React.memo(
       const handleCreateGroup = useCallback(
          async (e) => {
             e.preventDefault()
-            createGroupAction({ pageId: id })
+            createGroupMutation({ pageId: id })
          },
-         [id, createGroupAction]
+         [id, createGroupMutation]
       )
 
       // -------------------------------------------------------------------------
@@ -230,7 +229,6 @@ Kanban.displayName = 'Kanban'
 
 // PropTypes validation
 Kanban.propTypes = {
-   createGroupAction: PropTypes.func.isRequired,
    createProgressAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
       id: PropTypes.string,
@@ -260,7 +258,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   createGroupAction,
    createProgressAction
 }
 

@@ -11,9 +11,11 @@ import { connect } from 'react-redux'
 
 // Actions
 import {
-   deleteGroupAction,
-   updateGroupAction
+   deleteGroupAction
 } from '../../../../actions/groupActions'
+
+// RTK Query
+import { useUpdateGroupMutation } from '../../../../api/pageApi'
 
 // UI Components
 import {
@@ -69,7 +71,6 @@ const Group = React.memo(
       // Redux props
       id,
       groupOrder,
-      updateGroupAction,
       deleteGroupAction
    }) => {
       // -------------------------------------------------------------------------
@@ -77,6 +78,9 @@ const Group = React.memo(
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const { colorMode } = useColorMode()
+      
+      // RTK Query hooks
+      const [updateGroupMutation] = useUpdateGroupMutation()
 
       const groupHover = useHover()
       const titleEditing = useEditing()
@@ -120,7 +124,7 @@ const Group = React.memo(
             groupId: group.id,
             title: data.title || t('placeholder-untitled')
          }
-         await updateGroupAction(formData)
+         await updateGroupMutation(formData)
          titleEditing.end()
       })
 
@@ -131,9 +135,9 @@ const Group = React.memo(
                groupId: group.id,
                color: color
             }
-            updateGroupAction(formData)
+            updateGroupMutation(formData)
          },
-         [id, group.id, updateGroupAction]
+         [id, group.id, updateGroupMutation]
       )
 
       const handleMouseEnter = useCallback(
@@ -314,7 +318,6 @@ Group.propTypes = {
    // Redux props
    id: PropTypes.string.isRequired,
    groupOrder: PropTypes.array.isRequired,
-   updateGroupAction: PropTypes.func.isRequired,
    deleteGroupAction: PropTypes.func.isRequired
 }
 
@@ -324,8 +327,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   deleteGroupAction,
-   updateGroupAction
+   deleteGroupAction
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Group)
