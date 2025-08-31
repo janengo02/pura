@@ -11,11 +11,9 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
-// Actions
-import { createProgressAction } from '../../actions/progressActions'
 
 // RTK Query
-import { useGetFirstPageQuery, useMoveTaskMutation, useCreateGroupMutation } from '../../api/pageApi'
+import { useGetFirstPageQuery, useMoveTaskMutation, useCreateGroupMutation, useCreateProgressMutation } from '../../api/pageApi'
 
 // External Libraries
 import { DragDropContext } from '@hello-pangea/dnd'
@@ -49,7 +47,6 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 const Kanban = React.memo(
    ({
       // Redux props
-      createProgressAction,
       pageData: { id, groupOrder, progressOrder }
    }) => {
       // -------------------------------------------------------------------------
@@ -62,6 +59,7 @@ const Kanban = React.memo(
       const { error, isLoading } = useGetFirstPageQuery()
       const [moveTaskMutation] = useMoveTaskMutation()
       const [createGroupMutation] = useCreateGroupMutation()
+      const [createProgressMutation] = useCreateProgressMutation()
 
       // -------------------------------------------------------------------------
       // UTIL COMPONENTS
@@ -112,9 +110,9 @@ const Kanban = React.memo(
       const handleCreateProgress = useCallback(
          async (e) => {
             e.preventDefault()
-            createProgressAction({ pageId: id })
+            createProgressMutation({ pageId: id })
          },
-         [id, createProgressAction]
+         [id, createProgressMutation]
       )
 
       const handleCreateGroup = useCallback(
@@ -229,7 +227,6 @@ Kanban.displayName = 'Kanban'
 
 // PropTypes validation
 Kanban.propTypes = {
-   createProgressAction: PropTypes.func.isRequired,
    pageData: PropTypes.shape({
       id: PropTypes.string,
       groupOrder: PropTypes.array.isRequired,
@@ -257,9 +254,7 @@ const mapStateToProps = (state) => ({
    pageData: selectPageData(state)
 })
 
-const mapDispatchToProps = {
-   createProgressAction
-}
+const mapDispatchToProps = {}
 
 // =============================================================================
 // EXPORT

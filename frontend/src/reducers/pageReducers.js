@@ -1,9 +1,5 @@
 import {
    PAGE_ERROR,
-   CREATE_PROGRESS,
-   UPDATE_PROGRESS,
-   DELETE_PROGRESS,
-   DELETE_GROUP,
    CREATE_TASK,
    UPDATE_TASK_BASIC,
    DELETE_TASK,
@@ -15,18 +11,13 @@ import {
 } from '../actions/types'
 
 import {
-   updateProgress,
    updateTask,
    addPageTaskScheduleSlot,
    removePageTaskScheduleSlot,
    updatePageTaskScheduleSlot,
    syncTaskScheduleInPage,
-   findProgressIndex,
-   findGroupIndex,
    getDefaultSchedule,
    getDefaultName,
-   createProgress,
-   deleteProgress,
    createTask,
    deleteTask
 } from './pageReducersHelpers'
@@ -53,47 +44,6 @@ function pageReducer(state = initialState, action) {
    const { type, payload } = action
 
    switch (type) {
-
-      case CREATE_PROGRESS:
-         return {
-            ...state,
-            ...createProgress({
-               progressOrder: state.progressOrder,
-               groupOrder: state.groupOrder,
-               taskMap: state.taskMap,
-               newProgress: payload
-            }),
-            loading: false,
-            error: false
-         }
-      case UPDATE_PROGRESS:
-         return {
-            ...state,
-            ...updateProgress({
-               progressOrder: state.progressOrder,
-               updatedProgress: payload
-            }),
-            loading: false,
-            error: false
-         }
-
-      case DELETE_PROGRESS:
-         return {
-            ...state,
-            ...deleteProgress({
-               progressIndex: findProgressIndex(
-                  state.progressOrder,
-                  payload.progressId
-               ),
-               progressOrder: state.progressOrder,
-               groupOrder: state.groupOrder,
-               tasks: state.tasks,
-               taskMap: state.taskMap
-            }),
-            loading: false,
-            error: false
-         }
-
 
       case CREATE_TASK:
          return {

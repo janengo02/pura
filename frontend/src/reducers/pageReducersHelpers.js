@@ -1,4 +1,4 @@
-export const updateProgress = ({ progressOrder, updatedProgress }) => {
+export const updateProgressHelper = ({ progressOrder, updatedProgress }) => {
    const { title, titleColor, color, progressId } = updatedProgress
    const newProgressOrder = progressOrder.map((p) =>
       p.id === progressId
@@ -387,7 +387,7 @@ export const createProgress = ({
    return { progressOrder: newProgressOrder, taskMap: newTaskMap }
 }
 
-export const deleteProgress = ({
+export const deleteProgressHelper = ({
    progressIndex,
    progressOrder,
    groupOrder,

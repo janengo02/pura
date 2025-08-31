@@ -9,11 +9,9 @@ import PropTypes from 'prop-types'
 // Redux
 import { connect } from 'react-redux'
 
-// Actions
-import {
-   deleteProgressAction,
-   updateProgressAction
-} from '../../../../actions/progressActions'
+
+// RTK Query
+import { useUpdateProgressMutation, useDeleteProgressMutation } from '../../../../api/pageApi'
 
 // UI Components
 import {
@@ -68,15 +66,17 @@ const ProgressHeader = React.memo(
       isNew = false,
       // Redux props
       id,
-      progressOrder,
-      updateProgressAction,
-      deleteProgressAction
+      progressOrder
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const { colorMode } = useColorMode()
+      
+      // RTK Query hooks
+      const [updateProgressMutation] = useUpdateProgressMutation()
+      const [deleteProgressMutation] = useDeleteProgressMutation()
 
       const progressHover = useHover()
       const titleEditing = useEditing()
@@ -111,8 +111,8 @@ const ProgressHeader = React.memo(
             pageId: id,
             progressId: progress.id
          }
-         deleteProgressAction(formData)
-      }, [id, progress.id, deleteProgressAction])
+         deleteProgressMutation(formData)
+      }, [id, progress.id, deleteProgressMutation])
 
       const handleSubmitTitle = methods.handleSubmit(async (data) => {
          const formData = {
@@ -120,7 +120,7 @@ const ProgressHeader = React.memo(
             progressId: progress.id,
             title: data.title || t('placeholder-untitled')
          }
-         await updateProgressAction(formData)
+         await updateProgressMutation(formData)
          titleEditing.end()
       })
 
@@ -132,9 +132,9 @@ const ProgressHeader = React.memo(
                color: color,
                titleColor: titleColor
             }
-            updateProgressAction(formData)
+            updateProgressMutation(formData)
          },
-         [id, progress.id, updateProgressAction]
+         [id, progress.id, updateProgressMutation]
       )
 
       const handleColorOptionClick = useCallback(
@@ -360,8 +360,6 @@ ProgressHeader.propTypes = {
    // Redux props
    id: PropTypes.string.isRequired,
    progressOrder: PropTypes.array.isRequired,
-   updateProgressAction: PropTypes.func.isRequired,
-   deleteProgressAction: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -369,9 +367,6 @@ const mapStateToProps = (state) => ({
    progressOrder: state.pageSlice.progressOrder
 })
 
-const mapDispatchToProps = {
-   deleteProgressAction,
-   updateProgressAction
-}
+const mapDispatchToProps = {}
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProgressHeader)

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { pageApi } from '../api/pageApi'
-import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper } from './pageReducersHelpers'
+import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper } from './pageReducersHelpers'
 
 const pageSlice = createSlice({
   name: 'pageSlice', // Different name to avoid conflicts with pageReducers
@@ -48,6 +48,13 @@ const pageSlice = createSlice({
       })
       state.groupOrder = result.groupOrder
     },
+    optimisticUpdateProgress: (state, action) => {
+      const result = updateProgressHelper({
+        progressOrder: state.progressOrder,
+        updatedProgress: action.payload
+      })
+      state.progressOrder = result.progressOrder
+    },
     optimisticDeleteGroup: (state, action) => {
       const { groupId } = action.payload
       const groupIndex = state.groupOrder.findIndex(g => g.id === groupId)
@@ -61,6 +68,22 @@ const pageSlice = createSlice({
       })
 
       state.groupOrder = result.groupOrder
+      state.tasks = result.tasks
+      state.taskMap = result.taskMap
+    },
+    optimisticDeleteProgress: (state, action) => {
+      const { progressId } = action.payload
+      const progressIndex = state.progressOrder.findIndex(p => p.id === progressId)
+
+      const result = deleteProgressHelper({
+        progressIndex,
+        progressOrder: state.progressOrder,
+        groupOrder: state.groupOrder,
+        tasks: state.tasks,
+        taskMap: state.taskMap
+      })
+
+      state.progressOrder = result.progressOrder
       state.tasks = result.tasks
       state.taskMap = result.taskMap
     },
@@ -86,5 +109,5 @@ const pageSlice = createSlice({
   }
 })
 
-export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, optimisticUpdateGroup, optimisticDeleteGroup, restoreState } = pageSlice.actions
+export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress, restoreState } = pageSlice.actions
 export default pageSlice.reducer

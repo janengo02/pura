@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi'
-import { optimisticMoveTask, optimisticUpdateGroup, optimisticDeleteGroup, restoreState } from '../reducers/pageSlice'
+import { optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress, restoreState } from '../reducers/pageSlice'
 import { commonErrorHandler } from '../actions/errorActions'
 
 export const pageApi = baseApi.injectEndpoints({
@@ -26,10 +26,27 @@ export const pageApi = baseApi.injectEndpoints({
 
     updateProgress: builder.mutation({
       query: ({ pageId, progressId, ...updates }) => ({
-        url: `/progress/${pageId}/${progressId}`,
-        method: 'PATCH',
+        url: `/progress/update/${pageId}/${progressId}`,
+        method: 'POST',
         body: updates
       }),
+      async onQueryStarted({ progressId, ...updates }, { dispatch, queryFulfilled, getState }) {
+        // Get current state before optimistic update for potential rollback
+        const stateBefore = getState().pageSlice
+
+        // Optimistic update - immediately update the UI
+        dispatch(optimisticUpdateProgress({ progressId, ...updates }))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // On failure, restore the original state
+          dispatch(restoreState(stateBefore))
+
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err, getState)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 
@@ -38,6 +55,23 @@ export const pageApi = baseApi.injectEndpoints({
         url: `/progress/${pageId}/${progressId}`,
         method: 'DELETE'
       }),
+      async onQueryStarted({ progressId }, { dispatch, queryFulfilled, getState }) {
+        // Get current state before optimistic update for potential rollback
+        const stateBefore = getState().pageSlice
+
+        // Optimistic update - immediately remove the progress from UI
+        dispatch(optimisticDeleteProgress({ progressId }))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // On failure, restore the original state
+          dispatch(restoreState(stateBefore))
+
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err, getState)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 
