@@ -16,31 +16,6 @@ import { commonErrorHandler, fatalErrorHandler } from './errorActions'
 import { loadCalendarAction } from './calendarActions'
 
 /**
- * Create new task
- * @param {Object} reqData - Request data
- * @param {string} reqData.pageId - Page ID
- * @param {string} reqData.groupId - Group ID
- * @param {string} reqData.progressId - Progress ID
- * @param {string} [reqData.title] - Task title
- * @param {string} [reqData.content] - Task content
- * @returns {Function} Redux thunk
- */
-export const createTaskAction = (reqData) => async (dispatch, getState) => {
-   try {
-      const res = await api.post(`/task/new/${reqData.pageId}`, reqData)
-      dispatch({
-         type: CREATE_TASK,
-         payload: {
-            ...reqData,
-            newTask: res.data.task
-         }
-      })
-   } catch (err) {
-      commonErrorHandler(dispatch, err, getState)
-   }
-}
-
-/**
  * Delete a task
  * @param {Object} reqData - Request data
  * @param {string} reqData.pageId - Page ID

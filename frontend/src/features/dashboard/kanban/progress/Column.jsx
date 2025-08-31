@@ -7,10 +7,10 @@ import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-// Actions
-import { createTaskAction } from '../../../../actions/taskActions'
+// RTK Query
+import { useCreateTaskMutation } from '../../../../api/taskApi'
 
 // External Libraries
 import { Droppable } from '@hello-pangea/dnd'
@@ -29,22 +29,20 @@ import { PiPlus } from 'react-icons/pi'
 // MAIN COMPONENT
 // =============================================================================
 
-const Column = ({
-   progress,
-   group,
-   // Redux props
-   id,
-   groupOrder,
-   progressOrder,
-   taskMap,
-   tasks,
-   createTaskAction
-}) => {
+const Column = ({ progress, group }) => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
    const { t } = useReactiveTranslation()
    const { colorMode } = useColorMode()
+
+   // Redux state
+   const { id, groupOrder, progressOrder, taskMap, tasks } = useSelector(
+      (state) => state.pageSlice
+   )
+
+   // RTK Query hooks
+   const [createTaskMutation] = useCreateTaskMutation()
 
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
@@ -106,10 +104,10 @@ const Column = ({
       async (e) => {
          e.preventDefault()
          if (!progress.isNew && !group.isNew) {
-            createTaskAction(newTaskInfo)
+            createTaskMutation(newTaskInfo)
          }
       },
-      [progress.isNew, group.isNew, createTaskAction, newTaskInfo]
+      [progress.isNew, group.isNew, createTaskMutation, newTaskInfo]
    )
 
    // -------------------------------------------------------------------------
@@ -183,34 +181,11 @@ Column.propTypes = {
    group: PropTypes.shape({
       id: PropTypes.string.isRequired,
       isNew: PropTypes.bool
-   }).isRequired,
-   // Redux props
-   id: PropTypes.string.isRequired,
-   groupOrder: PropTypes.array.isRequired,
-   progressOrder: PropTypes.array.isRequired,
-   taskMap: PropTypes.array.isRequired,
-   tasks: PropTypes.array.isRequired,
-   createTaskAction: PropTypes.func.isRequired
-}
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   id: state.pageSlice.id,
-   groupOrder: state.pageSlice.groupOrder,
-   progressOrder: state.pageSlice.progressOrder,
-   taskMap: state.pageSlice.taskMap,
-   tasks: state.pageSlice.tasks
-})
-
-const mapDispatchToProps = {
-   createTaskAction
+   }).isRequired
 }
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Column)
+export default Column

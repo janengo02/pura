@@ -6,7 +6,7 @@ export const taskApi = baseApi.injectEndpoints({
       query: ({ pageId, taskId }) => `/task/${pageId}/${taskId}`,
       providesTags: ['Task']
     }),
-    
+
     createTask: builder.mutation({
       query: ({ pageId, ...taskData }) => ({
         url: `/task/new/${pageId}`,
@@ -15,7 +15,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Page']
     }),
-    
+
     updateTaskBasic: builder.mutation({
       query: ({ pageId, taskId, ...updates }) => ({
         url: `/task/${pageId}/${taskId}`,
@@ -24,7 +24,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Task', 'Page', 'Calendar']
     }),
-    
+
     deleteTask: builder.mutation({
       query: ({ pageId, taskId }) => ({
         url: `/task/${pageId}/${taskId}`,
@@ -32,7 +32,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Task', 'Page', 'Calendar']
     }),
-    
+
     moveTask: builder.mutation({
       query: ({ pageId, taskId, groupId, progressId }) => ({
         url: `/task/move/${pageId}/${taskId}`,
@@ -41,7 +41,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Task', 'Page']
     }),
-    
+
     // Task Schedule Management
     createTaskSchedule: builder.mutation({
       query: ({ pageId, taskId, scheduleData }) => ({
@@ -51,7 +51,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Task', 'Calendar']
     }),
-    
+
     updateTaskSchedule: builder.mutation({
       query: ({ pageId, taskId, slotIndex, ...updates }) => ({
         url: `/task/schedule/${pageId}/${taskId}/${slotIndex}`,
@@ -60,7 +60,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Task', 'Calendar']
     }),
-    
+
     deleteTaskSchedule: builder.mutation({
       query: ({ pageId, taskId, slotIndex }) => ({
         url: `/task/schedule/${pageId}/${taskId}/${slotIndex}`,
@@ -68,7 +68,7 @@ export const taskApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Task', 'Calendar']
     }),
-    
+
     syncTaskEvent: builder.mutation({
       query: ({ pageId, taskId, slotIndex, googleEventId, calendarId, accountEmail }) => ({
         url: `/task/sync/${pageId}/${taskId}/${slotIndex}`,
