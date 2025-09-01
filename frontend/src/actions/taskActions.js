@@ -1,6 +1,5 @@
 import { api } from '../utils'
 import {
-   DELETE_TASK,
    GET_PAGE,
    MOVE_TASK,
    UPDATE_TASK_BASIC,
@@ -13,27 +12,6 @@ import { commonErrorHandler } from './errorActions'
 import { taskApi } from '../api/taskApi'
 import { calendarApi } from '../api/calendarApi'
 
-/**
- * Delete a task
- * @param {Object} reqData - Request data
- * @param {string} reqData.pageId - Page ID
- * @param {string} reqData.taskId - Task ID
- * @returns {Function} Redux thunk
- */
-export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
-   // Optimistic update - Page | Task | Calendar
-   dispatch({
-      type: DELETE_TASK,
-      payload: {
-         taskId: reqData.taskId
-      }
-   })
-   try {
-      await api.delete(`/task/${reqData.pageId}/${reqData.taskId}`)
-   } catch (err) {
-      commonErrorHandler(dispatch, err)
-   }
-}
 
 /**
  * Create Google Event Action

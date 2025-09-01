@@ -9,7 +9,10 @@ const taskSlice = createSlice({
   },
   reducers: {
     clearTask: (state) => {
-      console.log('Clearing task')
+      state.task = null
+    },
+    optimisticDeleteTask: (state, action) => {
+      // Clear the task immediately for optimistic update
       state.task = null
     },
   },
@@ -25,13 +28,6 @@ const taskSlice = createSlice({
 // Export actions
 export const {
   clearTask,
-  updateTaskBasic,
-  updateTaskSchedule,
-  createTaskSchedule,
-  syncTaskEvent,
-  deleteTaskSchedule,
-  moveTask,
-  deleteTask,
-  setTargetEvent
+  optimisticDeleteTask
 } = taskSlice.actions
 export default taskSlice.reducer

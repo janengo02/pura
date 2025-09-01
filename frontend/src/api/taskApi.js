@@ -1,5 +1,8 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
+import { optimisticDeleteTask as taskSliceOptimisticDeleteTask } from '../reducers/taskSlice'
+import { optimisticDeleteTask as pageSliceOptimisticDeleteTask } from '../reducers/pageSlice'
+import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask } from '../reducers/calendarSlice'
 
 export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -48,8 +51,8 @@ export const taskApi = baseApi.injectEndpoints({
 
     updateTaskBasic: builder.mutation({
       query: ({ pageId, taskId, ...updates }) => ({
-        url: `/task/${pageId}/${taskId}`,
-        method: 'PATCH',
+        url: `/task/basic/${pageId}/${taskId}`,
+        method: 'PUT',
         body: updates
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -69,6 +72,11 @@ export const taskApi = baseApi.injectEndpoints({
         method: 'DELETE'
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        // Perform optimistic updates immediately
+        dispatch(taskSliceOptimisticDeleteTask({ taskId: arg.taskId }))
+        dispatch(pageSliceOptimisticDeleteTask({ taskId: arg.taskId }))
+        dispatch(calendarSliceOptimisticDeleteTask({ taskId: arg.taskId }))
+
         try {
           await queryFulfilled
         } catch (err) {

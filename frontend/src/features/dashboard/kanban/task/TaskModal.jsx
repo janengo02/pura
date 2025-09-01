@@ -14,12 +14,10 @@ import 'react-quill/dist/quill.bubble.css'
 import { useSelector, useDispatch } from 'react-redux'
 
 // Actions
-import {
-   deleteTaskAction,
-   updateTaskBasicInfoAction
-} from '../../../../actions/taskActions'
+import { updateTaskBasicInfoAction } from '../../../../actions/taskActions'
 
 // RTK Query & Slice
+import { useDeleteTaskMutation } from '../../../../api/taskApi'
 import { clearTask } from '../../../../reducers/taskSlice'
 
 // Form Handling
@@ -117,6 +115,9 @@ const TaskModal = React.memo(
       const task = useSelector((state) => state.taskSlice.task)
       const id = useSelector((state) => state.pageSlice.id)
 
+      // RTK Query hooks
+      const [deleteTaskMutation] = useDeleteTaskMutation()
+
       // Modal state management
       const modalMenu = useDisclosure()
 
@@ -155,14 +156,14 @@ const TaskModal = React.memo(
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
-      const handleDeleteTask = useCallback(() => {
+      const handleDeleteTask = useCallback(async () => {
          if (!task?.id) return
          const formData = {
             pageId: id,
             taskId: task?.id
          }
-         dispatch(deleteTaskAction(formData))
-      }, [id, task?.id, dispatch])
+         await deleteTaskMutation(formData)
+      }, [id, task?.id, deleteTaskMutation])
 
       const handleUpdateTitle = useCallback(async () => {
          if (!task?.id) return

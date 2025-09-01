@@ -194,30 +194,6 @@ export const deleteGoogleEventAction =
       }
    }
 
-
-/**
- * Disconnect Google Account Action
- * Removes Google Account connection and clears calendar data
- * @param {Object} reqData - Request data for disconnection
- * @param {string} reqData.accountEmail - Google account ID to disconnect
- */
-export const disconnectGoogleAccountAction =
-   (reqData) => async (dispatch, getState) => {
-      // Optimistic update - Calendar - remove account from state
-      dispatch({
-         type: REMOVE_CALENDAR_ACCOUNT,
-         payload: {
-            accountEmail: reqData.accountEmail
-         }
-      })
-      try {
-         await api.delete(`/calendar/disconnect/${reqData.accountEmail}`)
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
-
-
 /**
  * Create Google Event Action
  * Creates a new event in Google Calendar
