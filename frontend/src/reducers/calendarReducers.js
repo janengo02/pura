@@ -21,7 +21,7 @@ import {
 import {
    addGoogleAccount,
    loadGoogleCalendarHelper,
-   changeGoogleCalendarVisibility,
+   toggleCalendarVisibilityHelper,
    updateGoogleEvent,
    updateGoogleEventTime,
    setDefaultGoogleAccount,
@@ -85,7 +85,7 @@ function calendarReducer(state = initialState, action) {
       case UPDATE_CALENDAR_VISIBILITY:
          return {
             ...state,
-            ...changeGoogleCalendarVisibility({
+            ...toggleCalendarVisibilityHelper({
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
                calendarId: payload.calendarId

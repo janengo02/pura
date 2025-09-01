@@ -845,7 +845,7 @@ export const changeVisibilityEventListHelper = (
  * @param {Object} params - Calendar and event lists with target calendar ID
  * @returns {Object} Updated state with toggled visibility
  */
-export const changeGoogleCalendarVisibility = ({
+export const toggleCalendarVisibilityHelper = ({
    googleCalendars,
    googleEvents,
    calendarId

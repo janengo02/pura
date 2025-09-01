@@ -7,7 +7,7 @@ import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // UI Components
@@ -39,11 +39,11 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 
 // Actions
 import {
-   changeCalendarVisibilityAction,
    addGoogleAccountAction,
    disconnectGoogleAccountAction
 } from '../../../../actions/calendarActions'
 import { setAlert } from '../../../../reducers/alertSlice'
+import { toggleCalendarVisibility } from '../../../../reducers/calendarSlice'
 import { useShowTaskModalMutation } from '../../../../api/taskApi'
 import { useSetDefaultAccountMutation } from '../../../../api/calendarApi'
 
@@ -83,7 +83,6 @@ const getAccountImage = (accountSyncStatus) =>
 const Settings = React.memo(
    ({
       // Redux props
-      changeCalendarVisibilityAction,
       addGoogleAccountAction,
       disconnectGoogleAccountAction,
       setAlert,
@@ -94,6 +93,7 @@ const Settings = React.memo(
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+      const dispatch = useDispatch()
 
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()
@@ -147,10 +147,10 @@ const Settings = React.memo(
       // -------------------------------------------------------------------------
 
       const handleCalendarVisibilityChange = useCallback(
-         async (calendarId) => {
-            await changeCalendarVisibilityAction(calendarId)
+         (calendarId) => {
+            dispatch(toggleCalendarVisibility({ calendarId }))
          },
-         [changeCalendarVisibilityAction]
+         [dispatch]
       )
 
       const handleGoogleReconnect = useCallback(() => {
@@ -344,7 +344,6 @@ Settings.displayName = 'CalendarSettings'
 
 // PropTypes validation
 Settings.propTypes = {
-   changeCalendarVisibilityAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
    disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
@@ -397,7 +396,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   changeCalendarVisibilityAction,
    addGoogleAccountAction,
    disconnectGoogleAccountAction,
    setAlert

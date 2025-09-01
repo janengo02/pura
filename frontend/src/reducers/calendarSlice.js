@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
-import { loadGoogleCalendarHelper } from './calendarReducersHelpers'
+import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper } from './calendarReducersHelpers'
 
 const calendarSlice = createSlice({
   name: 'calendar',
@@ -18,6 +18,17 @@ const calendarSlice = createSlice({
     },
     navigateCalendarToDate: (state, action) => {
       state.navigationTarget = action.payload
+    },
+    toggleCalendarVisibility: (state, action) => {
+      const { calendarId } = action.payload
+      const updatedState = toggleCalendarVisibilityHelper({
+        googleCalendars: state.googleCalendars,
+        googleEvents: state.googleEvents,
+        calendarId
+      })
+      state.googleCalendars = updatedState.googleCalendars
+      state.googleEvents = updatedState.googleEvents
+      // @todo: Persist calendar visibility settings to backend or localStorage
     }
   },
   extraReducers: (builder) => {
@@ -48,5 +59,5 @@ const calendarSlice = createSlice({
   }
 })
 
-export const { updateCalendarRange, navigateCalendarToDate } = calendarSlice.actions
+export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility } = calendarSlice.actions
 export default calendarSlice.reducer

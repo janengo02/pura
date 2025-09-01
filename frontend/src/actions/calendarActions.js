@@ -6,7 +6,6 @@ import { api } from '../utils'
 import { setAlert } from '../reducers/alertSlice'
 import { commonErrorHandler } from './errorActions'
 import {
-   UPDATE_CALENDAR_VISIBILITY,
    UPDATE_CALENDAR_EVENT,
    UPDATE_CALENDAR_EVENT_TIME,
    ADD_CALENDAR_ACCOUNT,
@@ -228,22 +227,6 @@ export const deleteGoogleEventAction =
       }
    }
 
-/**
- * Change Calendar Visibility Action
- * Toggles the visibility of a specific calendar
- * @param {string} calendarId - Calendar ID to toggle visibility
- */
-export const changeCalendarVisibilityAction =
-   (calendarId) => async (dispatch, getState) => {
-      try {
-         dispatch({
-            type: UPDATE_CALENDAR_VISIBILITY,
-            payload: { calendarId }
-         })
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
 
 /**
  * Disconnect Google Account Action
