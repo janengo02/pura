@@ -2,9 +2,8 @@
 // EVENT CONFERENCE COMPONENT
 // =============================================================================
 
-import React, { useState, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import {
    VStack,
    HStack,
@@ -12,13 +11,11 @@ import {
    Button,
    IconButton,
    Tooltip,
-   Input,
    Spinner
 } from '@chakra-ui/react'
-import { PiVideoCamera, PiCopy, PiPlus, PiTrash, PiX } from 'react-icons/pi'
+import { PiVideoCamera, PiCopy, PiX } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
-import { createGoogleMeetSpaceAction } from '../../../../actions/calendarActions'
-import useLoading from '../../../../hooks/useLoading'
+import { useCreateMeetSpaceMutation } from '../../../../api/googleMeetApi'
 
 const EventConference = ({ conferenceData }) => {
    const { t } = useReactiveTranslation()
@@ -88,17 +85,17 @@ EventConference.propTypes = {
 const EventConferenceInput = ({
    conferenceData,
    setConferenceData,
-   accountEmail,
-   createGoogleMeetSpaceAction
+   accountEmail
 }) => {
    const { t } = useReactiveTranslation()
-   const [createGoogleMeet, createGoogleMeetLoading] = useLoading(
-      useCallback(async () => {
-         if (!accountEmail) {
-            return
-         }
+   const [createMeetSpaceMutation, { isLoading: createGoogleMeetLoading }] = useCreateMeetSpaceMutation()
 
-         const result = await createGoogleMeetSpaceAction({
+   const createGoogleMeet = useCallback(async () => {
+      if (!accountEmail) {
+         return
+      }
+
+         const result = await createMeetSpaceMutation({
             accountEmail: accountEmail,
             config: {
                accessType: 'TRUSTED',
@@ -106,22 +103,21 @@ const EventConferenceInput = ({
             }
          })
 
-         if (result?.meetUri) {
+         if (result?.data?.meetUri) {
             const newConferenceData = {
                type: 'google_meet',
-               id: result.meetingCode,
-               joinUrl: result.meetUri,
-               spaceId: result.spaceId,
+               id: result?.data?.meetingCode,
+               joinUrl: result?.data?.meetUri,
+               spaceId: result?.data?.spaceId,
                phoneNumbers: []
             }
 
-            setConferenceData?.(newConferenceData)
+            setConferenceData(newConferenceData)
          }
-      }, [accountEmail, createGoogleMeetSpaceAction, setConferenceData])
-   )
+   }, [accountEmail, createMeetSpaceMutation, setConferenceData])
 
    const handleRemoveConference = useCallback(() => {
-      setConferenceData?.(null)
+      setConferenceData(null)
    }, [setConferenceData])
 
    return (
@@ -167,22 +163,8 @@ EventConferenceInput.propTypes = {
       phoneNumbers: PropTypes.array
    }),
    setConferenceData: PropTypes.func.isRequired,
-   accountEmail: PropTypes.string,
-   createGoogleMeetSpaceAction: PropTypes.func.isRequired
+   accountEmail: PropTypes.string
 }
-
-// =============================================================================
-// REDUX CONNECTION FOR EventConferenceInput
-// =============================================================================
-
-const mapDispatchToProps = {
-   createGoogleMeetSpaceAction
-}
-
-const ConnectedEventConferenceInput = connect(
-   null,
-   mapDispatchToProps
-)(EventConferenceInput)
 
 export default EventConference
-export { ConnectedEventConferenceInput as EventConferenceInput }
+export { EventConferenceInput }
