@@ -30,11 +30,11 @@ import {
 // Utils
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import {
-   clearCalendarEventAction,
    createGoogleEventAction,
    updateNewEventAction
 } from '../../../../actions/calendarActions'
-import { connect } from 'react-redux'
+import { clearCalendarEvent } from '../../../../reducers/calendarSlice'
+import { connect, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 import { POPOVER_STYLES } from '../../Calendar'
 import {
@@ -46,7 +46,6 @@ import { EventTimeInput } from './EventTime'
 import { EventDescriptionInput } from './EventDescription'
 import { EventTitleInput } from './EventTitle'
 import { EventCalendarSelect } from './EventCalendarInfo'
-import { EventConferenceInput } from './EventConference'
 import { stringToDateTimeLocal } from '../../../../utils/dates'
 import { PiX } from 'react-icons/pi'
 import { GOOGLE_CALENDAR_COLORS } from '../../../../components/data/defaultColor'
@@ -60,7 +59,6 @@ const EventCreatePopover = ({
    newEvent,
    googleCalendars,
    googleAccounts,
-   clearCalendarEventAction,
    createGoogleEventAction,
    updateNewEventAction
 }) => {
@@ -68,6 +66,7 @@ const EventCreatePopover = ({
    // HOOKS
    // -------------------------------------------------------------------------
    const { t } = useReactiveTranslation()
+   const dispatch = useDispatch()
 
    // -------------------------------------------------------------------------
    // REFS & STATE
@@ -228,8 +227,8 @@ const EventCreatePopover = ({
    ])
 
    const handleOnClose = useCallback(() => {
-      clearCalendarEventAction()
-   }, [clearCalendarEventAction])
+      dispatch(clearCalendarEvent())
+   }, [dispatch])
    // -------------------------------------------------------------------------
    // LOADING HOOKS
    // -------------------------------------------------------------------------
@@ -417,7 +416,6 @@ EventCreatePopover.propTypes = {
    newEvent: PropTypes.object,
    googleAccounts: PropTypes.array.isRequired,
    googleCalendars: PropTypes.array.isRequired,
-   clearCalendarEventAction: PropTypes.func.isRequired,
    createGoogleEventAction: PropTypes.func.isRequired,
    updateNewEventAction: PropTypes.func.isRequired
 }
@@ -447,7 +445,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   clearCalendarEventAction,
    createGoogleEventAction,
    updateNewEventAction
 }

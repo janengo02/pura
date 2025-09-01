@@ -3,17 +3,15 @@
 // =============================================================================
 
 import { api } from '../utils'
-import { setAlert } from '../reducers/alertSlice'
 import { commonErrorHandler } from './errorActions'
+import { clearCalendarEvent } from '../reducers/calendarSlice'
 import {
    UPDATE_CALENDAR_EVENT,
    UPDATE_CALENDAR_EVENT_TIME,
    ADD_CALENDAR_ACCOUNT,
    REMOVE_CALENDAR_ACCOUNT,
    DELETE_CALENDAR_EVENT,
-   UPDATE_TASK_SCHEDULE,
-   CREATE_CALENDAR_EVENT,
-   CLEAR_CALENDAR_EVENT
+   UPDATE_TASK_SCHEDULE
 } from './types'
 
 // =============================================================================
@@ -250,29 +248,6 @@ export const disconnectGoogleAccountAction =
       }
    }
 
-/**
- * Create Calendar Event Action
- * Creates a new calendar event in the store to show event creation UI
- * @param {Object} newEvent - Slot information from react-big-calendar
- * @param {Date} newEvent.dateTime.start - Start time of the selected slot
- * @param {Date} newEvent.dateTime.end - End time of the selected slot
- * @param {Object} mousePosition - Mouse position for popover placement
- */
-export const createCalendarEventAction = (newEvent, mousePosition) => ({
-   type: CREATE_CALENDAR_EVENT,
-   payload: {
-      newEvent,
-      mousePosition
-   }
-})
-
-/**
- * Clear Calendar Event Action
- * Clears the new calendar event creation state
- */
-export const clearCalendarEventAction = () => ({
-   type: CLEAR_CALENDAR_EVENT
-})
 
 /**
  * Create Google Event Action
@@ -299,7 +274,7 @@ export const createGoogleEventAction =
          })
 
          // Clear the event creation state
-         dispatch(clearCalendarEventAction())
+         dispatch(clearCalendarEvent())
 
          return res.data
       } catch (err) {

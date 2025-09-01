@@ -33,11 +33,10 @@ import EventCreatePopover from './calendar/event/EventCreatePopover'
 
 // Actions
 import {
-   updateGoogleEventTimeAction,
-   createCalendarEventAction
+   updateGoogleEventTimeAction
 } from '../../actions/calendarActions'
 import { useLazyLoadCalendarQuery } from '../../api/calendarApi'
-import { updateCalendarRange } from '../../reducers/calendarSlice'
+import { updateCalendarRange, createCalendarEvent } from '../../reducers/calendarSlice'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
 import {
    setAlert,
@@ -371,7 +370,7 @@ const Calendar = React.memo(() => {
             }
 
             // Dispatch action to create calendar event
-            dispatch(createCalendarEventAction(newEvent, mousePosition))
+            dispatch(createCalendarEvent({ newEvent, mousePosition }))
          },
          [
             dispatch,
