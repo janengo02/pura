@@ -11,8 +11,6 @@ import {
    UPDATE_CALENDAR_EVENT_TIME,
    ADD_CALENDAR_ACCOUNT,
    REMOVE_CALENDAR_ACCOUNT,
-   SET_CALENDAR_DEFAULT_ACCOUNT,
-   GET_CALENDAR_DEFAULT_ACCOUNT,
    DELETE_CALENDAR_EVENT,
    UPDATE_TASK_SCHEDULE,
    CREATE_CALENDAR_EVENT,
@@ -57,57 +55,6 @@ export const addGoogleAccountAction =
       }
    }
 
-/**
- * Set Default Google Account Action
- * Sets a specific Google account as the default account
- * @param {Object} reqData - Request data for setting default account
- * @param {string} reqData.accountEmail - ID of the account to set as default
- */
-export const setDefaultGoogleAccountAction =
-   (reqData) => async (dispatch, getState) => {
-      try {
-         const res = await api.put(
-            `/calendar/set-default/${reqData.accountEmail}`
-         )
-
-         if (res.data?.id) {
-            dispatch({
-               type: SET_CALENDAR_DEFAULT_ACCOUNT,
-               payload: {
-                  accountEmail: reqData.accountEmail,
-                  accountData: res.data
-               }
-            })
-         } else {
-            throw new Error(
-               'Unexpected response format from /calendar/set-default'
-            )
-         }
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
-
-/**
- * Get Default Google Account Action
- * Retrieves the current default Google account
- */
-export const getDefaultGoogleAccountAction =
-   () => async (dispatch, getState) => {
-      try {
-         const res = await api.get('/calendar/default')
-
-         dispatch({
-            type: GET_CALENDAR_DEFAULT_ACCOUNT,
-            payload: res.data?.id ? res.data : null
-         })
-      } catch (err) {
-         // Only show error if it's not a 404 (no default account)
-         if (err.response?.status !== 404) {
-            commonErrorHandler(dispatch, err)
-         }
-      }
-   }
 
 /**
  * Update Google Event Action

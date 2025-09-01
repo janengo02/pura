@@ -22,10 +22,27 @@ export const calendarApi = baseApi.injectEndpoints({
       },
       providesTags: ['Calendar'],
       invalidatesTags: ['Task']
-    })
+    }),
+
+    setDefaultAccount: builder.mutation({
+      query: ({ accountEmail }) => ({
+        url: `/calendar/set-default/${accountEmail}`,
+        method: 'PUT'
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: ['Calendar']
+    }),
   })
 })
 
 export const {
-  useLazyLoadCalendarQuery
+  useLazyLoadCalendarQuery,
+  useSetDefaultAccountMutation,
 } = calendarApi

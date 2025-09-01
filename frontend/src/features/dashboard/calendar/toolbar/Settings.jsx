@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -41,11 +41,11 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import {
    changeCalendarVisibilityAction,
    addGoogleAccountAction,
-   disconnectGoogleAccountAction,
-   setDefaultGoogleAccountAction
+   disconnectGoogleAccountAction
 } from '../../../../actions/calendarActions'
 import { setAlert } from '../../../../reducers/alertSlice'
 import { useShowTaskModalMutation } from '../../../../api/taskApi'
+import { useSetDefaultAccountMutation } from '../../../../api/calendarApi'
 
 // Utils
 import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
@@ -86,7 +86,6 @@ const Settings = React.memo(
       changeCalendarVisibilityAction,
       addGoogleAccountAction,
       disconnectGoogleAccountAction,
-      setDefaultGoogleAccountAction,
       setAlert,
       settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
       taskData: { task, pageId }
@@ -95,10 +94,10 @@ const Settings = React.memo(
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
-      const [isSettingDefault, setIsSettingDefault] = useState(false)
-      
+
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()
+      const [setDefaultAccountMutation, { isLoading: isSettingDefault }] = useSetDefaultAccountMutation()
 
       // -------------------------------------------------------------------------
       // TASK MODAL REFRESH HELPER
@@ -173,16 +172,12 @@ const Settings = React.memo(
          async (accountEmail) => {
             if (isSettingDefault) return
 
-            setIsSettingDefault(true)
-            try {
-               await setDefaultGoogleAccountAction({
-                  accountEmail: accountEmail
-               })
-            } finally {
-               setIsSettingDefault(false)
-            }
+            await setDefaultAccountMutation({
+               accountEmail: accountEmail
+            })
+
          },
-         [setDefaultGoogleAccountAction, isSettingDefault]
+         [setDefaultAccountMutation, isSettingDefault]
       )
 
       // -------------------------------------------------------------------------
@@ -352,7 +347,6 @@ Settings.propTypes = {
    changeCalendarVisibilityAction: PropTypes.func.isRequired,
    addGoogleAccountAction: PropTypes.func.isRequired,
    disconnectGoogleAccountAction: PropTypes.func.isRequired,
-   setDefaultGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,
@@ -406,7 +400,6 @@ const mapDispatchToProps = {
    changeCalendarVisibilityAction,
    addGoogleAccountAction,
    disconnectGoogleAccountAction,
-   setDefaultGoogleAccountAction,
    setAlert
 }
 
