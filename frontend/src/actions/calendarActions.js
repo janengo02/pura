@@ -26,32 +26,7 @@ import {
 // =============================================================================
 // ACTION CREATORS
 // =============================================================================
-/**
- * Change calendar date range
- * @param {Array} range - Date range [startDate, endDate]
- * @returns {Object} Redux action
- */
-export const changeCalendarRangeAction = (range) => ({
-   type: 'UPDATE_CALENDAR_RANGE',
-   payload: { range }
-})
 
-/**
- * Navigate calendar to specific date and view
- * @param {Date} date - Target date to navigate to
- * @param {string} view - View type (month, week, day)
- * @param {string} taskId - Optional task ID for event highlighting
- * @param {number} slotIndex - Optional slot index for event highlighting
- * @returns {Object} Redux action
- */
-export const navigateCalendarToDateAction = (
-   date,
-   taskId = null,
-   slotIndex = null
-) => ({
-   type: 'NAVIGATE_CALENDAR_TO_DATE',
-   payload: { date, taskId, slotIndex }
-})
 /**
  * Add Google Account Action
  * Adds a new Google account connection

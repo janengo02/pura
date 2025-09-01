@@ -7,7 +7,7 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
@@ -20,10 +20,10 @@ import {
 // RTK Query
 import { useShowTaskModalMutation } from '../../../../api/taskApi'
 import {
-   addGoogleAccountAction,
-   navigateCalendarToDateAction
+   addGoogleAccountAction
 } from '../../../../actions/calendarActions'
 import { setAlert } from '../../../../reducers/alertSlice'
+import { navigateCalendarToDate } from '../../../../reducers/calendarSlice'
 
 // UI Components
 import {
@@ -78,7 +78,6 @@ const ScheduleTimeSlot = React.memo(
       removeTaskScheduleSlotAction,
       syncTaskWithGoogleAction,
       addGoogleAccountAction,
-      navigateCalendarToDateAction,
       setAlert,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars },
@@ -88,6 +87,7 @@ const ScheduleTimeSlot = React.memo(
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+      const dispatch = useDispatch()
 
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()
@@ -791,8 +791,8 @@ const ScheduleTimeSlot = React.memo(
       const handleSyncButtonClick = useCallback(() => {
          // Navigate calendar to show this time slot
          const slotStartDate = new Date(slot.start)
-         navigateCalendarToDateAction(slotStartDate, task.id, index)
-      }, [slot.start, navigateCalendarToDateAction, task.id, index])
+         dispatch(navigateCalendarToDate({ date: slotStartDate, taskId: task.id, slotIndex: index }))
+      }, [slot.start, dispatch, task.id, index])
 
       const syncButton = useMemo(() => {
          const syncStatus = slot.syncStatus
@@ -948,7 +948,6 @@ const mapDispatchToProps = {
    removeTaskScheduleSlotAction,
    syncTaskWithGoogleAction,
    addGoogleAccountAction,
-   navigateCalendarToDateAction,
    setAlert
 }
 
