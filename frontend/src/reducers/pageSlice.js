@@ -87,10 +87,6 @@ const pageSlice = createSlice({
       state.tasks = result.tasks
       state.taskMap = result.taskMap
     },
-    restoreState: (state, action) => {
-      // Restore any state properties provided in payload
-      Object.assign(state, action.payload)
-    }
   },
   extraReducers: (builder) => {
     // Handle RTK Query getFirstPage states
@@ -109,5 +105,5 @@ const pageSlice = createSlice({
   }
 })
 
-export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress, restoreState } = pageSlice.actions
+export const { updateFilter, setPageError, clearPageError, optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress } = pageSlice.actions
 export default pageSlice.reducer

@@ -1,4 +1,5 @@
 import { baseApi } from './baseApi'
+import { commonErrorHandler } from '../actions/errorActions'
 
 export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -17,6 +18,14 @@ export const taskApi = baseApi.injectEndpoints({
           })
         }
       },
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
       providesTags: ['Task']
     }),
 
@@ -26,6 +35,14 @@ export const taskApi = baseApi.injectEndpoints({
         method: 'POST',
         body: taskData
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 
@@ -35,6 +52,14 @@ export const taskApi = baseApi.injectEndpoints({
         method: 'PATCH',
         body: updates
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
       invalidatesTags: ['Task', 'Page', 'Calendar']
     }),
 
@@ -43,6 +68,14 @@ export const taskApi = baseApi.injectEndpoints({
         url: `/task/${pageId}/${taskId}`,
         method: 'DELETE'
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
       invalidatesTags: ['Task', 'Page', 'Calendar']
     }),
 

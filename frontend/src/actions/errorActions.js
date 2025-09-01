@@ -1,34 +1,4 @@
 import { setAlert } from '../reducers/alertSlice'
-import { PAGE_ERROR } from './types'
-import { pageApi } from '../api/pageApi'
-import { taskApi } from '../api/taskApi'
-import { calendarApi } from '../api/calendarApi'
-
-/**
- * Handle fatal page errors
- * @param {Function} dispatch - Redux dispatch function
- * @param {string} pageId - Page ID
- * @param {Object} err - Error object
- * @returns {void}
- */
-export const fatalErrorHandler = (dispatch, pageId, err) => {
-   if (err?.isAuthExpired) {
-      // Don't dispatch PAGE_ERROR for authentication expired errors since user is already logged out
-      return
-   }
-
-   const errors = err?.response?.data?.errors || ['Unknown error']
-   dispatch({
-      type: PAGE_ERROR,
-      payload: {
-         id: pageId,
-         errors
-      }
-   })
-
-   // Note: Navigation is handled by components (like Kanban.jsx) that listen to Redux state changes
-   // Components use useNavigate('/error', { state: errorState }) for proper React Router navigation
-}
 /**
  * Handle page action errors
  * @param {Function} dispatch - Redux dispatch function
@@ -36,39 +6,12 @@ export const fatalErrorHandler = (dispatch, pageId, err) => {
  * @param {Function} [getState] - Redux getState function (optional, for calendar reload and getting current state)
  * @returns {void}
  */
-export const commonErrorHandler = (dispatch, err, getState = null) => {
+export const commonErrorHandler = (dispatch, err) => {
    const errors = err?.error?.data?.errors || err?.response?.data?.errors || [{title: 'Unknown error', msg: 'An unknown error occurred'}]
    if (errors) {
       errors.forEach((error) =>
          dispatch(setAlert(error.title, error.msg, 'error'))
       )
-   }
-   // Trigger refetch of first page data using RTK Query
-   dispatch(pageApi.util.invalidateTags(['Page']))
-
-   // If getState is provided, handle calendar reload and task modal
-   if (getState) {
-      const state = getState()
-      const calendarRange = state.calendarSlice?.range
-      const currentPageId = state.pageSlice?.id
-      const currentTaskId = state.taskSlice?.task?.id
-
-      // Reload calendar if range and page ID are available
-      if (calendarRange && calendarRange.length > 0 && currentPageId) {
-         dispatch(calendarApi.endpoints.loadCalendar.initiate({
-            minDate: calendarRange[0],
-            maxDate: calendarRange[1],
-            pageId: currentPageId
-         }))
-      }
-
-      // Show task modal if both page ID and task ID are available
-      if (currentPageId && currentTaskId) {
-         dispatch(taskApi.endpoints.showTaskModal.initiate({
-            pageId: currentPageId,
-            taskId: currentTaskId
-         }))
-      }
    }
 }
 

@@ -9,7 +9,7 @@ import {
    SYNC_TASK_EVENT,
    DELETE_TASK_SCHEDULE
 } from './types'
-import { commonErrorHandler, fatalErrorHandler } from './errorActions'
+import { commonErrorHandler } from './errorActions'
 import { taskApi } from '../api/taskApi'
 import { calendarApi } from '../api/calendarApi'
 
@@ -31,7 +31,7 @@ export const deleteTaskAction = (reqData) => async (dispatch, getState) => {
    try {
       await api.delete(`/task/${reqData.pageId}/${reqData.taskId}`)
    } catch (err) {
-      commonErrorHandler(dispatch, err, getState)
+      commonErrorHandler(dispatch, err)
    }
 }
 
@@ -89,7 +89,7 @@ export const syncTaskWithGoogleAction =
             }
          }
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -121,7 +121,7 @@ export const updateTaskBasicInfoAction =
             content: formData.content
          })
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -159,7 +159,7 @@ export const moveTaskAction = (formData) => async (dispatch, getState) => {
          payload: res.data.page
       })
    } catch (err) {
-      commonErrorHandler(dispatch, err, getState)
+      commonErrorHandler(dispatch, err)
    }
 }
 
@@ -192,7 +192,7 @@ export const updateTaskScheduleAction =
             }
          )
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -239,7 +239,7 @@ export const addTaskScheduleSlotAction =
             }
          )
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -268,6 +268,6 @@ export const removeTaskScheduleSlotAction =
             `/task/schedule/${formData.pageId}/${formData.taskId}/${formData.slotIndex}`
          )
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }

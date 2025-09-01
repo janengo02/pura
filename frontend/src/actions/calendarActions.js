@@ -4,9 +4,8 @@
 
 import { api } from '../utils'
 import { setAlert } from '../reducers/alertSlice'
-import { commonErrorHandler, fatalErrorHandler } from './errorActions'
+import { commonErrorHandler } from './errorActions'
 import {
-   GET_CALENDAR,
    UPDATE_CALENDAR_VISIBILITY,
    UPDATE_CALENDAR_EVENT,
    UPDATE_CALENDAR_EVENT_TIME,
@@ -79,7 +78,7 @@ export const addGoogleAccountAction =
             )
          }
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -110,7 +109,7 @@ export const setDefaultGoogleAccountAction =
             )
          }
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -130,7 +129,7 @@ export const getDefaultGoogleAccountAction =
       } catch (err) {
          // Only show error if it's not a 404 (no default account)
          if (err.response?.status !== 404) {
-            commonErrorHandler(dispatch, err, getState)
+            commonErrorHandler(dispatch, err)
          }
       }
    }
@@ -229,7 +228,7 @@ export const updateGoogleEventAction =
       } catch (err) {
          // On error, we might want to revert the optimistic update
          // For now, just show the error - the next calendar refresh will correct the state
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -278,7 +277,7 @@ export const updateGoogleEventTimeAction =
          // API call to update event times only
          await api.post(`/calendar/update-event/${reqData.eventId}`, reqData)
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -303,7 +302,7 @@ export const deleteGoogleEventAction =
             data: reqData
          })
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -320,7 +319,7 @@ export const changeCalendarVisibilityAction =
             payload: { calendarId }
          })
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -342,7 +341,7 @@ export const disconnectGoogleAccountAction =
       try {
          await api.delete(`/calendar/disconnect/${reqData.accountEmail}`)
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
       }
    }
 
@@ -399,7 +398,7 @@ export const createGoogleEventAction =
 
          return res.data
       } catch (err) {
-         commonErrorHandler(dispatch, err, getState)
+         commonErrorHandler(dispatch, err)
          throw err
       }
    }

@@ -1,4 +1,5 @@
 import { baseApi } from './baseApi'
+import { commonErrorHandler } from '../actions/errorActions'
 
 export const calendarApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -11,7 +12,16 @@ export const calendarApi = baseApi.injectEndpoints({
           pageId
         }
       }),
-      providesTags: ['Calendar']
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      providesTags: ['Calendar'],
+      invalidatesTags: ['Task']
     })
   })
 })

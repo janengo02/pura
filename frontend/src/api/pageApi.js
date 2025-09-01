@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi'
-import { optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress, restoreState } from '../reducers/pageSlice'
+import { optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress } from '../reducers/pageSlice'
 import { commonErrorHandler } from '../actions/errorActions'
 
 export const pageApi = baseApi.injectEndpoints({
@@ -21,6 +21,14 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: progressData
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 
@@ -31,20 +39,14 @@ export const pageApi = baseApi.injectEndpoints({
         body: updates
       }),
       async onQueryStarted({ progressId, ...updates }, { dispatch, queryFulfilled, getState }) {
-        // Get current state before optimistic update for potential rollback
-        const stateBefore = getState().pageSlice
-
         // Optimistic update - immediately update the UI
         dispatch(optimisticUpdateProgress({ progressId, ...updates }))
 
         try {
           await queryFulfilled
         } catch (err) {
-          // On failure, restore the original state
-          dispatch(restoreState(stateBefore))
-
           // Handle error using common error handler
-          commonErrorHandler(dispatch, err, getState)
+          commonErrorHandler(dispatch, err)
         }
       },
       invalidatesTags: ['Page']
@@ -56,23 +58,17 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'DELETE'
       }),
       async onQueryStarted({ progressId }, { dispatch, queryFulfilled, getState }) {
-        // Get current state before optimistic update for potential rollback
-        const stateBefore = getState().pageSlice
-
         // Optimistic update - immediately remove the progress from UI
         dispatch(optimisticDeleteProgress({ progressId }))
 
         try {
           await queryFulfilled
         } catch (err) {
-          // On failure, restore the original state
-          dispatch(restoreState(stateBefore))
-
           // Handle error using common error handler
-          commonErrorHandler(dispatch, err, getState)
+          commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Page']
+      invalidatesTags: ['Page', 'Calendar']
     }),
 
     // Group Management
@@ -82,6 +78,14 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: groupData
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
       invalidatesTags: ['Page']
     }),
 
@@ -92,20 +96,14 @@ export const pageApi = baseApi.injectEndpoints({
         body: updates
       }),
       async onQueryStarted({ groupId, ...updates }, { dispatch, queryFulfilled, getState }) {
-        // Get current state before optimistic update for potential rollback
-        const stateBefore = getState().pageSlice
-
         // Optimistic update - immediately update the UI
         dispatch(optimisticUpdateGroup({ groupId, ...updates }))
 
         try {
           await queryFulfilled
         } catch (err) {
-          // On failure, restore the original state
-          dispatch(restoreState(stateBefore))
-
           // Handle error using common error handler
-          commonErrorHandler(dispatch, err, getState)
+          commonErrorHandler(dispatch, err)
         }
       },
       invalidatesTags: ['Page']
@@ -117,25 +115,17 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'DELETE'
       }),
       async onQueryStarted({ groupId }, { dispatch, queryFulfilled, getState }) {
-        // Get current state before optimistic update for potential rollback
-        const stateBefore = getState().pageSlice
-
         // Optimistic update - immediately remove the group from UI
         dispatch(optimisticDeleteGroup({ groupId }))
-
-        // @todo: Update calendar events or reload calendar
 
         try {
           await queryFulfilled
         } catch (err) {
-          // On failure, restore the original state
-          dispatch(restoreState(stateBefore))
-
           // Handle error using common error handler
-          commonErrorHandler(dispatch, err, getState)
+          commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Page']
+      invalidatesTags: ['Page', 'Calendar']
     }),
 
     // Task Management
@@ -146,20 +136,14 @@ export const pageApi = baseApi.injectEndpoints({
         body: taskData
       }),
       async onQueryStarted({ result }, { dispatch, queryFulfilled, getState }) {
-        // Get current state before optimistic update for potential rollback
-        const stateBefore = getState().pageSlice
-
         // Optimistic update - immediately update the UI
         dispatch(optimisticMoveTask(result))
 
         try {
           await queryFulfilled
         } catch (err) {
-          // On failure, restore the original state
-          dispatch(restoreState(stateBefore))
-
           // Handle error using common error handler
-          commonErrorHandler(dispatch, err, getState)
+          commonErrorHandler(dispatch, err)
         }
       },
       invalidatesTags: ['Page']
