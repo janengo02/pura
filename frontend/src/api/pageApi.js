@@ -129,7 +129,7 @@ export const pageApi = baseApi.injectEndpoints({
     }),
 
     // Task Management
-    moveTask: builder.mutation({
+    dropTask: builder.mutation({
       query: ({ pageId, ...taskData }) => ({
         url: `/page/move-task/${pageId}`,
         method: 'POST',
@@ -161,5 +161,5 @@ export const {
   useCreateGroupMutation,
   useUpdateGroupMutation,
   useDeleteGroupMutation,
-  useMoveTaskMutation
+  useDropTaskMutation,
 } = pageApi

@@ -4,14 +4,13 @@
 
 // React & Hooks
 import React, { useState, useCallback, useMemo } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-// Actions
-import { moveTaskAction } from '../../../../actions/taskActions'
+// RTK Query
+import { useMoveTaskMutation } from '../../../../api/taskApi'
 
 // UI Components
 import {
@@ -35,15 +34,20 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // MAIN COMPONENT
 // =============================================================================
 
-const ProgressSelect = React.memo(
-   ({ moveTaskAction, progressData: { task, id, progressOrder } }) => {
-      // -------------------------------------------------------------------------
-      // HOOKS & STATE
-      // -------------------------------------------------------------------------
-      const { t } = useReactiveTranslation()
+const ProgressSelect = React.memo(() => {
+   // -------------------------------------------------------------------------
+   // HOOKS & STATE
+   // -------------------------------------------------------------------------
+   const { t } = useReactiveTranslation()
 
-      const [hovered, setHovered] = useState(false)
-      const tagSelect = useDisclosure()
+   // Redux state
+   const { task, id, progressOrder } = useSelector(selectProgressSelectData)
+
+   // RTK Query hooks
+   const [moveTaskMutation] = useMoveTaskMutation()
+
+   const [hovered, setHovered] = useState(false)
+   const tagSelect = useDisclosure()
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -58,10 +62,11 @@ const ProgressSelect = React.memo(
                   onClick={async (e) => {
                      e.preventDefault()
                      if (progress_item.id !== task.progress.id) {
-                        moveTaskAction({
+                        moveTaskMutation({
                            pageId: id,
                            taskId: task.id,
-                           progress: progress_item
+                           progress: progress_item,
+                           progressId: progress_item.id
                         })
                      }
                   }}
@@ -75,7 +80,7 @@ const ProgressSelect = React.memo(
                </MenuItem>
             )) || []
          )
-      }, [progressOrder, task.progress.id, task.id, id, moveTaskAction])
+      }, [progressOrder, task.progress.id, task.id, id, moveTaskMutation])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -94,6 +99,11 @@ const ProgressSelect = React.memo(
       // -------------------------------------------------------------------------
       // RENDER LOGIC
       // -------------------------------------------------------------------------
+
+      // Early return if task is not available
+      if (!task) {
+         return null
+      }
 
       return (
          <Flex w='full' gap={3}>
@@ -140,12 +150,6 @@ ProgressSelect.displayName = 'ProgressSelect'
 
 // PropTypes validation
 ProgressSelect.propTypes = {
-   moveTaskAction: PropTypes.func.isRequired,
-   progressData: PropTypes.shape({
-      task: PropTypes.object.isRequired,
-      id: PropTypes.string.isRequired,
-      progressOrder: PropTypes.array.isRequired
-   }).isRequired
 }
 
 // =============================================================================
@@ -166,19 +170,7 @@ const selectProgressSelectData = createSelector(
 )
 
 // =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   progressData: selectProgressSelectData(state)
-})
-
-const mapDispatchToProps = {
-   moveTaskAction
-}
-
-// =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProgressSelect)
+export default ProgressSelect

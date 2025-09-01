@@ -13,7 +13,7 @@ import { createSelector } from 'reselect'
 
 
 // RTK Query
-import { useGetFirstPageQuery, useMoveTaskMutation, useCreateGroupMutation, useCreateProgressMutation } from '../../api/pageApi'
+import { useGetFirstPageQuery, useDropTaskMutation, useCreateGroupMutation, useCreateProgressMutation } from '../../api/pageApi'
 
 // External Libraries
 import { DragDropContext } from '@hello-pangea/dnd'
@@ -57,7 +57,7 @@ const Kanban = React.memo(
 
       // RTK Query hooks
       const { error, isLoading } = useGetFirstPageQuery()
-      const [moveTaskMutation] = useMoveTaskMutation()
+      const [moveTaskMutation] = useDropTaskMutation()
       const [createGroupMutation] = useCreateGroupMutation()
       const [createProgressMutation] = useCreateProgressMutation()
 

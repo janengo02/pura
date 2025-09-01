@@ -4,14 +4,13 @@
 
 // React & Hooks
 import React, { useState, useCallback, useMemo } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-// Actions
-import { moveTaskAction } from '../../../../actions/taskActions'
+// RTK Query
+import { useMoveTaskMutation } from '../../../../api/taskApi'
 
 // UI Components
 import {
@@ -35,19 +34,26 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // MAIN COMPONENT
 // =============================================================================
 
-const GroupSelect = React.memo(
-   ({ moveTaskAction, groupData: { task, id, groupOrder } }) => {
-      // -------------------------------------------------------------------------
-      // HOOKS & STATE
-      // -------------------------------------------------------------------------
-      const { t } = useReactiveTranslation()
+const GroupSelect = React.memo(() => {
+   // -------------------------------------------------------------------------
+   // HOOKS & STATE
+   // -------------------------------------------------------------------------
+   const { t } = useReactiveTranslation()
 
-      const [hovered, setHovered] = useState(false)
-      const tagSelect = useDisclosure()
+   // Redux state
+   const { task, id, groupOrder } = useSelector(selectGroupSelectData)
 
-      // -------------------------------------------------------------------------
-      // MEMOIZED VALUES
-      // -------------------------------------------------------------------------
+   // RTK Query hooks
+   const [moveTaskMutation] = useMoveTaskMutation()
+
+   const [hovered, setHovered] = useState(false)
+   const tagSelect = useDisclosure()
+
+
+
+   // -------------------------------------------------------------------------
+   // MEMOIZED VALUES
+   // -------------------------------------------------------------------------
 
       // Memoize group menu items to prevent unnecessary re-renders
       const groupMenuItems = useMemo(() => {
@@ -58,10 +64,11 @@ const GroupSelect = React.memo(
                   onClick={async (e) => {
                      e.preventDefault()
                      if (group_item.id !== task.group.id) {
-                        moveTaskAction({
+                        moveTaskMutation({
                            pageId: id,
                            taskId: task.id,
-                           group: group_item
+                           group: group_item,
+                           groupId: group_item.id
                         })
                      }
                   }}
@@ -77,7 +84,7 @@ const GroupSelect = React.memo(
                </MenuItem>
             )) || []
          )
-      }, [groupOrder, task.group.id, task.id, id, moveTaskAction])
+      }, [groupOrder, task.group.id, task.id, id, moveTaskMutation])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -96,7 +103,10 @@ const GroupSelect = React.memo(
       // -------------------------------------------------------------------------
       // RENDER LOGIC
       // -------------------------------------------------------------------------
-
+      // Early return if task is not available
+      if (!task) {
+         return null
+      }
       return (
          <Flex w='full' gap={3}>
             <TaskCardLabel
@@ -144,12 +154,6 @@ GroupSelect.displayName = 'GroupSelect'
 
 // PropTypes validation
 GroupSelect.propTypes = {
-   moveTaskAction: PropTypes.func.isRequired,
-   groupData: PropTypes.shape({
-      task: PropTypes.object.isRequired,
-      id: PropTypes.string.isRequired,
-      groupOrder: PropTypes.array.isRequired
-   }).isRequired
 }
 // =============================================================================
 // REDUX SELECTORS
@@ -169,19 +173,7 @@ const selectGroupSelectData = createSelector(
 )
 
 // =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   groupData: selectGroupSelectData(state)
-})
-
-const mapDispatchToProps = {
-   moveTaskAction
-}
-
-// =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(GroupSelect)
+export default GroupSelect

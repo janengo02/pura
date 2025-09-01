@@ -3,6 +3,7 @@ import { commonErrorHandler } from '../actions/errorActions'
 import { optimisticDeleteTask as taskSliceOptimisticDeleteTask } from '../reducers/taskSlice'
 import { optimisticDeleteTask as pageSliceOptimisticDeleteTask } from '../reducers/pageSlice'
 import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask } from '../reducers/calendarSlice'
+import { optimisticMoveTask as taskSliceOptimisticMoveTask } from '../reducers/taskSlice'
 
 export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -87,6 +88,35 @@ export const taskApi = baseApi.injectEndpoints({
       invalidatesTags: ['Task', 'Page', 'Calendar']
     }),
 
+    moveTask: builder.mutation({
+      query: ({ pageId, taskId, groupId, progressId }) => ({
+        url: `/task/move/${pageId}/${taskId}`,
+        method: 'PUT',
+        body: {
+          groupId,
+          progressId
+        }
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+
+        // Perform optimistic updates immediately
+        dispatch(taskSliceOptimisticMoveTask({
+          taskId: arg.taskId,
+          group: arg.group,
+          progress: arg.progress,
+          updateDate: new Date().toISOString()
+        }))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: ['Task', 'Page']
+    }),
+
   })
 })
 
@@ -95,6 +125,7 @@ export const {
   useCreateTaskMutation,
   useUpdateTaskBasicMutation,
   useDeleteTaskMutation,
+  useMoveTaskMutation,
 } = taskApi
 
 /**

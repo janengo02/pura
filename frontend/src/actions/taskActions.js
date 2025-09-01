@@ -1,7 +1,6 @@
 import { api } from '../utils'
 import {
    GET_PAGE,
-   MOVE_TASK,
    UPDATE_TASK_BASIC,
    UPDATE_TASK_SCHEDULE,
    CREATE_TASK_SCHEDULE,
@@ -103,43 +102,6 @@ export const updateTaskBasicInfoAction =
       }
    }
 
-/**
- * Move task to different group/progress
- * @param {Object} formData - Form data
- * @param {string} formData.pageId - Page ID
- * @param {string} formData.taskId - Task ID
- * @param {Object} [formData.group] - Target group
- * @param {Object} [formData.progress] - Target progress
- * @returns {Function} Redux thunk
- */
-export const moveTaskAction = (formData) => async (dispatch, getState) => {
-   // Optimistic update - Task
-   dispatch({
-      type: MOVE_TASK,
-      payload: {
-         taskId: formData.taskId,
-         group: formData.group,
-         progress: formData.progress,
-         updateDate: new Date().toISOString()
-      }
-   })
-
-   try {
-      const res = await api.put(
-         `/task/move/${formData.pageId}/${formData.taskId}`,
-         {
-            groupId: formData.group?.id,
-            progressId: formData.progress?.id
-         }
-      )
-      dispatch({
-         type: GET_PAGE,
-         payload: res.data.page
-      })
-   } catch (err) {
-      commonErrorHandler(dispatch, err)
-   }
-}
 
 /**
  * Update task schedule slot time

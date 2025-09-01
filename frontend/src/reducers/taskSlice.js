@@ -15,6 +15,17 @@ const taskSlice = createSlice({
       // Clear the task immediately for optimistic update
       state.task = null
     },
+    optimisticMoveTask: (state, action) => {
+      // Update the task group/progress immediately for optimistic update
+      if (state.task && state.task.id === action.payload.taskId) {
+        state.task = {
+          ...state.task,
+          ...(action.payload.group && { group: action.payload.group }),
+          ...(action.payload.progress && { progress: action.payload.progress }),
+          updateDate: action.payload.updateDate || state.task.updateDate
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     // Handle RTK Query showTaskModal states
@@ -28,6 +39,7 @@ const taskSlice = createSlice({
 // Export actions
 export const {
   clearTask,
-  optimisticDeleteTask
+  optimisticDeleteTask,
+  optimisticMoveTask
 } = taskSlice.actions
 export default taskSlice.reducer
