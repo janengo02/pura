@@ -38,10 +38,9 @@ import {
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Actions
-import { disconnectGoogleAccountAction } from '../../../../actions/calendarActions'
 import { setAlert } from '../../../../reducers/alertSlice'
 import { toggleCalendarVisibility } from '../../../../reducers/calendarSlice'
-import { useSetDefaultAccountMutation, useAddGoogleAccountMutation } from '../../../../api/calendarApi'
+import { useSetDefaultAccountMutation, useAddGoogleAccountMutation, useDisconnectGoogleAccountMutation } from '../../../../api/calendarApi'
 
 // Utils
 import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
@@ -79,7 +78,6 @@ const getAccountImage = (accountSyncStatus) =>
 const Settings = React.memo(
    ({
       // Redux props
-      disconnectGoogleAccountAction,
       setAlert,
       settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
       taskData: { task, pageId }
@@ -93,6 +91,7 @@ const Settings = React.memo(
       // RTK Query hooks
       const [setDefaultAccountMutation, { isLoading: isSettingDefault }] = useSetDefaultAccountMutation()
       const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
+      const [disconnectGoogleAccountMutation] = useDisconnectGoogleAccountMutation()
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -141,11 +140,11 @@ const Settings = React.memo(
 
       const handleGoogleDisconnect = useCallback(
          async (accountEmail) => {
-            await disconnectGoogleAccountAction({
+            await disconnectGoogleAccountMutation({
                accountEmail: accountEmail
             })
          },
-         [disconnectGoogleAccountAction]
+         [disconnectGoogleAccountMutation]
       )
 
       const handleSetDefaultAccount = useCallback(
@@ -183,7 +182,7 @@ const Settings = React.memo(
       }
 
       const renderSetDefaultButton = (account) => {
-         if (account.isDefault || googleAccounts.length === 1) return null
+         if (account.isDefault) return null
 
          return (
             <>
@@ -375,7 +374,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   disconnectGoogleAccountAction,
    setAlert
 }
 

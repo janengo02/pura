@@ -1029,7 +1029,7 @@ export const createGoogleEvent = ({
 }) => {
    // Find the calendar and account for enhanced event creation
    const calendar = googleCalendars.find(
-      (cal) => cal.accountEmail === defaultAccount.accountEmail && cal.isPrimary
+      (cal) => cal.accountEmail === defaultAccount?.accountEmail && cal.isPrimary
    )
    const formattedCalendar = {
       id: calendar?.calendarId || null,

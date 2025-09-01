@@ -139,28 +139,6 @@ const ensureSingleDefaultAccount = async (user, newDefaultAccountEmail) => {
    })
 }
 
-/**
- * Set default account automatically for single account
- * @param {Object} user - User object
- */
-const autoSetDefaultForSingleAccount = async (user) => {
-   if (user.googleAccounts.length === 1) {
-      const account = user.googleAccounts[0]
-      if (!account.isDefault) {
-         await prisma.googleAccount.update({
-            where: { id: account.id },
-            data: { isDefault: true }
-         })
-      }
-
-      // Update user's update date
-      await prisma.user.update({
-         where: { id: user.id },
-         data: { updateDate: new Date() }
-      })
-   }
-}
-
 module.exports = {
    newOath2Client,
    setOAuthCredentials,
@@ -168,5 +146,4 @@ module.exports = {
    listEvent,
    updateGoogleAccountSyncStatus,
    ensureSingleDefaultAccount,
-   autoSetDefaultForSingleAccount
 }

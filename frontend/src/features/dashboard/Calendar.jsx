@@ -117,6 +117,7 @@ const Calendar = React.memo(() => {
          googleEvents,
          googleCalendars,
          googleAccounts,
+         defaultAccount,
          range,
          navigationTarget
       } = useSelector((state) => state.calendarSlice)
@@ -189,7 +190,7 @@ const Calendar = React.memo(() => {
       // -------------------------------------------------------------------------
 
       // Show info alert that auto-dismisses after 3 seconds
-      const showConnectGoogleAccountAlert = useCallback(() => {
+      const showConnectGoogleAccountAlert = useCallback(({alertTitle, alertMessage}) => {
          // Clear any existing timeout to reset the 3-second timer
          if (alertTimeoutRef.current) {
             clearTimeout(alertTimeoutRef.current)
@@ -197,8 +198,8 @@ const Calendar = React.memo(() => {
 
          // Set the alert (this will replace any existing alert)
          dispatch(setAlert(
-            'calendar-connect-required',
-            'calendar-connect-google-account-message',
+            alertTitle,
+            alertMessage,
             'info'
          ))
 
@@ -325,12 +326,27 @@ const Calendar = React.memo(() => {
 
             // Check if we have Google accounts and calendars
             if (!googleAccounts || googleAccounts.length === 0) {
-               showConnectGoogleAccountAlert()
+               showConnectGoogleAccountAlert({
+                  alertTitle: 'alert-calendar-connect-required',
+                  alertMessage: 'alert-calendar-connect-google-account-message'
+               })
                return
             }
 
             if (!googleCalendars || googleCalendars.length === 0) {
-               showConnectGoogleAccountAlert()
+               showConnectGoogleAccountAlert({
+                  alertTitle: 'alert-calendar-connect-required',
+                  alertMessage: 'alert-calendar-connect-google-account-message'
+               })
+               return
+            }
+
+            // Check if we have a default account set
+            if (!defaultAccount || !defaultAccount.accountEmail) {
+               showConnectGoogleAccountAlert({
+                  alertTitle: 'alert-default-account-required',
+                  alertMessage: 'alert-default-account-required-message'
+               })
                return
             }
 
@@ -347,7 +363,10 @@ const Calendar = React.memo(() => {
             )
 
             if (writableCalendars.length === 0) {
-               showConnectGoogleAccountAlert()
+               showConnectGoogleAccountAlert({
+                  alertTitle: 'alert-writable-calendar-required',
+                  alertMessage: 'alert-cwritable-calendar-required-message'
+               })
                return
             }
 
@@ -376,7 +395,8 @@ const Calendar = React.memo(() => {
             dispatch,
             googleAccounts,
             googleCalendars,
-            showConnectGoogleAccountAlert
+            defaultAccount,
+            showConnectGoogleAccountAlert,
          ]
       )
 

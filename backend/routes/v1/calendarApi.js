@@ -23,7 +23,6 @@ const {
    setOAuthCredentials,
    listEvent,
    updateGoogleAccountSyncStatus,
-   autoSetDefaultForSingleAccount,
    ensureSingleDefaultAccount
 } = require('../../utils/calendarHelpers')
 const { updateTaskFromGoogleEvent } = require('../../utils/taskHelpers')
@@ -177,9 +176,6 @@ router.post(
             data: { updateDate: new Date() }
          })
       }
-
-      // Auto-set default if only one account
-      await autoSetDefaultForSingleAccount(user)
 
       const newAccountCalendars = await listEvent(
          refresh_token, // Use the plain token for the immediate sync
@@ -613,12 +609,30 @@ router.delete(
       const accountToDelete = user.googleAccounts.find(
          (acc) => acc.accountEmail === accountEmail
       )
+      const isDeleteDefault = accountToDelete?.isDefault
 
       if (accountToDelete) {
          await prisma.googleAccount.delete({
             where: { id: accountToDelete.id }
          })
       }
+      if (isDeleteDefault && user.googleAccounts.length > 1) {
+         // Set a new default account if the deleted one was default
+         const newDefaultAccount = user.googleAccounts.filter(
+            (acc) => acc.accountEmail !== accountEmail
+         )[0]
+         await prisma.googleAccount.update({
+            where: { id: newDefaultAccount.id },
+            data: { isDefault: true }
+         })
+
+         // Update user's update date
+         await prisma.user.update({
+            where: { id: user.id },
+            data: { updateDate: new Date() }
+         })
+      }
+
       res.json({ message: 'Account disconnected' })
    })
 )

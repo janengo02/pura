@@ -61,6 +61,25 @@ export const calendarApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Calendar', 'Task']
     }),
+
+    disconnectGoogleAccount: builder.mutation({
+      query: ({ accountEmail }) => ({
+        url: `/calendar/disconnect/${accountEmail}`,
+        method: 'DELETE'
+      }),
+      async onQueryStarted({ accountEmail }, { dispatch, queryFulfilled, getState }) {
+        try {
+          await queryFulfilled
+          
+          // After successful Google account disconnection, refetch task modal if open
+          refetchTaskModalIfOpen(dispatch, getState, baseApi)
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: ['Calendar', 'Task']
+    }),
   })
 })
 
@@ -68,4 +87,5 @@ export const {
   useLazyLoadCalendarQuery,
   useSetDefaultAccountMutation,
   useAddGoogleAccountMutation,
+  useDisconnectGoogleAccountMutation,
 } = calendarApi
