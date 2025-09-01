@@ -18,10 +18,7 @@ import {
 } from '../../../../actions/taskActions'
 
 // RTK Query
-import { useShowTaskModalMutation } from '../../../../api/taskApi'
-import {
-   addGoogleAccountAction
-} from '../../../../actions/calendarActions'
+import { useAddGoogleAccountMutation } from '../../../../api/calendarApi'
 import { setAlert } from '../../../../reducers/alertSlice'
 import { navigateCalendarToDate } from '../../../../reducers/calendarSlice'
 
@@ -77,7 +74,6 @@ const ScheduleTimeSlot = React.memo(
       updateTaskScheduleAction,
       removeTaskScheduleSlotAction,
       syncTaskWithGoogleAction,
-      addGoogleAccountAction,
       setAlert,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars },
@@ -90,7 +86,7 @@ const ScheduleTimeSlot = React.memo(
       const dispatch = useDispatch()
 
       // RTK Query hooks
-      const [showTaskModalMutation] = useShowTaskModalMutation()
+      const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
 
       // -------------------------------------------------------------------------
       // ANIMATION STATE
@@ -100,22 +96,10 @@ const ScheduleTimeSlot = React.memo(
       // -------------------------------------------------------------------------
       // GOOGLE LOGIN HANDLER
       // -------------------------------------------------------------------------
-      const refetchTaskModalIfOpen = useCallback(async () => {
-         // Check if task modal is displayed (task exists in state)
-         if (task && pageId) {
-            const formData = {
-               pageId: pageId,
-               taskId: task.id
-            }
-            await showTaskModalMutation(formData)
-         }
-      }, [task, pageId, showTaskModalMutation])
 
       const googleReconnectLogin = useGoogleAccountLogin({
          onSuccess: async (code, range) => {
-            await addGoogleAccountAction({ code, range })
-            // Reload task modal data after successful Google account reconnection
-            await refetchTaskModalIfOpen()
+            await addGoogleAccountMutation({ code, range })
          },
          onError: () => {
             setAlert(
@@ -888,7 +872,6 @@ ScheduleTimeSlot.propTypes = {
    updateTaskScheduleAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    syncTaskWithGoogleAction: PropTypes.func.isRequired,
-   addGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
@@ -947,7 +930,6 @@ const mapDispatchToProps = {
    updateTaskScheduleAction,
    removeTaskScheduleSlotAction,
    syncTaskWithGoogleAction,
-   addGoogleAccountAction,
    setAlert
 }
 

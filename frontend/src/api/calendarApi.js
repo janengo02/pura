@@ -1,5 +1,6 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
+import { refetchTaskModalIfOpen } from './taskApi'
 
 export const calendarApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -12,9 +13,11 @@ export const calendarApi = baseApi.injectEndpoints({
           pageId
         }
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
+          // After successful calendar load, refetch task modal if open
+          refetchTaskModalIfOpen(dispatch, getState, baseApi)
         } catch (err) {
           // Handle error using common error handler
           commonErrorHandler(dispatch, err)
@@ -39,10 +42,30 @@ export const calendarApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Calendar']
     }),
+
+    addGoogleAccount: builder.mutation({
+      query: (reqData) => ({
+        url: '/calendar/add-account',
+        method: 'POST',
+        body: reqData
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+        try {
+          await queryFulfilled
+          // After successful Google account addition, refetch task modal if open
+          refetchTaskModalIfOpen(dispatch, getState, baseApi)
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: ['Calendar', 'Task']
+    }),
   })
 })
 
 export const {
   useLazyLoadCalendarQuery,
   useSetDefaultAccountMutation,
+  useAddGoogleAccountMutation,
 } = calendarApi

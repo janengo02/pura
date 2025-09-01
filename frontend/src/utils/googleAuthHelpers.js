@@ -51,19 +51,19 @@ export const useGoogleAccountLogin = ({
  * Standard Google login configuration for adding/reconnecting accounts
  * This provides the same behavior as the original Settings.jsx implementation
  * @param {Object} params - Required parameters
- * @param {Function} params.addGoogleAccountAction - Redux action to add account
+ * @param {Function} params.addGoogleAccountMutation - RTK Query mutation to add account
  * @param {Function} params.setAlertAction - Redux action to set alerts
  * @param {string} params.range - Date range for calendar sync
  * @returns {Function} Google login function
  */
 export const useStandardGoogleAccountLogin = ({
-   addGoogleAccountAction,
+   addGoogleAccountMutation,
    setAlertAction,
    range
 }) => {
    return useGoogleAccountLogin({
       onSuccess: (code, range) => {
-         addGoogleAccountAction({ code, range }).then(() => {})
+         addGoogleAccountMutation({ code, range }).then(() => {})
       },
       onError: (responseError) => {
          setAlertAction(

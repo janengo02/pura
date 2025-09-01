@@ -38,14 +38,10 @@ import {
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // Actions
-import {
-   addGoogleAccountAction,
-   disconnectGoogleAccountAction
-} from '../../../../actions/calendarActions'
+import { disconnectGoogleAccountAction } from '../../../../actions/calendarActions'
 import { setAlert } from '../../../../reducers/alertSlice'
 import { toggleCalendarVisibility } from '../../../../reducers/calendarSlice'
-import { useShowTaskModalMutation } from '../../../../api/taskApi'
-import { useSetDefaultAccountMutation } from '../../../../api/calendarApi'
+import { useSetDefaultAccountMutation, useAddGoogleAccountMutation } from '../../../../api/calendarApi'
 
 // Utils
 import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
@@ -83,7 +79,6 @@ const getAccountImage = (accountSyncStatus) =>
 const Settings = React.memo(
    ({
       // Redux props
-      addGoogleAccountAction,
       disconnectGoogleAccountAction,
       setAlert,
       settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
@@ -96,29 +91,16 @@ const Settings = React.memo(
       const dispatch = useDispatch()
 
       // RTK Query hooks
-      const [showTaskModalMutation] = useShowTaskModalMutation()
       const [setDefaultAccountMutation, { isLoading: isSettingDefault }] = useSetDefaultAccountMutation()
+      const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
 
       // -------------------------------------------------------------------------
-      // TASK MODAL REFRESH HELPER
+      // EVENT HANDLERS
       // -------------------------------------------------------------------------
-
-      const refetchTaskModalIfOpen = useCallback(async () => {
-         // Check if task modal is displayed (task exists in state)
-         if (task && pageId) {
-            const formData = {
-               pageId: pageId,
-               taskId: task.id
-            }
-            await showTaskModalMutation(formData)
-         }
-      }, [task, pageId, showTaskModalMutation])
 
       const googleLogin = useGoogleAccountLogin({
          onSuccess: async (code, range) => {
-            await addGoogleAccountAction({ code, range })
-            // Refetch task modal data if open after successful Google account connection
-            await refetchTaskModalIfOpen()
+            await addGoogleAccountMutation({ code, range })
          },
          onError: () => {
             setAlert(
@@ -162,10 +144,8 @@ const Settings = React.memo(
             await disconnectGoogleAccountAction({
                accountEmail: accountEmail
             })
-            // Refetch task modal data if open after disconnecting Google account
-            await refetchTaskModalIfOpen()
          },
-         [disconnectGoogleAccountAction, refetchTaskModalIfOpen]
+         [disconnectGoogleAccountAction]
       )
 
       const handleSetDefaultAccount = useCallback(
@@ -344,7 +324,6 @@ Settings.displayName = 'CalendarSettings'
 
 // PropTypes validation
 Settings.propTypes = {
-   addGoogleAccountAction: PropTypes.func.isRequired,
    disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
@@ -396,7 +375,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   addGoogleAccountAction,
    disconnectGoogleAccountAction,
    setAlert
 }

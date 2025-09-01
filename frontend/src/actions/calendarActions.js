@@ -8,7 +8,6 @@ import { clearCalendarEvent } from '../reducers/calendarSlice'
 import {
    UPDATE_CALENDAR_EVENT,
    UPDATE_CALENDAR_EVENT_TIME,
-   ADD_CALENDAR_ACCOUNT,
    REMOVE_CALENDAR_ACCOUNT,
    DELETE_CALENDAR_EVENT,
    UPDATE_TASK_SCHEDULE
@@ -21,36 +20,6 @@ import {
 // =============================================================================
 // ACTION CREATORS
 // =============================================================================
-
-/**
- * Add Google Account Action
- * Adds a new Google account connection
- * @param {Object} reqData - Request data for adding account
- * @param {string} reqData.code - OAuth authorization code
- * @param {Array} reqData.range - Date range for initial sync
- */
-export const addGoogleAccountAction =
-   (reqData) => async (dispatch, getState) => {
-      try {
-         const res = await api.post('/calendar/add-account', reqData)
-
-         if (res.data?.accountEmail) {
-            dispatch({
-               type: ADD_CALENDAR_ACCOUNT,
-               payload: {
-                  data: res.data,
-                  range: reqData.range
-               }
-            })
-         } else {
-            throw new Error(
-               'Unexpected response format from /calendar/add-account'
-            )
-         }
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
 
 
 /**

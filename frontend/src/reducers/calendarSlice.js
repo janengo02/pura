@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
-import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent } from './calendarReducersHelpers'
+import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount } from './calendarReducersHelpers'
 
 const calendarSlice = createSlice({
   name: 'calendar',
@@ -71,6 +71,23 @@ const calendarSlice = createSlice({
           ...account,
           isDefault: account.accountEmail === accountData.accountEmail
         }))
+      })
+      .addMatcher(calendarApi.endpoints.addGoogleAccount.matchFulfilled, (state, action) => {
+        const newGoogleAccountData = action.payload
+        
+        // Use the same helper function as the traditional reducer
+        const updatedState = addGoogleAccount({
+          googleAccounts: state.googleAccounts,
+          googleCalendars: state.googleCalendars,
+          googleEvents: state.googleEvents,
+          newGoogleAccount: newGoogleAccountData
+        })
+        
+        // Update state with new account, calendars, and events
+        state.googleAccounts = updatedState.googleAccounts
+        state.googleCalendars = updatedState.googleCalendars
+        state.googleEvents = updatedState.googleEvents
+        state.defaultAccount = updatedState.defaultAccount
       })
   }
 })

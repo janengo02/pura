@@ -88,3 +88,26 @@ export const {
   useUpdateTaskBasicMutation,
   useDeleteTaskMutation,
 } = taskApi
+
+/**
+ * Utility function to refetch task modal data if it's currently open
+ * This can be used across multiple RTK Query mutations to ensure
+ * task modal data stays up-to-date after API operations
+ *
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {Function} getState - Redux getState function
+ * @param {Object} baseApi - RTK Query base API instance
+ */
+export const refetchTaskModalIfOpen = (dispatch, getState, baseApi) => {
+  const state = getState()
+  const task = state.taskSlice?.task
+  const pageId = state.pageSlice?.id
+
+  if (task && pageId) {
+    // Manually trigger task modal refetch to get updated data
+    dispatch(baseApi.endpoints.showTaskModal.initiate({
+      taskId: task.id,
+      pageId: pageId
+    }))
+  }
+}
