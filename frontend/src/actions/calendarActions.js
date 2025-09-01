@@ -54,35 +54,6 @@ export const navigateCalendarToDateAction = (
    payload: { date, taskId, slotIndex }
 })
 /**
- * Load Calendar Action
- * Loads Google Calendar events for the specified date range
- * @param {Array} visibleRange - Array containing start and end dates
- * @param {string} pageId - ID of the page for context
- */
-export const loadCalendarAction =
-   (visibleRange, pageId) => async (dispatch) => {
-      try {
-         const res = await api.get('/calendar/list-events', {
-            params: {
-               minDate: visibleRange[0],
-               maxDate: visibleRange[1],
-               pageId
-            }
-         })
-
-         dispatch({
-            type: GET_CALENDAR,
-            payload: {
-               data: res.data.googleAccounts,
-               tasks: res.data.tasks || []
-            }
-         })
-      } catch (err) {
-         fatalErrorHandler(dispatch, pageId, err)
-      }
-   }
-
-/**
  * Add Google Account Action
  * Adds a new Google account connection
  * @param {Object} reqData - Request data for adding account

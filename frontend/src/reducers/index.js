@@ -6,6 +6,7 @@ import pageSlice from './pageSlice'
 import task from './taskReducers'
 import taskSlice from './taskSlice'
 import calendar from './calendarReducers'
+import calendarSlice from './calendarSlice'
 import language from './languageSlice'
 import theme from './themeSlice'
 import event from './eventSlice'
@@ -19,6 +20,7 @@ export default combineReducers({
    task, // Legacy task reducer for backward compatibility (used by 8+ components)
    taskSlice, // New RTK Query integrated task slice (used by migrated components)
    calendar,
+   calendarSlice,
    language,
    theme,
    event,

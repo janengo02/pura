@@ -498,7 +498,7 @@ const selectEventData = createSelector(
 )
 
 const selectGoogleCalendars = createSelector(
-   (state) => state.calendar.googleCalendars,
+   (state) => state.calendarSlice.googleCalendars,
    (googleCalendars) => {
       // Filter out calendars that are not writable
       return googleCalendars.filter(
@@ -522,7 +522,7 @@ const selectTaskData = createSelector(
 const mapStateToProps = (state) => ({
    event: selectEventData(state),
    googleCalendars: selectGoogleCalendars(state),
-   googleAccounts: state.calendar.googleAccounts,
+   googleAccounts: state.calendarSlice.googleAccounts,
    taskData: selectTaskData(state)
 })
 

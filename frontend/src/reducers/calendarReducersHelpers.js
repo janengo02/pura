@@ -788,7 +788,7 @@ export const loadEventListHelper = (googleAccounts, tasks) => {
  * @param {Array} params.tasks - Task data
  * @returns {Object} Updated state with calendar data
  */
-export const loadGoogleCalendar = ({ googleAccounts, tasks }) => {
+export const loadGoogleCalendarHelper = ({ googleAccounts, tasks }) => {
    const accounts = loadAccountListHelper(googleAccounts)
    const calendars = loadCalendarListHelper(googleAccounts)
    const events = loadEventListHelper(googleAccounts, tasks)

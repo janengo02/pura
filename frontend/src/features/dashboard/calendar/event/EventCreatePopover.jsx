@@ -428,7 +428,7 @@ EventCreatePopover.propTypes = {
 
 // Memoized selectors for better Redux performance
 const selectCalendarData = createSelector(
-   [(state) => state.calendar],
+   [(state) => state.calendarSlice],
    (calendar) => ({
       newEvent: calendar.googleEvents.find((event) => event.id === 'new'),
       googleAccounts: calendar.googleAccounts,

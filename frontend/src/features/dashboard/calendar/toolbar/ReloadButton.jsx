@@ -4,24 +4,17 @@
 
 // React
 import React, { useCallback } from 'react'
-import PropTypes from 'prop-types'
 
-// Redux
-import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
+// Redux  
+import { useSelector } from 'react-redux'
 
 // UI Components
 import { IconButton } from '@chakra-ui/react'
 
 // Icons & Actions
 import { PiArrowClockwise } from 'react-icons/pi'
-import { loadCalendarAction } from '../../../../actions/calendarActions'
+import { useLazyLoadCalendarQuery } from '../../../../api/calendarApi'
 
-// Utils
-import { firstVisibleDay, lastVisibleDay } from '../../../../utils/dates'
-
-// Hooks
-import useLoading from '../../../../hooks/useLoading'
 
 // =============================================================================
 // CONSTANTS
@@ -39,34 +32,34 @@ const BUTTON_STYLES = {
 // MAIN COMPONENT
 // =============================================================================
 
-const ReloadButton = React.memo(
-   ({
-      // Redux props
-      loadCalendarAction,
-      reloadData: { pageId, range }
-   }) => {
+const ReloadButton = React.memo(() => {
+      // -------------------------------------------------------------------------
+      // REDUX HOOKS
+      // -------------------------------------------------------------------------
+      const pageId = useSelector((state) => state.pageSlice.id)
+      const range = useSelector((state) => state.calendarSlice.range)
+
+      // -------------------------------------------------------------------------
+      // RTK QUERY HOOKS
+      // -------------------------------------------------------------------------
+      const [loadCalendar, {isLoading}] = useLazyLoadCalendarQuery()
+      
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
-      const [handleReload, isLoading] = useLoading(
-         useCallback(async () => {
-            // Use current range or default range if not available
-            const reloadRange =
-               range.length > 0
-                  ? range
-                  : [firstVisibleDay(new Date()), lastVisibleDay(new Date())]
-
-            await loadCalendarAction(reloadRange, pageId)
-         }, [loadCalendarAction, range, pageId])
-      )
-
       const handleReloadClick = useCallback(
          async (e) => {
             e.preventDefault()
-            await handleReload()
+            if (range && range.length > 0 && pageId) {
+               await loadCalendar({
+                  minDate: range[0],
+                  maxDate: range[1],
+                  pageId
+               })
+            }
          },
-         [handleReload]
+         [loadCalendar, range, pageId]
       )
 
       // -------------------------------------------------------------------------
@@ -91,40 +84,11 @@ const ReloadButton = React.memo(
 // Display name for debugging
 ReloadButton.displayName = 'CalendarReloadButton'
 
-// PropTypes validation
-ReloadButton.propTypes = {
-   loadCalendarAction: PropTypes.func.isRequired,
-   reloadData: PropTypes.shape({
-      pageId: PropTypes.string.isRequired,
-      range: PropTypes.array.isRequired
-   }).isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectReloadButtonData = createSelector(
-   [(state) => state.pageSlice.id, (state) => state.calendar.range],
-   (pageId, range) => ({
-      pageId: pageId || '',
-      range: range || []
-   })
-)
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   reloadData: selectReloadButtonData(state)
-})
-
-const mapDispatchToProps = {
-   loadCalendarAction
-}
+// PropTypes validation - now empty since we use hooks
+ReloadButton.propTypes = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(ReloadButton)
+export default ReloadButton

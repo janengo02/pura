@@ -917,8 +917,8 @@ const selectScheduleData = createSelector(
 
 const selectGoogleData = createSelector(
    [
-      (state) => state.calendar.googleAccounts,
-      (state) => state.calendar.googleCalendars
+      (state) => state.calendarSlice.googleAccounts,
+      (state) => state.calendarSlice.googleCalendars
    ],
    (googleAccounts, googleCalendars) => ({
       googleAccounts,
@@ -927,7 +927,7 @@ const selectGoogleData = createSelector(
 )
 
 const selectSettingsData = createSelector(
-   [(state) => state.calendar.range],
+   [(state) => state.calendarSlice.range],
    (range) => ({
       range
    })

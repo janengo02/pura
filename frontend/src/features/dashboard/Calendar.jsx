@@ -4,11 +4,9 @@
 
 // React & Hooks
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
+import { useSelector, useDispatch } from 'react-redux'
 
 // External Libraries
 import moment from 'moment'
@@ -35,11 +33,11 @@ import EventCreatePopover from './calendar/event/EventCreatePopover'
 
 // Actions
 import {
-   loadCalendarAction,
-   changeCalendarRangeAction,
    updateGoogleEventTimeAction,
    createCalendarEventAction
 } from '../../actions/calendarActions'
+import { useLazyLoadCalendarQuery } from '../../api/calendarApi'
+import { updateCalendarRange } from '../../reducers/calendarSlice'
 import { updateTaskScheduleAction } from '../../actions/taskActions'
 import {
    setAlert,
@@ -111,28 +109,26 @@ const ColoredDateCellWrapper = ({ children }) => {
 // MAIN COMPONENT
 // =============================================================================
 
-const Calendar = React.memo(
-   ({
-      // Redux props
-      loadCalendarAction,
-      changeCalendarRangeAction,
-      updateGoogleEventTimeAction,
-      createCalendarEventAction,
-      updateTaskScheduleAction,
-      setAlert,
-      removeAllAlerts,
-      googleAccount: {
+const Calendar = React.memo(() => {
+      // -------------------------------------------------------------------------
+      // REDUX HOOKS
+      // -------------------------------------------------------------------------
+      const dispatch = useDispatch()
+      const {
          googleEvents,
          googleCalendars,
          googleAccounts,
-         loading,
          range,
          navigationTarget
-      },
-      currentLanguage,
-      pageId,
-      currentTaskId
-   }) => {
+      } = useSelector((state) => state.calendarSlice)
+      const currentLanguage = useSelector((state) => state.language?.current || 'en')
+      const pageId = useSelector((state) => state.pageSlice.id)
+      const currentTaskId = useSelector((state) => state.taskSlice.task?.id)
+
+      // -------------------------------------------------------------------------
+      // RTK QUERY HOOKS
+      // -------------------------------------------------------------------------
+      const [loadCalendar, { isLoading }] = useLazyLoadCalendarQuery()
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
@@ -201,18 +197,18 @@ const Calendar = React.memo(
          }
 
          // Set the alert (this will replace any existing alert)
-         setAlert(
+         dispatch(setAlert(
             'calendar-connect-required',
             'calendar-connect-google-account-message',
             'info'
-         )
+         ))
 
          // Set new timeout to remove all alerts after 3 seconds
          alertTimeoutRef.current = setTimeout(() => {
-            removeAllAlerts()
+            dispatch(removeAllAlerts())
             alertTimeoutRef.current = null
          }, 5000)
-      }, [setAlert, removeAllAlerts])
+      }, [dispatch])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -233,9 +229,9 @@ const Calendar = React.memo(
                newRangeEnd = getRangeEnd(newRange[1] || newRange[0], localizer)
             }
 
-            changeCalendarRangeAction([newRangeStart, newRangeEnd])
+            dispatch(updateCalendarRange({ range: [newRangeStart, newRangeEnd] }))
          },
-         [changeCalendarRangeAction, localizer, range]
+         [dispatch, localizer, range]
       )
 
       // Utility function to determine if a color is dark or light
@@ -375,10 +371,10 @@ const Calendar = React.memo(
             }
 
             // Dispatch action to create calendar event
-            createCalendarEventAction(newEvent, mousePosition)
+            dispatch(createCalendarEventAction(newEvent, mousePosition))
          },
          [
-            createCalendarEventAction,
+            dispatch,
             googleAccounts,
             googleCalendars,
             showConnectGoogleAccountAlert
@@ -401,7 +397,7 @@ const Calendar = React.memo(
                   currentTaskId && currentTaskId === event.puraTaskId
 
                // Update task schedule slot for task events
-               await updateTaskScheduleAction({
+               await dispatch(updateTaskScheduleAction({
                   pageId: pageId,
                   taskId: event.puraTaskId,
                   slotIndex: event.puraScheduleIndex,
@@ -410,7 +406,7 @@ const Calendar = React.memo(
                   ...(isCurrentTask && {
                      targetEventIndex: event.puraScheduleIndex
                   })
-               })
+               }))
             } else if (
                event.eventType === 'google' ||
                event.eventType === 'synced'
@@ -437,12 +433,11 @@ const Calendar = React.memo(
                   })
                }
 
-               await updateGoogleEventTimeAction(updateData)
+               await dispatch(updateGoogleEventTimeAction(updateData))
             }
          },
          [
-            updateGoogleEventTimeAction,
-            updateTaskScheduleAction,
+            dispatch,
             pageId,
             currentTaskId
          ]
@@ -464,7 +459,7 @@ const Calendar = React.memo(
                   currentTaskId && currentTaskId === event.puraTaskId
 
                // Update task schedule slot for task events
-               await updateTaskScheduleAction({
+               await dispatch(updateTaskScheduleAction({
                   pageId: pageId,
                   taskId: event.puraTaskId,
                   slotIndex: event.puraScheduleIndex,
@@ -473,7 +468,7 @@ const Calendar = React.memo(
                   ...(isCurrentTask && {
                      targetEventIndex: event.puraScheduleIndex
                   })
-               })
+               }))
             } else if (
                event.eventType === 'google' ||
                event.eventType === 'synced'
@@ -499,12 +494,11 @@ const Calendar = React.memo(
                   })
                }
 
-               await updateGoogleEventTimeAction(updateData)
+               await dispatch(updateGoogleEventTimeAction(updateData))
             }
          },
          [
-            updateGoogleEventTimeAction,
-            updateTaskScheduleAction,
+            dispatch,
             pageId,
             currentTaskId
          ]
@@ -538,9 +532,9 @@ const Calendar = React.memo(
             // Calculate new range based on target date and view
             const newRangeStart = getRangeStart(targetDate, localizer)
             const newRangeEnd = getRangeEnd(targetDate, localizer)
-            changeCalendarRangeAction([newRangeStart, newRangeEnd])
+            dispatch(updateCalendarRange({ range: [newRangeStart, newRangeEnd] }))
          }
-      }, [navigationTarget, localizer, changeCalendarRangeAction])
+      }, [navigationTarget, localizer, dispatch])
 
       // -------------------------------------------------------------------------
       // EFFECTS
@@ -569,9 +563,13 @@ const Calendar = React.memo(
 
       useEffect(() => {
          if (range && range.length && pageId) {
-            loadCalendarAction(range, pageId)
+            loadCalendar({
+               minDate: range[0],
+               maxDate: range[1],
+               pageId
+            })
          }
-      }, [range, loadCalendarAction, pageId])
+      }, [range, loadCalendar, pageId])
 
       // Initialize calendar with default date range on mount
       useEffect(() => {
@@ -579,15 +577,15 @@ const Calendar = React.memo(
             getRangeStart(calendarConfig.defaultDate, localizer),
             getRangeEnd(calendarConfig.defaultDate, localizer)
          ]
-         changeCalendarRangeAction(initialRange)
-      }, [calendarConfig.defaultDate, changeCalendarRangeAction, localizer])
+         dispatch(updateCalendarRange({ range: initialRange }))
+      }, [calendarConfig.defaultDate, dispatch, localizer])
 
       // -------------------------------------------------------------------------
       // RENDER
       // -------------------------------------------------------------------------
 
       return (
-         <Skeleton isLoaded={!loading}>
+         <Skeleton isLoaded={!isLoading}>
             <Box position='relative' h='calc(100vh - 9rem)'>
                <VStack h='full' alignItems='center' gap={2} paddingBottom={10}>
                   <Toolbar />
@@ -661,61 +659,11 @@ const Calendar = React.memo(
 // Display name for debugging
 Calendar.displayName = 'Calendar'
 
-// PropTypes validation
-Calendar.propTypes = {
-   loadCalendarAction: PropTypes.func.isRequired,
-   changeCalendarRangeAction: PropTypes.func.isRequired,
-   updateGoogleEventTimeAction: PropTypes.func.isRequired,
-   createCalendarEventAction: PropTypes.func.isRequired,
-   updateTaskScheduleAction: PropTypes.func.isRequired,
-   setAlert: PropTypes.func.isRequired,
-   removeAllAlerts: PropTypes.func.isRequired,
-   googleAccount: PropTypes.object.isRequired,
-   currentLanguage: PropTypes.string.isRequired,
-   pageId: PropTypes.string,
-   currentTaskId: PropTypes.string
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectCalendarData = createSelector(
-   [
-      (state) => state.calendar,
-      (state) => state.language?.current || 'en',
-      (state) => state.pageSlice.id,
-      (state) => state.taskSlice.task?.id
-   ],
-   (googleAccount, currentLanguage, pageId, currentTaskId) => ({
-      googleAccount,
-      currentLanguage,
-      pageId,
-      currentTaskId
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   ...selectCalendarData(state)
-})
-
-const mapDispatchToProps = {
-   loadCalendarAction,
-   changeCalendarRangeAction,
-   updateGoogleEventTimeAction,
-   createCalendarEventAction,
-   updateTaskScheduleAction,
-   setAlert,
-   removeAllAlerts
-}
+// PropTypes validation - now empty since we use hooks
+Calendar.propTypes = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Calendar)
+export default Calendar

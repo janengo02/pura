@@ -1,5 +1,4 @@
 import {
-   GET_CALENDAR,
    CALENDAR_AUTH_ERROR,
    UPDATE_CALENDAR_VISIBILITY,
    UPDATE_CALENDAR_EVENT,
@@ -21,7 +20,7 @@ import {
 } from '../actions/types'
 import {
    addGoogleAccount,
-   loadGoogleCalendar,
+   loadGoogleCalendarHelper,
    changeGoogleCalendarVisibility,
    updateGoogleEvent,
    updateGoogleEventTime,
@@ -38,7 +37,6 @@ import {
 } from './calendarReducersHelpers'
 
 const initialState = {
-   isLoggedIn: false,
    googleEvents: [],
    googleCalendars: [],
    googleAccounts: [],
@@ -64,7 +62,6 @@ function calendarReducer(state = initialState, action) {
       case ADD_CALENDAR_ACCOUNT:
          return {
             ...state,
-            isLoggedIn: true,
             ...addGoogleAccount({
                googleAccounts: state.googleAccounts,
                googleCalendars: state.googleCalendars,
@@ -76,23 +73,11 @@ function calendarReducer(state = initialState, action) {
       case REMOVE_CALENDAR_ACCOUNT:
          return {
             ...state,
-            isLoggedIn: true,
             ...removeGoogleAccount({
                googleAccounts: state.googleAccounts,
                googleCalendars: state.googleCalendars,
                googleEvents: state.googleEvents,
                removedAccountEmail: payload.accountEmail
-            }),
-            loading: false
-         }
-
-      case GET_CALENDAR:
-         return {
-            ...state,
-            isLoggedIn: true,
-            ...loadGoogleCalendar({
-               googleAccounts: payload.data,
-               tasks: payload.tasks
             }),
             loading: false
          }
@@ -224,7 +209,6 @@ function calendarReducer(state = initialState, action) {
       case CALENDAR_AUTH_ERROR:
          return {
             ...state,
-            isLoggedIn: false,
             googleEvents: [],
             googleCalendars: [],
             defaultAccount: null,

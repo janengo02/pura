@@ -372,10 +372,10 @@ Settings.propTypes = {
 
 const selectSettingsData = createSelector(
    [
-      (state) => state.calendar.googleAccounts,
-      (state) => state.calendar.googleCalendars,
-      (state) => state.calendar.range,
-      (state) => state.calendar.defaultAccount
+      (state) => state.calendarSlice.googleAccounts,
+      (state) => state.calendarSlice.googleCalendars,
+      (state) => state.calendarSlice.range,
+      (state) => state.calendarSlice.defaultAccount
    ],
    (googleAccounts, googleCalendars, range, defaultAccount) => ({
       googleAccounts: googleAccounts || [],
