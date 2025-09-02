@@ -12,11 +12,11 @@ import { createSelector } from 'reselect'
 
 // Actions
 import {
-   updateTaskScheduleAction,
    removeTaskScheduleSlotAction
 } from '../../../../actions/taskActions'
 
 // RTK Query
+import { useUpdateTaskScheduleMutation } from '../../../../api/taskApi'
 import { useAddGoogleAccountMutation } from '../../../../api/calendarApi'
 import { useSyncTaskWithGoogleMutation } from '../../../../api/taskApi'
 import { setAlert } from '../../../../reducers/alertSlice'
@@ -71,7 +71,6 @@ const ScheduleTimeSlot = React.memo(
       slot,
       index,
       // Redux props
-      updateTaskScheduleAction,
       removeTaskScheduleSlotAction,
       setAlert,
       scheduleData: { task, pageId },
@@ -87,6 +86,7 @@ const ScheduleTimeSlot = React.memo(
       // RTK Query hooks
       const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
       const [syncTaskWithGoogle, { isLoading: syncLoading }] = useSyncTaskWithGoogleMutation()
+      const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
 
       // -------------------------------------------------------------------------
       // ANIMATION STATE
@@ -113,15 +113,14 @@ const ScheduleTimeSlot = React.memo(
 
       const updateScheduleSlot = useCallback(
          async (updates) => {
-            const formData = {
+            await updateTaskSchedule({
                pageId: pageId,
                taskId: task.id,
                slotIndex: index,
                ...updates
-            }
-            await updateTaskScheduleAction(formData)
+            })
          },
-         [updateTaskScheduleAction, pageId, task.id, index]
+         [updateTaskSchedule, pageId, task.id, index]
       )
 
       const handleDeleteSlot = useCallback(async () => {
@@ -861,7 +860,6 @@ ScheduleTimeSlot.propTypes = {
       googleCalendarId: PropTypes.string
    }).isRequired,
    index: PropTypes.number.isRequired,
-   updateTaskScheduleAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
@@ -918,7 +916,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateTaskScheduleAction,
    removeTaskScheduleSlotAction,
    setAlert
 }

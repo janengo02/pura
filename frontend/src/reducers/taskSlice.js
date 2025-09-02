@@ -50,6 +50,29 @@ const taskSlice = createSlice({
         }
       }
     },
+    optimisticUpdateTaskSchedule: (state, action) => {
+      // Update task schedule slot immediately for optimistic update
+      if (state.task && state.task.id === action.payload.taskId) {
+        state.task = {
+          ...state.task,
+          schedule: state.task.schedule?.map((slot, index) =>
+            index === action.payload.slotIndex
+              ? {
+                  ...slot,
+                  start: action.payload.start || slot.start,
+                  end: action.payload.end || slot.end,
+                  googleEventStart: action.payload.googleEventStart || slot.googleEventStart,
+                  googleEventEnd: action.payload.googleEventEnd || slot.googleEventEnd,
+                  syncStatus: action.payload.syncStatus || slot.syncStatus
+                }
+              : slot
+          ),
+          targetEventIndex: action.payload.targetEventIndex,
+          viewTargetEventAt: action.payload.viewTargetEventAt || state.task.viewTargetEventAt,
+          updateDate: action.payload.updateDate || state.task.updateDate
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     // Handle RTK Query showTaskModal states
@@ -88,5 +111,6 @@ export const {
   optimisticMoveTask,
   optimisticAddScheduleSlot,
   optimisticUpdateTaskBasic,
+  optimisticUpdateTaskSchedule,
 } = taskSlice.actions
 export default taskSlice.reducer

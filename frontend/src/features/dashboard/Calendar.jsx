@@ -37,7 +37,7 @@ import {
 } from '../../actions/calendarActions'
 import { useLazyLoadCalendarQuery } from '../../api/calendarApi'
 import { updateCalendarRange, createCalendarEvent } from '../../reducers/calendarSlice'
-import { updateTaskScheduleAction } from '../../actions/taskActions'
+import { useUpdateTaskScheduleMutation } from '../../api/taskApi'
 import {
    setAlert,
    removeAllAlerts
@@ -129,6 +129,7 @@ const Calendar = React.memo(() => {
       // RTK QUERY HOOKS
       // -------------------------------------------------------------------------
       const [loadCalendar, { isLoading }] = useLazyLoadCalendarQuery()
+      const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
@@ -416,7 +417,7 @@ const Calendar = React.memo(() => {
                   currentTaskId && currentTaskId === event.puraTaskId
 
                // Update task schedule slot for task events
-               await dispatch(updateTaskScheduleAction({
+               await updateTaskSchedule({
                   pageId: pageId,
                   taskId: event.puraTaskId,
                   slotIndex: event.puraScheduleIndex,
@@ -425,7 +426,7 @@ const Calendar = React.memo(() => {
                   ...(isCurrentTask && {
                      targetEventIndex: event.puraScheduleIndex
                   })
-               }))
+               })
             } else if (
                event.eventType === 'google' ||
                event.eventType === 'synced'
@@ -458,7 +459,8 @@ const Calendar = React.memo(() => {
          [
             dispatch,
             pageId,
-            currentTaskId
+            currentTaskId,
+            updateTaskSchedule
          ]
       )
 
@@ -478,7 +480,7 @@ const Calendar = React.memo(() => {
                   currentTaskId && currentTaskId === event.puraTaskId
 
                // Update task schedule slot for task events
-               await dispatch(updateTaskScheduleAction({
+               await updateTaskSchedule({
                   pageId: pageId,
                   taskId: event.puraTaskId,
                   slotIndex: event.puraScheduleIndex,
@@ -487,7 +489,7 @@ const Calendar = React.memo(() => {
                   ...(isCurrentTask && {
                      targetEventIndex: event.puraScheduleIndex
                   })
-               }))
+               })
             } else if (
                event.eventType === 'google' ||
                event.eventType === 'synced'
@@ -519,7 +521,8 @@ const Calendar = React.memo(() => {
          [
             dispatch,
             pageId,
-            currentTaskId
+            currentTaskId,
+            updateTaskSchedule
          ]
       )
 

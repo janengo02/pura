@@ -1,8 +1,8 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
-import { optimisticDeleteTask as taskSliceOptimisticDeleteTask, optimisticAddScheduleSlot as taskSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as taskSliceOptimisticUpdateTaskBasic } from '../reducers/taskSlice'
-import { optimisticDeleteTask as pageSliceOptimisticDeleteTask, optimisticAddScheduleSlot as pageSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as pageSliceOptimisticUpdateTaskBasic } from '../reducers/pageSlice'
-import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask, optimisticAddScheduleSlot as calendarSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as calendarSliceOptimisticUpdateTaskBasic } from '../reducers/calendarSlice'
+import { optimisticDeleteTask as taskSliceOptimisticDeleteTask, optimisticAddScheduleSlot as taskSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as taskSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as taskSliceOptimisticUpdateTaskSchedule } from '../reducers/taskSlice'
+import { optimisticDeleteTask as pageSliceOptimisticDeleteTask, optimisticAddScheduleSlot as pageSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as pageSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as pageSliceOptimisticUpdateTaskSchedule } from '../reducers/pageSlice'
+import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask, optimisticAddScheduleSlot as calendarSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as calendarSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as calendarSliceOptimisticUpdateTaskSchedule } from '../reducers/calendarSlice'
 import { optimisticMoveTask as taskSliceOptimisticMoveTask } from '../reducers/taskSlice'
 
 export const taskApi = baseApi.injectEndpoints({
@@ -69,6 +69,42 @@ export const taskApi = baseApi.injectEndpoints({
         dispatch(taskSliceOptimisticUpdateTaskBasic(optimisticPayload))
         dispatch(pageSliceOptimisticUpdateTaskBasic(optimisticPayload))
         dispatch(calendarSliceOptimisticUpdateTaskBasic(optimisticPayload))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: []
+    }),
+
+    updateTaskSchedule: builder.mutation({
+      query: ({ pageId, taskId, slotIndex, start, end }) => ({
+        url: `/task/schedule/${pageId}/${taskId}/${slotIndex}`,
+        method: 'PUT',
+        body: {
+          start,
+          end
+        }
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        // Create optimistic payload
+        const optimisticPayload = {
+          taskId: arg.taskId,
+          slotIndex: arg.slotIndex,
+          start: arg.start,
+          end: arg.end,
+          updateDate: new Date().toISOString(),
+          ...(typeof arg.targetEventIndex === 'number' && { targetEventIndex: arg.targetEventIndex }),
+          ...(arg.viewTargetEventAt && { viewTargetEventAt: arg.viewTargetEventAt })
+        }
+
+        // Perform optimistic updates immediately
+        dispatch(taskSliceOptimisticUpdateTaskSchedule(optimisticPayload))
+        dispatch(pageSliceOptimisticUpdateTaskSchedule(optimisticPayload))
+        dispatch(calendarSliceOptimisticUpdateTaskSchedule(optimisticPayload))
 
         try {
           await queryFulfilled
@@ -195,6 +231,7 @@ export const {
   useShowTaskModalMutation,
   useCreateTaskMutation,
   useUpdateTaskBasicMutation,
+  useUpdateTaskScheduleMutation,
   useDeleteTaskMutation,
   useMoveTaskMutation,
   useAddTaskScheduleSlotMutation,

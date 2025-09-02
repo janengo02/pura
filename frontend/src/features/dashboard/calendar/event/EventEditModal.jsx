@@ -35,10 +35,7 @@ import {
 
 // RTK Query
 import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
-import { useUpdateTaskBasicMutation } from '../../../../api/taskApi'
-import {
-   updateTaskScheduleAction
-} from '../../../../actions/taskActions'
+import { useUpdateTaskBasicMutation, useUpdateTaskScheduleMutation } from '../../../../api/taskApi'
 import { clearEventEditModal } from '../../../../reducers/eventSlice'
 
 // Utils
@@ -68,7 +65,6 @@ const EventEditModal = React.memo(
       taskData: { task },
 
       updateGoogleEventAction,
-      updateTaskScheduleAction,
       clearEventEditModal
    }) => {
       // -------------------------------------------------------------------------
@@ -81,6 +77,7 @@ const EventEditModal = React.memo(
       // RTK Query hooks
       const [deleteGoogleEvent] = useDeleteGoogleEventMutation()
       const [updateTaskBasic] = useUpdateTaskBasicMutation()
+      const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
 
       // -------------------------------------------------------------------------
       // STATE
@@ -175,7 +172,7 @@ const EventEditModal = React.memo(
                   })
                }
                // Update task schedule slot for time changes
-               await updateTaskScheduleAction({
+               await updateTaskSchedule({
                   pageId: event.pageId,
                   taskId: event.puraTaskId,
                   slotIndex: event.puraScheduleIndex,
@@ -247,7 +244,7 @@ const EventEditModal = React.memo(
          selectedColorId,
          conferenceData,
          event,
-         updateTaskScheduleAction,
+         updateTaskSchedule,
          updateTaskBasic,
          updateGoogleEventAction,
          handleCloseModal,
@@ -470,8 +467,7 @@ EventEditModal.propTypes = {
       pageId: PropTypes.string
    }).isRequired,
    updateGoogleEventAction: PropTypes.func.isRequired,
-   clearEventEditModal: PropTypes.func.isRequired,
-   updateTaskScheduleAction: PropTypes.func.isRequired
+   clearEventEditModal: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -529,7 +525,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
    updateGoogleEventAction,
-   updateTaskScheduleAction,
    clearEventEditModal
 }
 
