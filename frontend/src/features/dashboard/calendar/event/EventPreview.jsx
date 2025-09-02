@@ -40,11 +40,11 @@ import EventVisibility from './EventVisibility'
 import EventCalendarInfo from './EventCalendarInfo'
 
 // Actions & Hooks
-import { deleteGoogleEventAction } from '../../../../actions/calendarActions'
 import { removeTaskScheduleSlotAction } from '../../../../actions/taskActions'
 
 // RTK Query
 import { useShowTaskModalMutation } from '../../../../api/taskApi'
+import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
 import { showEventEditModal } from '../../../../reducers/eventSlice'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
@@ -98,7 +98,6 @@ const EventPreview = React.memo(
       onClose,
       event,
       // Redux props
-      deleteGoogleEventAction,
       removeTaskScheduleSlotAction,
       showEventEditModal,
       eventData: { pageId }
@@ -112,6 +111,7 @@ const EventPreview = React.memo(
       
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()
+      const [deleteGoogleEvent] = useDeleteGoogleEventMutation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -129,12 +129,11 @@ const EventPreview = React.memo(
 
       const handleDelete = useCallback(async () => {
          if (event.eventType === 'google') {
-            const reqData = {
+            await deleteGoogleEvent({
                eventId: event.id,
                calendarId: event.calendarId,
                accountEmail: event.accountEmail
-            }
-            await deleteGoogleEventAction(reqData)
+            })
          } else {
             const reqData = {
                pageId: pageId,
@@ -144,7 +143,7 @@ const EventPreview = React.memo(
             await removeTaskScheduleSlotAction(reqData)
          }
       }, [
-         deleteGoogleEventAction,
+         deleteGoogleEvent,
          removeTaskScheduleSlotAction,
          event.id,
          event.calendarId,
@@ -416,7 +415,6 @@ EventPreview.propTypes = {
       createdDate: PropTypes.instanceOf(Date),
       updatedDate: PropTypes.instanceOf(Date)
    }).isRequired,
-   deleteGoogleEventAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
    showEventEditModal: PropTypes.func.isRequired,
    eventData: PropTypes.shape({
@@ -444,7 +442,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   deleteGoogleEventAction,
    removeTaskScheduleSlotAction,
    showEventEditModal
 }

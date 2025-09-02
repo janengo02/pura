@@ -1,6 +1,7 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
 import { refetchTaskModalIfOpen } from './taskApi'
+import { optimisticDeleteGoogleEvent } from '../reducers/calendarSlice'
 
 export const calendarApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -70,7 +71,7 @@ export const calendarApi = baseApi.injectEndpoints({
       async onQueryStarted({ accountEmail }, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
-          
+
           // After successful Google account disconnection, refetch task modal if open
           refetchTaskModalIfOpen(dispatch, getState, baseApi)
         } catch (err) {
@@ -80,6 +81,28 @@ export const calendarApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Calendar', 'Task']
     }),
+
+    deleteGoogleEvent: builder.mutation({
+      query: ({ eventId, ...reqData }) => ({
+        url: `/calendar/delete-event/${eventId}`,
+        method: 'DELETE',
+        body: reqData
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        // Perform optimistic update immediately
+        dispatch(optimisticDeleteGoogleEvent({
+          id: arg.eventId
+        }))
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: ['Calendar']
+    }),
   })
 })
 
@@ -88,4 +111,5 @@ export const {
   useSetDefaultAccountMutation,
   useAddGoogleAccountMutation,
   useDisconnectGoogleAccountMutation,
+  useDeleteGoogleEventMutation,
 } = calendarApi

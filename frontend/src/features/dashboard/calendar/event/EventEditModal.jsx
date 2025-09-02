@@ -30,9 +30,11 @@ import {
 
 // Actions
 import {
-   deleteGoogleEventAction,
    updateGoogleEventAction
 } from '../../../../actions/calendarActions'
+
+// RTK Query
+import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
 import {
    updateTaskScheduleAction,
    updateTaskBasicInfoAction
@@ -68,8 +70,7 @@ const EventEditModal = React.memo(
       updateGoogleEventAction,
       updateTaskScheduleAction,
       updateTaskBasicInfoAction,
-      clearEventEditModal,
-      deleteGoogleEventAction
+      clearEventEditModal
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS
@@ -77,6 +78,9 @@ const EventEditModal = React.memo(
 
       const { t } = useReactiveTranslation()
       const toast = useToast()
+      
+      // RTK Query hooks
+      const [deleteGoogleEvent] = useDeleteGoogleEventMutation()
 
       // -------------------------------------------------------------------------
       // STATE
@@ -252,14 +256,13 @@ const EventEditModal = React.memo(
          task
       ])
       const handleDelete = useCallback(async () => {
-         const reqData = {
+         await deleteGoogleEvent({
             eventId: event.id,
             calendarId: event.calendarId,
             accountEmail: event.accountEmail
-         }
-         await deleteGoogleEventAction(reqData)
+         })
       }, [
-         deleteGoogleEventAction,
+         deleteGoogleEvent,
          event.id,
          event.calendarId,
          event.accountEmail
@@ -469,8 +472,7 @@ EventEditModal.propTypes = {
    updateGoogleEventAction: PropTypes.func.isRequired,
    updateTaskBasicInfoAction: PropTypes.func.isRequired,
    clearEventEditModal: PropTypes.func.isRequired,
-   updateTaskScheduleAction: PropTypes.func.isRequired,
-   deleteGoogleEventAction: PropTypes.func.isRequired
+   updateTaskScheduleAction: PropTypes.func.isRequired
 }
 
 // =============================================================================
@@ -530,8 +532,7 @@ const mapDispatchToProps = {
    updateGoogleEventAction,
    updateTaskScheduleAction,
    updateTaskBasicInfoAction,
-   clearEventEditModal,
-   deleteGoogleEventAction
+   clearEventEditModal
 }
 
 // =============================================================================

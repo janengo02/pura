@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
-import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot } from './calendarReducersHelpers'
+import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent } from './calendarReducersHelpers'
 
 const calendarSlice = createSlice({
   name: 'calendar',
@@ -60,6 +60,13 @@ const calendarSlice = createSlice({
         addSlotData: action.payload
       })
       state.googleEvents = updatedState.googleEvents
+    },
+    optimisticDeleteGoogleEvent: (state, action) => {
+      const updatedState = deleteGoogleEvent({
+        deletedEvent: action.payload,
+        googleEvents: state.googleEvents
+      })
+      state.googleEvents = updatedState.googleEvents
     }
   },
   extraReducers: (builder) => {
@@ -89,7 +96,7 @@ const calendarSlice = createSlice({
       })
       .addMatcher(calendarApi.endpoints.addGoogleAccount.matchFulfilled, (state, action) => {
         const newGoogleAccountData = action.payload
-        
+
         // Use the same helper function as the traditional reducer
         const updatedState = addGoogleAccount({
           googleAccounts: state.googleAccounts,
@@ -97,7 +104,7 @@ const calendarSlice = createSlice({
           googleEvents: state.googleEvents,
           newGoogleAccount: newGoogleAccountData
         })
-        
+
         // Update state with new account, calendars, and events
         state.googleAccounts = updatedState.googleAccounts
         state.googleCalendars = updatedState.googleCalendars
@@ -106,7 +113,7 @@ const calendarSlice = createSlice({
       })
       .addMatcher(calendarApi.endpoints.disconnectGoogleAccount.matchFulfilled, (state, action) => {
         const { accountEmail } = action.meta.arg.originalArgs
-        
+
         // Use the same helper function as the traditional reducer
         const updatedState = removeGoogleAccount({
           googleAccounts: state.googleAccounts,
@@ -114,7 +121,7 @@ const calendarSlice = createSlice({
           googleEvents: state.googleEvents,
           removedAccountEmail: accountEmail
         })
-        
+
         // Update state after account removal
         state.googleAccounts = updatedState.googleAccounts
         state.googleCalendars = updatedState.googleCalendars
@@ -124,5 +131,5 @@ const calendarSlice = createSlice({
   }
 })
 
-export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot } = calendarSlice.actions
+export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent } = calendarSlice.actions
 export default calendarSlice.reducer
