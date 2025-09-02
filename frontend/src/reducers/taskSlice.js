@@ -39,6 +39,17 @@ const taskSlice = createSlice({
         }
       }
     },
+    optimisticUpdateTaskBasic: (state, action) => {
+      // Update task title/content immediately for optimistic update
+      if (state.task && state.task.id === action.payload.taskId) {
+        state.task = {
+          ...state.task,
+          ...(action.payload.title !== undefined && { title: action.payload.title }),
+          ...(action.payload.content !== undefined && { content: action.payload.content }),
+          updateDate: action.payload.updateDate || state.task.updateDate
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     // Handle RTK Query showTaskModal states
@@ -76,5 +87,6 @@ export const {
   optimisticDeleteTask,
   optimisticMoveTask,
   optimisticAddScheduleSlot,
+  optimisticUpdateTaskBasic,
 } = taskSlice.actions
 export default taskSlice.reducer

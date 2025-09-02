@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
-import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent } from './calendarReducersHelpers'
+import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent, updateTaskEvents } from './calendarReducersHelpers'
 
 const calendarSlice = createSlice({
   name: 'calendar',
@@ -67,6 +67,13 @@ const calendarSlice = createSlice({
         googleEvents: state.googleEvents
       })
       state.googleEvents = updatedState.googleEvents
+    },
+    optimisticUpdateTaskBasic: (state, action) => {
+      const updatedState = updateTaskEvents({
+        googleEvents: state.googleEvents,
+        taskUpdateData: action.payload
+      })
+      state.googleEvents = updatedState.googleEvents
     }
   },
   extraReducers: (builder) => {
@@ -131,5 +138,5 @@ const calendarSlice = createSlice({
   }
 })
 
-export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent } = calendarSlice.actions
+export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent, optimisticUpdateTaskBasic } = calendarSlice.actions
 export default calendarSlice.reducer

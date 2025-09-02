@@ -1,8 +1,8 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
-import { optimisticDeleteTask as taskSliceOptimisticDeleteTask, optimisticAddScheduleSlot as taskSliceOptimisticAddScheduleSlot } from '../reducers/taskSlice'
-import { optimisticDeleteTask as pageSliceOptimisticDeleteTask, optimisticAddScheduleSlot as pageSliceOptimisticAddScheduleSlot } from '../reducers/pageSlice'
-import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask, optimisticAddScheduleSlot as calendarSliceOptimisticAddScheduleSlot } from '../reducers/calendarSlice'
+import { optimisticDeleteTask as taskSliceOptimisticDeleteTask, optimisticAddScheduleSlot as taskSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as taskSliceOptimisticUpdateTaskBasic } from '../reducers/taskSlice'
+import { optimisticDeleteTask as pageSliceOptimisticDeleteTask, optimisticAddScheduleSlot as pageSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as pageSliceOptimisticUpdateTaskBasic } from '../reducers/pageSlice'
+import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask, optimisticAddScheduleSlot as calendarSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as calendarSliceOptimisticUpdateTaskBasic } from '../reducers/calendarSlice'
 import { optimisticMoveTask as taskSliceOptimisticMoveTask } from '../reducers/taskSlice'
 
 export const taskApi = baseApi.injectEndpoints({
@@ -57,6 +57,19 @@ export const taskApi = baseApi.injectEndpoints({
         body: updates
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        // Create optimistic payload
+        const optimisticPayload = {
+          taskId: arg.taskId,
+          title: arg.title,
+          content: arg.content,
+          updateDate: new Date().toISOString()
+        }
+
+        // Perform optimistic updates immediately
+        dispatch(taskSliceOptimisticUpdateTaskBasic(optimisticPayload))
+        dispatch(pageSliceOptimisticUpdateTaskBasic(optimisticPayload))
+        dispatch(calendarSliceOptimisticUpdateTaskBasic(optimisticPayload))
+
         try {
           await queryFulfilled
         } catch (err) {
@@ -64,7 +77,7 @@ export const taskApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Task', 'Page', 'Calendar']
+      invalidatesTags: []
     }),
 
     deleteTask: builder.mutation({

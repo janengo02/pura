@@ -1,7 +1,6 @@
 import { api } from '../utils'
 import {
    GET_PAGE,
-   UPDATE_TASK_BASIC,
    UPDATE_TASK_SCHEDULE,
    CREATE_TASK_SCHEDULE,
    SYNC_TASK_EVENT,
@@ -13,37 +12,6 @@ import { calendarApi } from '../api/calendarApi'
 
 
 
-/**
- * Update task basic info (title, content)
- * @param {Object} formData - Form data
- * @param {string} formData.pageId - Page ID
- * @param {string} formData.taskId - Task ID
- * @param {string} [formData.title] - Task title
- * @param {string} [formData.content] - Task content
- * @returns {Function} Redux thunk
- */
-export const updateTaskBasicInfoAction =
-   (formData) => async (dispatch, getState) => {
-      // Optimistic update - Page | Task | Calendar
-      dispatch({
-         type: UPDATE_TASK_BASIC,
-         payload: {
-            taskId: formData.taskId,
-            title: formData.title,
-            content: formData.content,
-            updateDate: new Date().toISOString()
-         }
-      })
-
-      try {
-         await api.put(`/task/basic/${formData.pageId}/${formData.taskId}`, {
-            title: formData.title,
-            content: formData.content
-         })
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
 
 
 /**

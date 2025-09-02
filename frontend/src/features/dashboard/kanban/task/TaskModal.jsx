@@ -13,11 +13,8 @@ import 'react-quill/dist/quill.bubble.css'
 // Redux
 import { useSelector, useDispatch } from 'react-redux'
 
-// Actions
-import { updateTaskBasicInfoAction } from '../../../../actions/taskActions'
-
 // RTK Query & Slice
-import { useDeleteTaskMutation } from '../../../../api/taskApi'
+import { useDeleteTaskMutation, useUpdateTaskBasicMutation } from '../../../../api/taskApi'
 import { clearTask } from '../../../../reducers/taskSlice'
 
 // Form Handling
@@ -117,6 +114,7 @@ const TaskModal = React.memo(
 
       // RTK Query hooks
       const [deleteTaskMutation] = useDeleteTaskMutation()
+      const [updateTaskBasicMutation] = useUpdateTaskBasicMutation()
 
       // Modal state management
       const modalMenu = useDisclosure()
@@ -167,13 +165,12 @@ const TaskModal = React.memo(
 
       const handleUpdateTitle = useCallback(async () => {
          if (!task?.id) return
-         const formData = {
+         await updateTaskBasicMutation({
             pageId: id,
             taskId: task?.id,
             title: taskTitle || t('placeholder-untitled')
-         }
-         await dispatch(updateTaskBasicInfoAction(formData))
-      }, [id, task?.id, taskTitle, dispatch, t])
+         })
+      }, [id, task?.id, taskTitle, updateTaskBasicMutation, t])
 
       const handleUpdateContent = useCallback(async () => {
          if (!task?.id) return
@@ -181,13 +178,12 @@ const TaskModal = React.memo(
          const cleanContent = isEmptyQuillContent(taskContent)
             ? ''
             : taskContent
-         const formData = {
+         await updateTaskBasicMutation({
             pageId: id,
             taskId: task?.id,
             content: cleanContent
-         }
-         await dispatch(updateTaskBasicInfoAction(formData))
-      }, [id, task?.id, taskContent, dispatch])
+         })
+      }, [id, task?.id, taskContent, updateTaskBasicMutation])
 
       const handleTitleChange = useCallback((e) => {
          e.preventDefault()

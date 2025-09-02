@@ -35,9 +35,9 @@ import {
 
 // RTK Query
 import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
+import { useUpdateTaskBasicMutation } from '../../../../api/taskApi'
 import {
-   updateTaskScheduleAction,
-   updateTaskBasicInfoAction
+   updateTaskScheduleAction
 } from '../../../../actions/taskActions'
 import { clearEventEditModal } from '../../../../reducers/eventSlice'
 
@@ -69,7 +69,6 @@ const EventEditModal = React.memo(
 
       updateGoogleEventAction,
       updateTaskScheduleAction,
-      updateTaskBasicInfoAction,
       clearEventEditModal
    }) => {
       // -------------------------------------------------------------------------
@@ -81,6 +80,7 @@ const EventEditModal = React.memo(
       
       // RTK Query hooks
       const [deleteGoogleEvent] = useDeleteGoogleEventMutation()
+      const [updateTaskBasic] = useUpdateTaskBasicMutation()
 
       // -------------------------------------------------------------------------
       // STATE
@@ -167,7 +167,7 @@ const EventEditModal = React.memo(
 
                // Update task title and content if changed
                if (title !== event.title || description !== event.description) {
-                  await updateTaskBasicInfoAction({
+                  await updateTaskBasic({
                      pageId: event.pageId,
                      taskId: event.puraTaskId,
                      title: title || t('placeholder-untitled'),
@@ -221,7 +221,7 @@ const EventEditModal = React.memo(
                      title !== event.title ||
                      description !== event.description
                   ) {
-                     await updateTaskBasicInfoAction({
+                     await updateTaskBasic({
                         pageId: event.pageId,
                         taskId: event.puraTaskId,
                         title: title || t('placeholder-untitled'),
@@ -248,7 +248,7 @@ const EventEditModal = React.memo(
          conferenceData,
          event,
          updateTaskScheduleAction,
-         updateTaskBasicInfoAction,
+         updateTaskBasic,
          updateGoogleEventAction,
          handleCloseModal,
          toast,
@@ -470,7 +470,6 @@ EventEditModal.propTypes = {
       pageId: PropTypes.string
    }).isRequired,
    updateGoogleEventAction: PropTypes.func.isRequired,
-   updateTaskBasicInfoAction: PropTypes.func.isRequired,
    clearEventEditModal: PropTypes.func.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired
 }
@@ -531,7 +530,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    updateGoogleEventAction,
    updateTaskScheduleAction,
-   updateTaskBasicInfoAction,
    clearEventEditModal
 }
 
