@@ -135,54 +135,6 @@ export const updateTaskScheduleAction =
          commonErrorHandler(dispatch, err)
       }
    }
-
-/**
- * Add new schedule slot to task
- * @param {Object} formData - Form data
- * @param {string} formData.pageId - Page ID
- * @param {string} formData.taskId - Task ID
- * @param {string} formData.start - Start time
- * @param {string} formData.end - End time
- * @returns {Function} Redux thunk that returns {newSlotIndex}
- */
-export const addTaskScheduleSlotAction =
-   (formData) => async (dispatch, getState) => {
-      try {
-         const newSlot = {
-            start: formData.start,
-            end: formData.end,
-            googleEventId: null,
-            googleCalendarId: null,
-            googleAccountEmail: null,
-            syncStatus: '0'
-         }
-         const newSlotIndex = formData.slotIndex
-
-         // Optimistic update - Page | Task
-         dispatch({
-            type: CREATE_TASK_SCHEDULE,
-            payload: {
-               taskId: formData.taskId,
-               taskTitle: formData.task_title,
-               taskContent: formData.task_content,
-               newSlot: newSlot,
-               newSlotIndex: newSlotIndex,
-               updateDate: new Date().toISOString()
-            }
-         })
-
-         await api.post(
-            `/task/schedule/${formData.pageId}/${formData.taskId}`,
-            {
-               start: formData.start,
-               end: formData.end
-            }
-         )
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
-
 /**
  * Remove schedule slot from task
  * @param {Object} formData - Form data

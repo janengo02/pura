@@ -10,8 +10,8 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
-// Actions
-import { addTaskScheduleSlotAction } from '../../../../actions/taskActions'
+// RTK Query
+import { useAddTaskScheduleSlotMutation } from '../../../../api/taskApi'
 
 // UI Components
 import { Button, Flex, VStack } from '@chakra-ui/react'
@@ -29,8 +29,9 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 // =============================================================================
 
 const ScheduleSelect = React.memo(
-   ({ addTaskScheduleSlotAction, scheduleData: { task, id } }) => {
+   ({ scheduleData: { task, id } }) => {
       const { t } = useReactiveTranslation()
+      const [addTaskScheduleSlot] = useAddTaskScheduleSlotMutation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -67,18 +68,18 @@ const ScheduleSelect = React.memo(
          const formData = {
             pageId: id,
             taskId: task.id,
-            task_title: task.title,
-            task_content: task.content,
+            taskTitle: task.title,
+            taskContent: task.content,
             start: startTime.toISOString(),
             end: endTime.toISOString(),
             slotIndex: task.schedule?.length || 0
          }
 
-         await addTaskScheduleSlotAction(formData)
+         await addTaskScheduleSlot(formData)
       }, [
          task.id,
          id,
-         addTaskScheduleSlotAction,
+         addTaskScheduleSlot,
          task.schedule?.length,
          task.content,
          task.title
@@ -124,7 +125,6 @@ ScheduleSelect.displayName = 'ScheduleSelect'
 
 // PropTypes validation
 ScheduleSelect.propTypes = {
-   addTaskScheduleSlotAction: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
       id: PropTypes.string.isRequired
@@ -151,12 +151,8 @@ const mapStateToProps = (state) => ({
    scheduleData: selectScheduleSelectData(state)
 })
 
-const mapDispatchToProps = {
-   addTaskScheduleSlotAction
-}
-
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(ScheduleSelect)
+export default connect(mapStateToProps)(ScheduleSelect)

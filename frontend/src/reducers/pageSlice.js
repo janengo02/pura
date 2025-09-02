@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { pageApi } from '../api/pageApi'
-import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper, deleteTask } from './pageReducersHelpers'
+import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper, deleteTask, addPageTaskScheduleSlot } from './pageReducersHelpers'
 
 const pageSlice = createSlice({
   name: 'pageSlice', // Different name to avoid conflicts with pageReducers
@@ -97,6 +97,13 @@ const pageSlice = createSlice({
       state.tasks = result.tasks
       state.taskMap = result.taskMap
     },
+    optimisticAddScheduleSlot: (state, action) => {
+      const result = addPageTaskScheduleSlot({
+        tasks: state.tasks,
+        payload: action.payload
+      })
+      state.tasks = result.tasks
+    },
   },
   extraReducers: (builder) => {
     // Handle RTK Query getFirstPage states
@@ -115,5 +122,5 @@ const pageSlice = createSlice({
   }
 })
 
-export const { updateFilter, optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress, optimisticDeleteTask } = pageSlice.actions
+export const { updateFilter, optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress, optimisticDeleteTask, optimisticAddScheduleSlot } = pageSlice.actions
 export default pageSlice.reducer

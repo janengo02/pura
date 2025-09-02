@@ -26,6 +26,19 @@ const taskSlice = createSlice({
         }
       }
     },
+    optimisticAddScheduleSlot: (state, action) => {
+      // Add schedule slot immediately for optimistic update
+      if (state.task && state.task.id === action.payload.taskId) {
+        state.task = {
+          ...state.task,
+          schedule: [
+            ...(state.task.schedule || []),
+            action.payload.newSlot
+          ],
+          updateDate: action.payload.updateDate || state.task.updateDate
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     // Handle RTK Query showTaskModal states
@@ -40,6 +53,7 @@ const taskSlice = createSlice({
 export const {
   clearTask,
   optimisticDeleteTask,
-  optimisticMoveTask
+  optimisticMoveTask,
+  optimisticAddScheduleSlot
 } = taskSlice.actions
 export default taskSlice.reducer
