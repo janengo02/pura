@@ -323,7 +323,6 @@ Settings.displayName = 'CalendarSettings'
 
 // PropTypes validation
 Settings.propTypes = {
-   disconnectGoogleAccountAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
    settingsData: PropTypes.shape({
       googleAccounts: PropTypes.array.isRequired,

@@ -169,30 +169,6 @@ export const updateGoogleEventTimeAction =
       }
    }
 
-/**
- * Delete Google Event Action
- * Deletes an event from Google Calendar
- * @param {Object} reqData - Request data for event deletion
- * @param {string} reqData.eventId - Event ID to delete
- * @param {string} reqData.accountEmail - Google account ID
- */
-export const deleteGoogleEventAction =
-   (reqData) => async (dispatch, getState) => {
-      // Optimistic update - Calendar - remove event from state
-      dispatch({
-         type: DELETE_CALENDAR_EVENT,
-         payload: {
-            id: reqData.eventId
-         }
-      })
-      try {
-         await api.delete(`/calendar/delete-event/${reqData.eventId}`, {
-            data: reqData
-         })
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
 
 /**
  * Create Google Event Action

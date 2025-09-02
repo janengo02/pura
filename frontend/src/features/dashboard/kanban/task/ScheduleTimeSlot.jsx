@@ -13,12 +13,12 @@ import { createSelector } from 'reselect'
 // Actions
 import {
    updateTaskScheduleAction,
-   removeTaskScheduleSlotAction,
-   syncTaskWithGoogleAction
+   removeTaskScheduleSlotAction
 } from '../../../../actions/taskActions'
 
 // RTK Query
 import { useAddGoogleAccountMutation } from '../../../../api/calendarApi'
+import { useSyncTaskWithGoogleMutation } from '../../../../api/taskApi'
 import { setAlert } from '../../../../reducers/alertSlice'
 import { navigateCalendarToDate } from '../../../../reducers/calendarSlice'
 
@@ -73,7 +73,6 @@ const ScheduleTimeSlot = React.memo(
       // Redux props
       updateTaskScheduleAction,
       removeTaskScheduleSlotAction,
-      syncTaskWithGoogleAction,
       setAlert,
       scheduleData: { task, pageId },
       googleData: { googleAccounts, googleCalendars },
@@ -87,6 +86,7 @@ const ScheduleTimeSlot = React.memo(
 
       // RTK Query hooks
       const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
+      const [syncTaskWithGoogle, { isLoading: syncLoading }] = useSyncTaskWithGoogleMutation()
 
       // -------------------------------------------------------------------------
       // ANIMATION STATE
@@ -138,9 +138,7 @@ const ScheduleTimeSlot = React.memo(
       // -------------------------------------------------------------------------
 
       const handleSyncWithGoogle = useCallback(
-         async (args) => {
-            // Handle args array from useLoading hook
-            const [accountEmail, calendarId] = args
+         async (accountEmail, calendarId) => {
             const reqData = {
                taskId: task.id,
                slotIndex: index,
@@ -148,9 +146,9 @@ const ScheduleTimeSlot = React.memo(
                calendarId: calendarId,
                syncAction: 'create'
             }
-            await syncTaskWithGoogleAction(reqData)
+            await syncTaskWithGoogle(reqData).unwrap()
          },
-         [task.id, index, syncTaskWithGoogleAction]
+         [task.id, index, syncTaskWithGoogle]
       )
 
       const handleUnsyncFromGoogle = useCallback(async () => {
@@ -159,8 +157,8 @@ const ScheduleTimeSlot = React.memo(
             slotIndex: index,
             syncAction: 'delete'
          }
-         await syncTaskWithGoogleAction(reqData)
-      }, [task.id, index, syncTaskWithGoogleAction])
+         await syncTaskWithGoogle(reqData).unwrap()
+      }, [task.id, index, syncTaskWithGoogle])
 
       // -------------------------------------------------------------------------
       // SYNC RESOLUTION HANDLERS
@@ -192,10 +190,6 @@ const ScheduleTimeSlot = React.memo(
       // LOADING STATES
       // -------------------------------------------------------------------------
 
-      const [syncWithGoogle, syncLoading] = useLoading(handleSyncWithGoogle)
-      const [unsyncFromGoogle, unsyncLoading] = useLoading(
-         handleUnsyncFromGoogle
-      )
       const [useTaskTime, useTaskTimeLoading] = useLoading(handleUseTaskTime)
       const [useGoogleTime, useGoogleTimeLoading] =
          useLoading(handleUseGoogleTime)
@@ -494,8 +488,8 @@ const ScheduleTimeSlot = React.memo(
                      <MenuItemOption
                         key={`${account.accountEmail}-${calendar.calendarId}`}
                         value={calendar.calendarId}
-                        onClick={() => {
-                           syncWithGoogle(
+                        onClick={async () => {
+                           await handleSyncWithGoogle(
                               account.accountEmail,
                               calendar.calendarId
                            )
@@ -520,7 +514,7 @@ const ScheduleTimeSlot = React.memo(
                </MenuOptionGroup>
             )
          })
-      }, [googleAccounts, googleCalendars, syncWithGoogle, t])
+      }, [googleAccounts, googleCalendars, handleSyncWithGoogle, t])
 
       // Helper function to format time
       const formatTime = useCallback((dateString) => {
@@ -566,7 +560,7 @@ const ScheduleTimeSlot = React.memo(
                   actions: (
                      <MenuItem
                         icon={<PiPlugs size={18} />}
-                        onClick={unsyncFromGoogle}
+                        onClick={handleUnsyncFromGoogle}
                      >
                         {t('btn-sync-unsync-action')}
                      </MenuItem>
@@ -617,7 +611,7 @@ const ScheduleTimeSlot = React.memo(
                         </MenuItem>
                         <MenuItem
                            icon={<PiPlugs size={18} />}
-                           onClick={unsyncFromGoogle}
+                           onClick={handleUnsyncFromGoogle}
                         >
                            {t('btn-sync-unsync-action')}
                         </MenuItem>
@@ -650,7 +644,7 @@ const ScheduleTimeSlot = React.memo(
                   actions: (
                      <MenuItem
                         icon={<PiPlugs size={18} />}
-                        onClick={unsyncFromGoogle}
+                        onClick={handleUnsyncFromGoogle}
                      >
                         {t('btn-sync-unsync-action')}
                      </MenuItem>
@@ -714,7 +708,7 @@ const ScheduleTimeSlot = React.memo(
 
                         <MenuItem
                            icon={<PiPlugs size={18} />}
-                           onClick={unsyncFromGoogle}
+                           onClick={handleUnsyncFromGoogle}
                         >
                            {t('btn-sync-unsync-action')}
                         </MenuItem>
@@ -763,7 +757,7 @@ const ScheduleTimeSlot = React.memo(
             SyncableCalendarList,
             t,
             googleReconnectLogin,
-            unsyncFromGoogle,
+            handleUnsyncFromGoogle,
             formatTime,
             useTaskTime,
             useGoogleTime,
@@ -796,7 +790,6 @@ const ScheduleTimeSlot = React.memo(
                      colorScheme={syncProps.colorScheme}
                      isLoading={
                         syncLoading ||
-                        unsyncLoading ||
                         useTaskTimeLoading ||
                         useGoogleTimeLoading
                      }
@@ -825,7 +818,6 @@ const ScheduleTimeSlot = React.memo(
          slot.syncStatus,
          getSyncConfig,
          syncLoading,
-         unsyncLoading,
          useTaskTimeLoading,
          useGoogleTimeLoading,
          handleSyncButtonClick,
@@ -871,7 +863,6 @@ ScheduleTimeSlot.propTypes = {
    index: PropTypes.number.isRequired,
    updateTaskScheduleAction: PropTypes.func.isRequired,
    removeTaskScheduleSlotAction: PropTypes.func.isRequired,
-   syncTaskWithGoogleAction: PropTypes.func.isRequired,
    setAlert: PropTypes.func.isRequired,
    scheduleData: PropTypes.shape({
       task: PropTypes.object.isRequired,
@@ -929,7 +920,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
    updateTaskScheduleAction,
    removeTaskScheduleSlotAction,
-   syncTaskWithGoogleAction,
    setAlert
 }
 

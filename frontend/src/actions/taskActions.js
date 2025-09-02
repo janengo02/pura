@@ -12,63 +12,6 @@ import { taskApi } from '../api/taskApi'
 import { calendarApi } from '../api/calendarApi'
 
 
-/**
- * Create Google Event Action
- * Creates a new event in Google Calendar
- * @param {Object} reqData - Request data for event creation
- * @param {string} reqData.taskId - Task ID for the event
- * @param {Object} reqData.slotIndex - Index of the time slot in the task schedule.
- * @param {string} reqData.accountEmail - Google account email to use
- * @param {string} reqData.calendarId - ID of the specific calendar to use
- */
-export const syncTaskWithGoogleAction =
-   (reqData) => async (dispatch, getState) => {
-      try {
-         const res = await api.post('/task/sync-google-event', reqData)
-
-         // Update - Page | Task | Calendar
-         dispatch({
-            type: SYNC_TASK_EVENT,
-            payload: {
-               taskId: reqData.taskId,
-               slotIndex: reqData.slotIndex,
-               googleEventId: res.data.event.id,
-               calendarId: reqData.calendarId,
-               accountEmail: reqData.accountEmail,
-               syncStatus: res.data.task.schedule[reqData.slotIndex].syncStatus,
-               updateDate: res.data.task.updateDate,
-               event: res.data.event,
-               task: res.data.task
-            }
-         })
-         // If getState is provided, handle calendar reload and task modal
-         if (getState) {
-            const state = getState()
-            const calendarRange = state.calendarSlice?.range
-            const currentPageId = state.pageSlice?.id
-            const currentTaskId = state.taskSlice?.task?.id
-
-            // Reload calendar if range and page ID are available
-            if (calendarRange && calendarRange.length > 0 && currentPageId) {
-               dispatch(calendarApi.endpoints.loadCalendar.initiate({
-                  minDate: calendarRange[0],
-                  maxDate: calendarRange[1],
-                  pageId: currentPageId
-               }))
-            }
-
-            // Show task modal if both page ID and task ID are available
-            if (currentPageId && currentTaskId) {
-               dispatch(taskApi.endpoints.showTaskModal.initiate({
-                  pageId: currentPageId,
-                  taskId: currentTaskId
-               }))
-            }
-         }
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
 
 /**
  * Update task basic info (title, content)

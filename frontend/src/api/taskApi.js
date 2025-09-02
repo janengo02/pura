@@ -158,6 +158,23 @@ export const taskApi = baseApi.injectEndpoints({
       invalidatesTags: ['Task', 'Page', 'Calendar']
     }),
 
+    syncTaskWithGoogle: builder.mutation({
+      query: (reqData) => ({
+        url: '/task/sync-google-event',
+        method: 'POST',
+        body: reqData
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: ['Task', 'Page', 'Calendar']
+    }),
+
   })
 })
 
@@ -168,6 +185,7 @@ export const {
   useDeleteTaskMutation,
   useMoveTaskMutation,
   useAddTaskScheduleSlotMutation,
+  useSyncTaskWithGoogleMutation,
 } = taskApi
 
 /**

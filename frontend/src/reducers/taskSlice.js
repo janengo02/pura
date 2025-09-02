@@ -46,6 +46,27 @@ const taskSlice = createSlice({
       .addMatcher(taskApi.endpoints.showTaskModal.matchFulfilled, (state, action) => {
         state.task = action.payload
       })
+      .addMatcher(taskApi.endpoints.syncTaskWithGoogle.matchFulfilled, (state, action) => {
+        // Update task sync status in task state
+        const { slotIndex, calendarId, accountEmail } = action.meta.arg.originalArgs
+        const { task: newTask, event: newEvent } = action.payload
+
+        state.task = {
+          ...state.task,
+          schedule: state.task.schedule?.map((slot, index) =>
+            index === slotIndex
+              ? {
+                  ...slot,
+                  googleEventId: newEvent.id,
+                  googleCalendarId: calendarId,
+                  googleAccountEmail: accountEmail,
+                  syncStatus: newTask.schedule?.[slotIndex]?.syncStatus || '0'
+                }
+              : slot
+          ),
+          updateDate: newTask.updateDate || new Date().toISOString()
+        }
+      })
   }
 })
 
@@ -54,6 +75,6 @@ export const {
   clearTask,
   optimisticDeleteTask,
   optimisticMoveTask,
-  optimisticAddScheduleSlot
+  optimisticAddScheduleSlot,
 } = taskSlice.actions
 export default taskSlice.reducer
