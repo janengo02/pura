@@ -16,7 +16,7 @@ const {
 } = require('../../validators/taskValidators')
 const { asyncHandler } = require('../../utils/asyncHandler')
 const { NotFoundError } = require('../../utils/customErrors')
-const { validatePage } = require('../../utils/pageHelpers')
+const { validatePage, populatePage } = require('../../utils/pageHelpers')
 const {
    extractId,
    deleteGoogleEventsForRemovedSlots,
@@ -133,21 +133,16 @@ router.post(
       updatedTaskIds.splice(newTaskMap[taskMapIndex] - 1, 0, task.id)
 
       // Data: Update page with new task
-      await prisma.page.update({
+      const updatedPage = await prisma.page.update({
          where: { id: req.params.pageId },
          data: {
             tasks: updatedTaskIds,
+            taskMap: newTaskMap,
             updateDate: new Date()
          }
       })
-
-      // Data: Update page's taskMap
-      await prisma.page.update({
-         where: { id: req.params.pageId },
-         data: { taskMap: newTaskMap }
-      })
-
-      res.json({ task: task })
+      const populatedPage = await populatePage(updatedPage)
+      res.json({ task: task, page: populatedPage })
    })
 )
 

@@ -64,7 +64,7 @@ const Toolbar = React.memo(
          async (e) => {
             e.preventDefault()
             if (groupOrder.length > 0 && progressOrder.length > 0) {
-               const result = await createTaskMutation(newTaskInfo)
+               const result = await createTaskMutation(newTaskInfo).unwrap()
                if (result?.data?.task?.id) {
                   const taskData = {
                      pageId: id,

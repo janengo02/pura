@@ -47,7 +47,7 @@ export const taskApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Page']
+      invalidatesTags: []
     }),
 
     updateTaskBasic: builder.mutation({
@@ -85,7 +85,7 @@ export const taskApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Task', 'Page', 'Calendar']
+      invalidatesTags: []
     }),
 
     moveTask: builder.mutation({
@@ -114,7 +114,7 @@ export const taskApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Task', 'Page']
+      invalidatesTags: ['Page']
     }),
 
     addTaskScheduleSlot: builder.mutation({
@@ -155,7 +155,7 @@ export const taskApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Task', 'Page', 'Calendar']
+      invalidatesTags: []
     }),
 
     syncTaskWithGoogle: builder.mutation({
@@ -172,7 +172,7 @@ export const taskApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Task', 'Page', 'Calendar']
+      invalidatesTags: ['Page', 'Calendar']
     }),
 
   })

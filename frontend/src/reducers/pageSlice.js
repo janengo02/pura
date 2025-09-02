@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { pageApi } from '../api/pageApi'
 import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper, deleteTask, addPageTaskScheduleSlot } from './pageReducersHelpers'
+import { taskApi } from '../api/taskApi'
 
 const pageSlice = createSlice({
   name: 'pageSlice', // Different name to avoid conflicts with pageReducers
@@ -111,6 +112,17 @@ const pageSlice = createSlice({
       .addMatcher(pageApi.endpoints.getFirstPage.matchFulfilled, (state, action) => {
         // Map RTK Query response to pageSlice state
         const pageData = action.payload
+        state.id = pageData.id
+        state.groupOrder = pageData.groupOrder || []
+        state.progressOrder = pageData.progressOrder || []
+        state.taskMap = pageData.taskMap || []
+        state.tasks = pageData.tasks || []
+        state.title = pageData.title
+        state.user = pageData.user
+      })
+      .addMatcher(taskApi.endpoints.createTask.matchFulfilled, (state, action) => {
+        // Map RTK Query response to pageSlice state
+        const pageData = action.payload.page
         state.id = pageData.id
         state.groupOrder = pageData.groupOrder || []
         state.progressOrder = pageData.progressOrder || []
