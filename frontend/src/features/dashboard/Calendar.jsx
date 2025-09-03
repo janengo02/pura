@@ -32,10 +32,7 @@ import EventPreview from './calendar/event/EventPreview'
 import EventCreatePopover from './calendar/event/EventCreatePopover'
 
 // Actions
-import {
-   updateGoogleEventTimeAction
-} from '../../actions/calendarActions'
-import { useLazyLoadCalendarQuery } from '../../api/calendarApi'
+import { useLazyLoadCalendarQuery, useUpdateGoogleEventTimeMutation } from '../../api/calendarApi'
 import { updateCalendarRange, createCalendarEvent } from '../../reducers/calendarSlice'
 import { useUpdateTaskScheduleMutation } from '../../api/taskApi'
 import {
@@ -130,6 +127,7 @@ const Calendar = React.memo(() => {
       // -------------------------------------------------------------------------
       const [loadCalendar, { isLoading }] = useLazyLoadCalendarQuery()
       const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
+      const [updateGoogleEventTime] = useUpdateGoogleEventTimeMutation()
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
@@ -453,11 +451,11 @@ const Calendar = React.memo(() => {
                   })
                }
 
-               await dispatch(updateGoogleEventTimeAction(updateData))
+               await updateGoogleEventTime(updateData)
             }
          },
          [
-            dispatch,
+            updateGoogleEventTime,
             pageId,
             currentTaskId,
             updateTaskSchedule
@@ -515,11 +513,11 @@ const Calendar = React.memo(() => {
                   })
                }
 
-               await dispatch(updateGoogleEventTimeAction(updateData))
+               await updateGoogleEventTime(updateData)
             }
          },
          [
-            dispatch,
+            updateGoogleEventTime,
             pageId,
             currentTaskId,
             updateTaskSchedule

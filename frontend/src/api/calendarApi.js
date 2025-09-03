@@ -1,7 +1,8 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
 import { refetchTaskModalIfOpen } from './taskApi'
-import { optimisticDeleteGoogleEvent } from '../reducers/calendarSlice'
+import { optimisticDeleteGoogleEvent, optimisticUpdateGoogleEventTime } from '../reducers/calendarSlice'
+import { optimisticUpdateTaskSchedule } from '../reducers/taskSlice'
 
 export const calendarApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -121,6 +122,43 @@ export const calendarApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Calendar']
     }),
+
+    updateGoogleEventTime: builder.mutation({
+      query: ({ eventId, ...reqData }) => ({
+        url: `/calendar/update-event/${eventId}`,
+        method: 'POST',
+        body: reqData
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        // Optimistic update - Calendar - update event times in state
+        dispatch(optimisticUpdateGoogleEventTime({
+          eventId: arg.eventId,
+          start: arg.start ? { dateTime: arg.start } : undefined,
+          end: arg.end ? { dateTime: arg.end } : undefined
+        }))
+
+        // If this is a task event, also update task schedule optimistically
+        if (arg.taskId && typeof arg.slotIndex === 'number') {
+          dispatch(optimisticUpdateTaskSchedule({
+            taskId: arg.taskId,
+            slotIndex: arg.slotIndex,
+            start: arg.start,
+            end: arg.end,
+            updateDate: new Date().toISOString(),
+            targetEventIndex: arg.targetEventIndex,
+            viewTargetEventAt: new Date()
+          }))
+        }
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+        }
+      },
+      invalidatesTags: []
+    }),
   })
 })
 
@@ -131,4 +169,5 @@ export const {
   useDisconnectGoogleAccountMutation,
   useCreateGoogleEventMutation,
   useDeleteGoogleEventMutation,
+  useUpdateGoogleEventTimeMutation,
 } = calendarApi

@@ -117,55 +117,5 @@ export const updateGoogleEventAction =
       }
    }
 
-/**
- * Update Google Event Time Action (for drag/drop operations)
- * Updates only the start and end time of an event, preserving all other data
- * @param {Object} reqData - Request data for event time update
- * @param {string} reqData.eventId - Event ID to update
- * @param {string} reqData.start - New start time (ISO string)
- * @param {string} reqData.end - New end time (ISO string)
- * @param {string} reqData.accountEmail - Google account ID
- * @param {string} reqData.calendarId - Calendar ID where event exists
- * @param {string} reqData.originalCalendarId - Original calendar ID
- * @param {string} [reqData.taskId] - Task ID for synced events
- * @param {number} [reqData.slotIndex] - Slot index for synced events
- * @param {number} [reqData.targetEventIndex] - Target event index for task detail updates
- */
-export const updateGoogleEventTimeAction =
-   (reqData) => async (dispatch, getState) => {
-      try {
-         // Optimistic update - Calendar - update event times in state
-         dispatch({
-            type: UPDATE_CALENDAR_EVENT_TIME,
-            payload: {
-               eventId: reqData.eventId,
-               start: reqData.start ? { dateTime: reqData.start } : undefined,
-               end: reqData.end ? { dateTime: reqData.end } : undefined
-            }
-         })
-         if (reqData.taskId && typeof reqData.slotIndex === 'number') {
-            // Optimistic update - Page | Task
-            dispatch({
-               type: UPDATE_TASK_SCHEDULE,
-               payload: {
-                  taskId: reqData.taskId,
-                  slotIndex: reqData.slotIndex,
-                  start: reqData.start,
-                  end: reqData.end,
-                  updateDate: new Date().toISOString(),
-                  targetEventIndex: reqData.targetEventIndex,
-                  viewTargetEventAt: new Date()
-               }
-            })
-         }
-
-         // API call to update event times only
-         await api.post(`/calendar/update-event/${reqData.eventId}`, reqData)
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-      }
-   }
-
-
 
 
