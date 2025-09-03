@@ -1,6 +1,6 @@
 import axios from 'axios'
 import store from '../store'
-import { LOGOUT } from '../actions/types'
+import { logout } from '../reducers/authSlice'
 
 // Custom error class for authentication session expiration
 class AuthenticationExpiredError extends Error {
@@ -104,7 +104,7 @@ api.interceptors.response.use(
                // Clear localStorage data and dispatch logout to set isAuthenticated to false
                localStorage.removeItem('token')
                localStorage.removeItem('refreshToken')
-               store.dispatch({ type: LOGOUT })
+               store.dispatch(logout())
 
                // Don't let the error bubble up to fatalErrorHandler since user is being logged out
                return Promise.reject(new AuthenticationExpiredError())
@@ -114,7 +114,7 @@ api.interceptors.response.use(
          } else {
             localStorage.removeItem('token')
             localStorage.removeItem('refreshToken')
-            store.dispatch({ type: LOGOUT })
+            store.dispatch(logout())
             return Promise.reject(new AuthenticationExpiredError())
          }
       }

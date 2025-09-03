@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi'
-import { commonErrorHandler } from '../actions/errorActions'
+import { commonErrorHandler } from '../reducers/errorHandlerHelpers'
 import { refetchTaskModalIfOpen } from './taskApi'
 import { optimisticDeleteGoogleEvent, optimisticUpdateGoogleEventTime, optimisticUpdateGoogleEvent } from '../reducers/calendarSlice'
 import { optimisticUpdateTaskSchedule } from '../reducers/taskSlice'

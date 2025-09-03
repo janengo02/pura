@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
-import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent, updateTaskEvents, updateTaskSchedule, removeTaskScheduleSlot, updateGoogleEvent, updateGoogleEventTime } from './calendarReducersHelpers'
+import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent, updateTaskEvents, updateTaskSchedule, removeTaskScheduleSlot, updateGoogleEvent, updateGoogleEventTime } from './calendarSliceHelpers'
 
 const calendarSlice = createSlice({
   name: 'calendar',
@@ -91,7 +91,7 @@ const calendarSlice = createSlice({
     },
     updateNewEvent: (state, action) => {
       const { updatedEvent, associatedCalendar } = action.payload
-      
+
       // Format the calendar for the helper function
       const formattedCalendar = {
         id: associatedCalendar?.calendarId,
@@ -189,7 +189,7 @@ const calendarSlice = createSlice({
       })
       .addMatcher(calendarApi.endpoints.createGoogleEvent.matchFulfilled, (state, action) => {
         const { event, calendar } = action.payload
-        
+
         // Add the new event to the calendar state and replace the 'new' event
         const updatedState = updateGoogleEvent({
           originalEventId: 'new',
@@ -202,7 +202,7 @@ const calendarSlice = createSlice({
       .addMatcher(calendarApi.endpoints.updateGoogleEvent.matchFulfilled, (state, action) => {
         const { event, calendar } = action.payload
         const { eventId } = action.meta.arg.originalArgs
-        
+
         // Update the event with server response, replacing the optimistic update
         const updatedState = updateGoogleEvent({
           originalEventId: eventId,

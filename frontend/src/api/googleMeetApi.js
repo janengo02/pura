@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi'
-import { commonErrorHandler } from '../actions/errorActions'
+import { commonErrorHandler } from '../reducers/errorHandlerHelpers'
 
 export const googleMeetApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

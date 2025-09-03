@@ -1,6 +1,6 @@
 import { baseApi } from './baseApi'
 import { optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress } from '../reducers/pageSlice'
-import { commonErrorHandler } from '../actions/errorActions'
+import { commonErrorHandler } from '../reducers/errorHandlerHelpers'
 
 export const pageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
