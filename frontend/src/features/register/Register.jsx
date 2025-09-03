@@ -5,10 +5,9 @@
 // React & Hooks
 import React, { useMemo } from 'react'
 import { Navigate } from 'react-router-dom'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Form Handling
@@ -47,15 +46,27 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 import { LandingHeader } from '../landing/Landing'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectAuthData = createSelector(
+   [(state) => state.auth?.isAuthenticated || false],
+   (isAuthenticated) => ({
+      isAuthenticated
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const Register = React.memo(
-   ({ authData: { isAuthenticated } }) => {
+const Register = React.memo(() => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t, i18n } = useReactiveTranslation()
+      const { isAuthenticated } = useSelector(selectAuthData)
 
       const [registerUser, { isLoading: isRegisterLoading, error: registerError }] = useRegisterMutation()
       const [loadUser, { isLoading: isLoadUserLoading, error: loadUserError }] = useLazyLoadUserQuery()
@@ -306,36 +317,8 @@ const Register = React.memo(
 // Display name for debugging
 Register.displayName = 'Register'
 
-// PropTypes validation
-Register.propTypes = {
-   authData: PropTypes.shape({
-      isAuthenticated: PropTypes.bool
-   }).isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectAuthData = createSelector(
-   [(state) => state.auth?.isAuthenticated],
-   (isAuthenticated) => ({
-      isAuthenticated
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   authData: selectAuthData(state)
-})
-
-const mapDispatchToProps = {}
-
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Register)
+export default Register

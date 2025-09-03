@@ -31,6 +31,23 @@ import { PiCirclesFour } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectGroupSelectData = createSelector(
+   [
+      (state) => state.taskSlice.task,
+      (state) => state.pageSlice.id,
+      (state) => state.pageSlice.groupOrder
+   ],
+   (task, id, groupOrder) => ({
+      task,
+      id,
+      groupOrder
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -155,22 +172,7 @@ GroupSelect.displayName = 'GroupSelect'
 // PropTypes validation
 GroupSelect.propTypes = {
 }
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
 
-const selectGroupSelectData = createSelector(
-   [
-      (state) => state.taskSlice.task,
-      (state) => state.pageSlice.id,
-      (state) => state.pageSlice.groupOrder
-   ],
-   (task, id, groupOrder) => ({
-      task,
-      id,
-      groupOrder
-   })
-)
 
 // =============================================================================
 // EXPORT

@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 
 // Redux
 import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // RTK Query
 import { useCreateTaskMutation } from '../../../../api/taskApi'
@@ -26,6 +27,21 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import { PiPlus } from 'react-icons/pi'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectColumnData = createSelector(
+   [(state) => state.pageSlice],
+   (pageSlice) => ({
+      id: pageSlice.id,
+      groupOrder: pageSlice.groupOrder,
+      progressOrder: pageSlice.progressOrder,
+      taskMap: pageSlice.taskMap,
+      tasks: pageSlice.tasks
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -37,9 +53,7 @@ const Column = ({ progress, group }) => {
    const { colorMode } = useColorMode()
 
    // Redux state
-   const { id, groupOrder, progressOrder, taskMap, tasks } = useSelector(
-      (state) => state.pageSlice
-   )
+   const { id, groupOrder, progressOrder, taskMap, tasks } = useSelector(selectColumnData)
 
    // RTK Query hooks
    const [createTaskMutation] = useCreateTaskMutation()

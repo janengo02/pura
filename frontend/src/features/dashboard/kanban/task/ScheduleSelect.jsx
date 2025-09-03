@@ -4,10 +4,9 @@
 
 // React & Hooks
 import React, { useCallback, useMemo } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // RTK Query
@@ -25,12 +24,24 @@ import { PiCalendar, PiPlus } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectScheduleSelectData = createSelector(
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
+   (task, id) => ({
+      task,
+      id
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const ScheduleSelect = React.memo(
-   ({ scheduleData: { task, id } }) => {
+const ScheduleSelect = React.memo(() => {
       const { t } = useReactiveTranslation()
+      const { task, id } = useSelector(selectScheduleSelectData)
       const [addTaskScheduleSlot] = useAddTaskScheduleSlotMutation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -124,35 +135,11 @@ const ScheduleSelect = React.memo(
 ScheduleSelect.displayName = 'ScheduleSelect'
 
 // PropTypes validation
-ScheduleSelect.propTypes = {
-   scheduleData: PropTypes.shape({
-      task: PropTypes.object.isRequired,
-      id: PropTypes.string.isRequired
-   }).isRequired
-}
+ScheduleSelect.propTypes = {}
 
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectScheduleSelectData = createSelector(
-   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
-   (task, id) => ({
-      task,
-      id
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   scheduleData: selectScheduleSelectData(state)
-})
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps)(ScheduleSelect)
+export default ScheduleSelect

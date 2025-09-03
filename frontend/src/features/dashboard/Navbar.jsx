@@ -7,7 +7,8 @@ import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // Actions
 import { clearEventEditModal } from '../../reducers/eventSlice'
@@ -26,6 +27,15 @@ import SplitPaneContext from '../../context/SplitPaneContext'
 
 // Hooks
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectNavbarData = createSelector(
+   [(state) => state.pageSlice.title],
+   (title) => ({ title })
+)
 
 export const NAVBAR_HEIGHT = '5rem'
 // =============================================================================
@@ -71,8 +81,9 @@ NavbarLeft.propTypes = {
 /**
  * Right section of navbar containing calendar toggle and profile menu
  */
-const NavbarRight = React.memo(({ clearEventEditModal }) => {
+const NavbarRight = React.memo(() => {
    const { viewCalendar, setViewCalendar } = useContext(SplitPaneContext)
+   const dispatch = useDispatch()
 
    return (
       <Flex gap={8}>
@@ -83,7 +94,7 @@ const NavbarRight = React.memo(({ clearEventEditModal }) => {
             icon={<PiCalendarFill size={18} />}
             onClick={() => {
                setViewCalendar((prev) => !prev)
-               clearEventEditModal()
+               dispatch(clearEventEditModal())
             }}
          />
          <ProfileMenu />
@@ -97,11 +108,12 @@ NavbarRight.displayName = 'NavbarRight'
 // MAIN COMPONENT
 // =============================================================================
 
-const Navbar = React.memo(({ clearEventEditModal }) => {
+const Navbar = React.memo(() => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
    const { t } = useReactiveTranslation()
+   const { title } = useSelector(selectNavbarData)
 
    // -------------------------------------------------------------------------
    // RENDER LOGIC
@@ -110,9 +122,9 @@ const Navbar = React.memo(({ clearEventEditModal }) => {
    return (
       <>
          <NavbarWrapper>
-            <NavbarLeft title={t('label-page-title')} />
+            <NavbarLeft title={title || t('label-page-title')} />
             <Spacer />
-            <NavbarRight clearEventEditModal={clearEventEditModal} />
+            <NavbarRight />
          </NavbarWrapper>
       </>
    )
@@ -126,24 +138,14 @@ const Navbar = React.memo(({ clearEventEditModal }) => {
 Navbar.displayName = 'Navbar'
 
 // PropTypes validation
-Navbar.propTypes = {
-   title: PropTypes.string,
-   clearEventEditModal: PropTypes.func.isRequired
-}
+Navbar.propTypes = {}
 
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
-const mapStateToProps = (state) => ({
-   title: state.pageSlice.title
-})
-
-const mapDispatchToProps = {
-   clearEventEditModal
-}
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Navbar)
+export default Navbar

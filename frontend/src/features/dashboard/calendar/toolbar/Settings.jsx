@@ -4,10 +4,9 @@
 
 // React & Hooks
 import React, { useMemo, useCallback } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect, useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // UI Components
@@ -46,6 +45,26 @@ import { useSetDefaultAccountMutation, useAddGoogleAccountMutation, useDisconnec
 import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectSettingsData = createSelector(
+   [
+      (state) => state.calendarSlice.googleAccounts,
+      (state) => state.calendarSlice.googleCalendars,
+      (state) => state.calendarSlice.range,
+      (state) => state.calendarSlice.defaultAccount
+   ],
+   (googleAccounts, googleCalendars, range, defaultAccount) => ({
+      googleAccounts: googleAccounts || [],
+      googleCalendars: googleCalendars || [],
+      range: range || [],
+      defaultAccount
+   })
+)
+
+
+// =============================================================================
 // CONSTANTS
 // =============================================================================
 
@@ -75,18 +94,15 @@ const getAccountImage = (accountSyncStatus) =>
 // MAIN COMPONENT
 // =============================================================================
 
-const Settings = React.memo(
-   ({
-      // Redux props
-      setAlert,
-      settingsData: { googleAccounts, googleCalendars, range, defaultAccount },
-      taskData: { task, pageId }
-   }) => {
+const Settings = React.memo(() => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const dispatch = useDispatch()
+
+      // Redux selectors
+      const { googleAccounts, googleCalendars, range } = useSelector(selectSettingsData)
 
       // RTK Query hooks
       const [setDefaultAccountMutation, { isLoading: isSettingDefault }] = useSetDefaultAccountMutation()
@@ -102,11 +118,11 @@ const Settings = React.memo(
             await addGoogleAccountMutation({ code, range })
          },
          onError: () => {
-            setAlert(
+            dispatch(setAlert(
                'alert-google_calendar-account-connect_failed',
                '',
                'error'
-            )
+            ))
          },
          range
       })
@@ -321,63 +337,8 @@ const Settings = React.memo(
 // Display name for debugging
 Settings.displayName = 'CalendarSettings'
 
-// PropTypes validation
-Settings.propTypes = {
-   setAlert: PropTypes.func.isRequired,
-   settingsData: PropTypes.shape({
-      googleAccounts: PropTypes.array.isRequired,
-      googleCalendars: PropTypes.array.isRequired,
-      range: PropTypes.array.isRequired,
-      defaultAccount: PropTypes.object
-   }).isRequired,
-   taskData: PropTypes.shape({
-      task: PropTypes.object,
-      pageId: PropTypes.string
-   }).isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectSettingsData = createSelector(
-   [
-      (state) => state.calendarSlice.googleAccounts,
-      (state) => state.calendarSlice.googleCalendars,
-      (state) => state.calendarSlice.range,
-      (state) => state.calendarSlice.defaultAccount
-   ],
-   (googleAccounts, googleCalendars, range, defaultAccount) => ({
-      googleAccounts: googleAccounts || [],
-      googleCalendars: googleCalendars || [],
-      range: range || [],
-      defaultAccount
-   })
-)
-
-const selectTaskData = createSelector(
-   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
-   (task, pageId) => ({
-      task,
-      pageId
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   settingsData: selectSettingsData(state),
-   taskData: selectTaskData(state)
-})
-
-const mapDispatchToProps = {
-   setAlert
-}
-
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Settings)
+export default Settings

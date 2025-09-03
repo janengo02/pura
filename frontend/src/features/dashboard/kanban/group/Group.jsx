@@ -7,7 +7,8 @@ import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 
 // RTK Query
@@ -55,6 +56,16 @@ import { groupColors } from '../../../../components/data/defaultColor'
 import { useHover } from '../../../../hooks/useHover'
 import { useEditing } from '../../../../hooks/useEditing'
 
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectGroupData = createSelector(
+   [state => state.pageSlice.id, state => state.pageSlice.groupOrder],
+   (id, groupOrder) => ({ id, groupOrder })
+)
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -63,17 +74,17 @@ const Group = React.memo(
    ({
       group,
       isNew = false,
-      children = null,
-      // Redux props
-      id,
-      groupOrder
+      children = null
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const { colorMode } = useColorMode()
-      
+
+      // Redux selectors
+      const { id, groupOrder } = useSelector(selectGroupData)
+
       // RTK Query hooks
       const [updateGroupMutation] = useUpdateGroupMutation()
       const [deleteGroupMutation] = useDeleteGroupMutation()
@@ -310,17 +321,7 @@ const Group = React.memo(
 Group.propTypes = {
    group: PropTypes.object.isRequired,
    isNew: PropTypes.bool,
-   children: PropTypes.node,
-   // Redux props
-   id: PropTypes.string.isRequired,
-   groupOrder: PropTypes.array.isRequired,
+   children: PropTypes.node
 }
 
-const mapStateToProps = (state) => ({
-   id: state.pageSlice.id,
-   groupOrder: state.pageSlice.groupOrder
-})
-
-const mapDispatchToProps = {}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Group)
+export default Group

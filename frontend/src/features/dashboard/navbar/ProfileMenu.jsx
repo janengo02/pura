@@ -7,7 +7,7 @@ import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
@@ -36,6 +36,19 @@ import {
 // Utils & Icons
 import { PiSignOut } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../hooks/useReactiveTranslation'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectProfileData = createSelector(
+   [(state) => state.auth.user, (state) => state.language.current],
+   (user, currentLanguage) => ({
+      user,
+      currentLanguage
+   })
+)
 
 // =============================================================================
 // CONSTANTS
@@ -159,31 +172,31 @@ ProfileActions.propTypes = {
 // MAIN COMPONENT
 // =============================================================================
 
-const ProfileMenu = React.memo(
-   ({
-      logout,
-      changeLanguage,
-      toggleTheme,
-      profileData: { user, currentLanguage }
-   }) => {
+const ProfileMenu = React.memo(() => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+      const dispatch = useDispatch()
+      const { user, currentLanguage } = useSelector(selectProfileData)
+
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
       const handleLogout = useCallback(() => {
-         logout()
-      }, [logout])
+         dispatch(logout())
+      }, [dispatch])
 
       const handleLanguageChange = useCallback(
          (language) => {
-            changeLanguage(language)
+            dispatch(changeLanguage(language))
          },
-         [changeLanguage]
+         [dispatch]
       )
 
       const handleThemeToggle = useCallback(() => {
-         toggleTheme()
-      }, [toggleTheme])
+         dispatch(toggleTheme())
+      }, [dispatch])
 
       // -------------------------------------------------------------------------
       // RENDER LOGIC
@@ -215,45 +228,11 @@ const ProfileMenu = React.memo(
 ProfileMenu.displayName = 'ProfileMenu'
 
 // PropTypes validation
-ProfileMenu.propTypes = {
-   logout: PropTypes.func.isRequired,
-   changeLanguage: PropTypes.func.isRequired,
-   toggleTheme: PropTypes.func.isRequired,
-   profileData: PropTypes.shape({
-      user: PropTypes.object,
-      currentLanguage: PropTypes.string.isRequired
-   }).isRequired
-}
+ProfileMenu.propTypes = {}
 
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectProfileData = createSelector(
-   [(state) => state.auth.user, (state) => state.language.current],
-   (user, currentLanguage) => ({
-      user,
-      currentLanguage
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   profileData: selectProfileData(state)
-})
-
-const mapDispatchToProps = {
-   logout,
-   changeLanguage,
-   toggleTheme
-}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProfileMenu)
+export default ProfileMenu

@@ -7,7 +7,7 @@ import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
@@ -30,6 +30,15 @@ import {
 import { PiCaretDown } from 'react-icons/pi'
 import { useReactiveTranslation } from '../hooks/useReactiveTranslation'
 import { LANGUAGE_OPTIONS } from './data/languages'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectLanguageData = createSelector(
+   [(state) => state.language?.current || 'en'],
+   (currentLanguage) => ({ currentLanguage })
+)
 
 // =============================================================================
 // CONSTANTS
@@ -161,17 +170,22 @@ LanguageMenuOptions.propTypes = {
 // MAIN COMPONENT
 // =============================================================================
 
-const LanguageSwitcher = React.memo(
-   ({ changeLanguage, languageData: { currentLanguage } }) => {
+const LanguageSwitcher = React.memo(() => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+      const dispatch = useDispatch()
+      const { currentLanguage } = useSelector(selectLanguageData)
+
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
       const handleLanguageChange = useCallback(
          (language) => {
-            changeLanguage(language)
+            dispatch(changeLanguage(language))
          },
-         [changeLanguage]
+         [dispatch]
       )
 
       // -------------------------------------------------------------------------
@@ -200,37 +214,11 @@ const LanguageSwitcher = React.memo(
 LanguageSwitcher.displayName = 'LanguageSwitcher'
 
 // PropTypes validation
-LanguageSwitcher.propTypes = {
-   changeLanguage: PropTypes.func.isRequired,
-   languageData: PropTypes.shape({
-      currentLanguage: PropTypes.string.isRequired
-   }).isRequired
-}
+LanguageSwitcher.propTypes = {}
 
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectLanguageData = createSelector(
-   [(state) => state.language?.current || 'en'],
-   (currentLanguage) => ({ currentLanguage })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   languageData: selectLanguageData(state)
-})
-
-const mapDispatchToProps = {
-   changeLanguage
-}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(LanguageSwitcher)
+export default LanguageSwitcher

@@ -4,10 +4,9 @@
 
 // React & Hooks
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
@@ -34,18 +33,31 @@ import { ControlMenuButton } from '../../../../components/CustomMenu'
 // Utils
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
-// Schema
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectFilterSelectData = createSelector(
+   [(state) => state.pageSlice.filter],
+   (filter) => ({
+      filter: filter || {
+         schedule: [],
+         name: ''
+      }
+   })
+)
 
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const Filter = React.memo(
-   ({ updateFilter, filterData: { filter } }) => {
+const Filter = React.memo(() => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+      const dispatch = useDispatch()
+      const { filter } = useSelector(selectFilterSelectData)
 
       const [nameFilter, setNameFilter] = useState('')
       // -------------------------------------------------------------------------
@@ -78,9 +90,9 @@ const Filter = React.memo(
             } else {
                newScheduleFilter.push(value)
             }
-            updateFilter({ schedule: newScheduleFilter })
+            dispatch(updateFilter({ schedule: newScheduleFilter }))
          },
-         [filter.schedule, updateFilter]
+         [filter.schedule, dispatch]
       )
 
       // -------------------------------------------------------------------------
@@ -98,11 +110,11 @@ const Filter = React.memo(
       useEffect(() => {
          if (hasNameFilterChanged) {
             const timeoutId = setTimeout(() => {
-               updateFilter({ name: nameFilter })
+               dispatch(updateFilter({ name: nameFilter }))
             }, 500)
             return () => clearTimeout(timeoutId)
          }
-      }, [hasNameFilterChanged, nameFilter, updateFilter])
+      }, [hasNameFilterChanged, nameFilter, dispatch])
 
       // -------------------------------------------------------------------------
       // RENDER
@@ -188,39 +200,9 @@ const Filter = React.memo(
 Filter.displayName = 'KanbanFilter'
 
 // PropTypes validation
-Filter.propTypes = {
-   filterData: PropTypes.shape({
-      filter: PropTypes.object.isRequired
-   }).isRequired,
-   updateFilter: PropTypes.func.isRequired
-}
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectFilterSelectData = createSelector(
-   [(state) => state.pageSlice.filter],
-   (filter) => ({
-      filter: filter || {
-         schedule: [],
-         name: ''
-      }
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   filterData: selectFilterSelectData(state)
-})
-
-const mapDispatchToProps = {
-   updateFilter
-}
+Filter.propTypes = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
-export default connect(mapStateToProps, mapDispatchToProps)(Filter)
+export default Filter

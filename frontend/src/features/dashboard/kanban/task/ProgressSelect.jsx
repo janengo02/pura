@@ -30,6 +30,24 @@ import TaskCardLabel from '../../../../components/typography/TaskCardLabel'
 import { PiFlagBanner } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 
+
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectProgressSelectData = createSelector(
+   [
+      (state) => state.taskSlice.task,
+      (state) => state.pageSlice.id,
+      (state) => state.pageSlice.progressOrder
+   ],
+   (task, id, progressOrder) => ({
+      task,
+      id,
+      progressOrder
+   })
+)
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -151,23 +169,6 @@ ProgressSelect.displayName = 'ProgressSelect'
 // PropTypes validation
 ProgressSelect.propTypes = {
 }
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectProgressSelectData = createSelector(
-   [
-      (state) => state.taskSlice.task,
-      (state) => state.pageSlice.id,
-      (state) => state.pageSlice.progressOrder
-   ],
-   (task, id, progressOrder) => ({
-      task,
-      id,
-      progressOrder
-   })
-)
 
 // =============================================================================
 // EXPORT

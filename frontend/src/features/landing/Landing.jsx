@@ -1038,10 +1038,7 @@ const Landing = React.memo(({ landingData, isAuthenticated }) => {
 Landing.displayName = 'Landing'
 
 // PropTypes validation
-Landing.propTypes = {
-   landingData: PropTypes.object,
-   isAuthenticated: PropTypes.bool
-}
+Landing.propTypes = {}
 
 // =============================================================================
 // REDUX SELECTORS
@@ -1066,20 +1063,7 @@ const selectAuthState = createSelector(
 )
 
 // =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   landingData: selectLandingData(state),
-   isAuthenticated: selectAuthState(state)
-})
-
-const mapDispatchToProps = {
-   // Add action creators if needed
-}
-
-// =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Landing)
+export default Landing

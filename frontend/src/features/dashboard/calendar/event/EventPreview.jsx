@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 
 // Redux
 import { useSelector, useDispatch } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // UI Components
 import {
@@ -46,6 +47,15 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 
 // Constants
 import { SCHEDULE_SYNCE_STATUS } from '../../../../components/data/syncStatus'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectPageId = createSelector(
+   [(state) => state.pageSlice.id],
+   (id) => id
+)
 
 // =============================================================================
 // CONSTANTS
@@ -99,7 +109,7 @@ const EventPreview = React.memo(({ onClose, event }) => {
       const dispatch = useDispatch()
       
       // Redux selectors
-      const pageId = useSelector(state => state.pageSlice.id)
+      const pageId = useSelector(selectPageId)
       
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()

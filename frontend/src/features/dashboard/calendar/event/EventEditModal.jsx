@@ -4,10 +4,9 @@
 
 // React & Hooks
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect, useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 // UI Components
 import {
@@ -17,7 +16,6 @@ import {
    Button,
    VStack,
    HStack,
-   Box,
    ScaleFade,
    IconButton,
    Menu,
@@ -46,20 +44,61 @@ import { EventCalendarSelect } from './EventCalendarInfo'
 import { EventConferenceInput } from './EventConference'
 import { GOOGLE_CALENDAR_COLORS } from '../../../../components/data/defaultColor'
 
+
+// =============================================================================
+// REDUX SELECTORS
+// =============================================================================
+
+const selectEventData = createSelector(
+   [(state) => state.event, (state) => state.pageSlice.id],
+   (eventState, id) => ({
+      id: eventState.id,
+      title: eventState.title,
+      description: eventState.description,
+      color: eventState.color,
+      start: eventState.start,
+      end: eventState.end,
+      conferenceData: eventState.conferenceData,
+      eventType: eventState.eventType,
+      calendarId: eventState.calendarId,
+      accountEmail: eventState.accountEmail,
+      puraTaskId: eventState.puraTaskId,
+      puraScheduleIndex: eventState.puraScheduleIndex,
+      googleEventId: eventState.googleEventId,
+      pageId: id
+   })
+)
+
+const selectGoogleCalendars = createSelector(
+   (state) => state.calendarSlice.googleCalendars,
+   (googleCalendars) => {
+      // Filter out calendars that are not writable
+      return googleCalendars.filter(
+         (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
+      )
+   }
+)
+
+const selectTaskData = createSelector(
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
+   (task, pageId) => ({
+      task,
+      pageId
+   })
+)
+
+const selectGoogleAccounts = createSelector(
+   [(state) => state.calendarSlice.googleAccounts],
+   (googleAccounts) => googleAccounts
+)
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
 const EventEditModal = React.memo(
    ({
-      rightWidth = '100%',
-      // Redux props
-      event,
-      googleCalendars,
-      googleAccounts,
-      taskData: { task },
-
-      clearEventEditModal
+      rightWidth = '100%'
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS
@@ -67,9 +106,13 @@ const EventEditModal = React.memo(
 
       const { t } = useReactiveTranslation()
       const toast = useToast()
+      const dispatch = useDispatch()
 
-       // Redux selectors
-      const pageId = useSelector(state => state.pageSlice.id)
+      // Redux selectors
+      const event = useSelector(selectEventData)
+      const googleCalendars = useSelector(selectGoogleCalendars)
+      const googleAccounts = useSelector(selectGoogleAccounts)
+      const { task, pageId } = useSelector(selectTaskData)
 
 
       // RTK Query hooks
@@ -106,8 +149,8 @@ const EventEditModal = React.memo(
       // -------------------------------------------------------------------------
       const handleCloseModal = useCallback(() => {
          // Clear the task from Redux state to close modal
-         clearEventEditModal()
-      }, [clearEventEditModal])
+         dispatch(clearEventEditModal())
+      }, [dispatch])
 
       const handleSave = useCallback(async () => {
          // Validate time inputs before proceeding
@@ -438,111 +481,8 @@ const EventEditModal = React.memo(
 // Display name for debugging
 EventEditModal.displayName = 'EventEditModal'
 
-// PropTypes validation
-EventEditModal.propTypes = {
-   rightWidth: PropTypes.string,
-   event: PropTypes.shape({
-      id: PropTypes.string,
-      title: PropTypes.string,
-      description: PropTypes.string,
-      color: PropTypes.string,
-      start: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-      end: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-      conferenceData: PropTypes.shape({
-         type: PropTypes.string,
-         id: PropTypes.string,
-         joinUrl: PropTypes.string,
-         phoneNumbers: PropTypes.array
-      }),
-      eventType: PropTypes.oneOf(['task', 'google', 'synced']),
-      calendarId: PropTypes.string,
-      accountEmail: PropTypes.string,
-      puraTaskId: PropTypes.string,
-      puraScheduleIndex: PropTypes.number,
-      googleEventId: PropTypes.string,
-      pageId: PropTypes.string
-   }).isRequired,
-   googleCalendars: PropTypes.arrayOf(
-      PropTypes.shape({
-         calendarId: PropTypes.string,
-         title: PropTypes.string,
-         accountEmail: PropTypes.string,
-         accessRole: PropTypes.string,
-         color: PropTypes.string
-      })
-   ).isRequired,
-   googleAccounts: PropTypes.arrayOf(
-      PropTypes.shape({
-         email: PropTypes.string,
-         accountEmail: PropTypes.string
-      })
-   ).isRequired,
-   taskData: PropTypes.shape({
-      task: PropTypes.object,
-      pageId: PropTypes.string
-   }).isRequired,
-   clearEventEditModal: PropTypes.func.isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectEventData = createSelector(
-   [(state) => state.event, (state) => state.pageSlice.id],
-   (eventState, id) => ({
-      id: eventState.id,
-      title: eventState.title,
-      description: eventState.description,
-      color: eventState.color,
-      start: eventState.start,
-      end: eventState.end,
-      conferenceData: eventState.conferenceData,
-      eventType: eventState.eventType,
-      calendarId: eventState.calendarId,
-      accountEmail: eventState.accountEmail,
-      puraTaskId: eventState.puraTaskId,
-      puraScheduleIndex: eventState.puraScheduleIndex,
-      googleEventId: eventState.googleEventId,
-      pageId: id
-   })
-)
-
-const selectGoogleCalendars = createSelector(
-   (state) => state.calendarSlice.googleCalendars,
-   (googleCalendars) => {
-      // Filter out calendars that are not writable
-      return googleCalendars.filter(
-         (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
-      )
-   }
-)
-
-const selectTaskData = createSelector(
-   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
-   (task, pageId) => ({
-      task,
-      pageId
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   event: selectEventData(state),
-   googleCalendars: selectGoogleCalendars(state),
-   googleAccounts: state.calendarSlice.googleAccounts,
-   taskData: selectTaskData(state)
-})
-
-const mapDispatchToProps = {
-   clearEventEditModal
-}
-
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(EventEditModal)
+export default EventEditModal

@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // RTK Query
 import { useUpdateTaskScheduleMutation, useRemoveTaskScheduleSlotMutation } from '../../../../api/taskApi'
@@ -57,6 +58,27 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectScheduleTimeSlotData = createSelector(
+   [
+      (state) => state.taskSlice.task,
+      (state) => state.pageSlice.id,
+      (state) => state.calendarSlice.googleAccounts,
+      (state) => state.calendarSlice.googleCalendars,
+      (state) => state.calendarSlice.range
+   ],
+   (task, pageId, googleAccounts, googleCalendars, range) => ({
+      task,
+      pageId,
+      googleAccounts,
+      googleCalendars,
+      range
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -68,11 +90,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       const dispatch = useDispatch()
 
       // Redux selectors
-      const task = useSelector(state => state.taskSlice.task)
-      const pageId = useSelector(state => state.pageSlice.id)
-      const googleAccounts = useSelector(state => state.calendarSlice.googleAccounts)
-      const googleCalendars = useSelector(state => state.calendarSlice.googleCalendars)
-      const range = useSelector(state => state.calendarSlice.range)
+      const { task, pageId, googleAccounts, googleCalendars, range } = useSelector(selectScheduleTimeSlotData)
 
       // RTK Query hooks
       const [addGoogleAccountMutation] = useAddGoogleAccountMutation()

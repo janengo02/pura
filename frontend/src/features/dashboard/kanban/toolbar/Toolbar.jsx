@@ -4,10 +4,9 @@
 
 // React & Hooks
 import React, { useMemo, useCallback } from 'react'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 
@@ -26,18 +25,35 @@ import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation
 import { useCreateTaskMutation, useShowTaskModalMutation } from '../../../../api/taskApi'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectPageData = createSelector(
+   [
+      (state) => state.pageSlice.id,
+      (state) => state.pageSlice.groupOrder,
+      (state) => state.pageSlice.progressOrder
+   ],
+   (id, groupOrder, progressOrder) => ({
+      id,
+      groupOrder,
+      progressOrder
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const Toolbar = React.memo(
-   ({
-      // Redux props
-      pageData: { id, groupOrder, progressOrder }
-   }) => {
+const Toolbar = React.memo(() => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
+
+      // Redux selectors
+      const { id, groupOrder, progressOrder } = useSelector(selectPageData)
 
       // RTK Query hooks
       const [createTaskMutation] = useCreateTaskMutation()
@@ -122,44 +138,10 @@ const Toolbar = React.memo(
 Toolbar.displayName = 'Toolbar'
 
 // PropTypes validation
-Toolbar.propTypes = {
-   pageData: PropTypes.shape({
-      id: PropTypes.string,
-      groupOrder: PropTypes.array.isRequired,
-      progressOrder: PropTypes.array.isRequired
-   }).isRequired
-}
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectPageData = createSelector(
-   [
-      (state) => state.pageSlice.id,
-      (state) => state.pageSlice.groupOrder,
-      (state) => state.pageSlice.progressOrder
-   ],
-   (id, groupOrder, progressOrder) => ({
-      id,
-      groupOrder,
-      progressOrder
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   pageData: selectPageData(state)
-})
-
-const mapDispatchToProps = {
-}
+Toolbar.propTypes = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Toolbar)
+export default Toolbar

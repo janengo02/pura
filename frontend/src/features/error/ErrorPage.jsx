@@ -5,10 +5,9 @@
 // React & Hooks
 import React, { useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { logout } from '../../reducers/authSlice'
 
 // UI Components
@@ -38,7 +37,7 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 // MAIN COMPONENT
 // =============================================================================
 
-const ErrorPage = ({ logout }) => {
+const ErrorPage = () => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
@@ -46,6 +45,7 @@ const ErrorPage = ({ logout }) => {
    const { t } = useReactiveTranslation()
    const location = useLocation()
    const navigate = useNavigate()
+   const dispatch = useDispatch()
 
    // Determine if this is a 404 error based on the current path
    const is404 = location.pathname !== '/error'
@@ -72,9 +72,9 @@ const ErrorPage = ({ logout }) => {
 
    const handleLoginClick = useCallback(() => {
       console.log("Logging out user and redirecting to login page")
-      logout()
+      dispatch(logout())
       navigate('/login')
-   }, [logout, navigate])
+   }, [dispatch, navigate])
 
    // -------------------------------------------------------------------------
    // RENDER
@@ -161,24 +161,9 @@ const ErrorPage = ({ logout }) => {
    )
 }
 
-// =============================================================================
-// PROP TYPES
-// =============================================================================
-
-ErrorPage.propTypes = {
-   logout: PropTypes.func.isRequired
-}
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapDispatchToProps = {
-   logout
-}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(null, mapDispatchToProps)(ErrorPage)
+export default ErrorPage

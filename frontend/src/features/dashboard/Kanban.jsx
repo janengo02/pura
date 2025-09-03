@@ -5,10 +5,9 @@
 // React & Hooks
 import React, { useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 
@@ -41,19 +40,31 @@ import { PiPlus, PiPlusBold } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectPageData = createSelector(
+   [(state) => state.pageSlice],
+   (pageSlice) => ({
+      id: pageSlice.id,
+      groupOrder: pageSlice.groupOrder,
+      progressOrder: pageSlice.progressOrder
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const Kanban = React.memo(
-   ({
-      // Redux props
-      pageData: { id, groupOrder, progressOrder }
-   }) => {
+const Kanban = React.memo(() => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const navigate = useNavigate()
+      
+      // Redux selectors
+      const { id, groupOrder, progressOrder } = useSelector(selectPageData)
 
       // RTK Query hooks
       const { error, isLoading } = useGetFirstPageQuery()
@@ -230,38 +241,10 @@ const Kanban = React.memo(
 Kanban.displayName = 'Kanban'
 
 // PropTypes validation
-Kanban.propTypes = {
-   pageData: PropTypes.shape({
-      id: PropTypes.string,
-      groupOrder: PropTypes.array.isRequired,
-      progressOrder: PropTypes.array.isRequired
-   }).isRequired
-}
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectPageData = createSelector(
-   [(state) => state.pageSlice],
-   (pageSlice) => ({
-      id: pageSlice.id,
-      groupOrder: pageSlice.groupOrder,
-      progressOrder: pageSlice.progressOrder
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   pageData: selectPageData(state)
-})
-
-const mapDispatchToProps = {}
+Kanban.propTypes = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Kanban)
+export default Kanban

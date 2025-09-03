@@ -7,7 +7,8 @@ import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 
 // RTK Query
@@ -56,6 +57,16 @@ import { progressColors } from '../../../../components/data/defaultColor'
 import { useHover } from '../../../../hooks/useHover'
 import { useEditing } from '../../../../hooks/useEditing'
 
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectProgressData = createSelector(
+   [state => state.pageSlice.id, state => state.pageSlice.progressOrder],
+   (id, progressOrder) => ({ id, progressOrder })
+)
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -63,17 +74,17 @@ import { useEditing } from '../../../../hooks/useEditing'
 const ProgressHeader = React.memo(
    ({
       progress,
-      isNew = false,
-      // Redux props
-      id,
-      progressOrder
+      isNew = false
    }) => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const { colorMode } = useColorMode()
-      
+
+      // Redux selectors
+      const { id, progressOrder } = useSelector(selectProgressData)
+
       // RTK Query hooks
       const [updateProgressMutation] = useUpdateProgressMutation()
       const [deleteProgressMutation] = useDeleteProgressMutation()
@@ -356,17 +367,7 @@ const ProgressHeader = React.memo(
 
 ProgressHeader.propTypes = {
    progress: PropTypes.object.isRequired,
-   isNew: PropTypes.bool,
-   // Redux props
-   id: PropTypes.string.isRequired,
-   progressOrder: PropTypes.array.isRequired,
+   isNew: PropTypes.bool
 }
 
-const mapStateToProps = (state) => ({
-   id: state.pageSlice.id,
-   progressOrder: state.pageSlice.progressOrder
-})
-
-const mapDispatchToProps = {}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ProgressHeader)
+export default ProgressHeader

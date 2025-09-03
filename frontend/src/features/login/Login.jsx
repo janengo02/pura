@@ -5,10 +5,9 @@
 // React & Hooks
 import React, { useMemo } from 'react'
 import { Navigate } from 'react-router-dom'
-import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Form Handling
@@ -42,11 +41,22 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 import { LandingHeader } from '../landing/Landing'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectAuthData = createSelector(
+   [(state) => state.auth?.isAuthenticated || false],
+   (isAuthenticated) => ({
+      isAuthenticated
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-const Login = React.memo(
-   ({ authData: { isAuthenticated } }) => {
+const Login = React.memo(() => {
       // -------------------------------------------------------------------------
       // HOOKS & STATE
       // -------------------------------------------------------------------------
@@ -56,6 +66,7 @@ const Login = React.memo(
       })
 
       const { t } = useReactiveTranslation()
+      const { isAuthenticated } = useSelector(selectAuthData)
 
       const [loginUser, { isLoading: isLoginLoading, error: loginError }] = useLoginMutation()
       const [loadUser, { isLoading: isLoadUserLoading, error: loadUserError }] = useLazyLoadUserQuery()
@@ -223,36 +234,9 @@ const Login = React.memo(
 // Display name for debugging
 Login.displayName = 'Login'
 
-// PropTypes validation
-Login.propTypes = {
-   authData: PropTypes.shape({
-      isAuthenticated: PropTypes.bool
-   }).isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectAuthData = createSelector(
-   [(state) => state.auth?.isAuthenticated],
-   (isAuthenticated) => ({
-      isAuthenticated
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   authData: selectAuthData(state)
-})
-
-const mapDispatchToProps = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login)
+export default Login

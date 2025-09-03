@@ -12,6 +12,7 @@ import 'react-quill/dist/quill.bubble.css'
 
 // Redux
 import { useSelector, useDispatch } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // RTK Query & Slice
 import { useDeleteTaskMutation, useUpdateTaskBasicMutation } from '../../../../api/taskApi'
@@ -49,6 +50,15 @@ import ScheduleSelect from './ScheduleSelect'
 import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
 import { NAVBAR_HEIGHT } from '../../Navbar'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectTaskModalData = createSelector(
+   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
+   (task, id) => ({ task, id })
+)
 
 // =============================================================================
 // CONSTANTS & UTILITIES
@@ -109,8 +119,7 @@ const TaskModal = React.memo(
       const dispatch = useDispatch()
 
       // Redux state
-      const task = useSelector((state) => state.taskSlice.task)
-      const id = useSelector((state) => state.pageSlice.id)
+      const { task, id } = useSelector(selectTaskModalData)
 
       // RTK Query hooks
       const [deleteTaskMutation] = useDeleteTaskMutation()

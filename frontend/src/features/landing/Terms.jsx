@@ -5,8 +5,9 @@
 // React & Hooks
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
+
+// Redux
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // UI Components
@@ -22,9 +23,7 @@ import {
    ListItem,
    Divider,
    Card,
-   CardBody,
-   Flex,
-   Badge
+   CardBody
 } from '@chakra-ui/react'
 
 // Icons
@@ -32,11 +31,16 @@ import { PiShield } from 'react-icons/pi'
 
 // Internal Components
 import { Footer, LandingHeader } from './Landing'
-import LanguageSwitcher from '../../components/LanguageSwitcher'
-import ThemeToggle from '../../components/ThemeToggle'
 
-// Utils
-import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectAuthState = createSelector(
+   [(state) => state.auth?.isAuthenticated || false],
+   (isAuthenticated) => isAuthenticated
+)
 
 // =============================================================================
 // COMPONENTS
@@ -852,7 +856,10 @@ RemainingSection.displayName = 'RemainingSection'
 /**
  * Terms page component
  */
-const Terms = React.memo(({ isAuthenticated }) => {
+const Terms = React.memo(() => {
+   // Redux selectors
+   const isAuthenticated = useSelector(selectAuthState)
+
    // Scroll to top when component mounts
    useEffect(() => {
       window.scrollTo(0, 0)
@@ -889,34 +896,10 @@ const Terms = React.memo(({ isAuthenticated }) => {
 Terms.displayName = 'Terms'
 
 // PropTypes validation
-Terms.propTypes = {
-   isAuthenticated: PropTypes.bool
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectAuthState = createSelector(
-   [(state) => state.auth?.isAuthenticated || false],
-   (isAuthenticated) => isAuthenticated
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   isAuthenticated: selectAuthState(state)
-})
-
-const mapDispatchToProps = {
-   // Add action creators if needed
-}
+Terms.propTypes = {}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(Terms)
+export default Terms

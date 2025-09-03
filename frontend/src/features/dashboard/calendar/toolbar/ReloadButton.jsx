@@ -5,8 +5,9 @@
 // React
 import React, { useCallback } from 'react'
 
-// Redux  
+// Redux
 import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // UI Components
 import { IconButton } from '@chakra-ui/react'
@@ -14,6 +15,15 @@ import { IconButton } from '@chakra-ui/react'
 // Icons & Actions
 import { PiArrowClockwise } from 'react-icons/pi'
 import { useLazyLoadCalendarQuery } from '../../../../api/calendarApi'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectReloadButtonData = createSelector(
+   [(state) => state.pageSlice.id, (state) => state.calendarSlice.range],
+   (pageId, range) => ({ pageId, range })
+)
 
 
 // =============================================================================
@@ -36,14 +46,13 @@ const ReloadButton = React.memo(() => {
       // -------------------------------------------------------------------------
       // REDUX HOOKS
       // -------------------------------------------------------------------------
-      const pageId = useSelector((state) => state.pageSlice.id)
-      const range = useSelector((state) => state.calendarSlice.range)
+      const { pageId, range } = useSelector(selectReloadButtonData)
 
       // -------------------------------------------------------------------------
       // RTK QUERY HOOKS
       // -------------------------------------------------------------------------
       const [loadCalendar, {isLoading}] = useLazyLoadCalendarQuery()
-      
+
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
@@ -83,9 +92,6 @@ const ReloadButton = React.memo(() => {
 
 // Display name for debugging
 ReloadButton.displayName = 'CalendarReloadButton'
-
-// PropTypes validation - now empty since we use hooks
-ReloadButton.propTypes = {}
 
 // =============================================================================
 // EXPORT

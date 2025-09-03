@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 
 // Redux
 import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // RTK Query
 import { useShowTaskModalMutation, useDeleteTaskMutation, useUpdateTaskBasicMutation } from '../../../../api/taskApi'
@@ -46,6 +47,18 @@ import { useHover } from '../../../../hooks/useHover'
 import { useEditing } from '../../../../hooks/useEditing'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectTaskCardData = createSelector(
+   [(state) => state.pageSlice],
+   (pageSlice) => ({
+      id: pageSlice.id,
+      filter: pageSlice.filter
+   })
+)
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -72,7 +85,7 @@ const TaskCard = React.memo(
       })
 
       // Redux state
-      const { id, filter } = useSelector((state) => state.pageSlice)
+      const { id, filter } = useSelector(selectTaskCardData)
 
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()

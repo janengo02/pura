@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 
 // Redux
 import { useSelector, useDispatch } from 'react-redux'
+import { createSelector } from 'reselect'
 
 // External Libraries
 import moment from 'moment'
@@ -50,6 +51,37 @@ import {
    createLocalizedLocalizer,
    LOCALE_CONFIGS
 } from '../../utils/eventUtils'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectCalendarData = createSelector(
+   [(state) => state.calendarSlice],
+   (calendarSlice) => ({
+      googleEvents: calendarSlice.googleEvents,
+      googleCalendars: calendarSlice.googleCalendars,
+      googleAccounts: calendarSlice.googleAccounts,
+      defaultAccount: calendarSlice.defaultAccount,
+      range: calendarSlice.range,
+      navigationTarget: calendarSlice.navigationTarget
+   })
+)
+
+const selectCurrentLanguage = createSelector(
+   [(state) => state.language?.current || 'en'],
+   (currentLanguage) => currentLanguage
+)
+
+const selectPageId = createSelector(
+   [(state) => state.pageSlice.id],
+   (pageId) => pageId
+)
+
+const selectCurrentTaskId = createSelector(
+   [(state) => state.taskSlice.task?.id],
+   (currentTaskId) => currentTaskId
+)
 
 // =============================================================================
 // CONSTANTS & CONFIGURATION
@@ -117,10 +149,10 @@ const Calendar = React.memo(() => {
          defaultAccount,
          range,
          navigationTarget
-      } = useSelector((state) => state.calendarSlice)
-      const currentLanguage = useSelector((state) => state.language?.current || 'en')
-      const pageId = useSelector((state) => state.pageSlice.id)
-      const currentTaskId = useSelector((state) => state.taskSlice.task?.id)
+      } = useSelector(selectCalendarData)
+      const currentLanguage = useSelector(selectCurrentLanguage)
+      const pageId = useSelector(selectPageId)
+      const currentTaskId = useSelector(selectCurrentTaskId)
 
       // -------------------------------------------------------------------------
       // RTK QUERY HOOKS
