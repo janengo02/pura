@@ -167,6 +167,18 @@ const calendarSlice = createSlice({
         state.googleEvents = updatedState.googleEvents
         state.defaultAccount = updatedState.defaultAccount
       })
+      .addMatcher(calendarApi.endpoints.createGoogleEvent.matchFulfilled, (state, action) => {
+        const { event, calendar } = action.payload
+        
+        // Add the new event to the calendar state and replace the 'new' event
+        const updatedState = updateGoogleEvent({
+          originalEventId: 'new',
+          googleEvents: state.googleEvents,
+          updatedEvent: event,
+          updatedCalendar: calendar
+        })
+        state.googleEvents = updatedState.googleEvents
+      })
   }
 })
 

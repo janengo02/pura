@@ -82,6 +82,24 @@ export const calendarApi = baseApi.injectEndpoints({
       invalidatesTags: ['Calendar', 'Task']
     }),
 
+    createGoogleEvent: builder.mutation({
+      query: (reqData) => ({
+        url: '/calendar/create-event',
+        method: 'POST',
+        body: reqData
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+          throw err
+        }
+      },
+      invalidatesTags: []
+    }),
+
     deleteGoogleEvent: builder.mutation({
       query: ({ eventId, ...reqData }) => ({
         url: `/calendar/delete-event/${eventId}`,
@@ -111,5 +129,6 @@ export const {
   useSetDefaultAccountMutation,
   useAddGoogleAccountMutation,
   useDisconnectGoogleAccountMutation,
+  useCreateGoogleEventMutation,
   useDeleteGoogleEventMutation,
 } = calendarApi

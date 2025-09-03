@@ -21,10 +21,10 @@ import {
 
 // Utils
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
-import { createGoogleEventAction } from '../../../../actions/calendarActions'
-import { clearCalendarEvent, updateNewEvent } from '../../../../reducers/calendarSlice'
+import { updateNewEvent, clearCalendarEvent } from '../../../../reducers/calendarSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
+import { useCreateGoogleEventMutation } from '../../../../api/calendarApi'
 import { POPOVER_STYLES } from '../../Calendar'
 import {
    POPOVER_BODY_STYLES,
@@ -71,6 +71,7 @@ const EventCreatePopover = () => {
    // -------------------------------------------------------------------------
    const { t } = useReactiveTranslation()
    const dispatch = useDispatch()
+   const [createGoogleEvent] = useCreateGoogleEventMutation()
 
    // Redux selectors
    const newEvent = useSelector(selectNewEvent)
@@ -156,6 +157,9 @@ const EventCreatePopover = () => {
    // -------------------------------------------------------------------------
    // HANDLERS
    // -------------------------------------------------------------------------
+   const handleOnClose = useCallback(() => {
+      dispatch(clearCalendarEvent())
+   }, [dispatch])
    const handleUpdateCalendarEvent = useCallback(() => {
       if (!isEventValid) return
 
@@ -229,10 +233,12 @@ const EventCreatePopover = () => {
          start: newStartTime.toISOString(),
          end: newEndTime.toISOString()
       }
-      await dispatch(createGoogleEventAction(formattedNewEvent))
+      await createGoogleEvent(formattedNewEvent).unwrap()
+      handleOnClose()
    }, [
       isEventValid,
-      dispatch,
+      createGoogleEvent,
+      handleOnClose,
       eventTitle,
       eventDescription,
       selectedCalendar.calendarId,
@@ -243,9 +249,7 @@ const EventCreatePopover = () => {
       t
    ])
 
-   const handleOnClose = useCallback(() => {
-      dispatch(clearCalendarEvent())
-   }, [dispatch])
+
    // -------------------------------------------------------------------------
    // LOADING HOOKS
    // -------------------------------------------------------------------------

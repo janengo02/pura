@@ -4,12 +4,9 @@
 
 import { api } from '../utils'
 import { commonErrorHandler } from './errorActions'
-import { clearCalendarEvent } from '../reducers/calendarSlice'
 import {
    UPDATE_CALENDAR_EVENT,
    UPDATE_CALENDAR_EVENT_TIME,
-   REMOVE_CALENDAR_ACCOUNT,
-   DELETE_CALENDAR_EVENT,
    UPDATE_TASK_SCHEDULE
 } from './types'
 
@@ -170,38 +167,5 @@ export const updateGoogleEventTimeAction =
    }
 
 
-/**
- * Create Google Event Action
- * Creates a new event in Google Calendar
- * @param {Object} reqData - Request data for event creation
- * @param {string} reqData.accountEmail - Google account email
- * @param {string} reqData.calendarId - Target calendar ID
- * @param {string} reqData.summary - Event title
- * @param {string} reqData.start - Start time (ISO string)
- * @param {string} reqData.end - End time (ISO string)
- * @param {string} [reqData.description] - Event description
- * @param {string} [reqData.location] - Event location
- * @param {string} [reqData.colorId] - Event color ID
- */
-export const createGoogleEventAction =
-   (reqData) => async (dispatch, getState) => {
-      try {
-         const res = await api.post('/calendar/create-event', reqData)
-
-         // Add the new event to the calendar state
-         dispatch({
-            type: UPDATE_CALENDAR_EVENT,
-            payload: { ...res.data, originalEventId: 'new' }
-         })
-
-         // Clear the event creation state
-         dispatch(clearCalendarEvent())
-
-         return res.data
-      } catch (err) {
-         commonErrorHandler(dispatch, err)
-         throw err
-      }
-   }
 
 
