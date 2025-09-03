@@ -7,11 +7,15 @@ import { Spinner, Center } from '@chakra-ui/react'
 
 const PrivateRoute = ({
    component: Component,
-   auth: { isAuthenticated }
+   auth: { isAuthenticated, token }
 }) => {
-   const { isLoading } = useLoadUserQuery()
+   // Skip loading user if no token exists (user is logged out)
+   const { isLoading } = useLoadUserQuery(undefined, {
+      skip: !token
+   })
 
-   if (isLoading) {
+   // Show loading only when we have a token and are loading
+   if (isLoading && token) {
       return (
          <Center h="100vh">
             <Spinner size="xl" />

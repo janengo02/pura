@@ -1,17 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { taskApi } from '../api/taskApi'
 
+const initialState = {
+  // Maintain compatibility with legacy structure
+  task: null
+}
+
 const taskSlice = createSlice({
   name: 'taskSlice', // Changed to avoid conflicts with legacy task reducer
-  initialState: {
-    // Maintain compatibility with legacy structure
-    task: null
-  },
+  initialState,
   reducers: {
     clearTask: (state) => {
       state.task = null
     },
-    optimisticDeleteTask: (state, action) => {
+    optimisticDeleteTask: (state) => {
       // Clear the task immediately for optimistic update
       state.task = null
     },
@@ -79,7 +81,7 @@ const taskSlice = createSlice({
         state.task = {
           ...state.task,
           schedule: state.task.schedule?.filter(
-            (slot, index) => index !== action.payload.slotIndex
+            (_, index) => index !== action.payload.slotIndex
           ),
           targetEventIndex: null,
           updateDate: action.payload.updateDate || state.task.updateDate

@@ -2,16 +2,18 @@ import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
 import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent, updateTaskEvents, updateTaskSchedule, removeTaskScheduleSlot, updateGoogleEvent, updateGoogleEventTime } from './calendarSliceHelpers'
 
+const initialState = {
+  googleEvents: [],
+  googleCalendars: [],
+  googleAccounts: [],
+  defaultAccount: null,
+  range: [],
+  navigationTarget: null,
+}
+
 const calendarSlice = createSlice({
   name: 'calendar',
-  initialState: {
-    googleEvents: [],
-    googleCalendars: [],
-    googleAccounts: [],
-    defaultAccount: null,
-    range: [],
-    navigationTarget: null,
-  },
+  initialState,
   reducers: {
     updateCalendarRange: (state, action) => {
       state.range = action.payload.range

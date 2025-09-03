@@ -3,23 +3,25 @@ import { pageApi } from '../api/pageApi'
 import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, deleteGroupHelper, updateProgressHelper, deleteProgressHelper, deleteTask, addPageTaskScheduleSlot, updateTask, updatePageTaskScheduleSlot, removePageTaskScheduleSlot } from './pageSliceHelpers'
 import { taskApi } from '../api/taskApi'
 
+const initialState = {
+  // RTK Query data structure
+  id: null,
+  groupOrder: [],
+  progressOrder: [],
+  taskMap: [],
+  tasks: [],
+  title: null,
+  user: null,
+  // Additional pageSlice specific state
+  filter: {
+        schedule: getDefaultSchedule(),
+        name: getDefaultName()
+     },
+}
+
 const pageSlice = createSlice({
   name: 'pageSlice',
-  initialState: {
-    // RTK Query data structure
-    id: null,
-    groupOrder: [],
-    progressOrder: [],
-    taskMap: [],
-    tasks: [],
-    title: null,
-    user: null,
-    // Additional pageSlice specific state
-    filter: {
-          schedule: getDefaultSchedule(),
-          name: getDefaultName()
-       },
-  },
+  initialState,
   reducers: {
     updateFilter: (state, action) => {
       const updates = action.payload
