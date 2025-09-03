@@ -73,6 +73,19 @@ const taskSlice = createSlice({
         }
       }
     },
+    optimisticRemoveTaskScheduleSlot: (state, action) => {
+      // Remove task schedule slot immediately for optimistic update
+      if (state.task && state.task.id === action.payload.taskId) {
+        state.task = {
+          ...state.task,
+          schedule: state.task.schedule?.filter(
+            (slot, index) => index !== action.payload.slotIndex
+          ),
+          targetEventIndex: null,
+          updateDate: action.payload.updateDate || state.task.updateDate
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     // Handle RTK Query showTaskModal states
@@ -112,5 +125,6 @@ export const {
   optimisticAddScheduleSlot,
   optimisticUpdateTaskBasic,
   optimisticUpdateTaskSchedule,
+  optimisticRemoveTaskScheduleSlot,
 } = taskSlice.actions
 export default taskSlice.reducer

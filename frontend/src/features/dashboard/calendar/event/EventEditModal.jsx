@@ -7,7 +7,7 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 
 // UI Components
 import {
@@ -35,7 +35,7 @@ import {
 
 // RTK Query
 import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
-import { useUpdateTaskBasicMutation, useUpdateTaskScheduleMutation } from '../../../../api/taskApi'
+import { useRemoveTaskScheduleSlotMutation, useUpdateTaskBasicMutation, useUpdateTaskScheduleMutation } from '../../../../api/taskApi'
 import { clearEventEditModal } from '../../../../reducers/eventSlice'
 
 // Utils
@@ -73,11 +73,16 @@ const EventEditModal = React.memo(
 
       const { t } = useReactiveTranslation()
       const toast = useToast()
-      
+
+       // Redux selectors
+      const pageId = useSelector(state => state.pageSlice.id)
+
+
       // RTK Query hooks
       const [deleteGoogleEvent] = useDeleteGoogleEventMutation()
       const [updateTaskBasic] = useUpdateTaskBasicMutation()
       const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
+      const [removeTaskScheduleSlot] = useRemoveTaskScheduleSlotMutation()
 
       // -------------------------------------------------------------------------
       // STATE
@@ -160,7 +165,7 @@ const EventEditModal = React.memo(
 
             // Update based on event type
             if (event.eventType === 'task') {
-               const isCurrentTask = task && task.id === event.puraTaskId
+               const isCurrentTask = task && task?.id === event.puraTaskId
 
                // Update task title and content if changed
                if (title !== event.title || description !== event.description) {
@@ -189,7 +194,7 @@ const EventEditModal = React.memo(
                const isSyncedCurrentTask =
                   event.eventType === 'synced' &&
                   task &&
-                  task.id === event.puraTaskId
+                  task?.id === event.puraTaskId
 
                await updateGoogleEventAction({
                   eventId: event.id,
@@ -253,16 +258,31 @@ const EventEditModal = React.memo(
          task
       ])
       const handleDelete = useCallback(async () => {
-         await deleteGoogleEvent({
-            eventId: event.id,
-            calendarId: event.calendarId,
-            accountEmail: event.accountEmail
-         })
+         handleCloseModal()
+         if (event.eventType === 'google') {
+            await deleteGoogleEvent({
+               eventId: event.id,
+               calendarId: event.calendarId,
+               accountEmail: event.accountEmail
+            })
+         } else {
+            await removeTaskScheduleSlot({
+               pageId: pageId,
+               taskId: task?.id,
+               slotIndex: event.puraScheduleIndex
+            })
+         }
       }, [
+         handleCloseModal,
          deleteGoogleEvent,
+         removeTaskScheduleSlot,
          event.id,
          event.calendarId,
-         event.accountEmail
+         event.accountEmail,
+         event.eventType,
+         pageId,
+         task?.id,
+         event.puraScheduleIndex
       ])
       // -------------------------------------------------------------------------
       // LOADING HOOKS

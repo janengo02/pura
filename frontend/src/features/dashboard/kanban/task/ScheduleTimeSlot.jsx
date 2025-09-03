@@ -7,16 +7,10 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect, useDispatch } from 'react-redux'
-import { createSelector } from 'reselect'
-
-// Actions
-import {
-   removeTaskScheduleSlotAction
-} from '../../../../actions/taskActions'
+import { useDispatch, useSelector } from 'react-redux'
 
 // RTK Query
-import { useUpdateTaskScheduleMutation } from '../../../../api/taskApi'
+import { useUpdateTaskScheduleMutation, useRemoveTaskScheduleSlotMutation } from '../../../../api/taskApi'
 import { useAddGoogleAccountMutation } from '../../../../api/calendarApi'
 import { useSyncTaskWithGoogleMutation } from '../../../../api/taskApi'
 import { setAlert } from '../../../../reducers/alertSlice'
@@ -66,27 +60,26 @@ import { useGoogleAccountLogin } from '../../../../utils/googleAuthHelpers'
 // MAIN COMPONENT
 // =============================================================================
 
-const ScheduleTimeSlot = React.memo(
-   ({
-      slot,
-      index,
-      // Redux props
-      removeTaskScheduleSlotAction,
-      setAlert,
-      scheduleData: { task, pageId },
-      googleData: { googleAccounts, googleCalendars },
-      settingsData: { range }
-   }) => {
+const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       // -------------------------------------------------------------------------
       // SCHEDULE UPDATE HANDLERS
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const dispatch = useDispatch()
 
+      // Redux selectors
+      const task = useSelector(state => state.taskSlice.task)
+      const pageId = useSelector(state => state.pageSlice.id)
+      const googleAccounts = useSelector(state => state.calendarSlice.googleAccounts)
+      const googleCalendars = useSelector(state => state.calendarSlice.googleCalendars)
+      const range = useSelector(state => state.calendarSlice.range)
+
       // RTK Query hooks
       const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
       const [syncTaskWithGoogle, { isLoading: syncLoading }] = useSyncTaskWithGoogleMutation()
       const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
+      const [removeTaskScheduleSlot] = useRemoveTaskScheduleSlotMutation()
+
 
       // -------------------------------------------------------------------------
       // ANIMATION STATE
@@ -102,11 +95,11 @@ const ScheduleTimeSlot = React.memo(
             await addGoogleAccountMutation({ code, range })
          },
          onError: () => {
-            setAlert(
+            dispatch(setAlert(
                'alert-google_calendar-account-connect_failed',
                '',
                'error'
-            )
+            ))
          },
          range
       })
@@ -124,13 +117,12 @@ const ScheduleTimeSlot = React.memo(
       )
 
       const handleDeleteSlot = useCallback(async () => {
-         const formData = {
+         await removeTaskScheduleSlot({
             pageId: pageId,
             taskId: task.id,
             slotIndex: index
-         }
-         await removeTaskScheduleSlotAction(formData)
-      }, [removeTaskScheduleSlotAction, index, pageId, task.id])
+         })
+      }, [removeTaskScheduleSlot, index, pageId, task.id])
 
       // -------------------------------------------------------------------------
       // SYNC HANDLERS
@@ -150,10 +142,12 @@ const ScheduleTimeSlot = React.memo(
          [task.id, index, syncTaskWithGoogle]
       )
 
-      const handleUnsyncFromGoogle = useCallback(async () => {
+      const handleUnsyncFromGoogle = useCallback(async (accountEmail, calendarId) => {
          const reqData = {
             taskId: task.id,
             slotIndex: index,
+            accountEmail: accountEmail,
+            calendarId: calendarId,
             syncAction: 'delete'
          }
          await syncTaskWithGoogle(reqData).unwrap()
@@ -559,7 +553,12 @@ const ScheduleTimeSlot = React.memo(
                   actions: (
                      <MenuItem
                         icon={<PiPlugs size={18} />}
-                        onClick={handleUnsyncFromGoogle}
+                        onClick={async () => {
+                           await handleUnsyncFromGoogle(
+                              slot.googleAccountEmail,
+                              slot.googleCalendarId
+                           )
+                        }}
                      >
                         {t('btn-sync-unsync-action')}
                      </MenuItem>
@@ -610,7 +609,12 @@ const ScheduleTimeSlot = React.memo(
                         </MenuItem>
                         <MenuItem
                            icon={<PiPlugs size={18} />}
-                           onClick={handleUnsyncFromGoogle}
+                           onClick={async () => {
+                              await handleUnsyncFromGoogle(
+                                 slot.googleAccountEmail,
+                                 slot.googleCalendarId
+                              )
+                           }}
                         >
                            {t('btn-sync-unsync-action')}
                         </MenuItem>
@@ -643,7 +647,12 @@ const ScheduleTimeSlot = React.memo(
                   actions: (
                      <MenuItem
                         icon={<PiPlugs size={18} />}
-                        onClick={handleUnsyncFromGoogle}
+                        onClick={async () => {
+                           await handleUnsyncFromGoogle(
+                              slot.googleAccountEmail,
+                              slot.googleCalendarId
+                           )
+                        }}
                      >
                         {t('btn-sync-unsync-action')}
                      </MenuItem>
@@ -707,7 +716,12 @@ const ScheduleTimeSlot = React.memo(
 
                         <MenuItem
                            icon={<PiPlugs size={18} />}
-                           onClick={handleUnsyncFromGoogle}
+                           onClick={async () => {
+                              await handleUnsyncFromGoogle(
+                                 slot.googleAccountEmail,
+                                 slot.googleCalendarId
+                              )
+                           }}
                         >
                            {t('btn-sync-unsync-action')}
                         </MenuItem>
@@ -827,6 +841,11 @@ const ScheduleTimeSlot = React.memo(
       // RENDER LOGIC
       // -------------------------------------------------------------------------
 
+      // Early return if required data is not available
+      if (!task || !pageId) {
+         return null
+      }
+
       return (
          <Flex
             w='full'
@@ -859,69 +878,11 @@ ScheduleTimeSlot.propTypes = {
       googleAccountEmail: PropTypes.string,
       googleCalendarId: PropTypes.string
    }).isRequired,
-   index: PropTypes.number.isRequired,
-   removeTaskScheduleSlotAction: PropTypes.func.isRequired,
-   setAlert: PropTypes.func.isRequired,
-   scheduleData: PropTypes.shape({
-      task: PropTypes.object.isRequired,
-      pageId: PropTypes.string.isRequired
-   }).isRequired,
-   googleData: PropTypes.shape({
-      googleAccounts: PropTypes.array.isRequired,
-      googleCalendars: PropTypes.array.isRequired
-   }).isRequired,
-   settingsData: PropTypes.shape({
-      range: PropTypes.string.isRequired
-   }).isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectScheduleData = createSelector(
-   [(state) => state.taskSlice.task, (state) => state.pageSlice.id],
-   (task, pageId) => ({
-      task,
-      pageId
-   })
-)
-
-const selectGoogleData = createSelector(
-   [
-      (state) => state.calendarSlice.googleAccounts,
-      (state) => state.calendarSlice.googleCalendars
-   ],
-   (googleAccounts, googleCalendars) => ({
-      googleAccounts,
-      googleCalendars
-   })
-)
-
-const selectSettingsData = createSelector(
-   [(state) => state.calendarSlice.range],
-   (range) => ({
-      range
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   scheduleData: selectScheduleData(state),
-   googleData: selectGoogleData(state),
-   settingsData: selectSettingsData(state)
-})
-
-const mapDispatchToProps = {
-   removeTaskScheduleSlotAction,
-   setAlert
+   index: PropTypes.number.isRequired
 }
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(ScheduleTimeSlot)
+export default ScheduleTimeSlot

@@ -7,8 +7,7 @@ import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
+import { useSelector, useDispatch } from 'react-redux'
 
 // UI Components
 import {
@@ -39,11 +38,8 @@ import EventReminders from './EventReminders'
 import EventVisibility from './EventVisibility'
 import EventCalendarInfo from './EventCalendarInfo'
 
-// Actions & Hooks
-import { removeTaskScheduleSlotAction } from '../../../../actions/taskActions'
-
 // RTK Query
-import { useShowTaskModalMutation } from '../../../../api/taskApi'
+import { useShowTaskModalMutation, useRemoveTaskScheduleSlotMutation } from '../../../../api/taskApi'
 import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
 import { showEventEditModal } from '../../../../reducers/eventSlice'
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
@@ -93,25 +89,22 @@ export const POPOVER_BODY_STYLES = {
 // MAIN COMPONENT
 // =============================================================================
 
-const EventPreview = React.memo(
-   ({
-      onClose,
-      event,
-      // Redux props
-      removeTaskScheduleSlotAction,
-      showEventEditModal,
-      eventData: { pageId }
-   }) => {
+const EventPreview = React.memo(({ onClose, event }) => {
       // -------------------------------------------------------------------------
       // HOOKS
       // -------------------------------------------------------------------------
 
       const { t } = useReactiveTranslation()
       const { colorMode } = useColorMode()
+      const dispatch = useDispatch()
+      
+      // Redux selectors
+      const pageId = useSelector(state => state.pageSlice.id)
       
       // RTK Query hooks
       const [showTaskModalMutation] = useShowTaskModalMutation()
       const [deleteGoogleEvent] = useDeleteGoogleEventMutation()
+      const [removeTaskScheduleSlot] = useRemoveTaskScheduleSlotMutation()
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
@@ -135,16 +128,15 @@ const EventPreview = React.memo(
                accountEmail: event.accountEmail
             })
          } else {
-            const reqData = {
+            await removeTaskScheduleSlot({
                pageId: pageId,
                taskId: taskId,
                slotIndex: event.puraScheduleIndex
-            }
-            await removeTaskScheduleSlotAction(reqData)
+            })
          }
       }, [
          deleteGoogleEvent,
-         removeTaskScheduleSlotAction,
+         removeTaskScheduleSlot,
          event.id,
          event.calendarId,
          event.accountEmail,
@@ -175,8 +167,8 @@ const EventPreview = React.memo(
             pageId
          }
 
-         showEventEditModal(formData)
-      }, [showEventEditModal, event, pageId])
+         dispatch(showEventEditModal(formData))
+      }, [dispatch, event, pageId])
 
       // -------------------------------------------------------------------------
       // RENDER HELPERS
@@ -415,39 +407,11 @@ EventPreview.propTypes = {
       createdDate: PropTypes.instanceOf(Date),
       updatedDate: PropTypes.instanceOf(Date)
    }).isRequired,
-   removeTaskScheduleSlotAction: PropTypes.func.isRequired,
-   showEventEditModal: PropTypes.func.isRequired,
-   eventData: PropTypes.shape({
-      pageId: PropTypes.string.isRequired
-   }).isRequired
-}
-
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-const selectEventWrapperData = createSelector(
-   [(state) => state.pageSlice.id],
-   (id) => ({
-      pageId: id
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   eventData: selectEventWrapperData(state)
-})
-
-const mapDispatchToProps = {
-   removeTaskScheduleSlotAction,
-   showEventEditModal
+   onClose: PropTypes.func.isRequired
 }
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps, mapDispatchToProps)(EventPreview)
+export default EventPreview
