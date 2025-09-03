@@ -3,12 +3,13 @@
 // =============================================================================
 
 // React & Hooks
-import React from 'react'
-import { useLocation, Link as ReactRouterLink } from 'react-router-dom'
+import React, { useCallback } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 // Redux
 import { connect } from 'react-redux'
+import { logout } from '../../reducers/authSlice'
 
 // UI Components
 import {
@@ -37,13 +38,14 @@ import { useReactiveTranslation } from '../../hooks/useReactiveTranslation'
 // MAIN COMPONENT
 // =============================================================================
 
-const ErrorPage = ({ auth: { isAuthenticated } }) => {
+const ErrorPage = ({ logout }) => {
    // -------------------------------------------------------------------------
    // HOOKS & STATE
    // -------------------------------------------------------------------------
 
    const { t } = useReactiveTranslation()
    const location = useLocation()
+   const navigate = useNavigate()
 
    // Determine if this is a 404 error based on the current path
    const is404 = location.pathname !== '/error'
@@ -63,6 +65,16 @@ const ErrorPage = ({ auth: { isAuthenticated } }) => {
    const iconColor = useColorModeValue('red.500', 'red.400')
    const textColor = useColorModeValue('gray.600', 'gray.400')
    const codeColor = useColorModeValue('red.600', 'red.300')
+
+   // -------------------------------------------------------------------------
+   // HANDLERS
+   // -------------------------------------------------------------------------
+
+   const handleLoginClick = useCallback(() => {
+      console.log("Logging out user and redirecting to login page")
+      logout()
+      navigate('/login')
+   }, [logout, navigate])
 
    // -------------------------------------------------------------------------
    // RENDER
@@ -130,29 +142,15 @@ const ErrorPage = ({ auth: { isAuthenticated } }) => {
 
                         {/* Action Buttons */}
                         <HStack spacing={4} w='full' justify='center'>
-                           {isAuthenticated ? (
-                              <ReactRouterLink to='/dashboard'>
-                                 <Button
-                                    size='lg'
-                                    colorScheme='purple'
-                                    leftIcon={<PiHouse />}
-                                    minW='150px'
-                                 >
-                                    {t('btn-dashboard-page')}
-                                 </Button>
-                              </ReactRouterLink>
-                           ) : (
-                              <ReactRouterLink to='/login'>
-                                 <Button
-                                    size='lg'
-                                    colorScheme='purple'
-                                    leftIcon={<PiHouse />}
-                                    minW='150px'
-                                 >
-                                    {t('btn-login-page')}
-                                 </Button>
-                              </ReactRouterLink>
-                           )}
+                           <Button
+                              size='lg'
+                              colorScheme='purple'
+                              leftIcon={<PiHouse />}
+                              minW='150px'
+                              onClick={handleLoginClick}
+                           >
+                              {t('btn-login-page')}
+                           </Button>
                         </HStack>
                      </VStack>
                   </CardBody>
@@ -168,21 +166,19 @@ const ErrorPage = ({ auth: { isAuthenticated } }) => {
 // =============================================================================
 
 ErrorPage.propTypes = {
-   auth: PropTypes.shape({
-      isAuthenticated: PropTypes.bool.isRequired
-   }).isRequired
+   logout: PropTypes.func.isRequired
 }
 
 // =============================================================================
 // REDUX CONNECTION
 // =============================================================================
 
-const mapStateToProps = (state) => ({
-   auth: state.auth
-})
+const mapDispatchToProps = {
+   logout
+}
 
 // =============================================================================
 // EXPORT
 // =============================================================================
 
-export default connect(mapStateToProps)(ErrorPage)
+export default connect(null, mapDispatchToProps)(ErrorPage)
