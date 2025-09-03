@@ -1,6 +1,17 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { setCredentials } from '../reducers/authSlice'
+import { logout } from '../reducers/authSlice'
 
 const API_URL = process.env?.REACT_APP_API_URL || 'http://localhost:2000'
+
+// Custom error class for authentication session expiration
+class AuthenticationExpiredError extends Error {
+  constructor(message = 'Authentication session expired') {
+    super(message)
+    this.name = 'AuthenticationExpiredError'
+    this.isAuthExpired = true
+  }
+}
 
 const baseQuery = fetchBaseQuery({
   baseUrl:`${API_URL}/api/v1`,
@@ -13,13 +24,87 @@ const baseQuery = fetchBaseQuery({
   }
 })
 
+let isRefreshing = false
+let failedQueue = []
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+
+  failedQueue = []
+}
+
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions)
 
   if (result.error && result.error.status === 401) {
-    // Auto-logout on auth failure - use dynamic import to avoid circular dependency
-    const { logout } = await import('../reducers/authSlice')
-    api.dispatch(logout())
+    const originalArgs = args
+
+    // Don't retry auth requests to avoid infinite loops
+    if (typeof originalArgs === 'string' && originalArgs.includes('/auth/refresh')) {
+      return result
+    }
+    if (originalArgs.url && originalArgs.url.includes('/auth/refresh')) {
+      return result
+    }
+
+    // Handle concurrent requests during token refresh
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject })
+      }).then((token) => {
+        // Retry the original request with new token
+        return baseQuery(args, api, extraOptions)
+      }).catch((err) => {
+        return { error: err }
+      })
+    }
+
+    isRefreshing = true
+
+    const refreshToken = localStorage.getItem('refreshToken')
+
+    if (refreshToken) {
+      try {
+        // Attempt to refresh the token
+        const refreshResult = await baseQuery({
+          url: '/auth/refresh',
+          method: 'POST',
+          body: { refreshToken }
+        }, api, extraOptions)
+
+        if (refreshResult.data) {
+          const { token, refreshToken: newRefreshToken } = refreshResult.data
+
+          // Update the auth state - dynamic import to avoid circular dependency
+          api.dispatch(setCredentials({ token, refreshToken: newRefreshToken }))
+
+          processQueue(null, token)
+
+          // Retry the original request
+          result = await baseQuery(args, api, extraOptions)
+        } else {
+          throw new Error('Token refresh failed')
+        }
+      } catch (refreshError) {
+        processQueue(refreshError, null)
+
+        api.dispatch(logout())
+
+        // Return custom error to prevent further error handling
+        return { error: new AuthenticationExpiredError() }
+      } finally {
+        isRefreshing = false
+      }
+    } else {
+      api.dispatch(logout())
+      return { error: new AuthenticationExpiredError() }
+    }
   }
 
   return result
@@ -31,3 +116,5 @@ export const baseApi = createApi({
   tagTypes: ['Task', 'Page', 'Calendar', 'Auth', 'User'],
   endpoints: () => ({})
 })
+
+export { AuthenticationExpiredError }

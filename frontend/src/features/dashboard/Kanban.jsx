@@ -130,6 +130,10 @@ const Kanban = React.memo(
 
       useEffect(() => {
          if (error) {
+            if (error?.isAuthExpired) {
+               // Don't dispatch PAGE_ERROR for authentication expired errors since user is already logged out
+               return
+            }
             const errorState = {
                   code: error.status || 400,
                   msg: error.data?.message || error.message || 'alert-bad-request'
