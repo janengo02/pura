@@ -116,6 +116,16 @@ const calendarSlice = createSlice({
         end
       })
       state.googleEvents = updatedState.googleEvents
+    },
+    optimisticUpdateGoogleEvent: (state, action) => {
+      const { event, calendar, originalEventId } = action.payload
+      const updatedState = updateGoogleEvent({
+        originalEventId,
+        googleEvents: state.googleEvents,
+        updatedEvent: event,
+        updatedCalendar: calendar
+      })
+      state.googleEvents = updatedState.googleEvents
     }
   },
   extraReducers: (builder) => {
@@ -189,8 +199,21 @@ const calendarSlice = createSlice({
         })
         state.googleEvents = updatedState.googleEvents
       })
+      .addMatcher(calendarApi.endpoints.updateGoogleEvent.matchFulfilled, (state, action) => {
+        const { event, calendar } = action.payload
+        const { eventId } = action.meta.arg.originalArgs
+        
+        // Update the event with server response, replacing the optimistic update
+        const updatedState = updateGoogleEvent({
+          originalEventId: eventId,
+          googleEvents: state.googleEvents,
+          updatedEvent: event,
+          updatedCalendar: calendar
+        })
+        state.googleEvents = updatedState.googleEvents
+      })
   }
 })
 
-export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent, optimisticUpdateTaskBasic, optimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot, updateNewEvent, optimisticUpdateGoogleEventTime } = calendarSlice.actions
+export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent, optimisticUpdateTaskBasic, optimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot, updateNewEvent, optimisticUpdateGoogleEventTime, optimisticUpdateGoogleEvent } = calendarSlice.actions
 export default calendarSlice.reducer

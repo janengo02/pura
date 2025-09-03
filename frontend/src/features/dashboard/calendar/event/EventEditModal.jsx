@@ -28,13 +28,8 @@ import {
    useToast
 } from '@chakra-ui/react'
 
-// Actions
-import {
-   updateGoogleEventAction
-} from '../../../../actions/calendarActions'
-
 // RTK Query
-import { useDeleteGoogleEventMutation } from '../../../../api/calendarApi'
+import { useDeleteGoogleEventMutation, useUpdateGoogleEventMutation } from '../../../../api/calendarApi'
 import { useRemoveTaskScheduleSlotMutation, useUpdateTaskBasicMutation, useUpdateTaskScheduleMutation } from '../../../../api/taskApi'
 import { clearEventEditModal } from '../../../../reducers/eventSlice'
 
@@ -64,7 +59,6 @@ const EventEditModal = React.memo(
       googleAccounts,
       taskData: { task },
 
-      updateGoogleEventAction,
       clearEventEditModal
    }) => {
       // -------------------------------------------------------------------------
@@ -83,6 +77,7 @@ const EventEditModal = React.memo(
       const [updateTaskBasic] = useUpdateTaskBasicMutation()
       const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
       const [removeTaskScheduleSlot] = useRemoveTaskScheduleSlotMutation()
+      const [updateGoogleEvent] = useUpdateGoogleEventMutation()
 
       // -------------------------------------------------------------------------
       // STATE
@@ -196,7 +191,7 @@ const EventEditModal = React.memo(
                   task &&
                   task?.id === event.puraTaskId
 
-               await updateGoogleEventAction({
+               await updateGoogleEvent({
                   eventId: event.id,
                   originalCalendarId: event.calendarId,
                   calendarId: selectedCalendar.calendarId || event.calendarId,
@@ -251,7 +246,7 @@ const EventEditModal = React.memo(
          event,
          updateTaskSchedule,
          updateTaskBasic,
-         updateGoogleEventAction,
+         updateGoogleEvent,
          handleCloseModal,
          toast,
          t,
@@ -486,7 +481,6 @@ EventEditModal.propTypes = {
       task: PropTypes.object,
       pageId: PropTypes.string
    }).isRequired,
-   updateGoogleEventAction: PropTypes.func.isRequired,
    clearEventEditModal: PropTypes.func.isRequired
 }
 
@@ -544,7 +538,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-   updateGoogleEventAction,
    clearEventEditModal
 }
 

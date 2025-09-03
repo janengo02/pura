@@ -469,12 +469,12 @@ router.post(
       const updatedEventData = {
          ...eventData, // Preserve other existing properties
          start: {
-            dateTime: start
+         dateTime: start
          },
          end: {
-            dateTime: end
+         dateTime: end
          },
-         colorId: colorId || eventData.colorId,
+         colorId: colorId === null ? colorId : eventData.colorId,
          summary: summary || eventData.summary,
          description: description || eventData.description,
          location: location || eventData.location,

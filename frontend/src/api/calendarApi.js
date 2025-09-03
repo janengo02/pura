@@ -1,7 +1,7 @@
 import { baseApi } from './baseApi'
 import { commonErrorHandler } from '../actions/errorActions'
 import { refetchTaskModalIfOpen } from './taskApi'
-import { optimisticDeleteGoogleEvent, optimisticUpdateGoogleEventTime } from '../reducers/calendarSlice'
+import { optimisticDeleteGoogleEvent, optimisticUpdateGoogleEventTime, optimisticUpdateGoogleEvent } from '../reducers/calendarSlice'
 import { optimisticUpdateTaskSchedule } from '../reducers/taskSlice'
 
 export const calendarApi = baseApi.injectEndpoints({
@@ -159,6 +159,76 @@ export const calendarApi = baseApi.injectEndpoints({
       },
       invalidatesTags: []
     }),
+
+    updateGoogleEvent: builder.mutation({
+      query: ({ eventId, ...reqData }) => ({
+        url: `/calendar/update-event/${eventId}`,
+        method: 'POST',
+        body: reqData
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        // Create optimistic update payload
+        const optimisticEventData = {
+          id: arg.eventId,
+          summary: arg.summary,
+          description: arg.description,
+          location: arg.location,
+          colorId: arg.colorId,
+          start: arg.start ? { dateTime: arg.start } : undefined,
+          end: arg.end ? { dateTime: arg.end } : undefined,
+          conferenceData: {
+            conferenceSolution: {
+              key: {
+                type: 'hangoutsMeet'
+              }
+            },
+            conferenceId: arg.conferenceData?.id,
+            entryPoints: [
+              {
+                entryPointType: 'video',
+                uri: arg.conferenceData?.joinUrl
+              }
+            ]
+          }
+        }
+
+        // Get target calendar for optimistic update
+        const optimisticCalendar = {
+          id: arg.calendarId || arg.originalCalendarId,
+          summary: arg.calendarSummary || 'Calendar',
+          backgroundColor: arg.calendarBackgroundColor || '#3174ad'
+        }
+
+        // Optimistic update - Calendar - update event in state
+        dispatch(optimisticUpdateGoogleEvent({
+          event: optimisticEventData,
+          calendar: optimisticCalendar,
+          originalEventId: arg.eventId
+        }))
+
+        // If this is a task event, also update task schedule optimistically
+        if (arg.taskId && typeof arg.slotIndex === 'number') {
+          dispatch(optimisticUpdateTaskSchedule({
+            taskId: arg.taskId,
+            slotIndex: arg.slotIndex,
+            start: arg.start,
+            end: arg.end,
+            updateDate: new Date().toISOString(),
+            targetEventIndex: arg.targetEventIndex,
+            viewTargetEventAt: new Date()
+          }))
+        }
+
+        try {
+          await queryFulfilled
+        } catch (err) {
+          // Handle error using common error handler
+          commonErrorHandler(dispatch, err)
+          throw err
+        }
+      },
+      invalidatesTags: []
+    }),
   })
 })
 
@@ -170,4 +240,5 @@ export const {
   useCreateGoogleEventMutation,
   useDeleteGoogleEventMutation,
   useUpdateGoogleEventTimeMutation,
+  useUpdateGoogleEventMutation,
 } = calendarApi
