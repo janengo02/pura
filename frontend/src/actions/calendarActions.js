@@ -205,33 +205,3 @@ export const createGoogleEventAction =
    }
 
 
-// =============================================================================
-// UPDATE CALENDAR EVENT ACTION
-// =============================================================================
-
-export const updateNewEventAction = (updatedEvent) => (dispatch, getState) => {
-   const { calendar } = getState()
-
-   // Find the associated calendar
-   const associatedCalendar = calendar.googleCalendars.find(
-      (cal) => cal.calendarId === updatedEvent.calendarId
-   )
-
-   // Get target calendar for optimistic update
-   const formattedcalendar = {
-      id: associatedCalendar?.calendarId,
-      summary: associatedCalendar?.title,
-      backgroundColor: associatedCalendar?.color
-   }
-
-   if (associatedCalendar) {
-      dispatch({
-         type: UPDATE_CALENDAR_EVENT,
-         payload: {
-            event: updatedEvent,
-            calendar: formattedcalendar,
-            originalEventId: 'new'
-         }
-      })
-   }
-}

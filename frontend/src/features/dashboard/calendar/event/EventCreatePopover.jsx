@@ -3,22 +3,14 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import PropTypes from 'prop-types'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 // UI Components
 import {
    PopoverContent,
-   PopoverArrow,
-   PopoverCloseButton,
    VStack,
-   FormControl,
-   FormLabel,
-   Input,
-   Textarea,
    Button,
    HStack,
-   Text,
    Popover,
    PopoverTrigger,
    Box,
@@ -29,12 +21,9 @@ import {
 
 // Utils
 import { useReactiveTranslation } from '../../../../hooks/useReactiveTranslation'
-import {
-   createGoogleEventAction,
-   updateNewEventAction
-} from '../../../../actions/calendarActions'
-import { clearCalendarEvent } from '../../../../reducers/calendarSlice'
-import { connect, useDispatch } from 'react-redux'
+import { createGoogleEventAction } from '../../../../actions/calendarActions'
+import { clearCalendarEvent, updateNewEvent } from '../../../../reducers/calendarSlice'
+import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 import { POPOVER_STYLES } from '../../Calendar'
 import {
@@ -52,21 +41,41 @@ import { GOOGLE_CALENDAR_COLORS } from '../../../../components/data/defaultColor
 import useLoading from '../../../../hooks/useLoading'
 
 // =============================================================================
+// SELECTORS
+// =============================================================================
+
+const selectNewEvent = createSelector(
+   [state => state.calendarSlice.googleEvents],
+   (events) => events.find(event => event.id === 'new')
+)
+
+const selectGoogleAccounts = createSelector(
+   [state => state.calendarSlice.googleAccounts],
+   (accounts) => accounts
+)
+
+const selectWritableCalendars = createSelector(
+   [state => state.calendarSlice.googleCalendars],
+   (calendars) => calendars.filter(
+      cal => cal.accessRole === 'owner' || cal.accessRole === 'writer'
+   )
+)
+
+// =============================================================================
 // COMPONENT
 // =============================================================================
 
-const EventCreatePopover = ({
-   newEvent,
-   googleCalendars,
-   googleAccounts,
-   createGoogleEventAction,
-   updateNewEventAction
-}) => {
+const EventCreatePopover = () => {
    // -------------------------------------------------------------------------
    // HOOKS
    // -------------------------------------------------------------------------
    const { t } = useReactiveTranslation()
    const dispatch = useDispatch()
+
+   // Redux selectors
+   const newEvent = useSelector(selectNewEvent)
+   const googleAccounts = useSelector(selectGoogleAccounts)
+   const googleCalendars = useSelector(selectWritableCalendars)
 
    // -------------------------------------------------------------------------
    // REFS & STATE
@@ -168,17 +177,25 @@ const EventCreatePopover = ({
             ? { dateTime: newEvent.end }
             : undefined
       }
-      updateNewEventAction(updatedEvent)
+
+      // Find the associated calendar
+      const associatedCalendar = googleCalendars.find(
+         cal => cal.calendarId === updatedEvent.calendarId
+      )
+
+      dispatch(updateNewEvent({ updatedEvent, associatedCalendar }))
    }, [
-      isEventValid,
-      updateNewEventAction,
+      dispatch,
       newEvent,
       eventTitle,
       eventDescription,
       startTime,
       endTime,
-      selectedCalendar,
-      selectedColorId
+      selectedCalendar.calendarId,
+      selectedCalendar.accountEmail,
+      selectedColorId,
+      googleCalendars,
+      isEventValid
    ])
    const handleTitleChange = useCallback((newTitle) => {
       setEventTitle(newTitle)
@@ -212,10 +229,10 @@ const EventCreatePopover = ({
          start: newStartTime.toISOString(),
          end: newEndTime.toISOString()
       }
-      await createGoogleEventAction(formattedNewEvent)
+      await dispatch(createGoogleEventAction(formattedNewEvent))
    }, [
       isEventValid,
-      createGoogleEventAction,
+      dispatch,
       eventTitle,
       eventDescription,
       selectedCalendar.calendarId,
@@ -239,8 +256,9 @@ const EventCreatePopover = ({
    // EFFECTS
    // -------------------------------------------------------------------------
 
-   // Initialize task data when task changes
+   // Initialize form fields when event changes
    useEffect(() => {
+      if (!newEvent) return
       setEventTitle(newEvent?.title || '')
       setEventDescription(newEvent?.description || '')
       setStartTime(newEvent?.start ? stringToDateTimeLocal(newEvent.start) : '')
@@ -412,41 +430,5 @@ const EventCreatePopover = ({
 // Display name for debugging
 EventCreatePopover.displayName = 'EventCreatePopover'
 
-EventCreatePopover.propTypes = {
-   newEvent: PropTypes.object,
-   googleAccounts: PropTypes.array.isRequired,
-   googleCalendars: PropTypes.array.isRequired,
-   createGoogleEventAction: PropTypes.func.isRequired,
-   updateNewEventAction: PropTypes.func.isRequired
-}
 
-// =============================================================================
-// REDUX SELECTORS
-// =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectCalendarData = createSelector(
-   [(state) => state.calendarSlice],
-   (calendar) => ({
-      newEvent: calendar.googleEvents.find((event) => event.id === 'new'),
-      googleAccounts: calendar.googleAccounts,
-      googleCalendars: calendar.googleCalendars.filter(
-         (cal) => cal.accessRole === 'owner' || cal.accessRole === 'writer'
-      )
-   })
-)
-
-// =============================================================================
-// REDUX CONNECTION
-// =============================================================================
-
-const mapStateToProps = (state) => ({
-   ...selectCalendarData(state)
-})
-
-const mapDispatchToProps = {
-   createGoogleEventAction,
-   updateNewEventAction
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(EventCreatePopover)
+export default EventCreatePopover

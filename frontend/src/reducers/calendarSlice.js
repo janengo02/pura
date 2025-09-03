@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { calendarApi } from '../api/calendarApi'
-import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent, updateTaskEvents, updateTaskSchedule, removeTaskScheduleSlot } from './calendarReducersHelpers'
+import { loadGoogleCalendarHelper, toggleCalendarVisibilityHelper, createGoogleEvent, addGoogleAccount, removeGoogleAccount, deleteTaskEvents, addTaskScheduleSlot, deleteGoogleEvent, updateTaskEvents, updateTaskSchedule, removeTaskScheduleSlot, updateGoogleEvent } from './calendarReducersHelpers'
 
 const calendarSlice = createSlice({
   name: 'calendar',
@@ -88,6 +88,24 @@ const calendarSlice = createSlice({
         removalData: action.payload
       })
       state.googleEvents = updatedState.googleEvents
+    },
+    updateNewEvent: (state, action) => {
+      const { updatedEvent, associatedCalendar } = action.payload
+      
+      // Format the calendar for the helper function
+      const formattedCalendar = {
+        id: associatedCalendar?.calendarId,
+        summary: associatedCalendar?.title,
+        backgroundColor: associatedCalendar?.color
+      }
+
+      const updatedState = updateGoogleEvent({
+        originalEventId: 'new',
+        googleEvents: state.googleEvents,
+        updatedEvent,
+        updatedCalendar: formattedCalendar
+      })
+      state.googleEvents = updatedState.googleEvents
     }
   },
   extraReducers: (builder) => {
@@ -152,5 +170,5 @@ const calendarSlice = createSlice({
   }
 })
 
-export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent, optimisticUpdateTaskBasic, optimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot } = calendarSlice.actions
+export const { updateCalendarRange, navigateCalendarToDate, toggleCalendarVisibility, createCalendarEvent, clearCalendarEvent, optimisticDeleteTask, optimisticAddScheduleSlot, optimisticDeleteGoogleEvent, optimisticUpdateTaskBasic, optimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot, updateNewEvent } = calendarSlice.actions
 export default calendarSlice.reducer
