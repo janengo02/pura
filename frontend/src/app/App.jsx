@@ -14,7 +14,6 @@ import {
 // Components
 import Register from '../features/auth/components/Register'
 import Login from '../features/auth/components/Login'
-import PasswordRecover from '../features/auth/components/PasswordRecover'
 import Landing from '../features/landing/components/Landing'
 import Terms from '../features/landing/components/Terms'
 import Dashboard from '../features/dashboard/components/Dashboard'
@@ -92,7 +91,6 @@ const AppContent = () => {
             <Route path='/' element={<Landing />} />
             <Route path='register' element={<Register />} />
             <Route path='login' element={<Login />} />
-            <Route path='recover' element={<PasswordRecover />} />
             <Route path='error' element={<ErrorPage />} />
             <Route
                path='dashboard'
