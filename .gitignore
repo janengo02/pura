@@ -135,3 +135,6 @@ dist
 # IDE
 .vscode/
 .claude/
+
+# Documentation
+.docs/
