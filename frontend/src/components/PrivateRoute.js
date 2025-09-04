@@ -1,14 +1,29 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useLoadUserQuery } from '../api/authApi'
 import { Spinner, Center } from '@chakra-ui/react'
+import { createSelector } from 'reselect'
+
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectAuthData = createSelector(
+   [(state) => state.auth],
+   (auth) => ({
+      isAuthenticated: auth?.isAuthenticated || false,
+      token: auth?.token || null
+   })
+)
 
 const PrivateRoute = ({
    component: Component,
-   auth: { isAuthenticated, token }
 }) => {
+   const { isAuthenticated, token } = useSelector(selectAuthData)
+
    // Skip loading user if no token exists (user is logged out)
    const { isLoading } = useLoadUserQuery(undefined, {
       skip: !token
@@ -27,12 +42,4 @@ const PrivateRoute = ({
    return <Navigate to='/login' />
 }
 
-PrivateRoute.propTypes = {
-   auth: PropTypes.object.isRequired
-}
-
-const mapStateToProps = (state) => ({
-   auth: state.auth
-})
-
-export default connect(mapStateToProps)(PrivateRoute)
+export default PrivateRoute
