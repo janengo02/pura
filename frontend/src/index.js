@@ -1,7 +1,6 @@
-import React from "react"
-import App from "./App"
 import { createRoot } from 'react-dom/client';
 import 'flag-icons/css/flag-icons.min.css';
+import App from './app/App';
 
 const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript

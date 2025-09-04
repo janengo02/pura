@@ -1,0 +1,242 @@
+// =============================================================================
+// IMPORTS
+// =============================================================================
+
+// React & Hooks
+import React, { useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
+
+// Redux
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+
+// Form Handling
+import { FormProvider, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+// UI Components
+import {
+   Container,
+   Flex,
+   GridItem,
+   Heading,
+   SimpleGrid,
+   Text,
+   VStack,
+   Button,
+   Image
+} from '@chakra-ui/react'
+
+// Internal Components
+import { MultiInput } from '../../../shared/components/formInput/MultiInput'
+import Link from '../../../shared/components/typography/Link'
+import FormAlert from '../../../shared/components/errorHandler/FormAlert'
+
+// Actions & Schema
+import { useLazyLoadUserQuery, useLoginMutation } from '../api/authApi'
+import { loginSchema as s } from './LoginSchema'
+
+// Utils
+import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
+import { LandingHeader } from '../../landing/components/Landing'
+
+// =============================================================================
+// SELECTORS
+// =============================================================================
+
+// Memoized selectors for better Redux performance
+const selectAuthData = createSelector(
+   [(state) => state.auth?.isAuthenticated || false],
+   (isAuthenticated) => ({
+      isAuthenticated
+   })
+)
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+const Login = React.memo(() => {
+      // -------------------------------------------------------------------------
+      // HOOKS & STATE
+      // -------------------------------------------------------------------------
+
+      const methods = useForm({
+         resolver: yupResolver(s)
+      })
+
+      const { t } = useReactiveTranslation()
+      const { isAuthenticated } = useSelector(selectAuthData)
+
+      const [loginUser, { isLoading: isLoginLoading, error: loginError }] = useLoginMutation()
+      const [loadUser, { isLoading: isLoadUserLoading, error: loadUserError }] = useLazyLoadUserQuery()
+
+      // -------------------------------------------------------------------------
+      // MEMOIZED VALUES
+      // -------------------------------------------------------------------------
+
+      const formConfig = useMemo(
+         () => ({
+            onSubmit: methods.handleSubmit(async (data) => {
+               const { email, password } = data
+               const result = await loginUser({ email, password })
+               if (result?.data?.token) {
+                  await loadUser()
+               }
+            })
+         }),
+         [methods, loginUser, loadUser]
+      )
+
+      // -------------------------------------------------------------------------
+      // RENDER LOGIC
+      // -------------------------------------------------------------------------
+
+      // Early return for authenticated users
+      if (isAuthenticated) {
+         return <Navigate to='/dashboard' />
+      }
+
+      // -------------------------------------------------------------------------
+      // UTIL COMPONENTS
+      // -------------------------------------------------------------------------
+
+
+      const LoginForm = () => (
+         <FormProvider {...methods}>
+            <form
+               onSubmit={async (e) => {
+                  e.preventDefault()
+                  formConfig.onSubmit()
+               }}
+               noValidate
+               autoComplete='on'
+               style={{ width: '100%' }}
+            >
+               <SimpleGrid columns={1} rowGap={6} w='full'>
+                  <GridItem colSpan={1}>
+                     <FormAlert error={loginError || loadUserError} />
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <MultiInput
+                        name='email'
+                        type='text'
+                        label={t('label-email')}
+                        placeholder={t('placeholder-email')}
+                        validation={s.email}
+                        size='md'
+                        required
+                     />
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <MultiInput
+                        name='password'
+                        type='password'
+                        label={t('label-password')}
+                        helpertext={t('helpertext-password')}
+                        validation={s.password}
+                        size='md'
+                        required
+                     />
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <Button
+                        size='lg'
+                        w='full'
+                        colorScheme='purple'
+                        isLoading={isLoginLoading || isLoadUserLoading}
+                        loadingText={t('btn-submitting')}
+                        type='submit'
+                     >
+                        {t('btn-login')}
+                     </Button>
+                  </GridItem>
+
+                  <GridItem colSpan={1}>
+                     <Text color='text.primary'>
+                        {t('guide-create_account')}
+                        <Link to='/register' text={t('guide-register')} />
+                     </Text>
+                  </GridItem>
+               </SimpleGrid>
+            </form>
+         </FormProvider>
+      )
+
+      const LoginHeader = () => (
+         <VStack spacing={5} alignItems='flex-start'>
+            <Heading size='2xl'>{t('title-login')}</Heading>
+            <Text>{t('desc-login')}</Text>
+         </VStack>
+      )
+
+      // -------------------------------------------------------------------------
+      // MAIN RENDER
+      // -------------------------------------------------------------------------
+
+      return (
+         <Container
+            minW='100vw'
+            h='100vh'
+            p={0}
+            display='flex'
+            flexDir='column'
+            justifyContent='center'
+            alignItems='center'
+         >
+            <LandingHeader />
+            <Flex
+               h='100%'
+               w='full'
+               maxW='container.xl'
+               alignItems='center'
+               gap={12}
+            >
+               <VStack
+                  flex={6}
+                  h='full'
+                  p={10}
+                  spacing={10}
+                  alignItems='flex-start'
+                  bg='bg.surface'
+                  justifyContent='center'
+               >
+                  <Image
+                     src='/assets/img/login-graphic.gif'
+                     sx={{ filter: 'hue-rotate(40deg)' }}
+                  />
+               </VStack>
+
+               <VStack
+                  flex={6}
+                  h='full'
+                  p={10}
+                  spacing={8}
+                  alignItems='flex-start'
+                  justifyContent='center'
+               >
+                  <LoginHeader />
+                  <LoginForm />
+               </VStack>
+            </Flex>
+         </Container>
+      )
+   }
+)
+
+// =============================================================================
+// COMPONENT CONFIGURATION
+// =============================================================================
+
+// Display name for debugging
+Login.displayName = 'Login'
+
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+export default Login
