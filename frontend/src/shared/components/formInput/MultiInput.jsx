@@ -16,8 +16,7 @@ import { PasswordInput, TextInput } from '.'
 import { TextAreaInput } from './TextAreaInput'
 
 // Utils
-import { findInputError } from '../../utils/findInputError'
-import { isFormInvalid } from '../../utils/isFormInvalid'
+import { isFormInvalid, findInputError } from '../../utils/formValidation'
 
 // =============================================================================
 // MAIN COMPONENT

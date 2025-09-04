@@ -14,7 +14,6 @@ const authSlice = createSlice({
    initialState,
    reducers: {
       logout: (state) => {
-         console.log("Logging out user")
          setAuthToken()
          state.token = null
          state.refreshToken = null

@@ -71,7 +71,6 @@ const ErrorPage = () => {
    // -------------------------------------------------------------------------
 
    const handleLoginClick = useCallback(() => {
-      console.log("Logging out user and redirecting to login page")
       dispatch(logout())
       navigate('/login')
    }, [dispatch, navigate])

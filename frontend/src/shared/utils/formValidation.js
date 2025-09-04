@@ -1,3 +1,8 @@
+export const isFormInvalid = err => {
+    if (Object.keys(err).length > 0) return true
+    return false
+  }
+
 export function findInputError(errors, name) {
    const filtered = Object.keys(errors)
       .filter((key) => key.includes(name))
