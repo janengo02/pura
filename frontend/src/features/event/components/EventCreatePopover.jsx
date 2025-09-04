@@ -38,7 +38,6 @@ import { EventCalendarSelect } from './EventCalendarInfo'
 import { stringToDateTimeLocal } from '../../../shared/utils/dates'
 import { PiX } from 'react-icons/pi'
 import { GOOGLE_CALENDAR_COLORS } from '../../../shared/constants/defaultColor'
-import useLoading from '../../../shared/hooks/useLoading'
 
 // =============================================================================
 // SELECTORS
@@ -71,7 +70,7 @@ const EventCreatePopover = () => {
    // -------------------------------------------------------------------------
    const { t } = useReactiveTranslation()
    const dispatch = useDispatch()
-   const [createGoogleEvent] = useCreateGoogleEventMutation()
+   const [createGoogleEvent, {isLoading: isCreatingGoogleEvent}] = useCreateGoogleEventMutation()
 
    // Redux selectors
    const newEvent = useSelector(selectNewEvent)
@@ -92,7 +91,7 @@ const EventCreatePopover = () => {
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
    // Memoized modal state based on task existence
-   const isCreatingNewEvent = useMemo(() => Boolean(newEvent), [newEvent])
+   const isInputingNewEvent = useMemo(() => Boolean(newEvent), [newEvent])
    const isTimeValid = useMemo(() => {
       if (!startTime || !endTime) return false
       const startDate = new Date(startTime)
@@ -249,13 +248,6 @@ const EventCreatePopover = () => {
       t
    ])
 
-
-   // -------------------------------------------------------------------------
-   // LOADING HOOKS
-   // -------------------------------------------------------------------------
-
-   const [createEvent, createLoading] = useLoading(handleSave)
-
    // -------------------------------------------------------------------------
    // EFFECTS
    // -------------------------------------------------------------------------
@@ -328,7 +320,7 @@ const EventCreatePopover = () => {
    // -------------------------------------------------------------------------
    // RENDER
    // -------------------------------------------------------------------------
-   if (!isCreatingNewEvent || createLoading) {
+   if (!isInputingNewEvent || isCreatingGoogleEvent) {
       return null
    }
    return (
@@ -412,9 +404,9 @@ const EventCreatePopover = () => {
                      <Button
                         size='md'
                         colorScheme='blue'
-                        onClick={createEvent}
-                        disabled={!isEventValid || createLoading}
-                        isLoading={createLoading}
+                        onClick={handleSave}
+                        disabled={!isEventValid || isCreatingGoogleEvent}
+                        isLoading={isCreatingGoogleEvent}
                         loadingText={t('btn-saving')}
                      >
                         {t('btn-save')}

@@ -42,7 +42,6 @@ import {
 import { stringToDateTimeLocal } from '../../../shared/utils/dates'
 
 // Hooks
-import useLoading from '../../../shared/hooks/useLoading'
 import {
    PiArrowClockwise,
    PiCalendarPlus,
@@ -95,7 +94,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       // RTK Query hooks
       const [addGoogleAccountMutation] = useAddGoogleAccountMutation()
       const [syncTaskWithGoogle, { isLoading: syncLoading }] = useSyncTaskWithGoogleMutation()
-      const [updateTaskSchedule] = useUpdateTaskScheduleMutation()
+      const [updateTaskSchedule, {isLoading: isUpdatingTaskSchedule}] = useUpdateTaskScheduleMutation()
       const [removeTaskScheduleSlot] = useRemoveTaskScheduleSlotMutation()
 
 
@@ -196,14 +195,6 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
             })
          }
       }, [updateScheduleSlot, slot.googleEventStart, slot.googleEventEnd])
-
-      // -------------------------------------------------------------------------
-      // LOADING STATES
-      // -------------------------------------------------------------------------
-
-      const [useTaskTime, useTaskTimeLoading] = useLoading(handleUseTaskTime)
-      const [useGoogleTime, useGoogleTimeLoading] =
-         useLoading(handleUseGoogleTime)
 
       // -------------------------------------------------------------------------
       // UI EVENT HANDLERS
@@ -702,8 +693,8 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                   actions: (
                      <>
                         <MenuItem
-                           onClick={useTaskTime}
-                           isDisabled={useTaskTimeLoading}
+                           onClick={handleUseTaskTime}
+                           isDisabled={isUpdatingTaskSchedule}
                         >
                            <VStack spacing={1} align='start'>
                               <Text fontSize='md' fontWeight='medium'>
@@ -717,8 +708,8 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                         </MenuItem>
                         {slot.googleEventStart && slot.googleEventEnd && (
                            <MenuItem
-                              onClick={useGoogleTime}
-                              isDisabled={useGoogleTimeLoading}
+                              onClick={handleUseGoogleTime}
+                              isDisabled={isUpdatingTaskSchedule}
                            >
                               <VStack spacing={1} align='start'>
                                  <Text fontSize='md' fontWeight='medium'>
@@ -790,10 +781,9 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
             googleReconnectLogin,
             handleUnsyncFromGoogle,
             formatTime,
-            useTaskTime,
-            useGoogleTime,
-            useTaskTimeLoading,
-            useGoogleTimeLoading
+            handleUseTaskTime,
+            handleUseGoogleTime,
+            isUpdatingTaskSchedule
          ]
       )
 
@@ -821,8 +811,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                      colorScheme={syncProps.colorScheme}
                      isLoading={
                         syncLoading ||
-                        useTaskTimeLoading ||
-                        useGoogleTimeLoading
+                        isUpdatingTaskSchedule
                      }
                      display='flex'
                      alignItems='center'
@@ -849,8 +838,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
          slot.syncStatus,
          getSyncConfig,
          syncLoading,
-         useTaskTimeLoading,
-         useGoogleTimeLoading,
+         isUpdatingTaskSchedule,
          handleSyncButtonClick,
          t
       ])
