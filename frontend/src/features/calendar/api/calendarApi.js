@@ -26,7 +26,6 @@ export const calendarApi = baseApi.injectEndpoints({
         }
       },
       providesTags: ['Calendar'],
-      invalidatesTags: ['Task']
     }),
 
     setDefaultAccount: builder.mutation({
@@ -42,7 +41,6 @@ export const calendarApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Calendar']
     }),
 
     addGoogleAccount: builder.mutation({
@@ -61,7 +59,6 @@ export const calendarApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Calendar', 'Task']
     }),
 
     disconnectGoogleAccount: builder.mutation({
@@ -80,7 +77,6 @@ export const calendarApi = baseApi.injectEndpoints({
           commonErrorHandler(dispatch, err)
         }
       },
-      invalidatesTags: ['Calendar', 'Task']
     }),
 
     createGoogleEvent: builder.mutation({
@@ -95,15 +91,13 @@ export const calendarApi = baseApi.injectEndpoints({
         } catch (err) {
           // Handle error using common error handler
           commonErrorHandler(dispatch, err)
-          throw err
         }
       },
-      invalidatesTags: []
     }),
 
     deleteGoogleEvent: builder.mutation({
       query: ({ eventId, ...reqData }) => ({
-        url: `/calendar/delete-event/${eventId}`,
+        url: `/calendar/delete-evendt/${eventId}`,
         method: 'DELETE',
         body: reqData
       }),
@@ -118,9 +112,9 @@ export const calendarApi = baseApi.injectEndpoints({
         } catch (err) {
           // Handle error using common error handler
           commonErrorHandler(dispatch, err)
+          calendarApi.endpoints.loadCalendar.initiate() // Refetch calendar to restore deleted event
         }
-      },
-      invalidatesTags: ['Calendar']
+      }
     }),
 
     updateGoogleEventTime: builder.mutation({
@@ -224,7 +218,6 @@ export const calendarApi = baseApi.injectEndpoints({
         } catch (err) {
           // Handle error using common error handler
           commonErrorHandler(dispatch, err)
-          throw err
         }
       },
       invalidatesTags: []
