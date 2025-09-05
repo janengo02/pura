@@ -6,14 +6,16 @@ A kanban and timeboxed task management tool with Google Calendar integration.
 
 ## Overview
 
-Pura is a full-stack task management application that combines kanban-style task organization with calendar scheduling. It features Google Calendar integration for seamless time management and supports multiple languages.
+Pura is a full-stack task management application that combines kanban-style task organization with calendar scheduling. It features Google Calendar integration for seamless time management.
 
 ## Tech Stack
 
-- **Frontend**: React, Chakra UI, Redux, React Big Calendar
+- **Frontend**: React 18, Redux Toolkit, RTK Query, React Big Calendar, Chakra UI, Yup validation
 - **Backend**: Node.js, Express, MongoDB, Prisma
-- **Authentication**: JWT, Google OAuth
-- **Other**: Winston logging, internationalization (i18n)
+- **Authentication**: JWT, Google OAuth 2.0
+- **Development**: ESLint, Jest, React Testing Library
+- **Logging**: Winston with daily rotate files
+- **Internationalization**: i18next (English, Japanese)
 
 ## Prerequisites
 
@@ -53,34 +55,54 @@ Edit `backend/.env` with your configuration:
 
 ```env
 # Environment Configuration
+# Valid values: development, production, test
 NODE_ENV=development
 
 # Server Configuration
+# Port number (1-65535), defaults to 2000
 PORT=2000
 
 # Database Configuration
+# MongoDB connection string (required)
+# Example: mongodb://localhost:27017/pura
 DATABASE_URI=your_mongodb_database_connection_string
 
 # Security Configuration
-JWT_SECRET=your_secure_jwt_secret_key
-ENCRYPTION_KEY=your_secure_encryption_key_for_google_tokens
+# JWT secret for signing tokens (required, min 32 chars)
+# Generate with: openssl rand -base64 32
+JWT_SECRET=your_secure_jwt_secret_at_least_32_characters_long
 
-# Google OAuth Configuration
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+# Encryption key for Google tokens (required, min 32 chars)
+# Generate with: openssl rand -base64 32
+ENCRYPTION_KEY=your_secure_encryption_key_for_google_tokens_32_chars
+
+# Google OAuth Configuration (required)
+# Get these from Google Cloud Console
+GOOGLE_CLIENT_ID=your_google_client_id_from_google_cloud_console
+GOOGLE_CLIENT_SECRET=your_google_client_secret_from_google_cloud_console
 
 # Frontend Configuration
+# URL for CORS configuration (required)
 FRONTEND_URL=http://localhost:8080
 ```
 
 #### Frontend Environment
 
-Edit `frontend/.env` with your configuration:
-```env
-# Google OAuth Configuration
-REACT_APP_GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
+Copy the example environment file and configure it:
 
-# API Configuration
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+Edit `frontend/.env` with your configuration:
+
+```env
+# Google OAuth Configuration (required)
+# Must match backend GOOGLE_CLIENT_ID
+REACT_APP_GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id_from_google_cloud_console
+
+# API Configuration (optional)
+# Backend API URL, defaults to http://localhost:2000
 REACT_APP_API_URL=http://localhost:2000
 ```
 
@@ -152,17 +174,22 @@ npm start
 
 ## Available Scripts
 
-### Root Level
+### Root Level (Monorepo)
 
 - `npm run dev` - Run both frontend and backend in development mode
 - `npm run start:backend` - Start backend server
 - `npm run start:frontend` - Start frontend development server
 - `npm run install:all` - Install dependencies for all workspaces
+- `npm run lint` - Run ESLint on both frontend and backend
+- `npm run lint:fix` - Run ESLint with automatic fixes on both workspaces
 
 ### Backend
 
 - `npm run server` - Start backend in development mode with nodemon
 - `npm start` - Start backend in production mode
+- `npm run build` - Generate Prisma client and install dependencies
+- `npm run lint` - Run ESLint on backend code
+- `npm run lint:fix` - Run ESLint with automatic fixes
 - `npm run prisma:generate` - Generate Prisma client
 - `npm run prisma:db:push` - Push database schema
 - `npm run prisma:validate` - Validate Prisma schema
@@ -171,39 +198,81 @@ npm start
 ### Frontend
 
 - `npm start` - Start development server on port 8080
-- `npm run build` - Build for production
+- `npm run build` - Build for production with memory optimization
 - `npm run build:simple` - Build without memory optimization
-- `npm test` - Run tests
+- `npm test` - Run Jest tests with React Testing Library
+- `npm run lint` - Run ESLint on frontend code
+- `npm run lint:fix` - Run ESLint with automatic fixes
 
 ## Features
 
+### Core Functionality
 - **Kanban Board**: Drag-and-drop task management with customizable columns
-- **Calendar Integration**: Google Calendar sync for scheduling tasks
 - **Task Management**: Create, edit, and organize tasks with groups and progress tracking
-- **Multi-language Support**: English and Japanese localization
-- **User Authentication**: Secure login with Google OAuth integration
-- **Responsive Design**: Works on desktop and mobile devices
+- **Calendar Integration**: Secured Google Calendar sync for scheduling tasks with Google OAuth 2.0 integration
+- **Google Meet Integration**: Schedule and join meetings directly from tasks
+- **User Authentication**: JWT Token-based authentication with refresh token rotation
+
+### User Experience
+- **Multi-language Support**: Full i18n with English and Japanese localization
+- **Dark/Light Theme**: Toggle between themes with user preference persistence
+- **Error Handling**: Comprehensive error alert with helpful guidance
 
 ## Project Structure
 
 ```text
-pura/
-├── backend/                 # Node.js/Express backend
-│   ├── config/             # Configuration files
-│   ├── middleware/         # Express middleware
-│   ├── models/             # Data models
-│   ├── routes/             # API routes
-│   ├── utils/              # Utility functions
-│   ├── validators/         # Input validation
-│   └── prisma/             # Database schema
-├── frontend/               # React frontend
+pura/                           # Monorepo root
+├── backend/                    # Node.js/Express backend
+│   ├── config/                 # Configuration & environment validation
+│   │   ├── db.js               # MongoDB connection
+│   │   ├── env.js              # Environment variable validation (Yup)
+│   │   ├── logger.js           # Winston logging configuration
+│   │   └── prisma.js           # Prisma client setup
+│   ├── middleware/             # Express middleware
+│   │   ├── auth.js             # JWT authentication
+│   │   ├── errorHandler.js     # Global error handling
+│   │   └── requestLogger.js    # Request logging
+│   ├── models/                 # Mongoose data models
+│   ├── routes/                 # API routes (v1)
+│   │   └── v1/                 # Versioned API endpoints
+│   ├── utils/                  # Utility functions & helpers
+│   ├── validators/             # Input validation schemas
+│   ├── prisma/                 # Database schema & migrations
+│   ├── eslint.config.js        # Backend ESLint configuration
+│   └── server.js               # Express server entry point
+├── frontend/                   # React 18 frontend
 │   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── features/       # Feature-specific components
-│   │   ├── actions/        # Redux actions
-│   │   ├── reducers/       # Redux reducers
-│   │   ├── hooks/          # Custom React hooks
-│   │   └── utils/          # Utility functions
-│   └── public/             # Static assets
-└── README.md
+│   │   ├── __tests__/        # Test utilities & helpers
+│   │   │   ├── test-utils.jsx        # Redux testing wrapper
+│   │   │   └── testing-helpers.js    # Custom testing utilities
+│   │   ├── app/              # App configuration
+│   │   │   ├── App.jsx       # Main App component
+│   │   │   └── store.js      # Redux Toolkit store
+│   │   ├── config/           # Configuration
+│   │   │   └── env.js        # Environment validation (Yup)
+│   │   ├── features/         # Feature-based architecture
+│   │   │   ├── auth/         # Authentication (OAuth, JWT)
+│   │   │   ├── calendar/     # Calendar & Google Calendar integration
+│   │   │   ├── dashboard/    # Main dashboard & kanban
+│   │   │   ├── error/        # Error pages & handling
+│   │   │   ├── event/        # Event creation & management
+│   │   │   ├── kanban/       # Kanban board components
+│   │   │   ├── landing/      # Landing page
+│   │   │   ├── task/         # Task management
+│   │   │   └── ui/           # UI state (theme, language)
+│   │   ├── shared/           # Shared components & utilities
+│   │   │   ├── api/          # RTK Query base API
+│   │   │   ├── components/   # Reusable UI components
+│   │   │   ├── hooks/        # Custom React hooks
+│   │   │   └── utils/        # Utility functions
+│   │   ├── lang/             # Internationalization
+│   │   │   ├── en.json       # English translations
+│   │   │   ├── ja.json       # Japanese translations
+│   │   │   └── i18n.js       # i18next configuration
+│   │   └── theme/            # Chakra UI theme customization
+│   ├── eslint.config.js      # Frontend ESLint configuration
+│   └── public/               # Static assets
+├── package.json              # Monorepo configuration & scripts
+├── eslint.config.js          # Root ESLint configuration
+└── README.md                 # This file
 ```
