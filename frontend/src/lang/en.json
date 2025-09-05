@@ -223,6 +223,8 @@
       "error-validation-failed-desc": "Please check your input and ensure all required fields are filled correctly.",
       "error-validation-not-found": "Validation not found",
       "error-validation-not-found-desc": "The validation criteria could not be found.",
+      "error-system-unknown-failed": "System error",
+      "error-system-unknown-failed-desc": "A system error occurred. Please try again.",
       "guide-": "------------------------------------------------",
       "guide-already_have_account": "Already have an account? ",
       "guide-create_account": "Don't have an account? ",

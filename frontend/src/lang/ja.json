@@ -221,6 +221,8 @@
       "error-validation-failed-desc": "入力内容を確認し、必須項目がすべて正しく入力されていることを確認してください。",
       "error-validation-not-found": "検証が見つかりません",
       "error-validation-not-found-desc": "検証基準が見つかりませんでした。",
+      "error-system-unknown-failed": "システムエラー",
+      "error-system-unknown-failed-desc": "システムエラーが発生しました。再度お試しください。",
       "guide-": "------------------------------------------------",
       "guide-already_have_account": "すでにアカウントをお持ちですか？",
       "guide-create_account": "アカウントをお持ちでないですか？",
