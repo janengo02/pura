@@ -116,11 +116,7 @@ const sendErrorDev = (err, res) => {
    )
 
    // Use existing responseHelper for consistent format
-   sendErrorResponse(res, err.statusCode, err.operation, err.action, {
-      message: err.message,
-      stack: err.stack,
-      details: err.details
-   })
+   sendErrorResponse(res, err.statusCode, err.operation, err.action)
 }
 
 /**
@@ -147,16 +143,10 @@ const sendErrorProd = (err, res) => {
    // Operational, trusted error: send message to client
    if (err.isOperational) {
       // Use existing responseHelper for consistent format
-      sendErrorResponse(res, err.statusCode, err.operation, err.action, err)
+      sendErrorResponse(res, err.statusCode, err.operation, err.action)
    } else {
       // Programming or other unknown error: don't leak error details
-      sendErrorResponse(
-         res,
-         500,
-         'system',
-         'error',
-         new Error('Something went wrong')
-      )
+      sendErrorResponse(res, 500, 'system', 'error')
    }
 }
 

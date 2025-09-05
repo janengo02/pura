@@ -16,7 +16,7 @@ try {
       },
       error
    )
-   process.exit(1)
+   throw new Error('Failed to initialize Prisma Client')
 }
 
 // Handle graceful shutdown
@@ -30,7 +30,7 @@ process.on('SIGINT', async () => {
    if (prisma) {
       await prisma.$disconnect()
    }
-   process.exit(0)
+   throw new Error('Process terminated during SIGINT')
 })
 
 module.exports = prisma

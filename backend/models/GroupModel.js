@@ -23,4 +23,5 @@ const GroupSchema = new mongoose.Schema({
    }
 })
 
-module.exports = Group = mongoose.model('group', GroupSchema) //name of the database
+const Group = mongoose.model('group', GroupSchema) //name of the database
+module.exports = Group

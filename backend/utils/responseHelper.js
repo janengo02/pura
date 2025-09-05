@@ -54,7 +54,7 @@ const getContextualError = (operation, action, statusCode = 500) => {
  * @param {Error} [error] - Optional error object for logging
  * @returns {Object} JSON error response
  */
-const sendErrorResponse = (res, code, operation, action, error = null) => {
+const sendErrorResponse = (res, code, operation, action) => {
    const errorMessages = getContextualError(operation, action, code)
    // Build error response object
    const errorResponse = {

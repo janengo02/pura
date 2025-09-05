@@ -27,4 +27,5 @@ const ProgressSchema = new mongoose.Schema({
    }
 })
 
-module.exports = Progress = mongoose.model('progress', ProgressSchema) //name of the database
+const Progress = mongoose.model('progress', ProgressSchema) //name of the database
+module.exports = Progress

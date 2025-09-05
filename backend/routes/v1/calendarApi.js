@@ -491,17 +491,18 @@ router.post(
       // Check if calendar is changing
       if (calendarId && originalCalendarId !== calendarId) {
          // Create a copy in the new calendar - remove properties that cause conflicts
-         const {
-            id,
-            etag,
-            htmlLink,
-            iCalUID,
-            created,
-            updated,
-            creator,
-            organizer,
-            ...eventDataForInsert
-         } = updatedEventData
+          // Extract properties that should not be included in the new event
+          const eventDataForInsert = {
+            ...updatedEventData,
+            id: undefined,
+            etag: undefined,
+            htmlLink: undefined,
+            iCalUID: undefined,
+            created: undefined,
+            updated: undefined,
+            creator: undefined,
+            organizer: undefined
+          }
          event = await calendar.events.insert({
             auth: oath2Client,
             calendarId: calendarId,

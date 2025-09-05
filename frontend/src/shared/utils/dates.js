@@ -1,4 +1,3 @@
-/* eslint no-fallthrough: off */
 import * as dates from 'date-arithmetic'
 import moment from 'moment'
 
@@ -120,9 +119,7 @@ export function isJustDate(date) {
 export function duration(start, end, unit, firstOfWeek) {
    if (unit === 'day') unit = 'date'
    return Math.abs(
-      // eslint-disable-next-line import/namespace
       dates[unit](start, undefined, firstOfWeek) -
-         // eslint-disable-next-line import/namespace
          dates[unit](end, undefined, firstOfWeek)
    )
 }

@@ -216,7 +216,7 @@ router.post(
       const progresses = await createDefaultProgresses(language)
       const group = await createDefaultGroup(language)
       const task = await createDefaultTask(language)
-      const page = await createDefaultPage(
+      await createDefaultPage(
          user,
          progresses,
          group,

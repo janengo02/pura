@@ -7,8 +7,6 @@ const auth = require('../../middleware/auth')
 const { validate } = require('../../middleware/validation')
 const {
    validateCreateMeeting,
-   validateUpdateMeeting,
-   validateDeleteMeeting
 } = require('../../validators/calendarValidators')
 const prisma = require('../../config/prisma')
 
@@ -150,7 +148,6 @@ router.get(
    '/space/:spaceId',
    auth,
    asyncHandler(async (req, res) => {
-      const { spaceId } = req.params
       const { accountEmail } = req.query
 
       if (!accountEmail) {

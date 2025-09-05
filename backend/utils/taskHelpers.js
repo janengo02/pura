@@ -1,7 +1,7 @@
 const prisma = require('../config/prisma')
 const { ObjectId } = require('mongodb')
 const { google } = require('googleapis')
-const { encrypt, decrypt, isEncrypted } = require('./encryption')
+const { decrypt, isEncrypted } = require('./encryption')
 const { setOAuthCredentials } = require('./calendarHelpers')
 const { populatePage } = require('./pageHelpers')
 

@@ -43,4 +43,5 @@ const PageSchema = new mongoose.Schema({
    }
 })
 
-module.exports = Page = mongoose.model('page', PageSchema) //name of the database
+const Page = mongoose.model('page', PageSchema) //name of the database
+module.exports = Page
