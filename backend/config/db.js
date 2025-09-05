@@ -1,11 +1,10 @@
 const mongoose = require('mongoose')
-const dotenv = require('dotenv')
 const logger = require('../utils/logger')
+const env = require('./env')
 
-dotenv.config()
 const connectDB = async () => {
    try {
-      await mongoose.connect(process.env?.DATABASE_URI)
+      await mongoose.connect(env.DATABASE_URI)
       logger.info('MongoDB Connected successfully', {
          database: 'mongodb',
          connection: 'established'
@@ -16,9 +15,7 @@ const connectDB = async () => {
          {
             database: 'mongodb',
             operation: 'connect',
-            connectionUri: process.env?.DATABASE_URI
-               ? '[REDACTED]'
-               : 'undefined'
+            connectionUri: '[REDACTED]'
          },
          error
       )

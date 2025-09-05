@@ -1,5 +1,7 @@
 const express = require('express')
 const cors = require('cors')
+// Validate environment variables first, before any other operations
+const env = require('./config/env')
 const connectDB = require('./config/db')
 const logger = require('./utils/logger')
 const requestLogger = require('./middleware/requestLogger')
@@ -11,7 +13,7 @@ connectDB()
 // CORS Configuration
 const corsOptions = {
    origin: function (origin, callback) {
-      const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean)
+      const allowedOrigins = [env.FRONTEND_URL].filter(Boolean)
 
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true)
@@ -58,12 +60,10 @@ app.use(notFoundHandler)
 // Global error handler
 app.use(globalErrorHandler)
 
-const PORT = process.env.PORT || 2000
-
-app.listen(PORT, () => {
+app.listen(env.PORT, () => {
   logger.info('Server started', { 
-    port: PORT,
-    environment: process.env.NODE_ENV || 'development',
+    port: env.PORT,
+    environment: env.NODE_ENV,
     timestamp: new Date().toISOString()
   })
 })

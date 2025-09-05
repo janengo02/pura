@@ -1,8 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { setCredentials } from '../../features/auth/authSlice'
 import { logout } from '../../features/auth/authSlice'
+import { apiUrl } from '../../config/env'
 
-const API_URL = process.env?.REACT_APP_API_URL || 'http://localhost:2000'
+const API_URL = apiUrl
 
 // Custom error class for authentication session expiration
 class AuthenticationExpiredError extends Error {

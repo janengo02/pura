@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
 const { AuthenticationError } = require('../utils/customErrors')
+const env = require('../config/env')
 
-dotenv.config()
 module.exports = function (req, res, next) {
    // Get token from header
    const token = req.header('x-auth-token')
@@ -14,7 +13,7 @@ module.exports = function (req, res, next) {
 
    // Verify token
    try {
-      const decoded = jwt.verify(token, process.env?.JWT_SECRET)
+      const decoded = jwt.verify(token, env.JWT_SECRET)
 
       req.user = decoded.user
       next()
