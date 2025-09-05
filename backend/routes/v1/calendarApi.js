@@ -391,9 +391,14 @@ router.post(
          where: { id: req.user.id },
          include: { googleAccounts: true }
       })
+
       const encryptedRefreshToken = user.googleAccounts.find(
          (acc) => acc.accountEmail === accountEmail
       )?.refreshToken
+
+      if (!encryptedRefreshToken) {
+         throw new NotFoundError('Google account not found', 'google', 'access')
+      }
 
       // Decrypt the refresh token before use
       const refreshToken = isEncrypted(encryptedRefreshToken)
@@ -568,6 +573,10 @@ router.delete(
       const encryptedRefreshToken = user.googleAccounts.find(
          (acc) => acc.accountEmail === accountEmail
       ).refreshToken
+
+      if (!encryptedRefreshToken) {
+         throw new NotFoundError('Google account not found', 'google', 'access')
+      }
 
       // Decrypt the refresh token before use
       const refreshToken = isEncrypted(encryptedRefreshToken)
