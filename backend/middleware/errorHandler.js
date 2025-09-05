@@ -169,7 +169,7 @@ const sendErrorProd = (err, res) => {
  */
 const globalErrorHandler = (err, req, res, next) => {
    // Convert error to operational error
-   let error = handleKnownErrors(err)
+   const error = handleKnownErrors(err)
 
    // Set default status code if not set
    error.statusCode = error.statusCode || 500

@@ -109,7 +109,7 @@ router.post(
       }
       const taskMapIndex =
          groupIndex * page.progressOrder.length + progressIndex
-      let newTaskMap = page.taskMap.slice()
+      const newTaskMap = page.taskMap.slice()
       for (let i = taskMapIndex; i < newTaskMap.length; i++) {
          newTaskMap[i]++
       }
@@ -452,11 +452,11 @@ router.delete(
       }
 
       //   Prepare: Set up new tasks array
-      let newTasks = page.tasks.slice()
+      const newTasks = page.tasks.slice()
       const taskIndex = page.tasks.findIndex((t) => extractId(t) === taskId)
       newTasks.splice(taskIndex, 1)
       //   Prepare: Set up new taskMap
-      let newTaskMap = page.taskMap.slice()
+      const newTaskMap = page.taskMap.slice()
       for (let i = 0; i < newTaskMap.length; i++) {
          if (newTaskMap[i] > taskIndex) newTaskMap[i]--
       }

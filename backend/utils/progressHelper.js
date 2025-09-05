@@ -34,7 +34,7 @@ const createProgress = ({
    taskMap,
    newProgress
 }) => {
-   var newTaskMap = [...taskMap]
+   const newTaskMap = [...taskMap]
    if (groupOrder.length > 0) {
       const n_group = groupOrder.length
       const m_progress = progressOrder.length + 1

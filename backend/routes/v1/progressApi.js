@@ -177,7 +177,7 @@ router.delete(
       const tasksToDelete = page.tasks.filter(
          (taskId) => !newTasks.includes(taskId)
       )
-      for (let taskId of tasksToDelete) {
+      for (const taskId of tasksToDelete) {
          await prisma.task.delete({ where: { id: taskId } })
       }
 
