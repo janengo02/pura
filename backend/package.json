@@ -10,7 +10,9 @@
       "prisma:generate": "prisma generate",
       "prisma:db:push": "prisma db push",
       "prisma:validate": "prisma validate",
-      "prisma:format": "prisma format"
+      "prisma:format": "prisma format",
+      "lint": "eslint .",
+      "lint:fix": "eslint . --fix"
    },
    "author": "Jane Ngo",
    "license": "MIT",
@@ -34,6 +36,8 @@
    },
    "devDependencies": {
       "concurrently": "^8.2.2",
+      "eslint-plugin-node": "^11.1.0",
+      "eslint-plugin-security": "^3.0.1",
       "nodemon": "^3.0.1"
    },
    "engines": {
