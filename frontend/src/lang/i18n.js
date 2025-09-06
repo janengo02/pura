@@ -54,7 +54,6 @@ const createReactiveT = () => {
       try {
          return i18n.t(key, options)
       } catch (error) {
-         console.warn(`Translation error for key "${key}":`, error)
          return key // Return the key as fallback
       }
    }

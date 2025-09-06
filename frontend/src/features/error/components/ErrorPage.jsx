@@ -1,9 +1,8 @@
 // =============================================================================
 // IMPORTS
 // =============================================================================
-
 // React & Hooks
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 // Redux

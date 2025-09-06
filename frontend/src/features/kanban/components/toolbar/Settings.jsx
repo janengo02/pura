@@ -2,9 +2,6 @@
 // IMPORTS
 // =============================================================================
 
-// React & Hooks
-import React from 'react'
-
 // UI Components
 import {
    IconButton,

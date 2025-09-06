@@ -21,7 +21,7 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: progressData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled
         } catch (err) {
@@ -38,7 +38,7 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: updates
       }),
-      async onQueryStarted({ progressId, ...updates }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ progressId, ...updates }, { dispatch, queryFulfilled }) {
         // Optimistic update - immediately update the UI
         dispatch(optimisticUpdateProgress({ progressId, ...updates }))
 
@@ -57,7 +57,7 @@ export const pageApi = baseApi.injectEndpoints({
         url: `/progress/${pageId}/${progressId}`,
         method: 'DELETE'
       }),
-      async onQueryStarted({ progressId }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ progressId }, { dispatch, queryFulfilled }) {
         // Optimistic update - immediately remove the progress from UI
         dispatch(optimisticDeleteProgress({ progressId }))
 
@@ -78,7 +78,7 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: groupData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled
         } catch (err) {
@@ -95,7 +95,7 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: updates
       }),
-      async onQueryStarted({ groupId, ...updates }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ groupId, ...updates }, { dispatch, queryFulfilled }) {
         // Optimistic update - immediately update the UI
         dispatch(optimisticUpdateGroup({ groupId, ...updates }))
 
@@ -114,7 +114,7 @@ export const pageApi = baseApi.injectEndpoints({
         url: `/group/${pageId}/${groupId}`,
         method: 'DELETE'
       }),
-      async onQueryStarted({ groupId }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ groupId }, { dispatch, queryFulfilled }) {
         // Optimistic update - immediately remove the group from UI
         dispatch(optimisticDeleteGroup({ groupId }))
 
@@ -135,7 +135,7 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: taskData
       }),
-      async onQueryStarted({ result }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ result }, { dispatch, queryFulfilled }) {
         // Optimistic update - immediately update the UI
         dispatch(optimisticMoveTask(result))
 

@@ -2,7 +2,6 @@
 // EVENT LOCATION COMPONENT
 // =============================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
 import { HStack, Text, VStack } from '@chakra-ui/react'
 import { PiMapPin } from 'react-icons/pi'

@@ -2,7 +2,6 @@
 // EVENT REMINDERS COMPONENT
 // =============================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
 import { VStack, HStack, Text, Badge } from '@chakra-ui/react'
 import { PiBell } from 'react-icons/pi'

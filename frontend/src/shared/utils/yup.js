@@ -46,7 +46,7 @@ export const noSpecialChar = () => {
       name: 'no-special-char',
       message: t('yup-string-noSpecialChar'),
       test: (value) => {
-         const specialChar = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+         const specialChar = /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/
          return !specialChar.test(value)
       }
    }

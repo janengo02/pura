@@ -2,7 +2,6 @@
 // EVENT VISIBILITY COMPONENT
 // =============================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
 import { HStack, Text } from '@chakra-ui/react'
 import { PiLock } from 'react-icons/pi'

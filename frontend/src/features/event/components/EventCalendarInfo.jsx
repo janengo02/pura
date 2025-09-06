@@ -2,7 +2,7 @@
 // EVENT CALENDAR INFO COMPONENT
 // =============================================================================
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import {
    HStack,

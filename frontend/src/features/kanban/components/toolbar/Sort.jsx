@@ -2,9 +2,6 @@
 // IMPORTS
 // =============================================================================
 
-// React & Hooks
-import React from 'react'
-
 // UI Components
 import { Flex, IconButton, Menu, MenuList, MenuItem } from '@chakra-ui/react'
 

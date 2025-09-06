@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback, useEffect } from 'react'
+import React, { useMemo, useCallback, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -99,6 +99,10 @@ const ProgressHeader = React.memo(
             title: isNew ? '' : progress.title
          }
       })
+
+      // Ref for programmatic focus
+      const titleInputRef = useRef(null)
+
       // -------------------------------------------------------------------------
       // EFFECTS
       // -------------------------------------------------------------------------
@@ -112,6 +116,17 @@ const ProgressHeader = React.memo(
             })
          }
       }, [progress.title, titleEditing.isEditing, isNew, methods])
+
+      // Focus the input when editing or creating new progress
+      useEffect(() => {
+         if ((titleEditing.isEditing || isNew) && titleInputRef.current) {
+            // Small delay to ensure DOM is ready
+            const timer = setTimeout(() => {
+               titleInputRef.current?.focus()
+            }, 0)
+            return () => clearTimeout(timer)
+         }
+      }, [titleEditing.isEditing, isNew])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -264,6 +279,7 @@ const ProgressHeader = React.memo(
          <FormProvider {...methods}>
             <form noValidate autoComplete='on'>
                <MultiInput
+                  ref={titleInputRef}
                   name='title'
                   type='text'
                   variant='unstyled'
@@ -272,7 +288,6 @@ const ProgressHeader = React.memo(
                   color={progress.titleColor}
                   fontWeight={600}
                   borderRadius={0}
-                  autoFocus
                   onBlur={handleInputBlur}
                />
             </form>

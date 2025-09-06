@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback, useEffect } from 'react'
+import React, { useMemo, useCallback, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -84,6 +84,9 @@ const TaskCard = React.memo(
          }
       })
 
+      // Ref for programmatic focus
+      const titleInputRef = useRef(null)
+
       // Redux state
       const { id, filter } = useSelector(selectTaskCardData)
 
@@ -105,6 +108,17 @@ const TaskCard = React.memo(
             })
          }
       }, [task.title, titleEditing.isEditing, isNew, methods])
+
+      // Focus the input when editing or creating new task
+      useEffect(() => {
+         if ((titleEditing.isEditing || isNew) && titleInputRef.current) {
+            // Small delay to ensure DOM is ready
+            const timer = setTimeout(() => {
+               titleInputRef.current?.focus()
+            }, 0)
+            return () => clearTimeout(timer)
+         }
+      }, [titleEditing.isEditing, isNew])
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -319,6 +333,7 @@ const TaskCard = React.memo(
                <FormProvider {...methods}>
                   <form noValidate autoComplete='on' style={{ width: '100%' }}>
                      <MultiInput
+                        ref={titleInputRef}
                         name='title'
                         type='textarea'
                         variant='unstyled'
@@ -326,7 +341,6 @@ const TaskCard = React.memo(
                         validation={s.title}
                         fontWeight={600}
                         borderRadius={0}
-                        autoFocus
                         onBlur={handleInputBlur}
                      />
                   </form>

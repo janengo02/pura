@@ -157,7 +157,7 @@ const sendErrorProd = (err, res) => {
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-const globalErrorHandler = (err, req, res, next) => {
+const globalErrorHandler = (err, req, res, _next) => {
    // Convert error to operational error
    const error = handleKnownErrors(err)
 

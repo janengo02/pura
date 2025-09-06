@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback } from 'react'
+import { useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux

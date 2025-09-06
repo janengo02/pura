@@ -20,16 +20,6 @@ export const changeLanguage = createAsyncThunk(
          // Force re-render of all i18n components by updating i18n internal state
          i18n.emit('languageChanged', language)
 
-         // // Small delay to ensure i18n has fully updated
-         // setTimeout(() => {
-         //    // Trigger additional re-render for any stubborn components
-         //    window.dispatchEvent(
-         //       new CustomEvent('languageChanged', {
-         //          detail: { language }
-         //       })
-         //    )
-         // }, 10)
-
          return language
       } catch (error) {
          return rejectWithValue(error.message)
@@ -67,8 +57,7 @@ export const initializeLanguage = createAsyncThunk(
 
          return initialLanguage
       } catch (error) {
-         // Fallback to English on error
-         return 'en'
+         return rejectWithValue(error.message)
       }
    }
 )

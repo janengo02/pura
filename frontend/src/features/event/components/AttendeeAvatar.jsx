@@ -2,7 +2,6 @@
 // ATTENDEE AVATAR COMPONENT
 // =============================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
 import { Avatar, AvatarBadge } from '@chakra-ui/react'
 import { PiCheckBold, PiXBold } from 'react-icons/pi'

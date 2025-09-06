@@ -2,14 +2,12 @@
 // EVENT ATTENDEES COMPONENT
 // =============================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
 import {
    VStack,
    HStack,
    Text,
    Button,
-   Badge,
    Collapse,
    useDisclosure
 } from '@chakra-ui/react'

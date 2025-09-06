@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 // Redux
-import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // UI Components
@@ -28,7 +27,6 @@ import {
    Badge,
    Divider,
    Image,
-   Center,
    useColorMode
 } from '@chakra-ui/react'
 
@@ -46,7 +44,6 @@ import {
    PiLightning,
    PiArrowRight,
    PiCheckCircle,
-   PiPlay,
    PiImage,
    PiClock,
    PiTarget,
@@ -59,6 +56,7 @@ import ThemeToggle from '../../ui/components/ThemeToggle'
 
 // Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
+import { useSelector } from 'react-redux'
 
 // =============================================================================
 // CONSTANTS
@@ -737,8 +735,6 @@ DemoFeatureSection.propTypes = {
  * All demo features showcase
  */
 const DemoFeaturesShowcase = React.memo(() => {
-   const { t } = useReactiveTranslation()
-
    return (
       <Box bg='bg.canvas'>
          {DEMO_FEATURES.map((feature, index) => (
@@ -1004,7 +1000,8 @@ Footer.displayName = 'Footer'
 // MAIN COMPONENT
 // =============================================================================
 
-const Landing = React.memo(({ landingData, isAuthenticated }) => {
+const Landing = React.memo(() => {
+   const isAuthenticated = useSelector(selectAuthState)
    // -------------------------------------------------------------------------
    // EFFECTS
    // -------------------------------------------------------------------------
@@ -1043,19 +1040,6 @@ Landing.propTypes = {}
 // =============================================================================
 // REDUX SELECTORS
 // =============================================================================
-
-// Memoized selectors for better Redux performance
-const selectLandingData = createSelector(
-   [
-      // Add selectors if needed
-      (state) => state.language?.current || 'en',
-      (state) => state.theme?.current || 'light'
-   ],
-   (language, theme) => ({
-      language,
-      theme
-   })
-)
 
 const selectAuthState = createSelector(
    [(state) => state.auth?.isAuthenticated || false],

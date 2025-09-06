@@ -58,7 +58,6 @@ const EventTimeText = React.memo(({ start, end }) => {
 
 const EventTimeInput = React.memo(
    ({ startTime, setStartTime, endTime, setEndTime }) => {
-      const { t } = useReactiveTranslation()
       const handleStartTimeChange = useCallback(
          (e) => {
             e.preventDefault()

@@ -58,7 +58,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject })
-      }).then((token) => {
+      }).then(() => {
         // Retry the original request with new token
         return baseQuery(args, api, extraOptions)
       }).catch((err) => {

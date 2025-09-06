@@ -291,7 +291,7 @@ const Calendar = React.memo(() => {
       const eventPropGetter = useCallback(
          (event, start, end, isSelected) => {
             const eventOpacity = 1
-            let backgroundColor = event.color
+            const backgroundColor = event.color
             let boxShadow = isSelected ? SELECTED_EVENT_SHADOW : 'none'
             let transition = 'none'
             let filter = 'none'

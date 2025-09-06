@@ -1,4 +1,3 @@
-import React from 'react'
 import { connect } from 'react-redux'
 import { Link as ChakraLink } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'

@@ -4,7 +4,6 @@ import { optimisticDeleteTask as taskSliceOptimisticDeleteTask, optimisticAddSch
 import { optimisticDeleteTask as pageSliceOptimisticDeleteTask, optimisticAddScheduleSlot as pageSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as pageSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as pageSliceOptimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot as pageSliceOptimisticRemoveTaskScheduleSlot } from '../../kanban/pageSlice'
 import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask, optimisticAddScheduleSlot as calendarSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as calendarSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as calendarSliceOptimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot as calendarSliceOptimisticRemoveTaskScheduleSlot } from '../../calendar/calendarSlice'
 import { optimisticMoveTask as taskSliceOptimisticMoveTask } from '../taskSlice'
-import { sync } from 'framer-motion'
 
 export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -179,7 +178,7 @@ export const taskApi = baseApi.injectEndpoints({
           end
         }
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         const optimisticPayload = {
           taskId: arg.taskId,
           taskTitle: arg.taskTitle,

@@ -1,4 +1,3 @@
-import React from 'react'
 import {
    Button,
    Flex,
@@ -46,6 +45,6 @@ export const DropdownMenu = ({ label, children, ...props }) => (
       </Menu>
    </Flex>
 )
-export const DropdownMenuList = ({ children, ...props }) => (
+export const DropdownMenuList = ({ children}) => (
    <MenuList minW='fit-content'>{children}</MenuList>
 )

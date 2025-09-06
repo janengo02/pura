@@ -144,7 +144,6 @@ const Filter = React.memo(() => {
                            minH='unset'
                            as={ResizeTextarea}
                            value={nameFilter}
-                           autoFocus
                            onChange={handleNameFilterChange}
                            onBlur={handleNameFilterBlur}
                         />

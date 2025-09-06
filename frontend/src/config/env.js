@@ -3,9 +3,6 @@
  */
 import * as yup from 'yup'
 
-// Store validation state to avoid navigation loops
-let hasNavigatedToError = false
-
 // Define validation schema for frontend environment variables
 const envSchema = yup.object({
   REACT_APP_GOOGLE_OAUTH_CLIENT_ID: yup

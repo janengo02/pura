@@ -4,7 +4,6 @@
 
 // React & Hooks
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 // Redux
 import { useSelector } from 'react-redux'
@@ -90,10 +89,10 @@ const IntroSection = React.memo(() => {
       <Container maxW='4xl' py={8}>
          <VStack spacing={6} align='start'>
             <Text fontSize='lg' lineHeight='tall'>
-               <Text as='strong'>This Privacy Notice for PURA</Text> ("we,"
-               "us," or "our") describes how and why we might access, collect,
-               store, use, and/or share ("process") your personal information
-               when you use our services ("Services"), including when you:
+               <Text as='strong'>This Privacy Notice for PURA</Text> (&quot;we,&quot;
+               &quot;us,&quot; or &quot;our&quot;) describes how and why we might access, collect,
+               store, use, and/or share (&quot;process&quot;) your personal information
+               when you use our services (&quot;Services&quot;), including when you:
             </Text>
 
             <List spacing={3} ml={6}>
@@ -181,8 +180,8 @@ const SummarySection = React.memo(() => {
                   <Text as='strong'>
                      Do we process any sensitive personal information?
                   </Text>{' '}
-                  Some of the information may be considered "special" or
-                  "sensitive" in certain jurisdictions, for example your racial
+                  Some of the information may be considered &quot;special&quot; or
+                  &quot;sensitive&quot; in certain jurisdictions, for example your racial
                   or ethnic origins, sexual orientation, and religious beliefs.
                   We do not process sensitive personal information.
                </Text>
@@ -464,10 +463,10 @@ const InfoCollectionSection = React.memo(() => {
                      We request only the minimum scope of permissions required for the specific functionality you choose to use
                   </ListItem>
                   <ListItem>
-                     All Google data is processed strictly in accordance with Google's Privacy Policy and API Terms of Service
+                     All Google data is processed strictly in accordance with Google&apos;s Privacy Policy and API Terms of Service
                   </ListItem>
                   <ListItem>
-                     You maintain full control and can revoke our application's access at any time through your Google Account settings
+                     You maintain full control and can revoke our application&apos;s access at any time through your Google Account settings
                   </ListItem>
                   <ListItem>
                      We do not store your Google credentials - all authentication is handled through secure OAuth 2.0 protocols
@@ -551,7 +550,7 @@ const InfoUseSection = React.memo(() => {
                   <Text as='strong'>
                      Secure Authentication.
                   </Text>{' '}
-                  We utilize Google's OAuth service to provide secure authentication without storing your credentials.
+                  We utilize Google&apos;s OAuth service to provide secure authentication without storing your credentials.
                </ListItem>
                <ListItem>
                   <Text as='strong'>Video Conferencing Integration.</Text> When you create events requiring video conferencing, we generate Google Meet links through the Google Calendar API to enhance your scheduling experience.
@@ -617,7 +616,7 @@ const InfoSharingSection = React.memo(() => {
                      </ListItem>
                      <ListItem>
                         <Text as='strong'>Google OAuth Services:</Text> Authentication
-                        credentials are processed through Google's secure OAuth 2.0 system
+                        credentials are processed through Google&apos;s secure OAuth 2.0 system
                         exclusively for account verification and secure access to your data.
                      </ListItem>
                   </List>
@@ -748,7 +747,7 @@ const RemainingSection = React.memo(() => {
                </Heading>
                <Text>
                   Most web browsers and some mobile operating systems and mobile
-                  applications include a Do-Not-Track ("DNT") feature or setting
+                  applications include a Do-Not-Track (&quot;DNT&quot;) feature or setting
                   you can activate to signal your privacy preference not to have
                   data about your online browsing activities monitored and
                   collected. At this stage, no uniform technology standard for
@@ -779,7 +778,7 @@ const RemainingSection = React.memo(() => {
                </Text>
                <Text>
                   We may update this Privacy Notice from time to time. The
-                  updated version will be indicated by an updated "Last updated"
+                  updated version will be indicated by an updated &quot;Last updated&quot;
                   date at the top of this Privacy Notice. If we make material
                   changes to this Privacy Notice, we may notify you either by
                   prominently posting a notice of such changes or by directly

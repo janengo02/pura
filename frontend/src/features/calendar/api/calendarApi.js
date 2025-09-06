@@ -66,7 +66,7 @@ export const calendarApi = baseApi.injectEndpoints({
         url: `/calendar/disconnect/${accountEmail}`,
         method: 'DELETE'
       }),
-      async onQueryStarted({ accountEmail }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
 
