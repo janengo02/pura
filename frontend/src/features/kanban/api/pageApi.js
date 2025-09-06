@@ -161,7 +161,7 @@ export const pageApi = baseApi.injectEndpoints({
  * @param {Object} baseApi - RTK Query base API instance
  */
 export const refetchPage = (dispatch, _getState, baseApi) => {
-  dispatch(baseApi.endpoints.getFirstPage.initiate())
+  dispatch(baseApi.endpoints.getFirstPage.initiate(undefined, { forceRefetch: true }))
 }
 
 export const {
