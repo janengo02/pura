@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { i18n } from '../../lang/i18n'
 
 // Async thunks (modern naming practices)
 export const changeLanguage = createAsyncThunk(
    'language/changeLanguage',
    async (language, { rejectWithValue }) => {
       try {
-         // Import i18n dynamically to avoid circular dependencies
-         const { i18n } = await import('../lang/i18n')
+         console.log('Changing language to:', language)
 
          // Change i18n language immediately
          await i18n.changeLanguage(language)
@@ -22,6 +22,7 @@ export const changeLanguage = createAsyncThunk(
 
          return language
       } catch (error) {
+         console.log('Error changing language:', error)
          return rejectWithValue(error.message)
       }
    }
@@ -45,9 +46,6 @@ export const initializeLanguage = createAsyncThunk(
                initialLanguage = browserLanguage
             }
          }
-
-         // Import i18n dynamically
-         const { i18n } = await import('../lang/i18n')
 
          // Initialize i18n with detected language
          await i18n.changeLanguage(initialLanguage)
