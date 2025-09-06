@@ -27,7 +27,10 @@ import {
    Badge,
    Divider,
    Image,
-   useColorMode
+   useColorMode,
+   Skeleton,
+   Progress,
+   Fade
 } from '@chakra-ui/react'
 
 // Icons
@@ -56,6 +59,7 @@ import ThemeToggle from '../../ui/components/ThemeToggle'
 
 // Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
+import { useMediaPreloader } from '../../../shared/hooks/useMediaPreloader'
 import { useSelector } from 'react-redux'
 
 // =============================================================================
@@ -354,6 +358,9 @@ export const LandingHeader = React.memo(({ isAuthenticated }) => {
                height='40px'
                cursor='pointer'
                onClick={() => navigate('/')}
+               loading='eager'
+               fetchPriority='high'
+               transition='opacity 0.2s ease-in-out'
             />
          </Heading>
 
@@ -550,6 +557,9 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
 
    const [selectedFeature, setSelectedFeature] = useState(0)
 
+   // Preload all media files for this feature section
+   const { isPreloading, loadProgress, isMediaLoaded } = useMediaPreloader(feature.features)
+
    const currentFeature = feature.features[selectedFeature]
 
    const handleFeatureSelect = useCallback((featureIndex) => {
@@ -557,6 +567,8 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
    }, [])
 
    const mediaContent = useMemo(() => {
+      const isCurrentMediaLoaded = isMediaLoaded(currentFeature.mediaSrc)
+      
       if (currentFeature.mediaType === 'video') {
          return (
             <Box
@@ -565,38 +577,69 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                overflow='hidden'
                shadow='2xl'
             >
-               <Box
-                  as='video'
-                  key={currentFeature.mediaSrc}
-                  w='full'
-                  h='auto'
-                  maxW='full'
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-               >
-                  <source src={currentFeature.mediaSrc} type='video/mp4' />
-                  Your browser does not support the video tag.
-               </Box>
+               {/* Loading skeleton for video */}
+               {!isCurrentMediaLoaded && (
+                  <Skeleton
+                     height='400px'
+                     borderRadius='xl'
+                     startColor='purple.100'
+                     endColor='purple.200'
+                  />
+               )}
+               
+               {/* Video content with fade-in animation */}
+               <Fade in={isCurrentMediaLoaded}>
+                  <Box
+                     as='video'
+                     key={currentFeature.mediaSrc}
+                     w='full'
+                     h='auto'
+                     maxW='full'
+                     autoPlay
+                     loop
+                     muted
+                     playsInline
+                     display={isCurrentMediaLoaded ? 'block' : 'none'}
+                  >
+                     <source src={currentFeature.mediaSrc} type='video/mp4' />
+                     Your browser does not support the video tag.
+                  </Box>
+               </Fade>
             </Box>
          )
       }
 
       return (
-         <Image
-            src={currentFeature.mediaSrc}
-            alt={currentFeature.mediaAlt}
-            maxW='full'
-            h='auto'
-            borderRadius='xl'
-            shadow='2xl'
-            _hover={{ transform: 'scale(1.02)' }}
-            transition='transform 0.3s'
-            fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Preview'
-         />
+         <Box position='relative'>
+            {/* Loading skeleton for image */}
+            {!isCurrentMediaLoaded && (
+               <Skeleton
+                  height='400px'
+                  borderRadius='xl'
+                  startColor='purple.100'
+                  endColor='purple.200'
+               />
+            )}
+            
+            {/* Image content with fade-in animation */}
+            <Fade in={isCurrentMediaLoaded}>
+               <Image
+                  src={currentFeature.mediaSrc}
+                  alt={currentFeature.mediaAlt}
+                  maxW='full'
+                  h='auto'
+                  borderRadius='xl'
+                  shadow='2xl'
+                  _hover={{ transform: 'scale(1.02)' }}
+                  transition='all 0.3s ease-in-out'
+                  loading='eager'
+                  display={isCurrentMediaLoaded ? 'block' : 'none'}
+                  fallbackSrc='https://via.placeholder.com/800x400/805AD5/FFFFFF?text=Feature+Preview'
+               />
+            </Fade>
+         </Box>
       )
-   }, [currentFeature])
+   }, [currentFeature, isMediaLoaded])
 
    const content = (
       <VStack align='start' spacing={6} flex={1}>
@@ -630,6 +673,23 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             <Text fontSize='md' fontWeight='semibold' color='text.primary'>
                {t('landing-implementation-details')}
             </Text>
+            
+            {/* Preloading progress indicator */}
+            {isPreloading && (
+               <VStack align='start' spacing={2} w='full'>
+                  <Text fontSize='sm' color='purple.600'>
+                     Loading media content...
+                  </Text>
+                  <Progress 
+                     value={loadProgress} 
+                     size='sm' 
+                     colorScheme='purple' 
+                     w='full' 
+                     borderRadius='full'
+                  />
+               </VStack>
+            )}
+            
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w='full'>
                {feature.features.map((item, idx) => (
                   <Button
@@ -638,13 +698,16 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                      colorScheme={selectedFeature === idx ? 'purple' : 'gray'}
                      size='md'
                      onClick={() => handleFeatureSelect(idx)}
+                     isDisabled={isPreloading}
                      leftIcon={
                         <Icon
                            as={PiCheckCircle}
                            color={
                               selectedFeature === idx
                                  ? 'accent.subtle'
-                                 : 'success.secondary'
+                                 : isMediaLoaded(item.mediaSrc) 
+                                    ? 'success.secondary'
+                                    : 'gray.400'
                            }
                         />
                      }
@@ -655,6 +718,8 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                      px={4}
                      whiteSpace='normal'
                      fontWeight='normal'
+                     opacity={isPreloading ? 0.6 : 1}
+                     transition='all 0.3s ease-in-out'
                   >
                      <VStack align='start' spacing={1}>
                         <Text
@@ -1006,13 +1071,42 @@ Footer.displayName = 'Footer'
 
 const Landing = React.memo(() => {
    const isAuthenticated = useSelector(selectAuthState)
+   
    // -------------------------------------------------------------------------
    // EFFECTS
    // -------------------------------------------------------------------------
 
-   // Scroll to top when component mounts
+   // Preload critical header images and scroll to top when component mounts
    useEffect(() => {
       window.scrollTo(0, 0)
+      
+      // Preload header logo images for instant theme switching
+      const preloadHeaderImages = () => {
+         const logoImages = [
+            '/assets/img/pura-logo-white.svg',
+            '/assets/img/pura-logo-purple.svg'
+         ]
+         
+         logoImages.forEach(src => {
+            const link = document.createElement('link')
+            link.rel = 'preload'
+            link.as = 'image'
+            link.href = src
+            document.head.appendChild(link)
+         })
+      }
+      
+      preloadHeaderImages()
+      
+      // Cleanup function to remove preload links when component unmounts
+      return () => {
+         const preloadLinks = document.querySelectorAll('link[rel="preload"][as="image"]')
+         preloadLinks.forEach(link => {
+            if (link.href.includes('pura-logo')) {
+               document.head.removeChild(link)
+            }
+         })
+      }
    }, [])
 
    // -------------------------------------------------------------------------
