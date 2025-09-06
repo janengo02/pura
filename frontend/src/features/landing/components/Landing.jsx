@@ -172,8 +172,8 @@ const DEMO_FEATURES = [
          {
             titleKey: 'landing-drag-drop-interface',
             descriptionKey: 'landing-drag-drop-interface-desc',
-            mediaType: 'video',
-            mediaSrc: '/assets/img/preview/kanban-1.mov',
+            mediaType: 'image',
+            mediaSrc: '/assets/img/preview/kanban-1.gif',
             mediaAlt: 'Kanban board drag and drop functionality demonstration'
          },
          {
@@ -193,8 +193,8 @@ const DEMO_FEATURES = [
          {
             titleKey: 'landing-advanced-filtering',
             descriptionKey: 'landing-advanced-filtering-desc',
-            mediaType: 'video',
-            mediaSrc: '/assets/img/preview/kanban-4.mov',
+            mediaType: 'image',
+            mediaSrc: '/assets/img/preview/kanban-4.gif',
             mediaAlt: 'Task filtering and search interface'
          }
       ],
@@ -246,23 +246,23 @@ const DEMO_FEATURES = [
          {
             titleKey: 'landing-theme-system',
             descriptionKey: 'landing-theme-system-desc',
-            mediaType: 'video',
-            mediaSrc: '/assets/img/preview/ux-1.mov',
+            mediaType: 'image',
+            mediaSrc: '/assets/img/preview/ux-1.gif',
             mediaAlt: 'Dark and light theme switching demonstration'
          },
          {
             titleKey: 'landing-internationalization-feature',
             descriptionKey: 'landing-internationalization-feature-desc',
-            mediaType: 'video',
-            mediaSrc: '/assets/img/preview/ux-2.mov',
+            mediaType: 'image',
+            mediaSrc: '/assets/img/preview/ux-2.gif',
             mediaAlt:
                'Language switching interface between English and Japanese'
          },
          {
             titleKey: 'landing-optimistic-updates',
             descriptionKey: 'landing-optimistic-updates-desc',
-            mediaType: 'video',
-            mediaSrc: '/assets/img/preview/ux-3.mov',
+            mediaType: 'image',
+            mediaSrc: '/assets/img/preview/ux-3.gif',
             mediaAlt: 'Optimistic UI updates with error handling'
          },
          {
@@ -279,7 +279,8 @@ const DEMO_FEATURES = [
 
 const HASHTAGS = [
    { text: 'ReactJS', colorScheme: 'blue' },
-   { text: 'Redux', colorScheme: 'purple' },
+   { text: 'Redux Toolkit', colorScheme: 'purple' },
+   { text: 'RTK Query', colorScheme: 'purple' },
    { text: 'NodeJS', colorScheme: 'teal' },
    { text: 'ExpressJS', colorScheme: 'yellow' },
    { text: 'MongoDB', colorScheme: 'green' },
@@ -287,7 +288,8 @@ const HASHTAGS = [
    { text: 'ChakraUI', colorScheme: 'cyan' },
    { text: 'Google APIs', colorScheme: 'red' },
    { text: 'i18next', colorScheme: 'pink' },
-   { text: 'JWT Authentication', colorScheme: 'orange' }
+   { text: 'JWT Authentication', colorScheme: 'orange' },
+   { text: 'Prisma', colorScheme: 'blue' }
 ]
 
 // =============================================================================
@@ -405,9 +407,11 @@ const HeroSection = React.memo(() => {
                fontSize='xl'
                color='text.secondary'
                lineHeight='tall'
-               maxW='3xl'
+               maxW='4xl'
             >
-               {t('landing-hero-description')}
+               {t('landing-hero-description1')}
+               <br />
+               {t('landing-hero-description2')}
             </Text>
 
             <HStack spacing={4} wrap='wrap' justifyContent='center' maxW='3xl'>
