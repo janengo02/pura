@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 // Redux
 import { useSelector } from 'react-redux'
@@ -11,6 +11,9 @@ import { createSelector } from 'reselect'
 
 // UI Components
 import { IconButton } from '@chakra-ui/react'
+
+// Custom Hooks
+import useLoading from '../../../../shared/hooks/useLoading'
 
 // Icons & Actions
 import { PiArrowClockwise } from 'react-icons/pi'
@@ -51,7 +54,20 @@ const ReloadButton = React.memo(() => {
       // -------------------------------------------------------------------------
       // RTK QUERY HOOKS
       // -------------------------------------------------------------------------
-      const [loadCalendar, {isLoading}] = useLazyLoadCalendarQuery()
+      const [loadCalendar] = useLazyLoadCalendarQuery()
+
+      // -------------------------------------------------------------------------
+      // CUSTOM HOOKS
+      // -------------------------------------------------------------------------
+      const [reloadCalendar, isLoading] = useLoading(async () => {
+         if (range && range.length > 0 && pageId) {
+            await loadCalendar({
+               minDate: range[0],
+               maxDate: range[1],
+               pageId
+            })
+         }
+      })
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -60,15 +76,9 @@ const ReloadButton = React.memo(() => {
       const handleReloadClick = useCallback(
          async (e) => {
             e.preventDefault()
-            if (range && range.length > 0 && pageId) {
-               await loadCalendar({
-                  minDate: range[0],
-                  maxDate: range[1],
-                  pageId
-               })
-            }
+            await reloadCalendar()
          },
-         [loadCalendar, range, pageId]
+         [reloadCalendar]
       )
 
       // -------------------------------------------------------------------------
