@@ -931,6 +931,7 @@ export const updateGoogleEvent = ({
          return {
             ...event,
             id: updatedEvent.id,
+            googleEventId: updatedEvent.id,
             accountEmail: updatedEvent.accountEmail || event.accountEmail,
             calendarId: updatedCalendar.id,
             calendar: updatedCalendar.summary,

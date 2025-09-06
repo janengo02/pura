@@ -306,14 +306,16 @@ const EventCreatePopover = () => {
    // Auto-save calendar changes immediately
    useEffect(() => {
       if (hasEventCalendarChanged) {
-         handleUpdateCalendarEvent()
+         const timeoutId = setTimeout(() => handleUpdateCalendarEvent(), 100)
+         return () => clearTimeout(timeoutId)
       }
    }, [hasEventCalendarChanged, handleUpdateCalendarEvent])
 
    // Auto-save color changes immediately
    useEffect(() => {
       if (hasEventColorChanged) {
-         handleUpdateCalendarEvent()
+         const timeoutId = setTimeout(() => handleUpdateCalendarEvent(), 100)
+         return () => clearTimeout(timeoutId)
       }
    }, [hasEventColorChanged, handleUpdateCalendarEvent])
 

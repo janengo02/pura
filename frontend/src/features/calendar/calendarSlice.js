@@ -34,6 +34,10 @@ const calendarSlice = createSlice({
     },
     createCalendarEvent: (state, action) => {
       const { newEvent, mousePosition } = action.payload
+      const eventExists = state.googleEvents.some(event => event.id === newEvent.id);
+      if (eventExists) {
+        return;
+      }
       const updatedState = createGoogleEvent({
         defaultAccount: state.defaultAccount,
         googleCalendars: state.googleCalendars,
