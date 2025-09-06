@@ -479,7 +479,7 @@ router.post(
          end: {
          dateTime: end
          },
-         colorId: colorId === null ? colorId : eventData.colorId,
+         colorId: colorId === undefined ? eventData.colorId : colorId,
          summary: summary || eventData.summary,
          description: description || eventData.description,
          location: location || eventData.location,
