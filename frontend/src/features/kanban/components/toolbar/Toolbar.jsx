@@ -22,7 +22,7 @@ import Filter from './Filter'
 
 // Utils
 import { useReactiveTranslation } from '../../../../shared/hooks/useReactiveTranslation'
-import { useCreateTaskMutation, useShowTaskModalMutation } from '../../../task/api/taskApi'
+import { useCreateTaskMutation } from '../../../task/api/taskApi'
 
 // =============================================================================
 // SELECTORS
@@ -57,7 +57,6 @@ const Toolbar = React.memo(() => {
 
       // RTK Query hooks
       const [createTaskMutation] = useCreateTaskMutation()
-      const [showTaskModalMutation] = useShowTaskModalMutation()
 
       // -------------------------------------------------------------------------
       // MEMOIZED VALUES
@@ -76,22 +75,14 @@ const Toolbar = React.memo(() => {
       // EVENT HANDLERS
       // -------------------------------------------------------------------------
 
-      const handleCreateTaskModal = useCallback(
+      const handleCreateTask = useCallback(
          async (e) => {
             e.preventDefault()
             if (groupOrder.length > 0 && progressOrder.length > 0) {
-               const result = await createTaskMutation(newTaskInfo).unwrap()
-               if (result?.data?.task?.id) {
-                  const taskData = {
-                     pageId: id,
-                     taskId: result.data.task.id
-                  }
-                  await showTaskModalMutation(taskData)
-               }
-
+               await createTaskMutation(newTaskInfo)
             }
          },
-         [createTaskMutation, showTaskModalMutation, newTaskInfo, groupOrder, progressOrder, id]
+         [createTaskMutation, newTaskInfo, groupOrder, progressOrder, id]
       )
 
       // -------------------------------------------------------------------------
@@ -120,7 +111,7 @@ const Toolbar = React.memo(() => {
                   size='md'
                   colorScheme='purple'
                   leftIcon={<PiPlusCircleFill size={18} />}
-                  onClick={handleCreateTaskModal}
+                  onClick={handleCreateTask}
                >
                   {t('btn-new')}
                </Button>

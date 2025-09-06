@@ -118,7 +118,7 @@ const Column = ({ progress, group }) => {
       async (e) => {
          e.preventDefault()
          if (!progress.isNew && !group.isNew) {
-            await createTaskMutation(newTaskInfo).unwrap()
+            await createTaskMutation(newTaskInfo)
          }
       },
       [progress.isNew, group.isNew, createTaskMutation, newTaskInfo]

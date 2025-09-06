@@ -232,7 +232,7 @@ const EventCreatePopover = () => {
          start: newStartTime.toISOString(),
          end: newEndTime.toISOString()
       }
-      await createGoogleEvent(formattedNewEvent).unwrap()
+      await createGoogleEvent(formattedNewEvent)
       handleOnClose()
    }, [
       isEventValid,

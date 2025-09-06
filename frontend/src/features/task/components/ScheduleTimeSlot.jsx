@@ -154,7 +154,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                calendarId: calendarId,
                syncAction: 'create'
             }
-            await syncTaskWithGoogle(reqData).unwrap()
+            await syncTaskWithGoogle(reqData)
          },
          [task.id, index, syncTaskWithGoogle]
       )
@@ -167,7 +167,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
             calendarId: calendarId,
             syncAction: 'delete'
          }
-         await syncTaskWithGoogle(reqData).unwrap()
+         await syncTaskWithGoogle(reqData)
       }, [task.id, index, syncTaskWithGoogle])
 
       // -------------------------------------------------------------------------
