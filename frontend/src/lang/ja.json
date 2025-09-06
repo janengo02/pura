@@ -223,6 +223,8 @@
       "error-validation-not-found-desc": "検証基準が見つかりませんでした。",
       "error-system-unknown-failed": "システムエラー",
       "error-system-unknown-failed-desc": "システムエラーが発生しました。再度お試しください。",
+      "error-route-not-found": "ルートが見つかりません",
+      "error-route-not-found-desc": "要求されたルートが見つかりません。",
       "guide-": "------------------------------------------------",
       "guide-already_have_account": "すでにアカウントをお持ちですか？",
       "guide-create_account": "アカウントをお持ちでないですか？",

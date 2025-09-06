@@ -225,6 +225,8 @@
       "error-validation-not-found-desc": "The validation criteria could not be found.",
       "error-system-unknown-failed": "System error",
       "error-system-unknown-failed-desc": "A system error occurred. Please try again.",
+      "error-route-not-found": "The requested route could not be found.",
+      "error-route-not-found-desc": "The requested route could not be found on the server.",
       "guide-": "------------------------------------------------",
       "guide-already_have_account": "Already have an account? ",
       "guide-create_account": "Don't have an account? ",

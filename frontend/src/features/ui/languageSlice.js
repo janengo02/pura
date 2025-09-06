@@ -6,8 +6,6 @@ export const changeLanguage = createAsyncThunk(
    'language/changeLanguage',
    async (language, { rejectWithValue }) => {
       try {
-         console.log('Changing language to:', language)
-
          // Change i18n language immediately
          await i18n.changeLanguage(language)
 
@@ -22,7 +20,6 @@ export const changeLanguage = createAsyncThunk(
 
          return language
       } catch (error) {
-         console.log('Error changing language:', error)
          return rejectWithValue(error.message)
       }
    }
