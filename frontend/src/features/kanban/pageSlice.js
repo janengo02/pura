@@ -176,6 +176,17 @@ const pageSlice = createSlice({
         state.title = pageData.title
         state.user = pageData.user
       })
+      .addMatcher(taskApi.endpoints.moveTask.matchFulfilled, (state, action) => {
+        // Map RTK Query response to pageSlice state
+        const pageData = action.payload.page
+        state.id = pageData.id
+        state.groupOrder = pageData.groupOrder || []
+        state.progressOrder = pageData.progressOrder || []
+        state.taskMap = pageData.taskMap || []
+        state.tasks = pageData.tasks || []
+        state.title = pageData.title
+        state.user = pageData.user
+      })
   }
 })
 

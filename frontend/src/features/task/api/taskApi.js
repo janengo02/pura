@@ -4,6 +4,7 @@ import { optimisticDeleteTask as taskSliceOptimisticDeleteTask, optimisticAddSch
 import { optimisticDeleteTask as pageSliceOptimisticDeleteTask, optimisticAddScheduleSlot as pageSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as pageSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as pageSliceOptimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot as pageSliceOptimisticRemoveTaskScheduleSlot } from '../../kanban/pageSlice'
 import { optimisticDeleteTask as calendarSliceOptimisticDeleteTask, optimisticAddScheduleSlot as calendarSliceOptimisticAddScheduleSlot, optimisticUpdateTaskBasic as calendarSliceOptimisticUpdateTaskBasic, optimisticUpdateTaskSchedule as calendarSliceOptimisticUpdateTaskSchedule, optimisticRemoveTaskScheduleSlot as calendarSliceOptimisticRemoveTaskScheduleSlot } from '../../calendar/calendarSlice'
 import { optimisticMoveTask as taskSliceOptimisticMoveTask } from '../taskSlice'
+import { refetchCalendar } from '../../calendar/api/calendarApi'
 
 export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -260,6 +261,7 @@ export const taskApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
+          refetchCalendar(dispatch, getState, baseApi)
         } catch (err) {
           commonErrorHandler(dispatch, err, getState, baseApi, {
             refetchTaskModal: true,
