@@ -20,6 +20,7 @@ const {
 } = require('../../utils/progressHelper')
 
 const prisma = require('../../config/prisma')
+const { deleteGoogleEventsForRemovedSlots } = require('../../utils/taskHelpers')
 
 /**
  * @route POST api/progress/new/:pageId
@@ -179,6 +180,13 @@ router.delete(
          (taskId) => !newTasks.includes(taskId)
       )
       for (const taskId of tasksToDelete) {
+         const task = await prisma.task.findUnique({
+            where: { id: taskId }
+         })
+         // Delete associated Google Calendar events
+         if (task?.schedule && task?.schedule.length > 0) {
+            await deleteGoogleEventsForRemovedSlots(task?.schedule, [], req.user.id)
+         }
          await prisma.task.delete({ where: { id: taskId } })
       }
 
