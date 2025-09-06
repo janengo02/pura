@@ -3,7 +3,7 @@
 // =============================================================================
 
 // React & Hooks
-import React, { useMemo, useCallback, useEffect, useRef } from 'react'
+import React, { useMemo, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Redux
@@ -100,9 +100,6 @@ const Group = React.memo(
          }
       })
 
-      // Ref for programmatic focus
-      const titleInputRef = useRef(null)
-
       // -------------------------------------------------------------------------
       // EFFECTS
       // -------------------------------------------------------------------------
@@ -116,17 +113,6 @@ const Group = React.memo(
             })
          }
       }, [group.title, titleEditing.isEditing, isNew, methods])
-
-      // Focus the input when editing or creating new group
-      useEffect(() => {
-         if ((titleEditing.isEditing || isNew) && titleInputRef.current) {
-            // Small delay to ensure DOM is ready
-            const timer = setTimeout(() => {
-               titleInputRef.current?.focus()
-            }, 0)
-            return () => clearTimeout(timer)
-         }
-      }, [titleEditing.isEditing, isNew])
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -239,7 +225,6 @@ const Group = React.memo(
             <FormProvider {...methods}>
                <form noValidate autoComplete='on'>
                   <MultiInput
-                     ref={titleInputRef}
                      name='title'
                      type='text'
                      variant='unstyled'
@@ -249,6 +234,7 @@ const Group = React.memo(
                      fontWeight={600}
                      borderRadius={0}
                      onBlur={handleInputBlur}
+                     autoFocus
                   />
                </form>
             </FormProvider>
