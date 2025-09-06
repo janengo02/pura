@@ -17,7 +17,7 @@ const {
    createGroup,
    deleteGroup
 } = require('../../utils/groupHelpers')
-const { validatePage } = require('../../utils/pageHelpers')
+const { validatePage, populatePage } = require('../../utils/pageHelpers')
 const { asyncHandler } = require('../../utils/asyncHandler')
 const { NotFoundError } = require('../../utils/customErrors')
 
@@ -66,7 +66,7 @@ router.post(
       }
 
       // Update page with new group
-      await prisma.page.update({
+      const updatedPage = await prisma.page.update({
          where: { id: req.params.pageId },
          data: {
             groupOrder: [...currentPage.groupOrder, group.id],
@@ -74,8 +74,8 @@ router.post(
             updateDate: new Date()
          }
       })
-
-      res.json({ group: group })
+      const populatedPage = await populatePage(updatedPage)
+      res.json(populatedPage)
    })
 )
 

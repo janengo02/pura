@@ -22,12 +22,14 @@ export const taskApi = baseApi.injectEndpoints({
           })
         }
       },
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+            refetchCalendar: true
+          })
         }
       },
       providesTags: ['Task']
@@ -39,15 +41,15 @@ export const taskApi = baseApi.injectEndpoints({
         method: 'POST',
         body: taskData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     updateTaskBasic: builder.mutation({
@@ -56,7 +58,7 @@ export const taskApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: updates
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         // Create optimistic payload
         const optimisticPayload = {
           taskId: arg.taskId,
@@ -73,11 +75,13 @@ export const taskApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     updateTaskSchedule: builder.mutation({
@@ -89,7 +93,7 @@ export const taskApi = baseApi.injectEndpoints({
           end
         }
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         // Create optimistic payload
         const optimisticPayload = {
           taskId: arg.taskId,
@@ -112,11 +116,13 @@ export const taskApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     deleteTask: builder.mutation({
@@ -124,7 +130,7 @@ export const taskApi = baseApi.injectEndpoints({
         url: `/task/${pageId}/${taskId}`,
         method: 'DELETE'
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         // Perform optimistic updates immediately
         dispatch(taskSliceOptimisticDeleteTask({ taskId: arg.taskId }))
         dispatch(pageSliceOptimisticDeleteTask({ taskId: arg.taskId }))
@@ -133,11 +139,13 @@ export const taskApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     moveTask: builder.mutation({
@@ -149,7 +157,7 @@ export const taskApi = baseApi.injectEndpoints({
           progressId
         }
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
 
         // Perform optimistic updates immediately
         dispatch(taskSliceOptimisticMoveTask({
@@ -162,11 +170,12 @@ export const taskApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page']
     }),
 
     addTaskScheduleSlot: builder.mutation({
@@ -178,7 +187,7 @@ export const taskApi = baseApi.injectEndpoints({
           end
         }
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         const optimisticPayload = {
           taskId: arg.taskId,
           taskTitle: arg.taskTitle,
@@ -203,11 +212,13 @@ export const taskApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     removeTaskScheduleSlot: builder.mutation({
@@ -215,7 +226,7 @@ export const taskApi = baseApi.injectEndpoints({
         url: `/task/schedule/${pageId}/${taskId}/${slotIndex}`,
         method: 'DELETE'
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         // Create optimistic payload
         const optimisticPayload = {
           taskId: arg.taskId,
@@ -231,11 +242,13 @@ export const taskApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     syncTaskWithGoogle: builder.mutation({
@@ -244,15 +257,17 @@ export const taskApi = baseApi.injectEndpoints({
         method: 'POST',
         body: reqData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page', 'Calendar']
     }),
 
   })
@@ -279,7 +294,7 @@ export const {
  * @param {Function} getState - Redux getState function
  * @param {Object} baseApi - RTK Query base API instance
  */
-export const refetchTaskModalIfOpen = (dispatch, getState, baseApi) => {
+export const refetchTaskModal = (dispatch, getState, baseApi) => {
   const state = getState()
   const task = state.taskSlice?.task
   const pageId = state.pageSlice?.id

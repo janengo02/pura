@@ -1,16 +1,16 @@
 import { baseApi } from '../../../shared/api/baseApi'
-import { optimisticMoveTask, optimisticUpdateGroup, optimisticUpdateProgress, optimisticDeleteGroup, optimisticDeleteProgress } from '../pageSlice'
+import {  optimisticMoveTask as pageSliceOptimisticMoveTask,
+          optimisticUpdateGroup as pageSliceOptimisticUpdateGroup,
+          optimisticUpdateProgress as pageSliceOptimisticUpdateProgress,
+          optimisticDeleteGroup as pageSliceOptimisticDeleteGroup,
+          optimisticDeleteProgress as pageSliceOptimisticDeleteProgress } from '../pageSlice'
 import { commonErrorHandler } from '../../error/errorHandlerHelpers'
+import { refetchCalendar } from '../../calendar/api/calendarApi'
 
 export const pageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFirstPage: builder.query({
       query: () => '/page',
-      providesTags: ['Page']
-    }),
-
-    getPage: builder.query({
-      query: (pageId) => `/page/${pageId}`,
       providesTags: ['Page']
     }),
 
@@ -21,15 +21,15 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: progressData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page']
     }),
 
     updateProgress: builder.mutation({
@@ -38,18 +38,17 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: updates
       }),
-      async onQueryStarted({ progressId, ...updates }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ progressId, ...updates }, { dispatch, queryFulfilled, getState }) {
         // Optimistic update - immediately update the UI
-        dispatch(optimisticUpdateProgress({ progressId, ...updates }))
-
+        dispatch(pageSliceOptimisticUpdateProgress({ progressId, ...updates }))
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page']
     }),
 
     deleteProgress: builder.mutation({
@@ -57,18 +56,19 @@ export const pageApi = baseApi.injectEndpoints({
         url: `/progress/${pageId}/${progressId}`,
         method: 'DELETE'
       }),
-      async onQueryStarted({ progressId }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ progressId }, { dispatch, queryFulfilled, getState }) {
         // Optimistic update - immediately remove the progress from UI
-        dispatch(optimisticDeleteProgress({ progressId }))
-
+        dispatch(pageSliceOptimisticDeleteProgress({ progressId }))
         try {
           await queryFulfilled
+          refetchCalendar(dispatch, getState, baseApi)
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+            refetchCalendar: true
+          })
         }
       },
-      invalidatesTags: ['Page', 'Calendar']
     }),
 
     // Group Management
@@ -78,15 +78,15 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: groupData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page']
     }),
 
     updateGroup: builder.mutation({
@@ -95,18 +95,17 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: updates
       }),
-      async onQueryStarted({ groupId, ...updates }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ groupId, ...updates }, { dispatch, queryFulfilled, getState }) {
         // Optimistic update - immediately update the UI
-        dispatch(optimisticUpdateGroup({ groupId, ...updates }))
-
+        dispatch(pageSliceOptimisticUpdateGroup({ groupId, ...updates }))
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page']
     }),
 
     deleteGroup: builder.mutation({
@@ -114,18 +113,19 @@ export const pageApi = baseApi.injectEndpoints({
         url: `/group/${pageId}/${groupId}`,
         method: 'DELETE'
       }),
-      async onQueryStarted({ groupId }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ groupId }, { dispatch, queryFulfilled, getState }) {
         // Optimistic update - immediately remove the group from UI
-        dispatch(optimisticDeleteGroup({ groupId }))
-
+        dispatch(pageSliceOptimisticDeleteGroup({ groupId }))
         try {
           await queryFulfilled
+          refetchCalendar(dispatch, getState, baseApi)
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+            refetchCalendar: true
+          })
         }
       },
-      invalidatesTags: ['Page', 'Calendar']
     }),
 
     // Task Management
@@ -135,26 +135,38 @@ export const pageApi = baseApi.injectEndpoints({
         method: 'POST',
         body: taskData
       }),
-      async onQueryStarted({ result }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ result }, { dispatch, queryFulfilled, getState }) {
         // Optimistic update - immediately update the UI
-        dispatch(optimisticMoveTask(result))
+        dispatch(pageSliceOptimisticMoveTask(result))
 
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchPage: true,
+          })
         }
       },
-      invalidatesTags: ['Page']
     })
   })
 })
 
+/**
+ * Utility function to refetch page data
+ * This can be used across multiple RTK Query mutations to ensure
+ * page data stays up-to-date after API operations
+ *
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {Function} getState - Redux getState function
+ * @param {Object} baseApi - RTK Query base API instance
+ */
+export const refetchPage = (dispatch, _getState, baseApi) => {
+  dispatch(baseApi.endpoints.getFirstPage.initiate())
+}
+
 export const {
   useGetFirstPageQuery,
   useLazyGetFirstPageQuery,
-  useGetPageQuery,
   useCreateProgressMutation,
   useUpdateProgressMutation,
   useDeleteProgressMutation,

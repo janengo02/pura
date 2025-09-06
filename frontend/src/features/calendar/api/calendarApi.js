@@ -1,8 +1,10 @@
 import { baseApi } from '../../../shared/api/baseApi'
 import { commonErrorHandler } from '../../error/errorHandlerHelpers'
-import { refetchTaskModalIfOpen } from '../../task/api/taskApi'
-import { optimisticDeleteGoogleEvent, optimisticUpdateGoogleEventTime, optimisticUpdateGoogleEvent } from '../calendarSlice'
-import { optimisticUpdateTaskSchedule } from '../../task/taskSlice'
+import { refetchTaskModal } from '../../task/api/taskApi'
+import {  optimisticDeleteGoogleEvent as calendarSliceOptimisticDeleteGoogleEvent,
+          optimisticUpdateGoogleEventTime as calendarSliceOptimisticUpdateGoogleEventTime,
+          optimisticUpdateGoogleEvent as calendarSliceOptimisticUpdateGoogleEvent} from '../calendarSlice'
+import { optimisticUpdateTaskSchedule as taskSliceOptimisticUpdateTaskSchedule } from '../../task/taskSlice'
 
 export const calendarApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,11 +20,12 @@ export const calendarApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
-          // After successful calendar load, refetch task modal if open
-          refetchTaskModalIfOpen(dispatch, getState, baseApi)
+          refetchTaskModal(dispatch, getState, baseApi)
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchPage: true
+          })
         }
       },
       providesTags: ['Calendar'],
@@ -33,12 +36,13 @@ export const calendarApi = baseApi.injectEndpoints({
         url: `/calendar/set-default/${accountEmail}`,
         method: 'PUT'
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchCalendar: true,
+          })
         }
       },
     }),
@@ -52,11 +56,11 @@ export const calendarApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
-          // After successful Google account addition, refetch task modal if open
-          refetchTaskModalIfOpen(dispatch, getState, baseApi)
+          refetchTaskModal(dispatch, getState, baseApi)
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchCalendar: true,
+          })
         }
       },
     }),
@@ -69,12 +73,11 @@ export const calendarApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
-
-          // After successful Google account disconnection, refetch task modal if open
-          refetchTaskModalIfOpen(dispatch, getState, baseApi)
+          refetchTaskModal(dispatch, getState, baseApi)
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchCalendar: true,
+          })
         }
       },
     }),
@@ -85,34 +88,33 @@ export const calendarApi = baseApi.injectEndpoints({
         method: 'POST',
         body: reqData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchCalendar: true,
+          })
         }
       },
     }),
 
     deleteGoogleEvent: builder.mutation({
       query: ({ eventId, ...reqData }) => ({
-        url: `/calendar/delete-evendt/${eventId}`,
+        url: `/calendar/delete-event/${eventId}`,
         method: 'DELETE',
         body: reqData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        // Perform optimistic update immediately
-        dispatch(optimisticDeleteGoogleEvent({
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+        dispatch(calendarSliceOptimisticDeleteGoogleEvent({
           id: arg.eventId
         }))
-
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
-          calendarApi.endpoints.loadCalendar.initiate() // Refetch calendar to restore deleted event
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchCalendar: true,
+          })
         }
       }
     }),
@@ -123,9 +125,9 @@ export const calendarApi = baseApi.injectEndpoints({
         method: 'POST',
         body: reqData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         // Optimistic update - Calendar - update event times in state
-        dispatch(optimisticUpdateGoogleEventTime({
+        dispatch(calendarSliceOptimisticUpdateGoogleEventTime({
           eventId: arg.eventId,
           start: arg.start ? { dateTime: arg.start } : undefined,
           end: arg.end ? { dateTime: arg.end } : undefined
@@ -133,7 +135,7 @@ export const calendarApi = baseApi.injectEndpoints({
 
         // If this is a task event, also update task schedule optimistically
         if (arg.taskId && typeof arg.slotIndex === 'number') {
-          dispatch(optimisticUpdateTaskSchedule({
+          dispatch(taskSliceOptimisticUpdateTaskSchedule({
             taskId: arg.taskId,
             slotIndex: arg.slotIndex,
             start: arg.start,
@@ -143,15 +145,15 @@ export const calendarApi = baseApi.injectEndpoints({
             viewTargetEventAt: new Date()
           }))
         }
-
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
 
     updateGoogleEvent: builder.mutation({
@@ -160,7 +162,7 @@ export const calendarApi = baseApi.injectEndpoints({
         method: 'POST',
         body: reqData
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         // Create optimistic update payload
         const optimisticEventData = {
           id: arg.eventId,
@@ -194,7 +196,7 @@ export const calendarApi = baseApi.injectEndpoints({
         }
 
         // Optimistic update - Calendar - update event in state
-        dispatch(optimisticUpdateGoogleEvent({
+        dispatch(calendarSliceOptimisticUpdateGoogleEvent({
           event: optimisticEventData,
           calendar: optimisticCalendar,
           originalEventId: arg.eventId
@@ -202,7 +204,7 @@ export const calendarApi = baseApi.injectEndpoints({
 
         // If this is a task event, also update task schedule optimistically
         if (arg.taskId && typeof arg.slotIndex === 'number') {
-          dispatch(optimisticUpdateTaskSchedule({
+          dispatch(taskSliceOptimisticUpdateTaskSchedule({
             taskId: arg.taskId,
             slotIndex: arg.slotIndex,
             start: arg.start,
@@ -216,14 +218,41 @@ export const calendarApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
         } catch (err) {
-          // Handle error using common error handler
-          commonErrorHandler(dispatch, err)
+          commonErrorHandler(dispatch, err, getState, baseApi, {
+            refetchTaskModal: true,
+            refetchCalendar: true,
+          })
         }
       },
-      invalidatesTags: []
     }),
   })
 })
+
+/**
+ * Utility function to refetch calendar data
+ * This can be used across multiple RTK Query mutations to ensure
+ * calendar data stays up-to-date after API operations
+ *
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {Function} getState - Redux getState function
+ * @param {Object} baseApi - RTK Query base API instance
+ */
+export const refetchCalendar = (dispatch, getState, baseApi) => {
+  const state = getState()
+  const range = state.calendarSlice?.range
+  const pageId = state.pageSlice?.id
+
+  if (range && range.length >= 2 && pageId) {
+    // Manually trigger calendar refetch to get updated data with force refresh
+    dispatch(baseApi.endpoints.loadCalendar.initiate({
+      minDate: range[0],
+      maxDate: range[1],
+      pageId: pageId
+    }, {
+      forceRefetch: true
+    }))
+  }
+}
 
 export const {
   useLazyLoadCalendarQuery,

@@ -13,7 +13,6 @@ export const googleMeetApi = baseApi.injectEndpoints({
         try {
            await queryFulfilled
         } catch (err) {
-           // Handle error using common error handler
             commonErrorHandler(dispatch, err)
         }
       }

@@ -11,7 +11,7 @@ const {
 
 const { asyncHandler } = require('../../utils/asyncHandler')
 const { NotFoundError } = require('../../utils/customErrors')
-const { validatePage } = require('../../utils/pageHelpers')
+const { validatePage, populatePage } = require('../../utils/pageHelpers')
 const {
    validateProgress,
    prepareProgressData,
@@ -69,7 +69,7 @@ router.post(
       }
 
       // Data: Update page with new progress
-      await prisma.page.update({
+      const updatedPage = await prisma.page.update({
          where: { id: req.params.pageId },
          data: {
             progressOrder: [...currentPage.progressOrder, progress.id],
@@ -77,8 +77,9 @@ router.post(
             updateDate: new Date()
          }
       })
+      const populatedPage = await populatePage(updatedPage)
 
-      res.json({ progress: progress })
+      res.json(populatedPage)
    })
 )
 
