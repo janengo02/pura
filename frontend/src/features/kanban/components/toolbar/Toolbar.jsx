@@ -92,9 +92,10 @@ const Toolbar = React.memo(() => {
       return (
          <Flex
             w='full'
-            maxW={802}
+            maxW={712}
             paddingY={5}
-            paddingX={3}
+            paddingLeft={3}
+            paddingRight={4}
             alignItems='center'
          >
             {/* Left Section - Controls */}

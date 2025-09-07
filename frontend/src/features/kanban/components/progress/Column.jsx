@@ -135,7 +135,7 @@ const Column = ({ progress, group }) => {
             variant='filled'
             bg={progress.color}
             p={2}
-            w={250}
+            w={220}
             minH='48px'
             gap={2}
             boxShadow={snapshot.isDraggingOver ? 'outline' : undefined}

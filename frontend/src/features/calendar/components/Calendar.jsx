@@ -639,7 +639,7 @@ const Calendar = React.memo(() => {
       return (
          <Skeleton isLoaded={!isLoading}>
             <Box position='relative' h='calc(100vh - 9rem)'>
-               <VStack h='full' alignItems='center' gap={2} paddingBottom={10}>
+               <VStack h='full' alignItems='flex-start' gap={2} paddingBottom={10}>
                   <Toolbar />
                   <DnDCalendar
                      components={calendarConfig.components}

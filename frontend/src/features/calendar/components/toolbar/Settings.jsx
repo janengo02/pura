@@ -23,7 +23,8 @@ import {
    MenuItemOption,
    Text,
    Divider,
-   Badge
+   Badge,
+   HStack
 } from '@chakra-ui/react'
 
 // Icons & Utils
@@ -191,6 +192,8 @@ const Settings = React.memo(() => {
                alignItems='center'
                justifyContent='center'
                borderRadius='full'
+               w={4}
+               h={4}
             >
                <PiStarFill size={12} />
             </Badge>
@@ -222,22 +225,18 @@ const Settings = React.memo(() => {
                   account.accountSyncStatus,
                   account.isDefault
                )}
+               leftIcon={<Image
+                  src={getAccountImage(account.accountSyncStatus)}
+                  size={10}
+                  alt='Google Calendar Status'
+               />}
             >
-               <Box
-                  display='flex'
-                  flexDirection='row'
-                  gap={2}
-                  justifyContent='center'
-                  alignContent='center'
-               >
-                  <Image
-                     src={getAccountImage(account.accountSyncStatus)}
-                     size={10}
-                     alt='Google Calendar Status'
-                  />
-                  <Text fontSize='md'>{account.accountEmail}</Text>
+               <HStack spacing={2}>
+                  <Text>
+                     {account.accountEmail}
+                  </Text>
                   {renderDefaultAccountBadge(account.isDefault)}
-               </Box>
+               </HStack>
             </MenuButton>
             {renderCalendarOptions(account)}
          </Menu>
@@ -309,11 +308,8 @@ const Settings = React.memo(() => {
       }
 
       const GoogleCalendarGroupTitle = () => (
-         <Button size='md' colorScheme='gray' onClick={googleLogin}>
-            <Flex w='max-content' gap={3}>
-               <PiCalendarPlus size={18} />
+         <Button size='md' colorScheme='gray' onClick={googleLogin} leftIcon={<PiCalendarPlus size={18} />}>
                {t('btn-connect-calendar')}
-            </Flex>
          </Button>
       )
 

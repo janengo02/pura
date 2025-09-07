@@ -266,6 +266,7 @@ const CalendarNavigationToolbar = React.memo(
             justifyContent='space-between'
             bg='bg.surface'
             mb={3}
+            flexWrap='wrap'
          >
             {/* Left Section - Navigation Controls */}
             <NavigationControls onNavigate={onNavigate} onToday={handleToday} />
