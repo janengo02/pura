@@ -12,7 +12,8 @@ const {
    validateCreateEvent,
    validateUpdateEvent,
    validateDeleteEvent,
-   validateDisconnectAccount
+   validateDisconnectAccount,
+   validateTestAccessRequest
 } = require('../../validators/calendarValidators')
 const prisma = require('../../config/prisma')
 
@@ -27,6 +28,7 @@ const {
 } = require('../../utils/calendarHelpers')
 const { updateTaskFromGoogleEvent } = require('../../utils/taskHelpers')
 const { validatePage } = require('../../utils/pageHelpers')
+const emailService = require('../../utils/emailService')
 
 dotenv.config()
 
@@ -644,6 +646,36 @@ router.delete(
       }
 
       res.json({ message: 'Account disconnected' })
+   })
+)
+
+/**
+ * @route POST api/calendar/request-test-access
+ * @desc Submit email for Google Calendar test access request
+ * @access Public (no auth required for this request)
+ * @param {string} email
+ * @returns {Object} {message}
+ */
+router.post(
+   '/request-test-access',
+   validate(validateTestAccessRequest),
+   asyncHandler(async (req, res) => {
+      const { email } = req.body
+
+      try {
+         // Send email notification to admin
+         await emailService.sendTestUserRequestEmail(email)
+
+         res.json({
+            message: 'Test access request submitted successfully',
+            email: email
+         })
+      } catch (error) {
+         res.status(500).json({
+            message: 'Failed to submit test access request. Please try again later.',
+            error: 'email_service_error'
+         })
+      }
    })
 )
 

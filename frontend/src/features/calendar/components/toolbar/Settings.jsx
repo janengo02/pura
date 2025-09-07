@@ -24,7 +24,8 @@ import {
    Text,
    Divider,
    Badge,
-   HStack
+   HStack,
+   useDisclosure,
 } from '@chakra-ui/react'
 
 // Icons & Utils
@@ -44,6 +45,10 @@ import { useSetDefaultAccountMutation, useAddGoogleAccountMutation, useDisconnec
 
 // Utils
 import { useGoogleAccountLogin } from '../../../../shared/hooks/useGoogleAccountLogin'
+
+// Internal Components
+import GoogleTestingModal from '../modals/GoogleTestingModal'
+import EmailSubmissionModal from '../modals/EmailSubmissionModal'
 
 // =============================================================================
 // SELECTORS
@@ -101,6 +106,19 @@ const Settings = React.memo(() => {
       // -------------------------------------------------------------------------
       const { t } = useReactiveTranslation()
       const dispatch = useDispatch()
+
+      // Modal disclosure hooks
+      const {
+         isOpen: isGoogleTestingModalOpen,
+         onOpen: onGoogleTestingModalOpen,
+         onClose: onGoogleTestingModalClose
+      } = useDisclosure()
+      const {
+         isOpen: isEmailModalOpen,
+         onOpen: onEmailModalOpen,
+         onClose: onEmailModalClose
+      } = useDisclosure()
+
 
       // Redux selectors
       const { googleAccounts, googleCalendars, range } = useSelector(selectSettingsData)
@@ -175,6 +193,11 @@ const Settings = React.memo(() => {
          },
          [setDefaultAccountMutation, isSettingDefault]
       )
+
+      const handleRequestAccess = useCallback(() => {
+         onGoogleTestingModalClose() // Close testing modal
+         onEmailModalOpen() // Open email submission modal
+      }, [onGoogleTestingModalClose, onEmailModalOpen])
 
       // -------------------------------------------------------------------------
       // RENDER HELPERS
@@ -308,7 +331,7 @@ const Settings = React.memo(() => {
       }
 
       const GoogleCalendarGroupTitle = () => (
-         <Button size='md' colorScheme='gray' onClick={googleLogin} leftIcon={<PiCalendarPlus size={18} />}>
+         <Button size='md' colorScheme='gray' onClick={onGoogleTestingModalOpen} leftIcon={<PiCalendarPlus size={18} />}>
                {t('btn-connect-calendar')}
          </Button>
       )
@@ -318,10 +341,24 @@ const Settings = React.memo(() => {
       // -------------------------------------------------------------------------
 
       return (
-         <Flex gap={3} alignItems='center' flexWrap='wrap'>
-            {googleAccounts.map(renderAccountButton)}
-            {GoogleCalendarGroupTitle()}
-         </Flex>
+         <>
+            <Flex gap={3} alignItems='center' flexWrap='wrap'>
+               {googleAccounts.map(renderAccountButton)}
+               {GoogleCalendarGroupTitle()}
+            </Flex>
+
+            <GoogleTestingModal
+               isOpen={isGoogleTestingModalOpen}
+               onClose={onGoogleTestingModalClose}
+               onRequestAccess={handleRequestAccess}
+               googleLogin={googleLogin}
+            />
+
+            <EmailSubmissionModal
+               isOpen={isEmailModalOpen}
+               onClose={onEmailModalClose}
+            />
+         </>
       )
    }
 )

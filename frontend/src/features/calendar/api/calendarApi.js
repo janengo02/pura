@@ -226,6 +226,21 @@ export const calendarApi = baseApi.injectEndpoints({
         }
       },
     }),
+
+    submitTestUserRequest: builder.mutation({
+      query: ({ email }) => ({
+        url: '/calendar/request-test-access',
+        method: 'POST',
+        body: { email }
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+        try {
+          await queryFulfilled
+        } catch (err) {
+          commonErrorHandler(dispatch, err, getState, baseApi, {})
+        }
+      },
+    }),
   })
 })
 
@@ -264,4 +279,5 @@ export const {
   useDeleteGoogleEventMutation,
   useUpdateGoogleEventTimeMutation,
   useUpdateGoogleEventMutation,
+  useSubmitTestUserRequestMutation,
 } = calendarApi

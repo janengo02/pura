@@ -180,6 +180,15 @@ const validateCalendarSettings = [
       .withMessage('Notifications must be an object')
 ]
 
+// Validate test access request
+const validateTestAccessRequest = [
+   body('email')
+      .notEmpty()
+      .withMessage('Email is required')
+      .isEmail()
+      .withMessage('Must be a valid email address')
+]
+
 module.exports = {
    validateAddGoogleAccount,
    validateListEvents,
@@ -191,5 +200,6 @@ module.exports = {
    validateCreateMeeting,
    validateUpdateMeeting,
    validateDeleteMeeting,
-   validateCalendarSettings
+   validateCalendarSettings,
+   validateTestAccessRequest
 }
