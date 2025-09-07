@@ -38,7 +38,7 @@ import { loginSchema as s } from './LoginSchema'
 
 // Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
-import { LandingHeader } from '../../landing/components/Landing'
+import LandingHeader from '../../landing/components/LandingHeader'
 
 // =============================================================================
 // SELECTORS
@@ -180,7 +180,7 @@ const Login = React.memo(() => {
       return (
          <Container
             minW='100vw'
-            h='100vh'
+            minH='100vh'
             p={0}
             display='flex'
             flexDir='column'
@@ -193,16 +193,19 @@ const Login = React.memo(() => {
                w='full'
                maxW='container.xl'
                alignItems='center'
-               gap={12}
+               gap={{ base: 0, md: 12 }}
+               flexWrap='wrap'
+               flexGrow={1}
             >
                <VStack
-                  flex={6}
+                  flex={{ base: 0, md: 6 }}
                   h='full'
-                  p={10}
-                  spacing={10}
+                  p={{ base: 0, md: 10 }}
+                  spacing={{ base: 0, md: 10 }}
                   alignItems='flex-start'
                   bg='bg.surface'
                   justifyContent='center'
+                  display={{ base: 'none', md: 'flex' }}
                >
                   <Image
                      src='/assets/img/login-graphic.gif'
@@ -211,10 +214,10 @@ const Login = React.memo(() => {
                </VStack>
 
                <VStack
-                  flex={6}
+                  flex={{ base: 1, md: 6 }}
                   h='full'
                   p={10}
-                  spacing={8}
+                  spacing={{ base: 6, md: 8 }}
                   alignItems='flex-start'
                   justifyContent='center'
                >

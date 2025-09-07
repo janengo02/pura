@@ -43,7 +43,7 @@ import { registerSchema as s } from './RegisterSchema'
 
 // Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
-import { LandingHeader } from '../../landing/components/Landing'
+import LandingHeader from '../../landing/components/LandingHeader'
 
 // =============================================================================
 // SELECTORS
@@ -262,7 +262,7 @@ const Register = React.memo(() => {
       return (
          <Container
             minW='100vw'
-            h='100vh'
+            minH='100vh'
             p={0}
             display='flex'
             flexDir='column'
@@ -275,13 +275,15 @@ const Register = React.memo(() => {
                w='full'
                maxW='container.xl'
                alignItems='center'
-               gap={5}
+               gap={{ base: 0, md: 12 }}
+               flexWrap='wrap'
+               flexGrow={1}
             >
                <VStack
-                  flex={6}
-                  h='full'
-                  p={10}
-                  spacing={8}
+                   flex={{ base: 1, md: 6 }}
+                   h='full'
+                   p={10}
+                   spacing={{ base: 6, md: 8 }}
                   alignItems='flex-start'
                   justifyContent='center'
                >
@@ -290,13 +292,14 @@ const Register = React.memo(() => {
                </VStack>
 
                <VStack
-                  flex={6}
+                  flex={{ base: 0, md: 6 }}
                   h='full'
-                  p={10}
-                  spacing={10}
+                  p={{ base: 0, md: 10 }}
+                  spacing={{ base: 0, md: 10 }}
                   alignItems='flex-start'
                   bg='bg.surface'
                   justifyContent='center'
+                  display={{ base: 'none', md: 'flex' }}
                >
                   <Image
                      src='/assets/img/register-graphic.gif'

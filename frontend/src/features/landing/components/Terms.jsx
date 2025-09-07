@@ -29,7 +29,8 @@ import {
 import { PiShield } from 'react-icons/pi'
 
 // Internal Components
-import { Footer, LandingHeader } from './Landing'
+import LandingHeader from './LandingHeader'
+import Footer from './Footer'
 
 // =============================================================================
 // SELECTORS

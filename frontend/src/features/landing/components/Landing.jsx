@@ -54,8 +54,8 @@ import {
 } from 'react-icons/pi'
 
 // Internal Components
-import LanguageSwitcher from '../../ui/components/LanguageSwitcher'
-import ThemeToggle from '../../ui/components/ThemeToggle'
+import LandingHeader from './LandingHeader'
+import Footer from './Footer'
 
 // Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
@@ -300,84 +300,6 @@ const HASHTAGS = [
 // COMPONENT SECTIONS
 // =============================================================================
 
-/**
- * Landing page header with navigation
- */
-export const LandingHeader = React.memo(({ isAuthenticated }) => {
-   const navigate = useNavigate()
-   const { t } = useReactiveTranslation()
-   const { colorMode } = useColorMode()
-
-   const authButtons = useMemo(() => {
-      if (isAuthenticated) {
-         return (
-            <Button
-               colorScheme='purple'
-               onClick={() => navigate('/dashboard')}
-               leftIcon={<PiHouseBold size={16} />}
-            >
-               {t('btn-dashboard')}
-            </Button>
-         )
-      }
-
-      return (
-         <>
-            <Button variant='ghost' onClick={() => navigate('/login')}>
-               {t('landing-demo-login')}
-            </Button>
-            <Button colorScheme='purple' onClick={() => navigate('/register')}>
-               {t('landing-register')}
-            </Button>
-         </>
-      )
-   }, [isAuthenticated, navigate, t])
-
-   return (
-      <Flex
-         as='header'
-         w='full'
-         justifyContent='space-between'
-         alignItems='center'
-         p={6}
-         position='sticky'
-         top={0}
-         bg='bg.canvas'
-         borderBottom='1px'
-         borderColor='border.default'
-         zIndex={10}
-      >
-         <Heading size='md' color='accent.primary'>
-            <Image
-               src={
-                  colorMode === 'dark'
-                     ? '/assets/img/pura-logo-white.svg'
-                     : '/assets/img/pura-logo-purple.svg'
-               }
-               alt='Pura Logo'
-               height='40px'
-               cursor='pointer'
-               onClick={() => navigate('/')}
-               loading='eager'
-               fetchPriority='high'
-               transition='opacity 0.2s ease-in-out'
-            />
-         </Heading>
-
-         <HStack spacing={4}>
-            <ThemeToggle asMenuItem={false} />
-            <LanguageSwitcher />
-            {authButtons}
-         </HStack>
-      </Flex>
-   )
-})
-
-LandingHeader.displayName = 'LandingHeader'
-
-LandingHeader.propTypes = {
-   isAuthenticated: PropTypes.bool
-}
 
 /**
  * Hero section with main value proposition
@@ -436,7 +358,7 @@ const HeroSection = React.memo(() => {
                   </Badge>
                ))}
             </HStack>
-            <HStack spacing={4} pt={4}>
+            <HStack spacing={4} pt={4} flexWrap='wrap' justifyContent='center'>
                <Button
                   size='lg'
                   colorScheme='purple'
@@ -568,7 +490,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
 
    const mediaContent = useMemo(() => {
       const isCurrentMediaLoaded = isMediaLoaded(currentFeature.mediaSrc)
-      
+
       if (currentFeature.mediaType === 'video') {
          return (
             <Box
@@ -586,7 +508,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                      endColor='purple.200'
                   />
                )}
-               
+
                {/* Video content with fade-in animation */}
                <Fade in={isCurrentMediaLoaded}>
                   <Box
@@ -620,7 +542,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                   endColor='purple.200'
                />
             )}
-            
+
             {/* Image content with fade-in animation */}
             <Fade in={isCurrentMediaLoaded}>
                <Image
@@ -673,23 +595,23 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
             <Text fontSize='md' fontWeight='semibold' color='text.primary'>
                {t('landing-implementation-details')}
             </Text>
-            
+
             {/* Preloading progress indicator */}
             {isPreloading && (
                <VStack align='start' spacing={2} w='full'>
                   <Text fontSize='sm' color='purple.600'>
                      Loading media content...
                   </Text>
-                  <Progress 
-                     value={loadProgress} 
-                     size='sm' 
-                     colorScheme='purple' 
-                     w='full' 
+                  <Progress
+                     value={loadProgress}
+                     size='sm'
+                     colorScheme='purple'
+                     w='full'
                      borderRadius='full'
                   />
                </VStack>
             )}
-            
+
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w='full'>
                {feature.features.map((item, idx) => (
                   <Button
@@ -705,7 +627,7 @@ const DemoFeatureSection = React.memo(({ feature, index }) => {
                            color={
                               selectedFeature === idx
                                  ? 'accent.subtle'
-                                 : isMediaLoaded(item.mediaSrc) 
+                                 : isMediaLoaded(item.mediaSrc)
                                     ? 'success.secondary'
                                     : 'gray.400'
                            }
@@ -950,7 +872,7 @@ const CTASection = React.memo(() => {
                   <Text fontSize='lg' opacity={0.9} maxW='2xl' color='gray.200'>
                      {t('landing-cta-description')}
                   </Text>
-                  <HStack spacing={4}>
+                  <HStack spacing={4} flexWrap='wrap' justifyContent='center'>
                      <Button
                         size='lg'
                         bg='white'
@@ -993,77 +915,6 @@ const CTASection = React.memo(() => {
 
 CTASection.displayName = 'CTASection'
 
-/**
- * Footer section
- */
-export const Footer = React.memo(() => {
-   const { t } = useReactiveTranslation()
-   const navigate = useNavigate()
-
-   return (
-      <Box
-         as='footer'
-         bg='bg.canvas'
-         py={12}
-         borderTop='1px'
-         borderColor='border.default'
-      >
-         <Container maxW='7xl'>
-            <VStack spacing={8}>
-               <Flex
-                  w='full'
-                  justifyContent='space-between'
-                  alignItems='center'
-                  flexDirection={{ base: 'column', md: 'row' }}
-                  gap={4}
-               >
-                  <HStack spacing={2}>
-                     <Heading size='md' color='accent.primary'>
-                        PURA
-                     </Heading>
-                     <Badge
-                        variant='outline'
-                        colorScheme='purple'
-                        borderRadius={4}
-                        display='flex'
-                        alignItems='center'
-                        justifyContent='center'
-                     >
-                        Demo Application
-                     </Badge>
-                  </HStack>
-
-                  <VStack
-                     spacing={2}
-                     align={{ base: 'center', md: 'flex-end' }}
-                  >
-                     <Text color='text.secondary' fontSize='sm'>
-                        {t('landing-footer-description')}
-                     </Text>
-                     <HStack spacing={4}>
-                        <Text
-                           as='button'
-                           color='accent.primary'
-                           fontSize='sm'
-                           cursor='pointer'
-                           _hover={{ textDecoration: 'underline' }}
-                           onClick={() => navigate('/terms')}
-                        >
-                           Privacy Policy
-                        </Text>
-                        <Text color='text.secondary' fontSize='sm'>
-                           © 2025 Pura
-                        </Text>
-                     </HStack>
-                  </VStack>
-               </Flex>
-            </VStack>
-         </Container>
-      </Box>
-   )
-})
-
-Footer.displayName = 'Footer'
 
 // =============================================================================
 // MAIN COMPONENT
@@ -1071,7 +922,7 @@ Footer.displayName = 'Footer'
 
 const Landing = React.memo(() => {
    const isAuthenticated = useSelector(selectAuthState)
-   
+
    // -------------------------------------------------------------------------
    // EFFECTS
    // -------------------------------------------------------------------------
@@ -1079,14 +930,14 @@ const Landing = React.memo(() => {
    // Preload critical header images and scroll to top when component mounts
    useEffect(() => {
       window.scrollTo(0, 0)
-      
+
       // Preload header logo images for instant theme switching
       const preloadHeaderImages = () => {
          const logoImages = [
             '/assets/img/pura-logo-white.svg',
             '/assets/img/pura-logo-purple.svg'
          ]
-         
+
          logoImages.forEach(src => {
             const link = document.createElement('link')
             link.rel = 'preload'
@@ -1095,9 +946,9 @@ const Landing = React.memo(() => {
             document.head.appendChild(link)
          })
       }
-      
+
       preloadHeaderImages()
-      
+
       // Cleanup function to remove preload links when component unmounts
       return () => {
          const preloadLinks = document.querySelectorAll('link[rel="preload"][as="image"]')
