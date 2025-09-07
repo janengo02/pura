@@ -130,6 +130,23 @@ const Dashboard = React.memo(() => {
       setLeftWidth(newWidth)
    }, [viewCalendar])
 
+   // Prevent browser back/forward navigation
+   useEffect(() => {
+      // Push a dummy state to prevent back navigation
+      window.history.pushState(null, null, window.location.pathname)
+
+      const handlePopState = () => {
+         // Prevent navigation by pushing forward again
+         window.history.pushState(null, null, window.location.pathname)
+      }
+
+      window.addEventListener('popstate', handlePopState)
+
+      return () => {
+         window.removeEventListener('popstate', handlePopState)
+      }
+   }, [])
+
    // -------------------------------------------------------------------------
    // MEMOIZED VALUES
    // -------------------------------------------------------------------------
