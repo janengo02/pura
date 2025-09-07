@@ -23,6 +23,8 @@ import ToastAlert from '../../../shared/components/errorHandler/ToastAlert'
 // =============================================================================
 
 const STORAGE_KEY = 'dashboard.viewCalendar'
+const MIN_LEFT_WIDTH = 30 // Minimum left pane width as percentage
+const MAX_LEFT_WIDTH = 70 // Maximum left pane width as percentage
 
 // =============================================================================
 // MAIN COMPONENT
@@ -72,7 +74,10 @@ const Dashboard = React.memo(() => {
             const deltaX = e.clientX - separatorXPosition.current
             const currentWidthPx = (prevLeftWidth * width) / 100
             const newWidthPx = currentWidthPx + deltaX
-            const newLeftWidth = (newWidthPx * 100) / width
+            let newLeftWidth = (newWidthPx * 100) / width
+
+            // Apply constraints to prevent left pane from being too small or too large
+            newLeftWidth = Math.max(MIN_LEFT_WIDTH, Math.min(MAX_LEFT_WIDTH, newLeftWidth))
 
             separatorXPosition.current = e.clientX
             return newLeftWidth
@@ -115,7 +120,10 @@ const Dashboard = React.memo(() => {
 
    // Update left width based on calendar view
    useEffect(() => {
-      setLeftWidth(viewCalendar ? 50 : 100)
+      const newWidth = viewCalendar ? 50 : 100
+      // Apply constraints even to initial width
+      const constrainedWidth = Math.max(MIN_LEFT_WIDTH, Math.min(MAX_LEFT_WIDTH, newWidth))
+      setLeftWidth(constrainedWidth)
    }, [viewCalendar])
 
    // -------------------------------------------------------------------------

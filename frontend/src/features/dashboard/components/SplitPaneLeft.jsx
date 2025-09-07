@@ -20,7 +20,7 @@ import TaskModal from '../../task/components/TaskModal'
 // CONSTANTS
 // =============================================================================
 
-const HIDE_THRESHOLD = 95
+const HIDE_THRESHOLD = 90
 const FULL_WIDTH = 100
 
 // =============================================================================
