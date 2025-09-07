@@ -76,15 +76,21 @@ const Dashboard = React.memo(() => {
             const newWidthPx = currentWidthPx + deltaX
             let newLeftWidth = (newWidthPx * 100) / width
 
-            // Apply constraints to prevent left pane from being too small or too large
-            newLeftWidth = Math.max(MIN_LEFT_WIDTH, Math.min(MAX_LEFT_WIDTH, newLeftWidth))
+            // Apply constraints based on calendar visibility
+            if (viewCalendar) {
+               // When calendar is visible, constrain between MIN and MAX
+               newLeftWidth = Math.max(MIN_LEFT_WIDTH, Math.min(MAX_LEFT_WIDTH, newLeftWidth))
+            } else {
+               // When calendar is hidden, left pane can go up to 100%
+               newLeftWidth = 100
+            }
 
             separatorXPosition.current = e.clientX
             return newLeftWidth
          })
          setFocusDivider(true)
       },
-      [width]
+      [width, viewCalendar]
    )
 
    const onMouseUp = useCallback(() => {
@@ -121,9 +127,7 @@ const Dashboard = React.memo(() => {
    // Update left width based on calendar view
    useEffect(() => {
       const newWidth = viewCalendar ? 50 : 100
-      // Apply constraints even to initial width
-      const constrainedWidth = Math.max(MIN_LEFT_WIDTH, Math.min(MAX_LEFT_WIDTH, newWidth))
-      setLeftWidth(constrainedWidth)
+      setLeftWidth(newWidth)
    }, [viewCalendar])
 
    // -------------------------------------------------------------------------
