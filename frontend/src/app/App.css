@@ -721,6 +721,7 @@
    padding: 12px !important;
    color: var(--text-primary) !important;
    transition: background-color 0.2s ease, color 0.2s ease;
+   border-radius: 8px !important;
 }
 
 /* Quill toolbar styling */

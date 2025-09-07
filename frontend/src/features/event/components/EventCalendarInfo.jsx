@@ -74,7 +74,7 @@ const EventCalendarSelect = React.memo(
       }, {})
 
       return (
-         <HStack align='start' spacing={3} w='full'>
+         <HStack align='center' spacing={3} w='full'>
             <PiCalendar size={18} />
 
             <Menu>
