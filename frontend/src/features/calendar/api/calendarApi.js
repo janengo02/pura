@@ -74,6 +74,7 @@ export const calendarApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled
           refetchTaskModal(dispatch, getState, baseApi)
+          refetchCalendar(dispatch, getState, baseApi)
         } catch (err) {
           commonErrorHandler(dispatch, err, getState, baseApi, {
             refetchCalendar: true,
