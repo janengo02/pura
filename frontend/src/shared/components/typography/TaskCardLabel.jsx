@@ -4,6 +4,7 @@ const TaskCardLabel = ({ icon, text, ...props }) => {
    return (
       <Flex
          minW={125}
+         h='fit-content'
          alignItems='center'
          gap={3}
          color='text.secondary'

@@ -47,7 +47,7 @@ import GroupSelect from './GroupSelect'
 import ScheduleSelect from './ScheduleSelect'
 
 // Utils & Icons
-import { PiDotsThreeBold, PiNote, PiTrash } from 'react-icons/pi'
+import { PiDotsThreeBold, PiNote, PiTrash, PiX } from 'react-icons/pi'
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
 import { NAVBAR_HEIGHT } from '../../dashboard/components/Navbar'
 
@@ -326,7 +326,7 @@ const TaskModal = React.memo(
          <Box
             position='fixed'
             w={leftWidth}
-            h='full'
+            h={`calc(100vh - ${NAVBAR_HEIGHT})`}
             left={0}
             bg='text.primary'
             opacity={0.3}
@@ -357,6 +357,15 @@ const TaskModal = React.memo(
                   </MenuItem>
                </MenuList>
             </Menu>
+            <IconButton
+               icon={<PiX size={18} />}
+               variant="ghost"
+               size="md"
+               colorScheme="gray"
+               color="text.primary"
+               onClick={handleCloseModal}
+               aria-label={t('btn-close-modal')}
+            />
          </CardHeader>
       )
 
@@ -432,7 +441,7 @@ const TaskModal = React.memo(
       )
 
       const renderModalBody = () => (
-         <CardBody h='full'>
+         <CardBody h='full' maxH={`calc(100vh - ${NAVBAR_HEIGHT} - 6rem)`} overflow='scroll'>
             <VStack w='full' alignItems='flex-start' gap={5}>
                {renderTaskTitle()}
                <ProgressSelect />
@@ -446,11 +455,13 @@ const TaskModal = React.memo(
       const renderModalCard = () => (
          <ScaleFade initialScale={0.9} in={isModalOpen}>
             <Card
-               paddingX={6}
-               paddingY={4}
+               paddingX={4}
+               paddingY={3}
+               m={4}
+               h="full"
                borderRadius={8}
                boxShadow='xl'
-               w='800px'
+               maxW='650px'
             >
                {renderModalHeader()}
                {renderModalBody()}
@@ -470,6 +481,7 @@ const TaskModal = React.memo(
             position='fixed'
             w={leftWidth}
             h='full'
+            maxH={`calc(100vh - ${NAVBAR_HEIGHT})`}
             top={NAVBAR_HEIGHT}
             left={0}
             display='flex'

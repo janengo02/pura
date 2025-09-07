@@ -101,14 +101,14 @@ const ScheduleSelect = React.memo(() => {
       // -------------------------------------------------------------------------
 
       return (
-         <Flex w='full' gap={3} alignItems='flex-start' paddingTop={1}>
+         <Flex w='full' gap={3} alignItems='flex-start' paddingTop={1} flexWrap='wrap'>
             <TaskCardLabel
                icon={<PiCalendar size={18} />}
                paddingTop={1}
                text={t('label-schedule')}
             />
 
-            <VStack w='full' alignItems='flex-start' gap={3}>
+            <VStack w='full' alignItems='flex-start' gap={3} flex="1 1 0">
                {scheduleTimeSlots}
 
                <Button

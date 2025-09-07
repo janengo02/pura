@@ -30,12 +30,12 @@ import {
    MenuItemOption,
    Text,
    HStack,
-   Divider,
    MenuItem,
    VStack,
    Image,
    Box,
-   Tooltip
+   Tooltip,
+   MenuDivider
 } from '@chakra-ui/react'
 
 // Utils & Icons
@@ -346,13 +346,14 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
 
       const timeInputProps = useMemo(
          () => ({
-            size: 'md',
+            size: 'sm',
             type: 'datetime-local',
             variant: 'filled',
             width: 'auto',
+            flex: "1 0 0",
             borderRadius: 'md',
             bg: showHighlight ? 'accent.subtle' : 'bg.canvas',
-            transition: 'background-color 0.3s ease'
+            transition: 'background-color 0.3s ease',
          }),
          [showHighlight]
       )
@@ -379,20 +380,6 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
          [timeInputProps, timeSlotState.endTime, handleEndTimeChange]
       )
 
-      const deleteButton = useMemo(
-         () => (
-            <IconButton
-               icon={<PiTrash size={18} />}
-               variant='ghost'
-               colorScheme='gray'
-               color='text.primary'
-               size='md'
-               onClick={handleDeleteClick}
-            />
-         ),
-         [handleDeleteClick]
-      )
-
       // -------------------------------------------------------------------------
       // SYNC STATUS HELPER COMPONENTS
       // -------------------------------------------------------------------------
@@ -400,7 +387,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       // Reusable icon component
       const StatusIcon = useCallback(
          ({ src }) => (
-            <Image src={src} boxSize={4} alt='Google Calendar Status' />
+            <Image src={src} boxSize={3} alt='Google Calendar Status' />
          ),
          []
       )
@@ -408,7 +395,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       // Reusable status box wrapper
       const StatusBox = useCallback(
          ({ bgColor, children }) => (
-            <Box p={3} bg={bgColor} borderRadius='md'>
+            <Box p={3} bg={bgColor} borderRadius='sm'>
                {children}
             </Box>
          ),
@@ -425,7 +412,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                      boxSize={3}
                      alt='Google'
                   />
-                  <Text fontSize='md' fontWeight='semibold' color={textColor}>
+                  <Text fontSize='sm' fontWeight='semibold' color={textColor}>
                      {account?.accountEmail}
                   </Text>
                </HStack>
@@ -438,7 +425,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                         bg={calendar?.color || 'blue.500'}
                         flexShrink={0}
                      />
-                     <Text fontSize='md' color={textColor}>
+                     <Text fontSize='sm' color={textColor}>
                         {calendar?.title}
                      </Text>
                   </HStack>
@@ -451,7 +438,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       // Centered message component
       const StatusMessage = useCallback(
          ({ children, color = 'text.primary' }) => (
-            <Text fontSize='md' color={color}>
+            <Text fontSize='sm' color={color}>
                {children}
             </Text>
          ),
@@ -462,11 +449,12 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
       const SyncableCalendarList = useMemo(() => {
          if (googleAccounts.length === 0) {
             return (
-               <MenuItem size='md' isDisabled>
-                  <Text fontSize='md' color='text.secondary'>
-                     {t('alert-sync-no-accounts-connected')}
-                  </Text>
-               </MenuItem>
+                  <MenuItem size='sm' isDisabled>
+                     <Text fontSize='sm' color='text.secondary'>
+                        {t('alert-sync-no-accounts-connected')}
+                     </Text>
+                  </MenuItem>
+
             )
          }
 
@@ -483,7 +471,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                <MenuOptionGroup
                   key={account.accountEmail}
                   title={account.accountEmail}
-                  fontSize='md'
+                  fontSize='sm'
                   type='button'
                >
                   {accountCalendars.map((calendar) => (
@@ -506,7 +494,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                               flexShrink={0}
                            />
                            <VStack spacing={0} align='start' flex={1}>
-                              <Text fontSize='md' fontWeight='medium'>
+                              <Text fontSize='sm' fontWeight='medium'>
                                  {calendar.title}
                               </Text>
                            </VStack>
@@ -561,7 +549,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                   ),
                   actions: (
                      <MenuItem
-                        icon={<PiPlugs size={18} />}
+                        icon={<PiPlugs size={14} />}
                         onClick={async () => {
                            await handleUnsyncFromGoogle(
                               slot.googleAccountEmail,
@@ -575,7 +563,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                },
                [SCHEDULE_SYNCE_STATUS.NONE]: {
                   colorScheme: 'gray',
-                  icon: <PiCalendarPlus size={18} color='text.primary' />,
+                  icon: <PiCalendarPlus size={14} color='text.primary' />,
                   desc: (
                      <StatusBox bgColor='bg.subtle'>
                         <StatusMessage>
@@ -611,13 +599,13 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                   actions: (
                      <>
                         <MenuItem
-                           icon={<PiArrowClockwise size={18} />}
+                           icon={<PiArrowClockwise size={14} />}
                            onClick={googleReconnectLogin}
                         >
                            {t('btn-sync-reconnect-action')}
                         </MenuItem>
                         <MenuItem
-                           icon={<PiPlugs size={18} />}
+                           icon={<PiPlugs size={14} />}
                            onClick={async () => {
                               await handleUnsyncFromGoogle(
                                  slot.googleAccountEmail,
@@ -655,7 +643,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                   ),
                   actions: (
                      <MenuItem
-                        icon={<PiPlugs size={18} />}
+                        icon={<PiPlugs size={14} />}
                         onClick={async () => {
                            await handleUnsyncFromGoogle(
                               slot.googleAccountEmail,
@@ -697,7 +685,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                            isDisabled={isUpdatingTaskSchedule}
                         >
                            <VStack spacing={1} align='start'>
-                              <Text fontSize='md' fontWeight='medium'>
+                              <Text fontSize='sm' fontWeight='medium'>
                                  {t('btn-sync-use-task-time')}
                               </Text>
                               <Text fontSize='xs' color='text.secondary'>
@@ -712,7 +700,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                               isDisabled={isUpdatingTaskSchedule}
                            >
                               <VStack spacing={1} align='start'>
-                                 <Text fontSize='md' fontWeight='medium'>
+                                 <Text fontSize='sm' fontWeight='medium'>
                                     {t('btn-sync-use-google-time')}
                                  </Text>
                                  <Text fontSize='xs' color='text.secondary'>
@@ -724,7 +712,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
                         )}
 
                         <MenuItem
-                           icon={<PiPlugs size={18} />}
+                           icon={<PiPlugs size={14} />}
                            onClick={async () => {
                               await handleUnsyncFromGoogle(
                                  slot.googleAccountEmail,
@@ -805,31 +793,37 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
             >
                <Menu>
                   <MenuButton
-                     as={Button}
-                     size='md'
+                     as={IconButton}
+                     icon={syncProps.icon}
+                     size='sm'
                      variant='ghost'
                      colorScheme={syncProps.colorScheme}
                      isLoading={
                         syncLoading ||
                         isUpdatingTaskSchedule
                      }
-                     display='flex'
-                     alignItems='center'
-                     justifyContent='center'
                      onClick={handleSyncButtonClick}
-                  >
-                     {syncProps.icon}
-                  </MenuButton>
+                  />
                   <MenuList zIndex={10} minW='300px' p={0}>
                      <Box p={2}>{syncProps.desc}</Box>
                      {syncProps.desc && syncProps.actions && (
-                        <Divider borderColor='gray.200' />
+                        <MenuDivider />
                      )}
                      {syncProps.actions && (
                         <Box maxH='200px' overflowY='auto'>
                            {syncProps.actions}
                         </Box>
                      )}
+                     {syncStatus === SCHEDULE_SYNCE_STATUS.NONE && (
+                        <MenuDivider />
+                     )}
+                     <MenuItem
+                        color='danger.primary'
+                        onClick={handleDeleteClick}
+                        icon={<PiTrash size={14} />}
+                     >
+                        {t('btn-delete')}
+                     </MenuItem>
                   </MenuList>
                </Menu>
             </Tooltip>
@@ -840,6 +834,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
          syncLoading,
          isUpdatingTaskSchedule,
          handleSyncButtonClick,
+         handleDeleteClick,
          t
       ])
 
@@ -859,10 +854,14 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
             color={
                timeSlotState.isInvalidTimeSlot ? 'danger.secondary' : undefined
             }
+            justifyContent='space-between'
          >
-            {startTimeInput}-{endTimeInput}
+            <HStack alignItems='center' flexWrap='wrap'>
+            {startTimeInput}
+            <Text>-</Text>
+            {endTimeInput}
+            </HStack>
             {syncButton}
-            {deleteButton}
          </Flex>
       )
    }
