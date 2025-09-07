@@ -107,7 +107,6 @@ const Toolbar = React.memo(() => {
 
             {/* Right Section - Actions */}
             <Flex gap={5} alignItems='center'>
-               <Settings />
                <Button
                   size='md'
                   colorScheme='purple'
