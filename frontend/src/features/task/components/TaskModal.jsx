@@ -98,8 +98,14 @@ const isEmptyQuillContent = (content) => {
 
    if (emptyPatterns.includes(content.trim())) return true
 
-   // Remove all HTML tags and check if there's meaningful text left
-   const textContent = content.replace(/<[^>]*>/g, '').trim()
+   // Preserve line breaks and paragraphs - only remove formatting tags
+   const textContent = content
+      .replace(/<(?!br\s*\/?>|p\s*\/?>|\/p>)[^>]*>/g, '') // Remove all tags except <br> and <p>
+      .replace(/<br\s*\/?>/g, '\n') // Convert <br> to newlines
+      .replace(/<\/?p>/g, '\n') // Convert <p> tags to newlines
+      .replace(/\n+/g, '\n') // Collapse multiple newlines to single
+      .trim()
+
    return !textContent
 }
 
@@ -158,6 +164,25 @@ const TaskModal = React.memo(
          () => taskContent !== task?.content,
          [taskContent, task?.content]
       )
+
+      // Quill editor configuration
+         const modules = useMemo(
+            () => ({
+               toolbar: [
+                  [{ header: [1, 2, 3, false] }],
+                  ['bold', 'italic', 'underline'],
+                  [{ list: 'ordered' }, { list: 'bullet' }],
+                  ['link'],
+                  ['clean']
+               ]
+            }),
+            []
+         )
+
+         const formats = useMemo(
+            () => ['header', 'bold', 'italic', 'underline', 'list', 'bullet', 'link'],
+            []
+         )
 
       // -------------------------------------------------------------------------
       // EVENT HANDLERS
@@ -395,6 +420,7 @@ const TaskModal = React.memo(
             <TaskCardLabel icon={<PiNote size={18} />} text={t('label-note')} />
             <Box
                w='full'
+               className="task-modal-content-container"
                sx={{
                   '& .ql-editor.ql-blank::before': {
                      color: 'text.secondary',
@@ -414,27 +440,9 @@ const TaskModal = React.memo(
                   value={taskContent}
                   onChange={handleContentChange}
                   placeholder={t('placeholder-add-note')}
-                  style={{
-                     width: '100%',
-                     minHeight: '100px'
-                  }}
-                  formats={[
-                     'bold',
-                     'italic',
-                     'underline',
-                     'strike',
-                     'list',
-                     'bullet',
-                     'indent',
-                     'link'
-                  ]}
-                  modules={{
-                     toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['link']
-                     ]
-                  }}
+                  formats={formats}
+                  modules={modules}
+                  bounds=".task-modal-content-container"
                />
             </Box>
          </>
@@ -453,7 +461,16 @@ const TaskModal = React.memo(
       )
 
       const renderModalCard = () => (
-         <ScaleFade initialScale={0.9} in={isModalOpen}>
+         <ScaleFade
+            initialScale={0.9}
+            in={isModalOpen}
+            style={{
+               width: '100%',
+               display: 'flex',
+               justifyContent: 'center',
+               alignItems: 'center',
+            }}
+         >
             <Card
                paddingX={4}
                paddingY={3}
@@ -462,6 +479,9 @@ const TaskModal = React.memo(
                borderRadius={8}
                boxShadow='xl'
                maxW='650px'
+               style={{
+                  flexGrow:1
+               }}
             >
                {renderModalHeader()}
                {renderModalBody()}
