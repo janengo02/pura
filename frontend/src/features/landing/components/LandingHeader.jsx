@@ -24,6 +24,7 @@ import {
 
 // Icons
 import { PiHouseBold, PiList, PiX } from 'react-icons/pi'
+import { FaGithub } from 'react-icons/fa'
 
 // Internal Components
 import LanguageSwitcher from '../../ui/components/LanguageSwitcher'
@@ -98,6 +99,15 @@ const LandingHeader = React.memo(({ isAuthenticated }) => {
 
    const desktopNav = (
       <HStack spacing={{ base: 2, md: 4 }}>
+         <IconButton
+            as='a'
+            href='https://github.com/janengo02/pura'
+            target='_blank'
+            aria-label='View source on GitHub'
+            icon={<FaGithub size={20} />}
+            variant='ghost'
+            size={buttonSize}
+         />
          <ThemeToggle asMenuItem={false} />
          <LanguageSwitcher />
          {authButtons}
@@ -107,6 +117,15 @@ const LandingHeader = React.memo(({ isAuthenticated }) => {
    const mobileNav = (
       <VStack spacing={4} align='stretch' p={4}>
          <HStack justifyContent='center' spacing={4}>
+            <IconButton
+               as='a'
+               href='https://github.com/janengo02/pura'
+               target='_blank'
+               aria-label='View source on GitHub'
+               icon={<FaGithub size={20} />}
+               variant='ghost'
+               size={buttonSize}
+            />
             <ThemeToggle asMenuItem={false} />
             <LanguageSwitcher />
          </HStack>

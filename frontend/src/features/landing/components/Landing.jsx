@@ -27,7 +27,6 @@ import {
    Badge,
    Divider,
    Image,
-   useColorMode,
    Skeleton,
    Progress,
    Fade
@@ -50,7 +49,6 @@ import {
    PiImage,
    PiClock,
    PiTarget,
-   PiHouseBold
 } from 'react-icons/pi'
 
 // Internal Components
@@ -61,6 +59,7 @@ import Footer from './Footer'
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
 import { useMediaPreloader } from '../../../shared/hooks/useMediaPreloader'
 import { useSelector } from 'react-redux'
+import { FaGithub } from 'react-icons/fa'
 
 // =============================================================================
 // CONSTANTS
@@ -370,10 +369,11 @@ const HeroSection = React.memo(() => {
                <Button
                   size='lg'
                   variant='outline'
-                  leftIcon={<PiCode size={20} />}
-                  onClick={() =>
-                     window.open('https://github.com/janengo02/pura', '_blank')
-                  }
+                  aria-label='View source on GitHub'
+                  leftIcon={<FaGithub size={18} />}
+                  as='a'
+                  href='https://github.com/janengo02/pura'
+                  target='_blank'
                >
                   {t('landing-view-source')}
                </Button>
@@ -893,12 +893,10 @@ const CTASection = React.memo(() => {
                         color='white'
                         borderColor='white'
                         _hover={{ bg: 'whiteAlpha.200' }}
-                        onClick={() =>
-                           window.open(
-                              'https://github.com/janengo02/pura',
-                              '_blank'
-                           )
-                        }
+                        as='a'
+                        href='https://github.com/janengo02/pura'
+                        target='_blank'
+                        aria-label='View source on GitHub'
                      >
                         {t('landing-view-source')}
                      </Button>

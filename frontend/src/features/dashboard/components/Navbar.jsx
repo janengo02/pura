@@ -4,29 +4,28 @@
 
 // React & Hooks
 import React, { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 // Redux
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
 
 // Actions
 import { clearEventEditModal } from '../../event/eventSlice'
 
 // UI Components
-import { Flex, Heading, IconButton, Spacer } from '@chakra-ui/react'
+import { Flex, IconButton, Image, Spacer, useBreakpointValue, useColorMode } from '@chakra-ui/react'
 
 // Icons
 import { PiCalendarFill } from 'react-icons/pi'
+import { FaGithub } from 'react-icons/fa'
 
 // Internal Components
 import ProfileMenu from './ProfileMenu'
 
 // Context & Utils
 import SplitPaneContext from '../context/SplitPaneContext'
-
-// Hooks
-import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
 
 // =============================================================================
 // SELECTORS
@@ -49,7 +48,7 @@ const NavbarWrapper = ({ children }) => (
    <Flex
       h={NAVBAR_HEIGHT}
       w='full'
-      p={10}
+      p={useBreakpointValue({ base: 4, md: 10 })}
       alignItems='center'
       bg='bg.canvas'
       borderBottomColor='border.default'
@@ -66,17 +65,29 @@ NavbarWrapper.propTypes = {
 /**
  * Left section of navbar containing menu and title
  */
-const NavbarLeft = React.memo(({ title }) => (
-   <Heading as='h2' size='lg' color='text.primary'>
-      {title}
-   </Heading>
-))
+const NavbarLeft = React.memo(() => {
+   const navigate = useNavigate()
+   const logoHeight = useBreakpointValue({ base: '32px', md: '40px' })
+   const { colorMode } = useColorMode()
+
+   return (
+      <Image
+         src={
+            colorMode === 'dark'
+               ? '/assets/img/pura-logo-white.svg'
+               : '/assets/img/pura-logo-purple.svg'
+         }
+         alt='Pura Logo'
+         height={logoHeight}
+         cursor='pointer'
+         onClick={() => navigate('/')}
+         loading='eager'
+         fetchPriority='high'
+         transition='opacity 0.2s ease-in-out'
+      />
+)})
 
 NavbarLeft.displayName = 'NavbarLeft'
-
-NavbarLeft.propTypes = {
-   title: PropTypes.string.isRequired
-}
 
 /**
  * Right section of navbar containing calendar toggle and profile menu
@@ -87,6 +98,15 @@ const NavbarRight = React.memo(() => {
 
    return (
       <Flex gap={8}>
+         <IconButton
+            as='a'
+            href='https://github.com/janengo02/pura'
+            target='_blank'
+            aria-label='View source on GitHub'
+            icon={<FaGithub size={20} />}
+            variant='ghost'
+            isRound
+         />
          <IconButton
             isRound
             variant={viewCalendar ? 'solid' : 'outline'}
@@ -110,19 +130,13 @@ NavbarRight.displayName = 'NavbarRight'
 
 const Navbar = React.memo(() => {
    // -------------------------------------------------------------------------
-   // HOOKS & STATE
-   // -------------------------------------------------------------------------
-   const { t } = useReactiveTranslation()
-   const { title } = useSelector(selectNavbarData)
-
-   // -------------------------------------------------------------------------
    // RENDER LOGIC
    // -------------------------------------------------------------------------
 
    return (
       <>
          <NavbarWrapper>
-            <NavbarLeft title={title || t('label-page-title')} />
+            <NavbarLeft />
             <Spacer />
             <NavbarRight />
          </NavbarWrapper>

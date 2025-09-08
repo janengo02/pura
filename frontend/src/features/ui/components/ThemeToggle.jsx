@@ -74,7 +74,7 @@ const ThemeToggle = React.memo(({ onThemeToggle, asMenuItem = true }) => {
          gap={2}
          p={2}
          borderRadius='md'
-         _hover={{ bg: 'gray.100', _dark: { bg: 'gray.700' } }}
+         _hover={{ bg: 'gray.100', _dark: { bg: 'whiteAlpha.200' } }}
       >
          {isDark ? <PiMoon size={18} /> : <PiSun size={18} />}
          {content}
