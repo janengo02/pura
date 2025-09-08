@@ -16,7 +16,8 @@ import {
    Menu,
    MenuButton,
    MenuList,
-   MenuItem
+   MenuItem,
+   Box
 } from '@chakra-ui/react'
 
 // Icons
@@ -172,15 +173,17 @@ const DateRangeDisplay = React.memo(({ date, view, localizer }) => {
    )
 
    return (
-      <Text
-         fontSize='lg'
-         fontWeight='semibold'
-         color='text.primary'
-         minW='200px'
-         textAlign='center'
-      >
-         {formattedRange}
-      </Text>
+      <Box display={{ base: 'none', md: 'block' }}>
+         <Text
+            fontSize='lg'
+            fontWeight='semibold'
+            color='text.primary'
+            minW='200px'
+            textAlign='center'
+         >
+            {formattedRange}
+         </Text>
+      </Box>
    )
 })
 

@@ -24,7 +24,6 @@ const Toolbar = React.memo(() => {
    return (
       <Flex
          w='100%'
-         minW={400}
          paddingY={5}
          paddingX={4}
          justifyContent='end'

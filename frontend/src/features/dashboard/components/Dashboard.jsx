@@ -4,7 +4,7 @@
 
 // React & Hooks
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { Flex } from '@chakra-ui/react'
+import { Flex, useBreakpointValue } from '@chakra-ui/react'
 
 // Context & Hooks
 import SplitPaneContext from '../context/SplitPaneContext'
@@ -47,6 +47,9 @@ const Dashboard = React.memo(() => {
    const leftRef = useRef(null)
    const rightRef = useRef(null)
    const { width } = useWindowDimensions()
+   
+   // Responsive breakpoint detection
+   const isSmallScreen = useBreakpointValue({ base: true, md: false })
 
    // -------------------------------------------------------------------------
    // EVENT HANDLERS
@@ -69,6 +72,9 @@ const Dashboard = React.memo(() => {
    const onMouseMove = useCallback(
       (e) => {
          if (!separatorXPosition.current) return
+         
+         // Disable dragging on small screens when calendar is visible
+         if (isSmallScreen && viewCalendar) return
 
          setLeftWidth((prevLeftWidth) => {
             const deltaX = e.clientX - separatorXPosition.current
@@ -90,7 +96,7 @@ const Dashboard = React.memo(() => {
          })
          setFocusDivider(true)
       },
-      [width, viewCalendar]
+      [width, viewCalendar, isSmallScreen]
    )
 
    const onMouseUp = useCallback(() => {
@@ -124,11 +130,21 @@ const Dashboard = React.memo(() => {
       localStorage.setItem(STORAGE_KEY, viewCalendar.toString())
    }, [viewCalendar])
 
-   // Update left width based on calendar view
+   // Update left width based on calendar view and screen size
    useEffect(() => {
-      const newWidth = viewCalendar ? 50 : 100
+      let newWidth
+      if (isSmallScreen && viewCalendar) {
+         // On small screens, hide left pane when calendar is visible
+         newWidth = 0
+      } else if (viewCalendar) {
+         // On larger screens, show both panes
+         newWidth = 50
+      } else {
+         // Calendar hidden, left pane takes full width
+         newWidth = 100
+      }
       setLeftWidth(newWidth)
-   }, [viewCalendar])
+   }, [viewCalendar, isSmallScreen])
 
    // Prevent browser back/forward navigation
    useEffect(() => {
@@ -169,16 +185,18 @@ const Dashboard = React.memo(() => {
    const layoutContent = useMemo(
       () => (
          <Flex bg='bg.surface' w='full' h={`calc(100vh - ${NAVBAR_HEIGHT})`}>
-            <SplitPaneLeft ref={leftRef} />
+            {/* Hide left pane on small screens when calendar is visible */}
+            {!(isSmallScreen && viewCalendar) && <SplitPaneLeft ref={leftRef} />}
             {viewCalendar && (
                <>
-                  <PageDivider />
+                  {/* Hide divider on small screens */}
+                  {!isSmallScreen && <PageDivider />}
                   <SplitPaneRight ref={rightRef} />
                </>
             )}
          </Flex>
       ),
-      [viewCalendar]
+      [viewCalendar, isSmallScreen]
    )
 
    // -------------------------------------------------------------------------
