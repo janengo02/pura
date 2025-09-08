@@ -638,7 +638,7 @@ const Calendar = React.memo(() => {
 
       return (
          <Skeleton isLoaded={!isLoading}>
-            <Box position='relative' h='calc(100vh - 9rem)'>
+            <Box position='relative' h='full'>
                <VStack h='full' alignItems='flex-start' gap={2} paddingBottom={10}>
                   <Toolbar />
                   <DnDCalendar
