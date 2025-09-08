@@ -20,26 +20,37 @@ class EmailService {
     */
    initializeTransporter() {
       try {
-         const { EMAIL_SERVICE, EMAIL_USER, EMAIL_PASSWORD } = process.env
+         const { EMAIL_USER, EMAIL_PASSWORD } = process.env
 
-         if (!EMAIL_SERVICE || !EMAIL_USER || !EMAIL_PASSWORD) {
-            logger.warn('Email service not fully configured - some environment variables are missing')
+         if (!EMAIL_USER || !EMAIL_PASSWORD) {
+            logger.warn('Email service not configured - EMAIL_USER and EMAIL_PASSWORD are required')
             return
          }
 
-         // Create transporter configuration based on service
+         // Gmail configuration with production-ready settings
          const transportConfig = {
             service: 'gmail',
             auth: {
                user: EMAIL_USER,
                pass: EMAIL_PASSWORD
+            },
+            // Production-ready settings
+            pool: true,
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            connectionTimeout: 60000, // 60 seconds
+            greetingTimeout: 30000, // 30 seconds
+            socketTimeout: 60000, // 60 seconds
+            tls: {
+               rejectUnauthorized: false
             }
          }
 
          this.transporter = nodemailer.createTransport(transportConfig)
          this.isConfigured = true
 
-         logger.info(`Email service initialized with ${EMAIL_SERVICE}`)
+         logger.info('Email service initialized with Gmail')
       } catch (error) {
          logger.error('Failed to initialize email service:', error)
          this.isConfigured = false
@@ -47,11 +58,12 @@ class EmailService {
    }
 
    /**
-    * Send email for Google Calendar test access request
+    * Send email for Google Calendar test access request with retry logic
     * @param {string} userEmail - Email address of the user requesting access
+    * @param {number} maxRetries - Maximum number of retry attempts
     * @returns {Promise<boolean>} Success status
     */
-   async sendTestUserRequestEmail(userEmail) {
+   async sendTestUserRequestEmail(userEmail, maxRetries = 3) {
       if (!this.isConfigured) {
          logger.error('Email service not configured - cannot send email')
          throw new Error('Email service not configured')
@@ -62,27 +74,54 @@ class EmailService {
          throw new Error('Admin email not configured')
       }
 
-      try {
-         const mailOptions = {
-            from: `"Pura Task Manager" <${process.env.EMAIL_USER}>`,
-            to: process.env.ADMIN_EMAIL,
-            subject: 'New Google Calendar Test Access Request',
-            html: this.generateTestAccessRequestHtml(userEmail),
-            text: this.generateTestAccessRequestText(userEmail)
-         }
-
-         const result = await this.transporter.sendMail(mailOptions)
-
-         logger.info(`Test access request email sent successfully for ${userEmail}`, {
-            messageId: result.messageId,
-            recipientEmail: userEmail
-         })
-
-         return true
-      } catch (error) {
-         logger.error(`Failed to send test access request email for ${userEmail}:`, error)
-         throw new Error('Failed to send email notification')
+      const mailOptions = {
+         from: `"Pura Task Manager" <${process.env.EMAIL_USER}>`,
+         to: process.env.ADMIN_EMAIL,
+         subject: 'New Google Calendar Test Access Request',
+         html: this.generateTestAccessRequestHtml(userEmail),
+         text: this.generateTestAccessRequestText(userEmail)
       }
+
+      let lastError = null
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+         try {
+            logger.info(`Attempting to send email for ${userEmail} (attempt ${attempt}/${maxRetries})`)
+            
+            const result = await this.transporter.sendMail(mailOptions)
+
+            logger.info(`Test access request email sent successfully for ${userEmail}`, {
+               messageId: result.messageId,
+               recipientEmail: userEmail,
+               attempt: attempt
+            })
+
+            return true
+         } catch (error) {
+            lastError = error
+            logger.warn(`Email send attempt ${attempt}/${maxRetries} failed for ${userEmail}:`, {
+               error: error.message,
+               code: error.code,
+               command: error.command
+            })
+
+            // Wait before retry (exponential backoff)
+            if (attempt < maxRetries) {
+               const waitTime = Math.pow(2, attempt) * 1000 // 2s, 4s, 8s...
+               logger.info(`Waiting ${waitTime}ms before retry...`)
+               await new Promise(resolve => setTimeout(resolve, waitTime))
+            }
+         }
+      }
+
+      // All attempts failed
+      logger.error(`All ${maxRetries} email send attempts failed for ${userEmail}:`, {
+         finalError: lastError.message,
+         code: lastError.code,
+         command: lastError.command
+      })
+      
+      throw new Error(`Failed to send email notification after ${maxRetries} attempts`)
    }
 
    /**
