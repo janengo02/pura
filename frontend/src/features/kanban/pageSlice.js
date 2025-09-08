@@ -4,7 +4,6 @@ import { getDefaultName, getDefaultSchedule, moveTaskHelper, updateGroupHelper, 
 import { taskApi } from '../task/api/taskApi'
 
 const initialState = {
-  // RTK Query data structure
   id: null,
   groupOrder: [],
   progressOrder: [],
@@ -12,7 +11,6 @@ const initialState = {
   tasks: [],
   title: null,
   user: null,
-  // Additional pageSlice specific state
   filter: {
         schedule: getDefaultSchedule(),
         name: getDefaultName()
@@ -130,10 +128,8 @@ const pageSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Handle RTK Query getFirstPage states
     builder
       .addMatcher(pageApi.endpoints.getFirstPage.matchFulfilled, (state, action) => {
-        // Map RTK Query response to pageSlice state
         const pageData = action.payload
         state.id = pageData.id
         state.groupOrder = pageData.groupOrder || []
@@ -144,7 +140,6 @@ const pageSlice = createSlice({
         state.user = pageData.user
       })
       .addMatcher(pageApi.endpoints.createProgress.matchFulfilled, (state, action) => {
-        // Map RTK Query response to pageSlice state
         const pageData = action.payload
         state.id = pageData.id
         state.groupOrder = pageData.groupOrder || []
@@ -155,7 +150,6 @@ const pageSlice = createSlice({
         state.user = pageData.user
       })
       .addMatcher(pageApi.endpoints.createGroup.matchFulfilled, (state, action) => {
-        // Map RTK Query response to pageSlice state
         const pageData = action.payload
         state.id = pageData.id
         state.groupOrder = pageData.groupOrder || []
@@ -166,7 +160,6 @@ const pageSlice = createSlice({
         state.user = pageData.user
       })
       .addMatcher(taskApi.endpoints.createTask.matchFulfilled, (state, action) => {
-        // Map RTK Query response to pageSlice state
         const pageData = action.payload.page
         state.id = pageData.id
         state.groupOrder = pageData.groupOrder || []
@@ -177,7 +170,6 @@ const pageSlice = createSlice({
         state.user = pageData.user
       })
       .addMatcher(taskApi.endpoints.moveTask.matchFulfilled, (state, action) => {
-        // Map RTK Query response to pageSlice state
         const pageData = action.payload.page
         state.id = pageData.id
         state.groupOrder = pageData.groupOrder || []

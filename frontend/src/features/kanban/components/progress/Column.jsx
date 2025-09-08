@@ -182,7 +182,7 @@ const Column = ({ progress, group }) => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Column.displayName = 'Column'
 
 // PropTypes validation

@@ -401,7 +401,7 @@ const TaskCard = React.memo(
 // PROPTYPES & REDUX CONNECTION
 // =============================================================================
 
-// Display name for debugging
+
 TaskCard.displayName = 'TaskCard'
 
 // PropTypes validation

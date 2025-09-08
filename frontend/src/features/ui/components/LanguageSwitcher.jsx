@@ -210,7 +210,7 @@ const LanguageSwitcher = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 LanguageSwitcher.displayName = 'LanguageSwitcher'
 
 // PropTypes validation

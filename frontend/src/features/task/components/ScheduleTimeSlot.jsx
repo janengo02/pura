@@ -871,7 +871,7 @@ const ScheduleTimeSlot = React.memo(({ slot, index }) => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 ScheduleTimeSlot.displayName = 'ScheduleTimeSlot'
 
 // PropTypes validation

@@ -272,7 +272,6 @@ const TaskModal = React.memo(
          async (e) => {
             e.preventDefault()
             handleDeleteTask()
-            // Modal will close automatically when task is deleted from Redux
          },
          [handleDeleteTask]
       )
@@ -318,7 +317,6 @@ const TaskModal = React.memo(
          const currentTaskId = task?.id
          const previousTaskId = previousTaskIdRef.current
 
-         // Only focus if modal is open, task exists, and task ID has changed
          if (isModalOpen && task && currentTaskId !== previousTaskId) {
             focusTitleInput()
          }
@@ -520,7 +518,7 @@ const TaskModal = React.memo(
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 TaskModal.displayName = 'TaskModal'
 
 // PropTypes validation

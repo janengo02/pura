@@ -36,20 +36,18 @@ import { PiMagicWand } from 'react-icons/pi'
 import { MultiInput } from '../../../shared/components/formInput/MultiInput'
 import Link from '../../../shared/components/typography/Link'
 import FormAlert from '../../../shared/components/errorHandler/FormAlert'
+import LandingHeader from '../../landing/components/LandingHeader'
 
 // Actions & Schema
 import { useLazyLoadUserQuery, useRegisterMutation } from '../api/authApi'
 import { registerSchema as s } from './RegisterSchema'
-
-// Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
-import LandingHeader from '../../landing/components/LandingHeader'
 
 // =============================================================================
 // SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
+
 const selectAuthData = createSelector(
    [(state) => state.auth?.isAuthenticated || false],
    (isAuthenticated) => ({
@@ -112,7 +110,6 @@ const Register = React.memo(() => {
             onSubmit: methods.handleSubmit(async (data) => {
                const { name, email, password } = data
 
-               // Include language in registration data
                const registrationData = {
                   name,
                   email,
@@ -317,7 +314,7 @@ const Register = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Register.displayName = 'Register'
 
 // =============================================================================

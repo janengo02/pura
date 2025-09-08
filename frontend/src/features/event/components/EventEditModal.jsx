@@ -478,7 +478,7 @@ const EventEditModal = React.memo(
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 EventEditModal.displayName = 'EventEditModal'
 
 // =============================================================================

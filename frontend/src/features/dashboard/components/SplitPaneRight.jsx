@@ -45,7 +45,7 @@ const SplitPaneRight = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 SplitPaneRight.displayName = 'SplitPaneRight'
 
 // =============================================================================

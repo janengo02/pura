@@ -425,7 +425,7 @@ const EventCreatePopover = () => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 EventCreatePopover.displayName = 'EventCreatePopover'
 
 

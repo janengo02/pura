@@ -40,7 +40,7 @@ const Toolbar = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Toolbar.displayName = 'CalendarToolbar'
 
 // =============================================================================

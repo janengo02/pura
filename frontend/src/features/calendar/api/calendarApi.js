@@ -259,7 +259,6 @@ export const refetchCalendar = (dispatch, getState, baseApi) => {
   const pageId = state.pageSlice?.id
 
   if (range && range.length >= 2 && pageId) {
-    // Manually trigger calendar refetch to get updated data with force refresh
     dispatch(baseApi.endpoints.loadCalendar.initiate({
       minDate: range[0],
       maxDate: range[1],

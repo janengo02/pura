@@ -134,7 +134,7 @@ const Navbar = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Navbar.displayName = 'Navbar'
 
 // PropTypes validation

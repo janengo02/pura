@@ -109,7 +109,6 @@ const Kanban = React.memo(() => {
 
       const onDragEnd = useCallback(
          (result) => {
-            // RTK Query mutation handles optmistic update and rollback automatically
             moveTaskMutation({
                pageId: id,
                result: result
@@ -237,7 +236,7 @@ const Kanban = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Kanban.displayName = 'Kanban'
 
 // PropTypes validation

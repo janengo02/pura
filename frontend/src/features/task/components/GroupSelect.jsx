@@ -166,7 +166,7 @@ const GroupSelect = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 GroupSelect.displayName = 'GroupSelect'
 
 // PropTypes validation

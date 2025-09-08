@@ -36,7 +36,7 @@ import Footer from './Footer'
 // SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
+
 const selectAuthState = createSelector(
    [(state) => state.auth?.isAuthenticated || false],
    (isAuthenticated) => isAuthenticated

@@ -207,7 +207,6 @@ const ProgressHeader = React.memo(
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
 
-      // Memoize margin bottom calculation for performance
       const flexMarginBottom = useMemo(
          () => (titleEditing.isEditing || isNew ? -2 : undefined),
          [titleEditing.isEditing, isNew]

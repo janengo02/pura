@@ -135,7 +135,6 @@ const calendarSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Handle RTK Query loadCalendar states
     builder
       .addMatcher(calendarApi.endpoints.loadCalendar.matchFulfilled, (state, action) => {
         const calendarData = loadGoogleCalendarHelper({
@@ -162,7 +161,6 @@ const calendarSlice = createSlice({
       .addMatcher(calendarApi.endpoints.addGoogleAccount.matchFulfilled, (state, action) => {
         const newGoogleAccountData = action.payload
 
-        // Use the same helper function as the traditional reducer
         const updatedState = addGoogleAccount({
           googleAccounts: state.googleAccounts,
           googleCalendars: state.googleCalendars,
@@ -170,7 +168,6 @@ const calendarSlice = createSlice({
           newGoogleAccount: newGoogleAccountData
         })
 
-        // Update state with new account, calendars, and events
         state.googleAccounts = updatedState.googleAccounts
         state.googleCalendars = updatedState.googleCalendars
         state.googleEvents = updatedState.googleEvents
@@ -179,7 +176,6 @@ const calendarSlice = createSlice({
       .addMatcher(calendarApi.endpoints.disconnectGoogleAccount.matchFulfilled, (state, action) => {
         const { accountEmail } = action.meta.arg.originalArgs
 
-        // Use the same helper function as the traditional reducer
         const updatedState = removeGoogleAccount({
           googleAccounts: state.googleAccounts,
           googleCalendars: state.googleCalendars,
@@ -187,7 +183,6 @@ const calendarSlice = createSlice({
           removedAccountEmail: accountEmail
         })
 
-        // Update state after account removal
         state.googleAccounts = updatedState.googleAccounts
         state.googleCalendars = updatedState.googleCalendars
         state.googleEvents = updatedState.googleEvents

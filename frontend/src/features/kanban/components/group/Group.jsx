@@ -180,7 +180,6 @@ const Group = React.memo(
       // MEMOIZED VALUES
       // -------------------------------------------------------------------------
 
-      // Memoize gap calculation for performance
       const containerGap = useMemo(
          () => (titleEditing.isEditing || isNew ? 0 : 2),
          [titleEditing.isEditing, isNew]

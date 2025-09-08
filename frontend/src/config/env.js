@@ -1,9 +1,5 @@
-/**
- * Frontend environment variable validation using Yup
- */
 import * as yup from 'yup'
 
-// Define validation schema for frontend environment variables
 const envSchema = yup.object({
   REACT_APP_GOOGLE_OAUTH_CLIENT_ID: yup
     .string()
@@ -23,9 +19,7 @@ const envSchema = yup.object({
     })
 }).noUnknown()
 
-/**
- * Validate environment variables using Yup schema
- */
+
 const validateEnv = () => {
   // Skip validation if we're already on the error page to prevent infinite loops
   if (typeof window !== 'undefined' && window.location.pathname === '/error') {
@@ -35,7 +29,6 @@ const validateEnv = () => {
     }
   }
 
-  // Prepare environment variables with defaults
   const envVars = {
     REACT_APP_GOOGLE_OAUTH_CLIENT_ID: process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID,
     REACT_APP_API_URL: process.env.REACT_APP_API_URL || 'http://localhost:2000'
@@ -55,12 +48,8 @@ const validateEnv = () => {
   }
 }
 
-// Validate environment variables
 const env = validateEnv()
 
-// Export individual variables for backward compatibility
 export const googleAuthClientId = env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID
 export const apiUrl = env.REACT_APP_API_URL
-
-// Export all validated environment variables
 export default env

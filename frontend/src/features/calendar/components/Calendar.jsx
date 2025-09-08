@@ -122,9 +122,6 @@ const DnDCalendar = withDragAndDrop(BigCalendar)
 // =============================================================================
 // UTILITY COMPONENTS
 // =============================================================================
-/**
- * Wrapper component for date cells with custom styling
- */
 const ColoredDateCellWrapper = ({ children }) => {
    return React.cloneElement(React.Children.only(children), {
       style: {
@@ -190,7 +187,6 @@ const Calendar = React.memo(() => {
          [activeLanguage]
       )
 
-      // Calendar configuration with optimized performance
       const calendarConfig = useMemo(
          () => ({
             components: {
@@ -708,7 +704,7 @@ const Calendar = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Calendar.displayName = 'Calendar'
 
 // PropTypes validation - now empty since we use hooks

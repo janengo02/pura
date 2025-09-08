@@ -100,7 +100,7 @@ const ReloadButton = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 ReloadButton.displayName = 'CalendarReloadButton'
 
 // =============================================================================

@@ -195,7 +195,7 @@ const Filter = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Filter.displayName = 'KanbanFilter'
 
 // PropTypes validation

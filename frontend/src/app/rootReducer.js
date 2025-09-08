@@ -9,7 +9,6 @@ import theme from '../features/ui/themeSlice'
 import event from '../features/event/eventSlice'
 import { baseApi } from '../shared/api/baseApi'
 
-// Combined reducers for app state
 const appReducer = combineReducers({
    alert,
    auth,
@@ -22,7 +21,6 @@ const appReducer = combineReducers({
    [baseApi.reducerPath]: baseApi.reducer
 })
 
-// Root reducer with reset functionality (modern RTK pattern)
 const rootReducer = (state, action) => {
    // Reset state on logout but preserve user preferences
    if (action.type === 'auth/logout') {

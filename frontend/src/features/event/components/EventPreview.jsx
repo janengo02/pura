@@ -343,7 +343,7 @@ const EventPreview = React.memo(({ onClose, event }) => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 EventPreview.displayName = 'EventPreview'
 
 // PropTypes validation

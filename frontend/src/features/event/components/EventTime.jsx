@@ -204,7 +204,7 @@ const EventTimeInput = React.memo(
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 EventTimeText.displayName = 'EventTimeText'
 EventTimeInput.displayName = 'EventTimeInput'
 

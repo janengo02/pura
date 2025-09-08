@@ -41,7 +41,7 @@ import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTransla
 // SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
+
 const selectProfileData = createSelector(
    [(state) => state.auth.user, (state) => state.language.current],
    (user, currentLanguage) => ({
@@ -224,7 +224,7 @@ const ProfileMenu = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 ProfileMenu.displayName = 'ProfileMenu'
 
 // PropTypes validation

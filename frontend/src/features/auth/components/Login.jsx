@@ -31,20 +31,17 @@ import {
 import { MultiInput } from '../../../shared/components/formInput/MultiInput'
 import Link from '../../../shared/components/typography/Link'
 import FormAlert from '../../../shared/components/errorHandler/FormAlert'
+import LandingHeader from '../../landing/components/LandingHeader'
 
 // Actions & Schema
 import { useLazyLoadUserQuery, useLoginMutation } from '../api/authApi'
 import { loginSchema as s } from './LoginSchema'
-
-// Utils
 import { useReactiveTranslation } from '../../../shared/hooks/useReactiveTranslation'
-import LandingHeader from '../../landing/components/LandingHeader'
 
 // =============================================================================
 // SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
 const selectAuthData = createSelector(
    [(state) => state.auth?.isAuthenticated || false],
    (isAuthenticated) => ({
@@ -234,7 +231,6 @@ const Login = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
 Login.displayName = 'Login'
 
 

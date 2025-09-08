@@ -28,7 +28,7 @@ import { useCreateTaskMutation } from '../../../task/api/taskApi'
 // SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
+
 const selectPageData = createSelector(
    [
       (state) => state.pageSlice.id,
@@ -125,7 +125,7 @@ const Toolbar = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Toolbar.displayName = 'Toolbar'
 
 // PropTypes validation

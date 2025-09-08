@@ -367,7 +367,7 @@ const Settings = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Settings.displayName = 'CalendarSettings'
 
 // =============================================================================

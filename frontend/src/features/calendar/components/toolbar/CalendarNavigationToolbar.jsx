@@ -288,7 +288,7 @@ const CalendarNavigationToolbar = React.memo(
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 CalendarNavigationToolbar.displayName = 'CalendarNavigationToolbar'
 
 // PropTypes validation

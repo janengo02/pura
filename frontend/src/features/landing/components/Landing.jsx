@@ -980,7 +980,7 @@ const Landing = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 Landing.displayName = 'Landing'
 
 // PropTypes validation

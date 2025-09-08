@@ -131,7 +131,7 @@ const ScheduleSelect = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 ScheduleSelect.displayName = 'ScheduleSelect'
 
 // PropTypes validation

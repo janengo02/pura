@@ -163,7 +163,7 @@ const ProgressSelect = React.memo(() => {
 // COMPONENT CONFIGURATION
 // =============================================================================
 
-// Display name for debugging
+
 ProgressSelect.displayName = 'ProgressSelect'
 
 // PropTypes validation

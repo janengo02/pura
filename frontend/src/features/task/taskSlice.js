@@ -90,13 +90,11 @@ const taskSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Handle RTK Query showTaskModal states
     builder
       .addMatcher(taskApi.endpoints.showTaskModal.matchFulfilled, (state, action) => {
         state.task = action.payload
       })
       .addMatcher(taskApi.endpoints.syncTaskWithGoogle.matchFulfilled, (state, action) => {
-        // Update task sync status in task state
         const { slotIndex, calendarId, accountEmail } = action.meta.arg.originalArgs
         const { task: newTask, event: newEvent } = action.payload
 

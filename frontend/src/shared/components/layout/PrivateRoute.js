@@ -9,7 +9,7 @@ import { createSelector } from 'reselect'
 // SELECTORS
 // =============================================================================
 
-// Memoized selectors for better Redux performance
+
 const selectAuthData = createSelector(
    [(state) => state.auth],
    (auth) => ({
